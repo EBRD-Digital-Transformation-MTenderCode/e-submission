@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost/submissiondb?useSSL=false
+    username: root
+    password: mysql
+    driverClassName: com.mysql.jdbc.Driver
+
+    hikari:
+      maximum-pool-size: 10
+      pool-name: e-submission
+
+  jpa:
+    database: mysql
+
+    hibernate:
+      ddl-auto: create-drop
+
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL57Dialect
+
+    show-sql: true
