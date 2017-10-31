@@ -17,25 +17,24 @@ import org.springframework.format.annotation.DateTimeFormat;
 public class ContractProcessPeriodDto {
 
     @NotNull
-    private String id;
+    private String tenderId;
 
     @NotNull
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    private LocalDateTime startDateTime;
+    private LocalDateTime startDate;
 
     @NotNull
-//    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    private LocalDateTime finishDateTime;
+    private LocalDateTime endDate;
 
     @JsonCreator
-    public ContractProcessPeriodDto(@JsonProperty("id") final String id,
-                                    @JsonProperty("startDateTime") final LocalDateTime startDateTime,
-                                    @JsonProperty("finishDateTime") final LocalDateTime finishDateTime) {
-        this.id = id;
-        this.startDateTime = startDateTime;
-        this.finishDateTime = finishDateTime;
+    public ContractProcessPeriodDto(@JsonProperty("tenderId") final String tenderId,
+                                    @JsonProperty("startDate") final LocalDateTime startDate,
+                                    @JsonProperty("endDate") final LocalDateTime endDate) {
+        this.tenderId = tenderId;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 }

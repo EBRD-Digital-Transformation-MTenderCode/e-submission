@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: e-submition
+    name: e-notice
   data:
     cassandra:
       contact-points: 127.0.0.1

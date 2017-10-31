@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class RepresentingBidController {
 
-    @PostMapping
+    @PostMapping(value = "/1")
     @ResponseStatus(HttpStatus.CREATED)
     public void submissionQualificationProposal(@Valid @RequestBody final BidsDto bidsDto,
                                                 final BindingResult bindingResult) {
@@ -25,7 +25,7 @@ public class RepresentingBidController {
         }
     }
 
-    @PostMapping
+    @PostMapping(value = "/2")
     @ResponseStatus(HttpStatus.CREATED)
     public void submissionTechnicalProposal(@Valid @RequestBody final DocumentBidSubmissionDto documentBidSubmissionDto,
                                             final BindingResult bindingResult) {
@@ -34,7 +34,7 @@ public class RepresentingBidController {
         }
     }
 
-    @PostMapping
+    @PostMapping(value = "/3")
     @ResponseStatus(HttpStatus.CREATED)
     public void submissionPriceProposal(@Valid @RequestBody final ValueDto valueDto,
                                         final BindingResult bindingResult) {
