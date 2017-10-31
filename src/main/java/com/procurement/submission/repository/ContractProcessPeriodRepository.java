@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ContractProcessPeriodRepository extends CassandraRepository<ContractProcessPeriodEntity, String> {
 
-    @Query(value = "select * from access where tender_id=?0 LIMIT 1")
+    @Query(value = "select * from contract_period where tender_id=?0 LIMIT 1")
     ContractProcessPeriodEntity getByTenderId(String tenderId);
 }
