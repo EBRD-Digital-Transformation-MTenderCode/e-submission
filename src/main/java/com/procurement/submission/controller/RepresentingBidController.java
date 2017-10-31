@@ -25,7 +25,7 @@ public class RepresentingBidController {
         }
     }
 
-    @PostMapping
+    @PostMapping(value = "/d")
     @ResponseStatus(HttpStatus.CREATED)
     public void submissionTechnicalProposal(@Valid @RequestBody final DocumentBidSubmissionDto documentBidSubmissionDto,
                                             final BindingResult bindingResult) {
@@ -34,7 +34,7 @@ public class RepresentingBidController {
         }
     }
 
-    @PostMapping
+    @PostMapping(value = "/v")
     @ResponseStatus(HttpStatus.CREATED)
     public void submissionPriceProposal(@Valid @RequestBody final ValueDto valueDto,
                                         final BindingResult bindingResult) {

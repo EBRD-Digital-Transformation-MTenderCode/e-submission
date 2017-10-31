@@ -33,7 +33,7 @@
         <maven-failsafe-plugin.version>2.19</maven-failsafe-plugin.version>
     </properties>
 
-    <profiles>
+    <!--<profiles>
         <profile>
             <id>checkstyle</id>
             <build>
@@ -90,7 +90,7 @@
                                 </goals>
                                 <configuration>
                                     <rules>
-                                        <!-- implementation is needed only for Maven 2 -->
+                                        &lt;!&ndash; implementation is needed only for Maven 2 &ndash;&gt;
                                         <rule implementation="org.jacoco.maven.RuleConfiguration">
                                             <element>BUNDLE</element>
                                             <limits>
@@ -169,7 +169,7 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>
+    </profiles>-->
 
     <dependencies>
         <!--Web-->
@@ -236,11 +236,11 @@
             <scope>test</scope>
         </dependency>
         <!--Docs-->
-<!--        <dependency>
+        <dependency>
             <groupId>org.springframework.restdocs</groupId>
             <artifactId>spring-restdocs-mockmvc</artifactId>
             <scope>test</scope>
-        </dependency>-->
+        </dependency>
 
         <dependency>
             <groupId>io.springfox</groupId>
