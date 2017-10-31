@@ -1,28 +1,21 @@
-package com.procurement.submission.model.dto;
+package com.procurement.submission.model.dto.response;
 
-import com.procurement.submission.model.dto.response.RequirementResponseDto;
+import com.procurement.submission.model.dto.BidDto;
+import com.procurement.submission.model.dto.PeriodDto;
+import com.procurement.submission.model.dto.RequirementReferenceDto;
 import java.util.List;
-import javax.validation.constraints.NotNull;
+import lombok.Data;
 import lombok.Getter;
 
-@Getter
-public class BidDto {
-    @NotNull
+@Data
+public class RequirementResponseDto {
     private String id;
-
-    private String date;
-
-    private String status;
-
-    private List<OrganizationReferenceDto> tenderers;
-
-    private List<DocumentDto> documents;
-
-    private List<String> relatedLots;
-
-
-//    private ValueDto value;
-//    private List<RequirementResponseDto> requirementResponses;
+    private String title;
+    private String description;
+    private Object value;
+    private PeriodDto period;
+    private RequirementReferenceDto requirement;
+    private OrganizationReferenceDto relatedTenderer;
 
     @Getter
     public static class OrganizationReferenceDto {
@@ -56,18 +49,5 @@ public class BidDto {
             private String url;
             private List<String> languages;
         }
-    }
-
-    public class DocumentDto {
-        private String id;
-        private String documentType;
-        private String title;
-        private String description;
-        private String url;
-        private String datePublished;
-        private String dateModified;
-        private String format;
-        private String language;
-        private List<String> relatedLots;
     }
 }

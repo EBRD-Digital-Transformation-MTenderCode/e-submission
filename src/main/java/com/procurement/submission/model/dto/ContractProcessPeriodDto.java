@@ -1,13 +1,19 @@
 package com.procurement.submission.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.procurement.submission.databinding.LocalDateTimeDeserializer;
-import java.time.LocalDate;
+import com.procurement.submission.databinding.LocalDateTimeSerializer;
+import java.time.LocalDateTime;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.ToString;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
+@ToString
 public class ContractProcessPeriodDto {
 
     @NotNull
@@ -15,15 +21,19 @@ public class ContractProcessPeriodDto {
 
     @NotNull
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDate startDateTime;
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    private LocalDateTime startDateTime;
 
     @NotNull
+//    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    private LocalDate finishDateTime;
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    private LocalDateTime finishDateTime;
 
-    public ContractProcessPeriodDto(@NotNull @JsonProperty("id") String id,
-                                    @NotNull @JsonProperty("startDateTime") LocalDate startDateTime,
-                                    @NotNull @JsonProperty("finishDateTime") LocalDate finishDateTime) {
+    @JsonCreator
+    public ContractProcessPeriodDto(@JsonProperty("id") final String id,
+                                    @JsonProperty("startDateTime") final LocalDateTime startDateTime,
+                                    @JsonProperty("finishDateTime") final LocalDateTime finishDateTime) {
         this.id = id;
         this.startDateTime = startDateTime;
         this.finishDateTime = finishDateTime;

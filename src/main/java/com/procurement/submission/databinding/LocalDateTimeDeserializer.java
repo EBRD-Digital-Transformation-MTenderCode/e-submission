@@ -6,10 +6,19 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 
-public class LocalDateTimeDeserializer extends StdDeserializer<LocalDateTime>{
+public class LocalDateTimeDeserializer extends StdDeserializer<LocalDateTime> {
 
-    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    //    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss.nnnZ");
+    private final static DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+/*    private final static DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .append(DateTimeFormatter.ISO_LOCAL_DATE)
+        .appendLiteral('T')
+        .append(DateTimeFormatter.ofPattern("HH:mm:ss.nnn"))
+        .appendLiteral('Z')
+        .toFormatter();*/
 
     protected LocalDateTimeDeserializer() {
         super(LocalDateTime.class);
