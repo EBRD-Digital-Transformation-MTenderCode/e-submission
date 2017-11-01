@@ -1,4 +1,4 @@
-package com.procurement.submission.model.dto;
+package com.procurement.submission.model.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.ToString;
-import org.springframework.format.annotation.DateTimeFormat;
 
 @Getter
 @ToString
