@@ -1,6 +1,6 @@
 package com.procurement.submission.service;
 
-import com.procurement.submission.model.dto.ContractProcessPeriodDto;
+import com.procurement.submission.model.dto.request.ContractProcessPeriodDto;
 import com.procurement.submission.model.entity.ContractProcessPeriodEntity;
 import com.procurement.submission.repository.ContractProcessPeriodRepository;
 import java.util.Objects;

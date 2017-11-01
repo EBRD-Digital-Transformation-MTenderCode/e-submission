@@ -1,7 +1,7 @@
 package com.procurement.submission.controller;
 
 import com.procurement.submission.exception.ValidationException;
-import com.procurement.submission.model.dto.ContractProcessPeriodDto;
+import com.procurement.submission.model.dto.request.ContractProcessPeriodDto;
 import com.procurement.submission.service.ContractProcessPeriodService;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
