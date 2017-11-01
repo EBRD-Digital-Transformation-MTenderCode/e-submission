@@ -1,7 +1,9 @@
 package com.procurement.submission.controller;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.procurement.submission.exception.ErrorInsertException;
 import com.procurement.submission.exception.ValidationException;
+import com.procurement.submission.model.dto.response.ErrorInsertResponse;
 import com.procurement.submission.model.dto.response.MappingErrorResponse;
 import com.procurement.submission.model.dto.response.ValidationErrorResponse;
 import java.util.stream.Collectors;
@@ -37,4 +39,12 @@ public class ControllerExceptionHandler {
         String message = "Houston we have a problem";
         return new MappingErrorResponse(message, e);
     }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(ErrorInsertException.class)
+    public ErrorInsertResponse handleErrorInsertException(final ErrorInsertException e) {
+        return new ErrorInsertResponse(e.getMessage());
+    }
+
 }
