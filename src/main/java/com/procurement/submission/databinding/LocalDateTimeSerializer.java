@@ -9,13 +9,11 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 
 public class LocalDateTimeSerializer extends StdSerializer<LocalDateTime> {
-//    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-//    private final static DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
     private final static DateTimeFormatter formatter = new DateTimeFormatterBuilder()
         .parseCaseInsensitive()
         .append(DateTimeFormatter.ISO_LOCAL_DATE)
         .appendLiteral('T')
-        .append(DateTimeFormatter.ofPattern("HH:mm:ss.nnn"))
+        .append(DateTimeFormatter.ofPattern("HH:mm:ss.nnnnnn"))
         .appendLiteral('Z')
         .toFormatter();
 

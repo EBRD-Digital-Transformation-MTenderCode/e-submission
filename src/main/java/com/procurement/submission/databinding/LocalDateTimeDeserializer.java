@@ -10,15 +10,13 @@ import java.time.format.DateTimeFormatterBuilder;
 
 public class LocalDateTimeDeserializer extends StdDeserializer<LocalDateTime> {
 
-    //    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss.nnnZ");
-    private final static DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
-/*    private final static DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+    private final static DateTimeFormatter formatter = new DateTimeFormatterBuilder()
         .parseCaseInsensitive()
         .append(DateTimeFormatter.ISO_LOCAL_DATE)
         .appendLiteral('T')
-        .append(DateTimeFormatter.ofPattern("HH:mm:ss.nnn"))
+        .append(DateTimeFormatter.ofPattern("HH:mm:ss.nnnnnn"))
         .appendLiteral('Z')
-        .toFormatter();*/
+        .toFormatter();
 
     protected LocalDateTimeDeserializer() {
         super(LocalDateTime.class);
