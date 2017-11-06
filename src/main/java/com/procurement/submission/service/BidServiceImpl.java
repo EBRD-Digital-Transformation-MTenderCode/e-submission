@@ -32,9 +32,9 @@ public class BidServiceImpl implements BidService {
 
     @Override
     public QualificationOfferResponseDto insertQualificationOffer(final QualificationOfferDto dataDto) {
+        Objects.requireNonNull(dataDto);
         final LocalDateTime localDateTime = LocalDateTime.now();
         checkPeriod(localDateTime, dataDto.getOcid());
-        Objects.requireNonNull(dataDto);
         convertDtoToEntity(dataDto.getOcid(), localDateTime, dataDto.getBid())
             .ifPresent(bid -> bidRepository.save(bid));
         return null;

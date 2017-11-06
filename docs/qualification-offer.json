@@ -46,8 +46,8 @@
         "title": "str",
         "description": "str",
         "url": "str",
-        "datePublished": "2017-10-31T14:12:04.891Z",
-        "dateModified": "2017-10-31T14:12:04.891Z",
+        "datePublished": "2017-10-31T14:12:04.891000000Z",
+        "dateModified": "2017-10-31T14:12:04.891000000Z",
         "format": "str",
         "language": "str"
       }

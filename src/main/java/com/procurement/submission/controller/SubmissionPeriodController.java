@@ -24,7 +24,7 @@ public class SubmissionPeriodController {
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public void saveContractProcessPeriod(@Valid @RequestBody final SubmissionPeriodDto dataDto,
+    public void saveSubmissionPeriod(@Valid @RequestBody final SubmissionPeriodDto dataDto,
                                           final BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ValidationException(bindingResult);
