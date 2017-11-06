@@ -13,10 +13,10 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class ContractProcessPeriodDto {
+public class SubmissionPeriodDto {
 
     @NotNull
-    private String tenderId;
+    private String ocId;
 
     @NotNull
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
@@ -29,10 +29,10 @@ public class ContractProcessPeriodDto {
     private LocalDateTime endDate;
 
     @JsonCreator
-    public ContractProcessPeriodDto(@JsonProperty("tenderId") final String tenderId,
-                                    @JsonProperty("startDate") final LocalDateTime startDate,
-                                    @JsonProperty("endDate") final LocalDateTime endDate) {
-        this.tenderId = tenderId;
+    public SubmissionPeriodDto(@JsonProperty("ocId") final String ocId,
+                               @JsonProperty("startDate") final LocalDateTime startDate,
+                               @JsonProperty("endDate") final LocalDateTime endDate) {
+        this.ocId = ocId;
         this.startDate = startDate;
         this.endDate = endDate;
     }

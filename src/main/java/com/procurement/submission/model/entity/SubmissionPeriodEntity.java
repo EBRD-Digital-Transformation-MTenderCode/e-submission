@@ -8,12 +8,12 @@ import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
 
-@Table("contract_period")
+@Table("submission_period")
 @Getter
 @Setter
-public class ContractProcessPeriodEntity {
-    @PrimaryKeyColumn(name = "tender_id", type = PrimaryKeyType.PARTITIONED)
-    private String tenderId;
+public class SubmissionPeriodEntity {
+    @PrimaryKeyColumn(name = "oc_id", type = PrimaryKeyType.PARTITIONED)
+    private String ocId;
 
     @Column(value = "start_date")
     private LocalDateTime startDate;

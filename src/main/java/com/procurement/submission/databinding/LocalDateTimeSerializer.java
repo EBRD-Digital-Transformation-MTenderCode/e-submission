@@ -13,7 +13,7 @@ public class LocalDateTimeSerializer extends StdSerializer<LocalDateTime> {
         .parseCaseInsensitive()
         .append(DateTimeFormatter.ISO_LOCAL_DATE)
         .appendLiteral('T')
-        .append(DateTimeFormatter.ofPattern("HH:mm:ss.nnnnnn"))
+        .append(DateTimeFormatter.ofPattern("HH:mm:ss.nnnnnnnnn"))
         .appendLiteral('Z')
         .toFormatter();
 

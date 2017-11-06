@@ -1,0 +1,59 @@
+{
+  "ocid": "ocds-213czf-000-00001",
+  "bid": {
+    "status": "status",
+    "tenderers": [
+      {
+        "name": "str",
+        "id": 0,
+        "identifier": {
+          "scheme": "str",
+          "id": "str",
+          "legalName": "str",
+          "uri": "str"
+        },
+        "address": {
+          "streetAddress": "str",
+          "locality": "str",
+          "region": "str",
+          "postalCode": "str",
+          "countryName": "str"
+        },
+        "additionalIdentifiers": [
+          {
+            "scheme": "str",
+            "id": "str",
+            "legalName": "str",
+            "uri": "str"
+          }
+        ],
+        "contactPoint": {
+          "name": "str",
+          "email": "str",
+          "telephone": "str",
+          "faxNumber": "str",
+          "url": "str",
+          "languages": [
+            "str"
+          ]
+        }
+      }
+    ],
+    "documents": [
+      {
+        "id": "str",
+        "documentType": "biddingDocuments",
+        "title": "str",
+        "description": "str",
+        "url": "str",
+        "datePublished": "2017-10-31T14:12:04.891Z",
+        "dateModified": "2017-10-31T14:12:04.891Z",
+        "format": "str",
+        "language": "str"
+      }
+    ],
+    "relatedLots": [
+      "str"
+    ]
+  }
+}

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
+import java.util.List;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
 import lombok.Getter;
@@ -20,7 +21,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "email",
     "telephone",
     "faxNumber",
-    "url"
+    "url",
+    "languages"
 })
 public class ContactPointDto {
     @JsonProperty("name")
@@ -50,17 +52,22 @@ public class ContactPointDto {
     @JsonPropertyDescription("A web address for the contact point/person.")
     private final URI url;
 
+    @JsonProperty("languages")
+    public List<String> languages;
+
     @JsonCreator
     public ContactPointDto(@JsonProperty("name") final String name,
                            @JsonProperty("email") final String email,
                            @JsonProperty("telephone") final String telephone,
                            @JsonProperty("faxNumber") final String faxNumber,
-                           @JsonProperty("url") final URI url) {
+                           @JsonProperty("url") final URI url,
+                           @JsonProperty("languages") final List<String> languages) {
         this.name = name;
         this.email = email;
         this.telephone = telephone;
         this.faxNumber = faxNumber;
         this.url = url;
+        this.languages = languages;
     }
 
     @Override
@@ -70,6 +77,7 @@ public class ContactPointDto {
                                     .append(telephone)
                                     .append(faxNumber)
                                     .append(url)
+                                    .append(languages)
                                     .toHashCode();
     }
 
@@ -87,6 +95,7 @@ public class ContactPointDto {
                                   .append(telephone, rhs.telephone)
                                   .append(faxNumber, rhs.faxNumber)
                                   .append(url, rhs.url)
+                                  .append(languages, rhs.languages)
                                   .isEquals();
     }
 }

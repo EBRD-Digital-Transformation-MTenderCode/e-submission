@@ -1,8 +1,8 @@
 package com.procurement.submission.controller;
 
 import com.procurement.submission.exception.ValidationException;
-import com.procurement.submission.model.dto.request.ContractProcessPeriodDto;
-import com.procurement.submission.service.ContractProcessPeriodService;
+import com.procurement.submission.model.dto.request.SubmissionPeriodDto;
+import com.procurement.submission.service.SubmissionPeriodService;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -14,21 +14,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/period")
-public class ContractProcessController {
+public class SubmissionPeriodController {
 
-    private ContractProcessPeriodService contractProcessPeriodService;
+    private SubmissionPeriodService submissionPeriodService;
 
-    public ContractProcessController(ContractProcessPeriodService contractProcessPeriodService) {
-        this.contractProcessPeriodService = contractProcessPeriodService;
+    public SubmissionPeriodController(SubmissionPeriodService submissionPeriodService) {
+        this.submissionPeriodService = submissionPeriodService;
     }
 
     @PostMapping
     @ResponseStatus(value = HttpStatus.CREATED)
-    public void saveContractProcessPeriod(@Valid @RequestBody final ContractProcessPeriodDto contractProcessPeriodDto,
+    public void saveContractProcessPeriod(@Valid @RequestBody final SubmissionPeriodDto dataDto,
                                           final BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ValidationException(bindingResult);
         }
-        contractProcessPeriodService.insertData(contractProcessPeriodDto);
+        submissionPeriodService.insertData(dataDto);
     }
 }

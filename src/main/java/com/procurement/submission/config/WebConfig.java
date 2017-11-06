@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
 @EnableSwagger2
-@EnableWebMvc
+//@EnableWebMvc
 @ComponentScan(basePackages = "com.procurement.submission.controller")
 public class WebConfig {
 }

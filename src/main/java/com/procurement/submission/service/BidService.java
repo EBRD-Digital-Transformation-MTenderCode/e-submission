@@ -5,5 +5,5 @@ import com.procurement.submission.model.dto.response.QualificationOfferResponseD
 
 public interface BidService {
 
-    QualificationOfferResponseDto insertQualificationOffer(QualificationOfferDto qualificationOfferDto);
+    QualificationOfferResponseDto insertQualificationOffer(QualificationOfferDto dataDto);
 }
