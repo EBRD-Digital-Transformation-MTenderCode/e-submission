@@ -3,6 +3,10 @@ package com.procurement.submission.model.dto.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.procurement.submission.databinding.LocalDateTimeDeserializer;
+import com.procurement.submission.databinding.LocalDateTimeSerializer;
 import java.time.LocalDateTime;
 import java.util.List;
 import javax.validation.constraints.NotEmpty;
@@ -25,6 +29,8 @@ public class BidQualificationDto {
     private String id;
 
     @JsonProperty("date")
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     public LocalDateTime date;
 
     @NotNull
