@@ -66,6 +66,7 @@ public class BidServiceImpl implements BidService {
         if (Objects.isNull(bidDto.getDate())) {
             bidDto.setDate(localDateTime);
         }
+        bidEntity.setStatus(bidDto.getStatus().value());
         bidEntity.setBidId(bidId);
         bidEntity.setJsonData(jsonUtil.toJson(bidDto));
         return Optional.of(bidEntity);

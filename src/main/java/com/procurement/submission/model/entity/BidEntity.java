@@ -10,7 +10,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 
 @Getter
 @Setter
-@Table("bid")
+@Table("submission_bid")
 public class BidEntity {
     @PrimaryKeyColumn(name = "oc_id", type = PrimaryKeyType.PARTITIONED)
     private String ocId;
@@ -20,4 +20,7 @@ public class BidEntity {
 
     @Column(value = "json_data")
     private String jsonData;
+
+    @Column(value = "bid_status")
+    private String status;
 }

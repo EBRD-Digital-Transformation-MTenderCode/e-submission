@@ -35,7 +35,7 @@ public class BidQualificationDto {
 
     @NotNull
     @JsonProperty("status")
-    private String status;
+    private BidStatus status;
 
     @NotEmpty
     @JsonProperty("tenderers")
@@ -53,7 +53,7 @@ public class BidQualificationDto {
     public BidQualificationDto(
         @JsonProperty("id") final String id,
         @JsonProperty("date") final LocalDateTime date,
-        @JsonProperty("status") final String status,
+        @JsonProperty("status") final BidStatus status,
         @JsonProperty("tenderers") final List<OrganizationReferenceDto> tenderers,
         @JsonProperty("documents") final List<DocumentDto> documents,
         @JsonProperty("relatedLots") final List<String> relatedLots) {
