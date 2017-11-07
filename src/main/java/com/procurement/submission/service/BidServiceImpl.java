@@ -31,13 +31,12 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public QualificationOfferResponseDto insertQualificationOffer(final QualificationOfferDto dataDto) {
+    public void insertData(final QualificationOfferDto dataDto) {
         Objects.requireNonNull(dataDto);
         final LocalDateTime localDateTime = LocalDateTime.now();
         checkPeriod(localDateTime, dataDto.getOcid());
         convertDtoToEntity(dataDto.getOcid(), localDateTime, dataDto.getBid())
             .ifPresent(bid -> bidRepository.save(bid));
-        return null;
     }
 
     private void checkPeriod(final LocalDateTime localDateTime, final String ocid) {
@@ -49,7 +48,7 @@ public class BidServiceImpl implements BidService {
         }
     }
 
-    public Optional<BidEntity> convertDtoToEntity(String ocId,
+    private Optional<BidEntity> convertDtoToEntity(String ocId,
                                                   LocalDateTime localDateTime,
                                                   BidQualificationDto bidDto) {
         Objects.requireNonNull(ocId);

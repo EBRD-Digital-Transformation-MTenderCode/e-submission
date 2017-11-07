@@ -6,7 +6,6 @@ import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.dto.request.ValueDto;
 import com.procurement.submission.model.dto.response.QualificationOfferResponseDto;
 import com.procurement.submission.service.BidService;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -27,13 +26,11 @@ public class RepresentingBidController {
 
     @PostMapping(value = "qualificationOffer")
     @ResponseStatus(HttpStatus.CREATED)
-    public QualificationOfferResponseDto submissionQualificationProposal(
+    public void submissionQualificationProposal(
         @Valid @RequestBody final QualificationOfferDto dataDto,
         final BindingResult bindingResult) {
         Optional.of(bindingResult.hasErrors()).ifPresent(b -> new ValidationException(bindingResult));
-        QualificationOfferResponseDto qualificationOfferResponseDto =
-            bidService.insertQualificationOffer(dataDto);
-        return qualificationOfferResponseDto;
+        bidService.insertData(dataDto);
     }
 
     @PostMapping(value = "/technicalProposal")
