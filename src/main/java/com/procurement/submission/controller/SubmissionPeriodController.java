@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(path = "/period")
+@RequestMapping(path = "/submissionPeriod")
 public class SubmissionPeriodController {
 
     private SubmissionPeriodService submissionPeriodService;
@@ -22,7 +22,7 @@ public class SubmissionPeriodController {
         this.submissionPeriodService = submissionPeriodService;
     }
 
-    @PostMapping
+    @PostMapping("/save")
     @ResponseStatus(value = HttpStatus.CREATED)
     public void saveSubmissionPeriod(@Valid @RequestBody final SubmissionPeriodDto dataDto,
                                           final BindingResult bindingResult) {

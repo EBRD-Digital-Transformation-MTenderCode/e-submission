@@ -29,7 +29,9 @@ public class RepresentingBidController {
     public void submissionQualificationProposal(
         @Valid @RequestBody final QualificationOfferDto dataDto,
         final BindingResult bindingResult) {
-        Optional.of(bindingResult.hasErrors()).ifPresent(b -> new ValidationException(bindingResult));
+        if (bindingResult.hasErrors()) {
+            throw new ValidationException(bindingResult);
+        }
         bidService.insertData(dataDto);
     }
 
@@ -37,13 +39,17 @@ public class RepresentingBidController {
     @ResponseStatus(HttpStatus.CREATED)
     public void submissionTechnicalProposal(@Valid @RequestBody final DocumentDto documentDto,
                                             final BindingResult bindingResult) {
-        Optional.of(bindingResult.hasErrors()).ifPresent(b -> new ValidationException(bindingResult));
+        if (bindingResult.hasErrors()) {
+            throw new ValidationException(bindingResult);
+        }
     }
 
     @PostMapping(value = "/priceOffer")
     @ResponseStatus(HttpStatus.CREATED)
     public void submissionPriceProposal(@Valid @RequestBody final ValueDto valueDto,
                                         final BindingResult bindingResult) {
-        Optional.of(bindingResult.hasErrors()).ifPresent(b -> new ValidationException(bindingResult));
+        if (bindingResult.hasErrors()) {
+            throw new ValidationException(bindingResult);
+        }
     }
 }
