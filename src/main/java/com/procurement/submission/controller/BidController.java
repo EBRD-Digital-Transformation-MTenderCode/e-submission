@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class RepresentingBidController {
+public class BidController {
 
     private BidService bidService;
 
-    public RepresentingBidController(BidService bidService) {
+    public BidController(BidService bidService) {
         this.bidService = bidService;
     }
 
