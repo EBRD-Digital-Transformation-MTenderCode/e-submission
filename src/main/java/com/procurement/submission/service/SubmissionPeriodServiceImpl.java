@@ -1,33 +1,64 @@
 package com.procurement.submission.service;
 
+import com.procurement.submission.model.dto.request.PeriodDataDto;
 import com.procurement.submission.model.dto.request.SubmissionPeriodDto;
+import com.procurement.submission.model.dto.request.TenderPeriodDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
+import com.procurement.submission.repository.RulesRepository;
 import com.procurement.submission.repository.SubmissionPeriodRepository;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
+
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Service
 public class SubmissionPeriodServiceImpl implements SubmissionPeriodService {
 
     private SubmissionPeriodRepository submissionPeriodRepository;
+    private RulesRepository rulesRepository;
 
-    public SubmissionPeriodServiceImpl(SubmissionPeriodRepository submissionPeriodRepository) {
+    public SubmissionPeriodServiceImpl(SubmissionPeriodRepository submissionPeriodRepository,
+                                       RulesRepository rulesRepository) {
         this.submissionPeriodRepository = submissionPeriodRepository;
+        this.rulesRepository = rulesRepository;
     }
 
     @Override
-    public void insertData(SubmissionPeriodDto dataDto) {
+    public Boolean checkPeriod(PeriodDataDto dataDto) {
         Objects.requireNonNull(dataDto);
-        convertDtoToEntity(dataDto)
+        String value = rulesRepository.getValue(dataDto.getCountry(),
+                                                dataDto.getProcurementMethodDetails(),
+                                                "interval");
+        Long interval = Long.valueOf(value);
+        TenderPeriodDto tenderPeriod = dataDto.getTenderPeriod();
+        Boolean isValid = false;
+        if (Objects.nonNull(tenderPeriod) && interval != 0) {
+            isValid = checkInterval(tenderPeriod.getStartDate(), tenderPeriod.getEndDate(), interval);
+        }
+        return isValid;
+    }
+
+    private Boolean checkInterval(LocalDateTime startDate, LocalDateTime endDate, Long interval) {
+        Long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
+        return (days >= interval);
+    }
+
+    @Override
+    public void insertData(PeriodDataDto dataDto) {
+        Objects.requireNonNull(dataDto);
+        convertDtoToEntity(dataDto.getOcId(), dataDto.getTenderPeriod())
             .ifPresent(period -> submissionPeriodRepository.save(period));
     }
 
-    public Optional<SubmissionPeriodEntity> convertDtoToEntity(SubmissionPeriodDto dataDto) {
+    public Optional<SubmissionPeriodEntity> convertDtoToEntity(String ocId, TenderPeriodDto periodDto) {
+        Objects.requireNonNull(ocId);
+        Objects.requireNonNull(periodDto);
         SubmissionPeriodEntity submissionPeriodEntity = new SubmissionPeriodEntity();
-        submissionPeriodEntity.setOcId(dataDto.getOcId());
-        submissionPeriodEntity.setStartDate(dataDto.getStartDate());
-        submissionPeriodEntity.setEndDate(dataDto.getEndDate());
+        submissionPeriodEntity.setOcId(ocId);
+        submissionPeriodEntity.setStartDate(periodDto.getStartDate());
+        submissionPeriodEntity.setEndDate(periodDto.getEndDate());
         return Optional.of(submissionPeriodEntity);
     }
 }

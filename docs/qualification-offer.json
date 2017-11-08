@@ -3,7 +3,7 @@
   "bid": {
     "id": "b99311f0-c2d7-11e7-b00e-195d3ce0f6c9",
     "date": "2017-11-06T11:48:15.659000000Z",
-    "status": "status",
+    "status": "pending",
     "tenderers": [
       {
         "name": "str",
