@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "/period")
-public class SubmissionPeriodController {
+public class PeriodController {
 
-    private PeriodService submissionPeriodService;
+    private PeriodService periodService;
 
-    public SubmissionPeriodController(PeriodService submissionPeriodService) {
-        this.submissionPeriodService = submissionPeriodService;
+    public PeriodController(PeriodService periodService) {
+        this.periodService = periodService;
     }
 
     @PostMapping("/check")
@@ -29,18 +29,17 @@ public class SubmissionPeriodController {
         if (bindingResult.hasErrors()) {
             throw new ValidationException(bindingResult);
         }
-        Boolean isValid = submissionPeriodService.checkPeriod(dataDto);
+        Boolean isValid = periodService.checkPeriod(dataDto);
         return new ResponseEntity<>(isValid, HttpStatus.OK);
     }
 
     @PostMapping("/save")
     @ResponseStatus(value = HttpStatus.CREATED)
     public void savePeriod(@Valid @RequestBody final PeriodDataDto dataDto,
-                                          final BindingResult bindingResult) {
+                           final BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ValidationException(bindingResult);
         }
-        submissionPeriodService.insertData(dataDto);
+        periodService.savePeriod(dataDto);
     }
-
 }

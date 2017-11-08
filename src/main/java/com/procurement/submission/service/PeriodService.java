@@ -9,5 +9,5 @@ public interface PeriodService {
 
     Boolean checkPeriod(PeriodDataDto data);
 
-    void insertData(PeriodDataDto data);
+    void savePeriod(PeriodDataDto data);
 }

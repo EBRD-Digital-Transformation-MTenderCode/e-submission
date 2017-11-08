@@ -45,7 +45,7 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
-    public void insertData(PeriodDataDto dataDto) {
+    public void savePeriod(PeriodDataDto dataDto) {
         Objects.requireNonNull(dataDto);
         convertDtoToEntity(dataDto.getOcId(), dataDto.getTenderPeriod())
             .ifPresent(period -> submissionPeriodRepository.save(period));
