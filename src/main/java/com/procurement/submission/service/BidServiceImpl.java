@@ -4,11 +4,10 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.procurement.submission.exception.ErrorInsertException;
 import com.procurement.submission.model.dto.request.BidQualificationDto;
 import com.procurement.submission.model.dto.request.QualificationOfferDto;
-import com.procurement.submission.model.dto.response.QualificationOfferResponseDto;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.repository.BidRepository;
-import com.procurement.submission.repository.SubmissionPeriodRepository;
+import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.utils.JsonUtil;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -18,11 +17,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BidServiceImpl implements BidService {
-    private SubmissionPeriodRepository periodRepository;
+    private PeriodRepository periodRepository;
     private BidRepository bidRepository;
     private JsonUtil jsonUtil;
 
-    public BidServiceImpl(SubmissionPeriodRepository periodRepository,
+    public BidServiceImpl(PeriodRepository periodRepository,
                           BidRepository bidRepository,
                           JsonUtil jsonUtil) {
         this.periodRepository = periodRepository;

@@ -1,11 +1,10 @@
 package com.procurement.submission.service;
 
 import com.procurement.submission.model.dto.request.PeriodDataDto;
-import com.procurement.submission.model.dto.request.SubmissionPeriodDto;
 import com.procurement.submission.model.dto.request.TenderPeriodDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.repository.RulesRepository;
-import com.procurement.submission.repository.SubmissionPeriodRepository;
+import com.procurement.submission.repository.PeriodRepository;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -14,13 +13,13 @@ import org.springframework.stereotype.Service;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 @Service
-public class SubmissionPeriodServiceImpl implements SubmissionPeriodService {
+public class PeriodServiceImpl implements PeriodService {
 
-    private SubmissionPeriodRepository submissionPeriodRepository;
+    private PeriodRepository submissionPeriodRepository;
     private RulesRepository rulesRepository;
 
-    public SubmissionPeriodServiceImpl(SubmissionPeriodRepository submissionPeriodRepository,
-                                       RulesRepository rulesRepository) {
+    public PeriodServiceImpl(PeriodRepository submissionPeriodRepository,
+                             RulesRepository rulesRepository) {
         this.submissionPeriodRepository = submissionPeriodRepository;
         this.rulesRepository = rulesRepository;
     }

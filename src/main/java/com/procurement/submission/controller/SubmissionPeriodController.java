@@ -2,19 +2,14 @@ package com.procurement.submission.controller;
 
 import com.procurement.submission.exception.ValidationException;
 import com.procurement.submission.model.dto.request.PeriodDataDto;
-import com.procurement.submission.model.dto.request.SubmissionPeriodDto;
-import com.procurement.submission.service.SubmissionPeriodService;
-import java.util.List;
+import com.procurement.submission.service.PeriodService;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "/period")
 public class SubmissionPeriodController {
 
-    private SubmissionPeriodService submissionPeriodService;
+    private PeriodService submissionPeriodService;
 
-    public SubmissionPeriodController(SubmissionPeriodService submissionPeriodService) {
+    public SubmissionPeriodController(PeriodService submissionPeriodService) {
         this.submissionPeriodService = submissionPeriodService;
     }
 

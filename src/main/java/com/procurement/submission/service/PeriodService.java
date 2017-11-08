@@ -5,7 +5,7 @@ import com.procurement.submission.model.dto.request.SubmissionPeriodDto;
 import org.springframework.stereotype.Service;
 
 @Service
-public interface SubmissionPeriodService {
+public interface PeriodService {
 
     Boolean checkPeriod(PeriodDataDto data);
 
