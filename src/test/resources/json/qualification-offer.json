@@ -7,7 +7,7 @@
     "tenderers": [
       {
         "name": "str",
-        "id": 0,
+        "id": "0",
         "identifier": {
           "scheme": "str",
           "id": "str",

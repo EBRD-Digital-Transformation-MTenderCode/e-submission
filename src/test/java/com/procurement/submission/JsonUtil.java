@@ -1,4 +1,4 @@
-package model;
+package com.procurement.submission;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
