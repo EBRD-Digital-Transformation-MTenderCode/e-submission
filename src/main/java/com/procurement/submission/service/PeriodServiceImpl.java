@@ -1,13 +1,9 @@
 package com.procurement.submission.service;
 
 import com.procurement.submission.model.dto.request.PeriodDataDto;
-import com.procurement.submission.model.dto.request.TenderPeriodDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
-import com.procurement.submission.repository.RulesRepository;
 import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.Optional;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
@@ -17,27 +13,27 @@ import static java.time.temporal.ChronoUnit.DAYS;
 public class PeriodServiceImpl implements PeriodService {
 
     private PeriodRepository periodRepository;
-    private RulesRepository rulesRepository;
+    private RulesService rulesService;
     private ConversionService conversionService;
 
     public PeriodServiceImpl(PeriodRepository periodRepository,
-                             RulesRepository rulesRepository,
+                             RulesService rulesService,
                              ConversionService conversionService) {
         this.periodRepository = periodRepository;
-        this.rulesRepository = rulesRepository;
+        this.rulesService = rulesService;
         this.conversionService = conversionService;
     }
 
     @Override
     public Boolean checkPeriod(PeriodDataDto dataDto) {
-        String value = rulesRepository.getValue(dataDto.getCountry(),
-                                                dataDto.getProcurementMethodDetails(),
-                                                "interval");
-        Long interval = Long.valueOf(value);
-        TenderPeriodDto tenderPeriod = dataDto.getTenderPeriod();
+        Long interval = rulesService.getInterval(dataDto);
         Boolean isValid = false;
-        if (Objects.nonNull(tenderPeriod) && interval != 0) {
-            isValid = checkInterval(tenderPeriod.getStartDate(), tenderPeriod.getEndDate(), interval);
+        if (interval != 0L) {
+            isValid = checkInterval(dataDto.getTenderPeriod()
+                                           .getStartDate(),
+                                    dataDto.getTenderPeriod()
+                                           .getEndDate(),
+                                    interval);
         }
         return isValid;
     }
