@@ -3,8 +3,8 @@ package com.procurement.submission.service;
 import com.procurement.submission.model.dto.request.PeriodDataDto;
 import com.procurement.submission.model.dto.request.TenderPeriodDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
-import com.procurement.submission.repository.RulesRepository;
 import com.procurement.submission.repository.PeriodRepository;
+import com.procurement.submission.repository.RulesRepository;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,12 +15,12 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Service
 public class PeriodServiceImpl implements PeriodService {
 
-    private PeriodRepository submissionPeriodRepository;
+    private PeriodRepository periodRepository;
     private RulesRepository rulesRepository;
 
-    public PeriodServiceImpl(PeriodRepository submissionPeriodRepository,
+    public PeriodServiceImpl(PeriodRepository periodRepository,
                              RulesRepository rulesRepository) {
-        this.submissionPeriodRepository = submissionPeriodRepository;
+        this.periodRepository = periodRepository;
         this.rulesRepository = rulesRepository;
     }
 
@@ -45,10 +45,11 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
-    public void savePeriod(PeriodDataDto dataDto) {
+    public SubmissionPeriodEntity savePeriod(PeriodDataDto dataDto) {
         Objects.requireNonNull(dataDto);
-        convertDtoToEntity(dataDto.getOcId(), dataDto.getTenderPeriod())
-            .ifPresent(period -> submissionPeriodRepository.save(period));
+        Optional<SubmissionPeriodEntity> period = convertDtoToEntity(dataDto.getOcId(), dataDto.getTenderPeriod());
+        return period.map(p -> periodRepository.save(p))
+                     .orElse(null);
     }
 
     public Optional<SubmissionPeriodEntity> convertDtoToEntity(String ocId, TenderPeriodDto periodDto) {
