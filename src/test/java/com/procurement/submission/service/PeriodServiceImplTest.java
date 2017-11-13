@@ -6,9 +6,9 @@ import com.procurement.submission.model.entity.RulesEntity;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.repository.RulesRepository;
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.convert.ConversionService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,6 +29,7 @@ class PeriodServiceImplTest {
 
         PeriodRepository periodRepository = mock(PeriodRepository.class);
         RulesRepository rulesRepository = mock(RulesRepository.class);
+        ConversionService conversionService = mock(ConversionService.class);
 
         String json = jsonUtil.getResource("json/period-data.json");
         periodDataDto = jsonUtil.toObject(PeriodDataDto.class, json);
@@ -51,7 +52,9 @@ class PeriodServiceImplTest {
 
         when(periodRepository.save(submissionPeriodEntity)).thenReturn(submissionPeriodEntity);
 
-        periodService = new PeriodServiceImpl(periodRepository, rulesRepository);
+        when(conversionService.convert(periodDataDto, SubmissionPeriodEntity.class)).thenReturn(submissionPeriodEntity);
+
+        periodService = new PeriodServiceImpl(periodRepository, rulesRepository, conversionService);
     }
 
     @Test
@@ -60,9 +63,9 @@ class PeriodServiceImplTest {
         assertTrue(isValid);
     }
 
-//    @Test
-//    void savePeriod() {
-//        SubmissionPeriodEntity result = periodService.savePeriod(periodDataDto);
-//        assertEquals(result.getOcId(), submissionPeriodEntity.getOcId());
-//    }
+    @Test
+    void savePeriod() {
+        SubmissionPeriodEntity result = periodService.savePeriod(periodDataDto);
+        assertEquals(result.getOcId(), submissionPeriodEntity.getOcId());
+    }
 }

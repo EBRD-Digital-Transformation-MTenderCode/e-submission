@@ -8,6 +8,7 @@ import com.procurement.submission.repository.RulesRepository;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -17,16 +18,18 @@ public class PeriodServiceImpl implements PeriodService {
 
     private PeriodRepository periodRepository;
     private RulesRepository rulesRepository;
+    private ConversionService conversionService;
 
     public PeriodServiceImpl(PeriodRepository periodRepository,
-                             RulesRepository rulesRepository) {
+                             RulesRepository rulesRepository,
+                             ConversionService conversionService) {
         this.periodRepository = periodRepository;
         this.rulesRepository = rulesRepository;
+        this.conversionService = conversionService;
     }
 
     @Override
     public Boolean checkPeriod(PeriodDataDto dataDto) {
-        Objects.requireNonNull(dataDto);
         String value = rulesRepository.getValue(dataDto.getCountry(),
                                                 dataDto.getProcurementMethodDetails(),
                                                 "interval");
@@ -46,19 +49,7 @@ public class PeriodServiceImpl implements PeriodService {
 
     @Override
     public SubmissionPeriodEntity savePeriod(PeriodDataDto dataDto) {
-        Objects.requireNonNull(dataDto);
-        Optional<SubmissionPeriodEntity> period = convertDtoToEntity(dataDto.getOcId(), dataDto.getTenderPeriod());
-        return period.map(p -> periodRepository.save(p))
-                     .orElse(null);
-    }
-
-    public Optional<SubmissionPeriodEntity> convertDtoToEntity(String ocId, TenderPeriodDto periodDto) {
-        Objects.requireNonNull(ocId);
-        Objects.requireNonNull(periodDto);
-        SubmissionPeriodEntity submissionPeriodEntity = new SubmissionPeriodEntity();
-        submissionPeriodEntity.setOcId(ocId);
-        submissionPeriodEntity.setStartDate(periodDto.getStartDate());
-        submissionPeriodEntity.setEndDate(periodDto.getEndDate());
-        return Optional.of(submissionPeriodEntity);
+        SubmissionPeriodEntity period = conversionService.convert(dataDto, SubmissionPeriodEntity.class);
+        return periodRepository.save(period);
     }
 }

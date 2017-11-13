@@ -31,7 +31,6 @@ public class BidServiceImpl implements BidService {
 
     @Override
     public void insertData(final QualificationOfferDto dataDto) {
-        Objects.requireNonNull(dataDto);
         final LocalDateTime localDateTime = LocalDateTime.now();
         checkPeriod(localDateTime, dataDto.getOcid());
         convertDtoToEntity(dataDto.getOcid(), localDateTime, dataDto.getBid())
