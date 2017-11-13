@@ -2,10 +2,8 @@ package com.procurement.submission.service;
 
 import com.procurement.submission.JsonUtil;
 import com.procurement.submission.model.dto.request.PeriodDataDto;
-import com.procurement.submission.model.entity.RulesEntity;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
-import com.procurement.submission.repository.RulesRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.ConversionService;
@@ -21,7 +19,6 @@ class PeriodServiceImplTest {
 
     private static PeriodDataDto periodDataDto;
     private static SubmissionPeriodEntity submissionPeriodEntity;
-//    private static RulesEntity rulesEntity;
 
     @BeforeAll
     static void setUp() {
@@ -30,7 +27,6 @@ class PeriodServiceImplTest {
         PeriodRepository periodRepository = mock(PeriodRepository.class);
         RulesService rulesService = mock(RulesService.class);
         ConversionService conversionService = mock(ConversionService.class);
-
 
         String json = jsonUtil.getResource("json/period-data.json");
         periodDataDto = jsonUtil.toObject(PeriodDataDto.class, json);
@@ -41,12 +37,6 @@ class PeriodServiceImplTest {
                                                          .getStartDate());
         submissionPeriodEntity.setEndDate(periodDataDto.getTenderPeriod()
                                                        .getEndDate());
-
-//        rulesEntity = new RulesEntity();
-//        rulesEntity.setCountry("UA");
-//        rulesEntity.setMethod("micro");
-//        rulesEntity.setParameter("interval");
-//        rulesEntity.setValue("15");
 
         when(rulesService.getInterval(periodDataDto)).thenReturn(15L);
 
