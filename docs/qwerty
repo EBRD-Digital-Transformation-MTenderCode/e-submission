@@ -1,1 +1,0 @@
-clean install -Pupdate-database -Dliquibase.url=jdbc:mysql://localhost:3306/submissiondb -Dliquibase.username=root -Dliquibase.password=mysql
