@@ -3,6 +3,7 @@ package com.procurement.submission.config;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.procurement.submission.converter.PeriodDataDtoToPeriodEntity;
+import com.procurement.submission.converter.QualificationOfferDtoToBidEntity;
 import com.procurement.submission.utils.JsonUtil;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,6 +22,7 @@ public class ServiceConfig {
     public ConversionServiceFactoryBean conversionService() {
         final Set<Converter> converters = new HashSet<>();
         converters.add(new PeriodDataDtoToPeriodEntity());
+        converters.add(new QualificationOfferDtoToBidEntity(jsonUtil()));
         final ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
         bean.setConverters(converters);
         return bean;
@@ -38,5 +40,4 @@ public class ServiceConfig {
         jackson2ObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         return jackson2ObjectMapper;
     }
-
 }
