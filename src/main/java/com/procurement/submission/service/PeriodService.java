@@ -10,4 +10,6 @@ public interface PeriodService {
     Boolean checkPeriod(PeriodDataDto data);
 
     SubmissionPeriodEntity savePeriod(PeriodDataDto data);
+
+    void checkPeriod(String ocid);
 }

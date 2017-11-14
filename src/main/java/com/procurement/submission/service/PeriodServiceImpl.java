@@ -1,5 +1,6 @@
 package com.procurement.submission.service;
 
+import com.procurement.submission.exception.ErrorInsertException;
 import com.procurement.submission.model.dto.request.PeriodDataDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
@@ -47,5 +48,20 @@ public class PeriodServiceImpl implements PeriodService {
     public SubmissionPeriodEntity savePeriod(PeriodDataDto dataDto) {
         SubmissionPeriodEntity period = conversionService.convert(dataDto, SubmissionPeriodEntity.class);
         return periodRepository.save(period);
+    }
+
+    @Override
+    public void checkPeriod(final String ocid) {
+        final LocalDateTime localDateTime = LocalDateTime.now();
+
+        final SubmissionPeriodEntity periodEntity = periodRepository.getByOcId(ocid);
+
+        boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
+
+        boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
+
+        if (!localDateTimeAfter || !localDateTimeBefore) {
+            throw new ErrorInsertException("Not found date.");
+        }
     }
 }
