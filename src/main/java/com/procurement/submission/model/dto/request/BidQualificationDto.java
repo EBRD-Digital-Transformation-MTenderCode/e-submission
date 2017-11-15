@@ -31,7 +31,7 @@ public class BidQualificationDto {
     @JsonProperty("date")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
-    public LocalDateTime date;
+    private LocalDateTime date;
 
     @NotNull
     @JsonProperty("status")

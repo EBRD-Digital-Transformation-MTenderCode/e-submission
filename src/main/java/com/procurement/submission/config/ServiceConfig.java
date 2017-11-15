@@ -36,7 +36,7 @@ public class ServiceConfig {
     @Bean
     @Primary
     public ObjectMapper objectMapper() {
-        ObjectMapper jackson2ObjectMapper = new ObjectMapper();
+        final ObjectMapper jackson2ObjectMapper = new ObjectMapper();
         jackson2ObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         return jackson2ObjectMapper;
     }

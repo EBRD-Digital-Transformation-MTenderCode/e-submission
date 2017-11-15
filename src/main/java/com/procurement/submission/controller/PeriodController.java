@@ -19,7 +19,7 @@ public class PeriodController {
 
     private PeriodService periodService;
 
-    public PeriodController(PeriodService periodService) {
+    public PeriodController(final PeriodService periodService) {
         this.periodService = periodService;
     }
 
@@ -29,7 +29,7 @@ public class PeriodController {
         if (bindingResult.hasErrors()) {
             throw new ValidationException(bindingResult);
         }
-        Boolean isValid = periodService.checkPeriod(dataDto);
+        final Boolean isValid = periodService.checkPeriod(dataDto);
         return new ResponseEntity<>(isValid, HttpStatus.OK);
     }
 

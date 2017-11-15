@@ -2,14 +2,13 @@ package com.procurement.submission.model.dto.response;
 
 import java.util.List;
 import lombok.Getter;
-import org.springframework.validation.ObjectError;
 
 @Getter
 public class ValidationErrorResponse {
     private String message;
     private List<ErrorPoint> errors;
 
-    public ValidationErrorResponse(String message, List<ErrorPoint> errors) {
+    public ValidationErrorResponse(final String message, final List<ErrorPoint> errors) {
         this.message = message;
         this.errors = errors;
     }
@@ -20,7 +19,7 @@ public class ValidationErrorResponse {
         private String message;
         private String code;
 
-        public ErrorPoint(String field, String message, String code) {
+        public ErrorPoint(final String field, final String message, final String code) {
             this.field = field;
             this.message = message;
             this.code = code;

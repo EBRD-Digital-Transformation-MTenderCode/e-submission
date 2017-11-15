@@ -10,18 +10,18 @@ public class RulesServiceImpl implements RulesService {
 
     private RulesRepository rulesRepository;
 
-    public RulesServiceImpl(RulesRepository rulesRepository) {
+    public RulesServiceImpl(final RulesRepository rulesRepository) {
         this.rulesRepository = rulesRepository;
     }
 
     @Override
-    public Long getInterval(PeriodDataDto data) {
-        return getValue(data, "interval").map(r -> Long.valueOf(r))
+    public long getInterval(final PeriodDataDto data) {
+        return getValue(data, "interval").map(Long::valueOf)
                                          .orElse(0L);
     }
 
-    public Optional<String> getValue(PeriodDataDto data, String parameter) {
-        String value = rulesRepository.getValue(data.getCountry(),
+    public Optional<String> getValue(final PeriodDataDto data, final String parameter) {
+        final String value = rulesRepository.getValue(data.getCountry(),
                                                 data.getProcurementMethodDetails(),
                                                 parameter);
         return Optional.of(value);

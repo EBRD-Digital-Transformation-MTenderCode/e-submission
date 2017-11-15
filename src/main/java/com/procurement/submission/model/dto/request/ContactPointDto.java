@@ -53,7 +53,7 @@ public class ContactPointDto {
     private final URI url;
 
     @JsonProperty("languages")
-    public List<String> languages;
+    private List<String> languages;
 
     @JsonCreator
     public ContactPointDto(@JsonProperty("name") final String name,

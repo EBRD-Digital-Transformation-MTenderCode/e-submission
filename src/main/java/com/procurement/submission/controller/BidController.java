@@ -4,9 +4,7 @@ import com.procurement.submission.exception.ValidationException;
 import com.procurement.submission.model.dto.request.DocumentDto;
 import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.dto.request.ValueDto;
-import com.procurement.submission.model.dto.response.QualificationOfferResponseDto;
 import com.procurement.submission.service.BidService;
-import java.util.Optional;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -22,7 +20,7 @@ public class BidController {
 
     private BidService bidService;
 
-    public BidController(BidService bidService) {
+    public BidController(final BidService bidService) {
         this.bidService = bidService;
     }
 

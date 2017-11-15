@@ -3,7 +3,6 @@ package com.procurement.submission;
 import com.procurement.submission.config.ApplicationConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 
 @SpringBootApplication(
     scanBasePackageClasses = ApplicationConfig.class

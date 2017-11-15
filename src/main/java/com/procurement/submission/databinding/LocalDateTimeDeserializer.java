@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatterBuilder;
 
 public class LocalDateTimeDeserializer extends StdDeserializer<LocalDateTime> {
 
-    private final static DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+    private static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
         .parseCaseInsensitive()
         .append(DateTimeFormatter.ISO_LOCAL_DATE)
         .appendLiteral('T')
@@ -26,6 +26,6 @@ public class LocalDateTimeDeserializer extends StdDeserializer<LocalDateTime> {
     public LocalDateTime deserialize(final JsonParser jsonParser,
                                      final DeserializationContext deserializationContext) throws IOException {
         final String dateTime = jsonParser.getText();
-        return LocalDateTime.parse(dateTime, formatter);
+        return LocalDateTime.parse(dateTime, FORMATTER);
     }
 }

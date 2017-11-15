@@ -227,8 +227,8 @@ public class ValueDto {
         ZAR("ZAR"),
         ZMK("ZMK"),
         ZWL("ZWL");
+        private static final Map<String, Currency> CONSTANTS = new HashMap<String, Currency>();
         private final String value;
-        private final static Map<String, Currency> CONSTANTS = new HashMap<String, Currency>();
 
         static {
             for (final Currency c : values()) {
@@ -236,7 +236,7 @@ public class ValueDto {
             }
         }
 
-        private Currency(final String value) {
+        Currency(final String value) {
             this.value = value;
         }
 

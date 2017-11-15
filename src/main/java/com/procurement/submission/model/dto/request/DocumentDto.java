@@ -17,7 +17,6 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import lombok.Data;
 import lombok.Getter;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -197,8 +196,8 @@ public class DocumentDto {
         CONTRACT_SUMMARY("contractSummary"),
         CANCELLATION_DETAILS("cancellationDetails");
 
+        private static final Map<String, DocumentType> CONSTANTS = new HashMap<>();
         private final String value;
-        private final static Map<String, DocumentType> CONSTANTS = new HashMap<>();
 
         static {
             for (final DocumentType c : values()) {
@@ -206,7 +205,7 @@ public class DocumentDto {
             }
         }
 
-        private DocumentType(final String value) {
+        DocumentType(final String value) {
             this.value = value;
         }
 

@@ -12,8 +12,8 @@ public enum BidStatus {
     DISQUALIFIED("disqualified"),
     WITHDRAWN("withdrawn");
 
+    private static final Map<String, BidStatus> CONSTANTS = new HashMap<String, BidStatus>();
     private final String value;
-    private final static Map<String, BidStatus> CONSTANTS = new HashMap<String, BidStatus>();
 
     static {
         for (final BidStatus c : values()) {

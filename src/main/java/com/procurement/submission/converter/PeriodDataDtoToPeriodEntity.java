@@ -8,7 +8,7 @@ public class PeriodDataDtoToPeriodEntity implements Converter<PeriodDataDto, Sub
 
     @Override
     public SubmissionPeriodEntity convert(final PeriodDataDto dataDto) {
-        SubmissionPeriodEntity submissionPeriodEntity = new SubmissionPeriodEntity();
+        final SubmissionPeriodEntity submissionPeriodEntity = new SubmissionPeriodEntity();
         submissionPeriodEntity.setOcId(dataDto.getOcId());
         submissionPeriodEntity.setStartDate(dataDto.getTenderPeriod()
                                                    .getStartDate());
