@@ -85,22 +85,25 @@ class PeriodServiceImplTest {
 
     private static SubmissionPeriodEntity createValidSubmissionPeriodEntity() {
         SubmissionPeriodEntity submissionPeriodEntity = new SubmissionPeriodEntity();
-        submissionPeriodEntity.setStartDate(LocalDateTime.now().minusDays(2L));
-        submissionPeriodEntity.setEndDate(LocalDateTime.now().plusDays(2L));
+        LocalDateTime now = LocalDateTime.now();
+        submissionPeriodEntity.setStartDate(now.minusDays(2L));
+        submissionPeriodEntity.setEndDate(now.plusDays(2L));
         return submissionPeriodEntity;
     }
 
     private static SubmissionPeriodEntity createAfterSubmissionPeriodEntity() {
         SubmissionPeriodEntity submissionPeriodEntity = new SubmissionPeriodEntity();
-        submissionPeriodEntity.setStartDate(LocalDateTime.now().plusDays(2L));
-        submissionPeriodEntity.setEndDate(LocalDateTime.now().plusDays(4L));
+        LocalDateTime now = LocalDateTime.now();
+        submissionPeriodEntity.setStartDate(now.plusDays(2L));
+        submissionPeriodEntity.setEndDate(now.plusDays(4L));
         return submissionPeriodEntity;
     }
 
     private static SubmissionPeriodEntity createBeforeSubmissionPeriodEntity() {
         SubmissionPeriodEntity submissionPeriodEntity = new SubmissionPeriodEntity();
-        submissionPeriodEntity.setStartDate(LocalDateTime.now().minusDays(4L));
-        submissionPeriodEntity.setEndDate(LocalDateTime.now().minusDays(2L));
+        LocalDateTime now = LocalDateTime.now();
+        submissionPeriodEntity.setStartDate(now.minusDays(4L));
+        submissionPeriodEntity.setEndDate(now.minusDays(2L));
         return submissionPeriodEntity;
     }
 }
