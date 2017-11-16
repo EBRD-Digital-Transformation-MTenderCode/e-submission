@@ -51,7 +51,7 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     private Boolean checkInterval(final LocalDateTime startDate, final LocalDateTime endDate, final Long interval) {
-        final Long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
+        final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
         return days >= interval;
     }
 
