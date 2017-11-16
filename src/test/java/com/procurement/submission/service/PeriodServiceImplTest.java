@@ -3,6 +3,7 @@ package com.procurement.submission.service;
 import com.procurement.submission.JsonUtil;
 import com.procurement.submission.exception.ErrorInsertException;
 import com.procurement.submission.model.dto.request.PeriodDataDto;
+import com.procurement.submission.model.dto.request.TenderPeriodDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.core.convert.ConversionService;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -21,6 +23,7 @@ class PeriodServiceImplTest {
     private static PeriodService periodService;
 
     private static PeriodDataDto periodDataDto;
+    private static PeriodDataDto periodDataDtoForFalse;
     private static SubmissionPeriodEntity submissionPeriodEntity;
 
     @BeforeAll
@@ -33,15 +36,16 @@ class PeriodServiceImplTest {
 
         String json = jsonUtil.getResource("json/period-data.json");
         periodDataDto = jsonUtil.toObject(PeriodDataDto.class, json);
+        periodDataDtoForFalse = new PeriodDataDto("ocid", "country", "detail", periodDataDto.getTenderPeriod());
 
         submissionPeriodEntity = new SubmissionPeriodEntity();
         submissionPeriodEntity.setOcId(periodDataDto.getOcId());
-        submissionPeriodEntity.setStartDate(periodDataDto.getTenderPeriod()
-                                                         .getStartDate());
-        submissionPeriodEntity.setEndDate(periodDataDto.getTenderPeriod()
-                                                       .getEndDate());
+        final TenderPeriodDto tenderPeriod = periodDataDto.getTenderPeriod();
+        submissionPeriodEntity.setStartDate(tenderPeriod.getStartDate());
+        submissionPeriodEntity.setEndDate(tenderPeriod.getEndDate());
 
         when(rulesService.getInterval(periodDataDto)).thenReturn(15L);
+        when(rulesService.getInterval(periodDataDtoForFalse)).thenReturn(0L);
         when(periodRepository.save(submissionPeriodEntity)).thenReturn(submissionPeriodEntity);
         when(periodRepository.getByOcId("validPeriod")).thenReturn(createValidSubmissionPeriodEntity());
         when(periodRepository.getByOcId("afterPeriod")).thenReturn(createAfterSubmissionPeriodEntity());
@@ -51,9 +55,14 @@ class PeriodServiceImplTest {
     }
 
     @Test
-    void checkPeriod() {
+    void checkPeriodTrue() {
         Boolean isValid = periodService.checkPeriod(periodDataDto);
         assertTrue(isValid);
+    }
+    @Test
+    void checkPeriodFalse() {
+        Boolean isValid = periodService.checkPeriod(periodDataDtoForFalse);
+        assertFalse(isValid);
     }
 
     @Test

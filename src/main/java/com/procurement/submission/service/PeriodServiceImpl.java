@@ -28,7 +28,7 @@ public class PeriodServiceImpl implements PeriodService {
 
     @Override
     public Boolean checkPeriod(final PeriodDataDto dataDto) {
-        final Long interval = rulesService.getInterval(dataDto);
+        final long interval = rulesService.getInterval(dataDto);
         Boolean isValid = false;
         if (interval != 0L) {
             final TenderPeriodDto tenderPeriod = dataDto.getTenderPeriod();
