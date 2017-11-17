@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.HashMap;
 import java.util.Map;
+import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -20,10 +21,12 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "currency"
 })
 public class ValueDto {
+    @NotNull
     @JsonProperty("amount")
     @JsonPropertyDescription("Amount as a number.")
     private final Double amount;
 
+    @NotNull
     @JsonProperty("currency")
     @JsonPropertyDescription("The currency for each amount should always be specified using the uppercase 3-letter " +
         "currency code from ISO4217.")

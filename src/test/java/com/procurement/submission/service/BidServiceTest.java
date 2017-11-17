@@ -60,7 +60,7 @@ public class BidServiceTest {
 
     private static QualificationOfferDto createQualificationOfferDto() {
         final BidQualificationDto bidQualificationDto = new BidQualificationDto("id", LocalDateTime.now(),
-            BidStatus.PENDING, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+            BidStatus.PENDING, new ArrayList<>(), new ArrayList<>());
         return new QualificationOfferDto("ocid", bidQualificationDto);
     }
 }

@@ -22,7 +22,6 @@ import lombok.Setter;
     "status",
     "tenderers",
     "documents",
-    "relatedLots"
 })
 public class BidQualificationDto {
     @JsonProperty("id")
@@ -45,23 +44,17 @@ public class BidQualificationDto {
     @JsonProperty("documents")
     private List<DocumentDto> documents;
 
-    @NotEmpty
-    @JsonProperty("relatedLots")
-    private List<String> relatedLots;
-
     @JsonCreator
     public BidQualificationDto(
         @JsonProperty("id") final String id,
         @JsonProperty("date") final LocalDateTime date,
         @JsonProperty("status") final BidStatus status,
         @JsonProperty("tenderers") final List<OrganizationReferenceDto> tenderers,
-        @JsonProperty("documents") final List<DocumentDto> documents,
-        @JsonProperty("relatedLots") final List<String> relatedLots) {
+        @JsonProperty("documents") final List<DocumentDto> documents) {
         this.id = id;
         this.date = date;
         this.status = status;
         this.tenderers = tenderers;
         this.documents = documents;
-        this.relatedLots = relatedLots;
     }
 }

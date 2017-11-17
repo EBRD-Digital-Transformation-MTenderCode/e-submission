@@ -13,16 +13,15 @@ import com.procurement.submission.databinding.LocalDateTimeSerializer;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.Getter;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @Getter
-@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "id",
     "documentType",
@@ -32,7 +31,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "datePublished",
     "dateModified",
     "format",
-    "language"
+    "language",
+    "relatedLots"
 })
 public class DocumentDto {
     @JsonProperty("id")
@@ -51,18 +51,18 @@ public class DocumentDto {
 
     @JsonProperty("title")
     @JsonPropertyDescription("The document title.")
-    @Pattern(regexp = "^(title_(((([A-Za-z]{2,3}(-([A-Za-z]{3}(-[A-Za-z]{3}){0,2}))?)|[A-Za-z]{4}|[A-Za-z]{5,8})(-" +
+    /*@Pattern(regexp = "^(title_(((([A-Za-z]{2,3}(-([A-Za-z]{3}(-[A-Za-z]{3}){0,2}))?)|[A-Za-z]{4}|[A-Za-z]{5,8})(-" +
         "([A-Za-z]{4}))?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*(-([0-9A-WY-Za-wy-z]" +
-        "(-[A-Za-z0-9]{2,8})+))*(-(x(-[A-Za-z0-9]{1,8})+))?)|(x(-[A-Za-z0-9]{1,8})+)))$")
+        "(-[A-Za-z0-9]{2,8})+))*(-(x(-[A-Za-z0-9]{1,8})+))?)|(x(-[A-Za-z0-9]{1,8})+)))$")*/
     private final String title;
 
     @JsonProperty("description")
     @JsonPropertyDescription("A short description of the document. We recommend descriptions do not exceed 250 words." +
         " In the event the document is not accessible online, the description field can be used to describe " +
         "arrangements for obtaining a copy of the document.")
-    @Pattern(regexp = "^(description_(((([A-Za-z]{2,3}(-([A-Za-z]{3}(-[A-Za-z]{3}){0,2}))?)|[A-Za-z]{4}|[A-Za-z]{5," +
+    /*@Pattern(regexp = "^(description_(((([A-Za-z]{2,3}(-([A-Za-z]{3}(-[A-Za-z]{3}){0,2}))?)|[A-Za-z]{4}|[A-Za-z]{5," +
         "8})(-([A-Za-z]{4}))?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*(-([0-9A-WY-Za-wy-z]" +
-        "(-[A-Za-z0-9]{2,8})+))*(-(x(-[A-Za-z0-9]{1,8})+))?)|(x(-[A-Za-z0-9]{1,8})+)))$")
+        "(-[A-Za-z0-9]{2,8})+))*(-(x(-[A-Za-z0-9]{1,8})+))?)|(x(-[A-Za-z0-9]{1,8})+)))$")*/
     private final String description;
 
     @JsonProperty("url")
@@ -72,14 +72,12 @@ public class DocumentDto {
 
     @JsonProperty("datePublished")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonPropertyDescription("The date on which the document was first published. This is particularly important for " +
         "legally important documents such as notices of a tender.")
     private final LocalDateTime datePublished;
 
     @JsonProperty("dateModified")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonPropertyDescription("Date that the document was last modified")
     private final LocalDateTime dateModified;
 
@@ -98,16 +96,24 @@ public class DocumentDto {
         " need for distinguishing the language subtype.")
     private final String language;
 
+    @JsonProperty("relatedLots")
+    @JsonPropertyDescription("If this document relates to a particular lot, provide the identifier(s) of the related " +
+        "lot(s) here.")
+    private final List<String> relatedLots;
+
     @JsonCreator
     public DocumentDto(@JsonProperty("id") final String id,
                        @JsonProperty("documentType") final DocumentType documentType,
                        @JsonProperty("title") final String title,
                        @JsonProperty("description") final String description,
                        @JsonProperty("url") final URI url,
-                       @JsonProperty("datePublished") final LocalDateTime datePublished,
-                       @JsonProperty("dateModified") final LocalDateTime dateModified,
+                       @JsonProperty("datePublished") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final
+                       LocalDateTime datePublished,
+                       @JsonProperty("dateModified") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final
+                       LocalDateTime dateModified,
                        @JsonProperty("format") final String format,
-                       @JsonProperty("language") final String language) {
+                       @JsonProperty("language") final String language,
+                       @JsonProperty("relatedLots") final List<String> relatedLots) {
         this.id = id;
         this.documentType = documentType;
         this.title = title;
@@ -117,6 +123,7 @@ public class DocumentDto {
         this.dateModified = dateModified;
         this.format = format;
         this.language = language;
+        this.relatedLots = relatedLots;
     }
 
     @Override
@@ -130,6 +137,7 @@ public class DocumentDto {
                                     .append(dateModified)
                                     .append(format)
                                     .append(language)
+                                    .append(relatedLots)
                                     .toHashCode();
     }
 
@@ -151,6 +159,7 @@ public class DocumentDto {
                                   .append(dateModified, rhs.dateModified)
                                   .append(format, rhs.format)
                                   .append(language, rhs.language)
+                                  .append(relatedLots, rhs.relatedLots)
                                   .isEquals();
     }
 

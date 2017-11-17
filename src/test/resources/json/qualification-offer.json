@@ -51,11 +51,11 @@
         "datePublished": "2017-10-31T14:12:04.891Z",
         "dateModified": "2017-10-31T14:12:04.891Z",
         "format": "str",
-        "language": "str"
+        "language": "str",
+        "relatedLots": [
+          "str"
+        ]
       }
-    ],
-    "relatedLots": [
-      "str"
     ]
   }
 }
