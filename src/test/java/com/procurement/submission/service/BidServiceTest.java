@@ -1,10 +1,12 @@
 package com.procurement.submission.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.procurement.submission.model.dto.request.BidQualificationDto;
 import com.procurement.submission.model.dto.request.BidStatus;
 import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.repository.BidRepository;
+import com.procurement.submission.utils.JsonUtil;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +35,8 @@ public class BidServiceTest {
         periodService = mock(PeriodService.class);
         bidRepository = mock(BidRepository.class);
         conversionService = mock(ConversionService.class);
-        bidService = new BidServiceImpl(periodService, bidRepository, conversionService);
+        bidService = new BidServiceImpl(periodService, bidRepository, conversionService,
+            new JsonUtil(new ObjectMapper()));
     }
 
     @Test
