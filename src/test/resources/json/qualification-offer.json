@@ -56,6 +56,9 @@
           "str"
         ]
       }
+    ],
+    "relatedLots": [
+      "str"
     ]
   }
 }
