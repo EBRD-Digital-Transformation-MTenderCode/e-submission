@@ -1,7 +1,7 @@
 package com.procurement.submission.controller;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.procurement.submission.exception.ErrorInsertException;
+import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.exception.ValidationException;
 import com.procurement.submission.model.dto.response.ErrorInsertResponse;
 import com.procurement.submission.model.dto.response.MappingErrorResponse;
@@ -41,8 +41,8 @@ public class ControllerExceptionHandler {
 
     @ResponseBody
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(ErrorInsertException.class)
-    public ErrorInsertResponse handleErrorInsertException(final ErrorInsertException e) {
+    @ExceptionHandler(ErrorException.class)
+    public ErrorInsertResponse handleErrorInsertException(final ErrorException e) {
         return new ErrorInsertResponse(e.getMessage());
     }
 }
