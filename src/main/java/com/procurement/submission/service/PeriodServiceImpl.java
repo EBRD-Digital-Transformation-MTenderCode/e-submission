@@ -1,6 +1,6 @@
 package com.procurement.submission.service;
 
-import com.procurement.submission.exception.ErrorInsertException;
+import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.request.PeriodDataDto;
 import com.procurement.submission.model.dto.request.TenderPeriodDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
@@ -46,7 +46,7 @@ public class PeriodServiceImpl implements PeriodService {
         final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
         final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
         if (!localDateTimeAfter || !localDateTimeBefore) {
-            throw new ErrorInsertException("Not found date.");
+            throw new ErrorException("Not found date.");
         }
     }
 
