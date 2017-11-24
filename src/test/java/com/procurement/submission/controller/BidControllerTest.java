@@ -104,5 +104,15 @@ class BidControllerTest {
                .andExpect(jsonPath("$.errors[*].field", containsInAnyOrder("amount", "currency")));
     }
 
-
+    @Test
+    @DisplayName("Test url: /submission/bids - 200 - Ok")
+    void testGetBids() throws Exception {
+        final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
+                                               .build();
+        mockMvc.perform(get("/submission/bids?ocid=qwre&procurementMethodDetail=method&stage=st&country=UA")
+            .contentType(APPLICATION_JSON))
+               .andExpect(status().isOk());
+// FIXME: 24.11.17
+//        validateMockitoUsage();
+    }
 }

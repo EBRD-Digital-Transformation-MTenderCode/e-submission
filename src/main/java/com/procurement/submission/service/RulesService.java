@@ -7,4 +7,6 @@ import org.springframework.stereotype.Service;
 public interface RulesService {
 
     long getInterval(PeriodDataDto data);
+
+    int getRulesMinBids(String country, String method);
 }
