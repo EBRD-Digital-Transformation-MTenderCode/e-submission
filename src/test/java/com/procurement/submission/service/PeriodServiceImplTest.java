@@ -1,7 +1,7 @@
 package com.procurement.submission.service;
 
 import com.procurement.submission.JsonUtil;
-import com.procurement.submission.exception.ErrorInsertException;
+import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.request.PeriodDataDto;
 import com.procurement.submission.model.dto.request.TenderPeriodDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
@@ -102,7 +102,7 @@ class PeriodServiceImplTest {
 
     @Test
     void testCheckPeriodAfter() {
-        ErrorInsertException exception = assertThrows(ErrorInsertException.class,
+        ErrorException exception = assertThrows(ErrorException.class,
             () -> periodService.checkPeriod("afterPeriod")
         );
         assertEquals("Not found date.", exception.getMessage());
@@ -110,7 +110,7 @@ class PeriodServiceImplTest {
 
     @Test
     void testCheckPeriodBefore() {
-        ErrorInsertException exception = assertThrows(ErrorInsertException.class,
+        ErrorException exception = assertThrows(ErrorException.class,
             () -> periodService.checkPeriod("beforePeriod")
         );
         assertEquals("Not found date.", exception.getMessage());
