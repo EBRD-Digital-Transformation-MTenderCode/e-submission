@@ -58,7 +58,7 @@ public class BidController {
         }
     }
 
-    @GetMapping(value = "/bibs")
+    @GetMapping(value = "/bids")
     @ResponseStatus(HttpStatus.OK)
     public List<BidResponse> getBids(@RequestParam final String ocid,
                                      @RequestParam final String procurementMethodDetail,

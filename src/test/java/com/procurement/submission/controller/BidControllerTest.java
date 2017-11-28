@@ -111,8 +111,7 @@ class BidControllerTest {
                                                .build();
         mockMvc.perform(get("/submission/bids?ocid=qwre&procurementMethodDetail=method&stage=st&country=UA")
             .contentType(APPLICATION_JSON))
-               .andExpect(status().isOk());
-// FIXME: 24.11.17
-//        validateMockitoUsage();
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.[].length()").value(4));
     }
 }
