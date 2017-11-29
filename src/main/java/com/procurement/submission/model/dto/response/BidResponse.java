@@ -16,7 +16,7 @@ public class BidResponse {
     private List<RelatedLot> relatedLots;
 
     @JsonCreator
-    public BidResponse(@JsonProperty("id") final String id,
+    public BidResponse(@JsonProperty("id") @NotNull final String id,
                        @JsonProperty("tenderers") @NotEmpty final List<Tenderer> tenderers,
                        @JsonProperty("relatedLots") @NotEmpty final List<RelatedLot> relatedLots) {
         this.id = id;

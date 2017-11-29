@@ -1,30 +1,42 @@
 package com.procurement.submission.controller;
 
 import com.procurement.submission.JsonUtil;
+import com.procurement.submission.model.dto.request.BidsGetDto;
+import com.procurement.submission.model.dto.response.BidResponse;
 import com.procurement.submission.service.BidService;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 class BidControllerTest {
 
     private static BidController bidController;
+    private static BidService bidService = mock(BidService.class);
 
     @BeforeAll
     static void initAll() {
-        final BidService bidService2 = mock(BidService.class);
-        bidController = new BidController(bidService2);
+//        final BidService bidService = mock(BidService.class);
+        bidController = new BidController(bidService);
     }
 
     @Test
@@ -109,9 +121,33 @@ class BidControllerTest {
     void testGetBids() throws Exception {
         final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
                                                .build();
+        List<BidResponse> bidResponses = createBidResponses();
+        when(bidService.getBids(any(BidsGetDto.class))).thenReturn(bidResponses);
         mockMvc.perform(get("/submission/bids?ocid=qwre&procurementMethodDetail=method&stage=st&country=UA")
             .contentType(APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.[].length()").value(4));
+    }
+
+    private List<BidResponse> createBidResponses() {
+        List<BidResponse> bidResponses = new ArrayList<>();
+        bidResponses.add(createBidResponse());
+        return bidResponses;
+    }
+
+    private BidResponse createBidResponse() {
+        return new BidResponse("id", createTenderers(), createRelatedLots());
+    }
+
+    private List<BidResponse.RelatedLot> createRelatedLots() {
+        List<BidResponse.RelatedLot> relatedLots = new ArrayList<>();
+        relatedLots.add(new BidResponse.RelatedLot("relatedLotId"));
+        return relatedLots;
+    }
+
+    private List<BidResponse.Tenderer> createTenderers() {
+        List<BidResponse.Tenderer> tenderers = new ArrayList<>();
+        tenderers.add(new BidResponse.Tenderer("tendererId", "tendererScheme"));
+        return tenderers;
     }
 }
