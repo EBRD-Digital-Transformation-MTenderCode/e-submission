@@ -24,7 +24,7 @@ public class RulesServiceImpl implements RulesService {
 
     // TODO: 24.11.17 Create TEST
     @Override
-    public int getRulesMinBids(String country, String method) {
+    public int getRulesMinBids(final String country, final String method) {
         return Optional.ofNullable(rulesRepository.getValue(country, method, PARAMETER_MINBIDS))
                        .map(Integer::parseInt)
                        .orElseThrow(() -> new ErrorException("We don't have rules with country: " + country +

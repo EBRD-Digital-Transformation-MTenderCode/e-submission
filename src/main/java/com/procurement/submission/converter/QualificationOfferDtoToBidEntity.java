@@ -24,7 +24,7 @@ public class QualificationOfferDtoToBidEntity implements Converter<Qualification
     }
 
     private UUID getUuid(final BidQualificationDto bidDto) {
-        UUID bidId;
+        final UUID bidId;
         if (Objects.isNull(bidDto.getId())) {
             bidId = UUIDs.timeBased();
             bidDto.setId(bidId.toString());

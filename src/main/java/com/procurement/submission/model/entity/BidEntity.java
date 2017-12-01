@@ -15,7 +15,7 @@ public class BidEntity {
     @PrimaryKeyColumn(name = "oc_id", type = PrimaryKeyType.PARTITIONED)
     private String ocId;
 
-    @PrimaryKeyColumn(name="stage", type = PrimaryKeyType.CLUSTERED)
+    @PrimaryKeyColumn(name = "stage", type = PrimaryKeyType.CLUSTERED)
     private String stage;
 
     @PrimaryKeyColumn(name = "bid_id", type = PrimaryKeyType.CLUSTERED)
