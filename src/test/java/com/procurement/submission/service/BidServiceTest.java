@@ -12,6 +12,7 @@ import com.procurement.submission.model.dto.request.IdentifierDto;
 import com.procurement.submission.model.dto.request.OrganizationReferenceDto;
 import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.dto.response.BidResponse;
+import com.procurement.submission.model.dto.response.Bids;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.JsonUtil;
@@ -96,10 +97,11 @@ public class BidServiceTest {
             Collections.singletonList(new BidResponse.RelatedLot("str")));
         when(conversionService.convert(any(BidQualificationDto.class), eq(BidResponse.class)))
             .thenReturn(bidResponse);
-        List<BidResponse> bids = bidService.getBids(new BidsGetDto("ocid", "method", "stage", "UA"));
-        assertEquals(3, bids.size());
-        bids.stream()
-            .peek(b -> assertTrue(b.getId().equals("id")))
+        final Bids bids = bidService.getBids(new BidsGetDto("ocid", "method", "stage", "UA"));
+        final List<BidResponse> bidsList = bids.getBids();
+        assertEquals(3, bidsList.size());
+        bidsList.stream()
+            .peek(b -> assertTrue(b.getBidId().equals("id")))
             .peek(b -> b.getTenderers()
                         .forEach(tenderer -> assertTrue(tenderer.getId().equals("id") &
                             tenderer.getScheme().equals("scheme"))))

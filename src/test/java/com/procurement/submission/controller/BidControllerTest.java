@@ -3,18 +3,13 @@ package com.procurement.submission.controller;
 import com.procurement.submission.JsonUtil;
 import com.procurement.submission.model.dto.request.BidsGetDto;
 import com.procurement.submission.model.dto.response.BidResponse;
+import com.procurement.submission.model.dto.response.Bids;
 import com.procurement.submission.service.BidService;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -28,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 class BidControllerTest {
 
     private static BidController bidController;
@@ -35,7 +31,6 @@ class BidControllerTest {
 
     @BeforeAll
     static void initAll() {
-//        final BidService bidService = mock(BidService.class);
         bidController = new BidController(bidService);
     }
 
@@ -121,16 +116,30 @@ class BidControllerTest {
     void testGetBids() throws Exception {
         final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
                                                .build();
-        List<BidResponse> bidResponses = createBidResponses();
-        when(bidService.getBids(any(BidsGetDto.class))).thenReturn(bidResponses);
+        final Bids bids = createBids();
+        when(bidService.getBids(any(BidsGetDto.class))).thenReturn(bids);
         mockMvc.perform(get("/submission/bids?ocid=qwre&procurementMethodDetail=method&stage=st&country=UA")
             .contentType(APPLICATION_JSON))
                .andExpect(status().isOk())
-               .andExpect(jsonPath("$.[].length()").value(4));
+               .andExpect(jsonPath("$.bids.length()").value(2))
+               .andExpect(jsonPath("$.bids").isArray())
+               .andExpect(jsonPath("$.bids[0].bidId").value("id"))
+               .andExpect(jsonPath("$.bids[1].bidId").value("id"))
+               .andExpect(jsonPath("$.bids[0].tenderers[0].id").value("tendererId"))
+               .andExpect(jsonPath("$.bids[1].tenderers[0].id").value("tendererId"))
+               .andExpect(jsonPath("$.bids[0].tenderers[0].scheme").value("tendererScheme"))
+               .andExpect(jsonPath("$.bids[1].tenderers[0].scheme").value("tendererScheme"))
+               .andExpect(jsonPath("$.bids[0].relatedLots[0].id").value("relatedLotId"))
+               .andExpect(jsonPath("$.bids[1].relatedLots[0].id").value("relatedLotId"));
+    }
+
+    private Bids createBids() {
+        return new Bids(createBidResponses());
     }
 
     private List<BidResponse> createBidResponses() {
         List<BidResponse> bidResponses = new ArrayList<>();
+        bidResponses.add(createBidResponse());
         bidResponses.add(createBidResponse());
         return bidResponses;
     }

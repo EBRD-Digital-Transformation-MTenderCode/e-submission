@@ -11,17 +11,40 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @Getter
 public class BidResponse {
-    private String id;
+    private String bidId;
     private List<Tenderer> tenderers;
     private List<RelatedLot> relatedLots;
 
     @JsonCreator
-    public BidResponse(@JsonProperty("id") @NotNull final String id,
+    public BidResponse(@JsonProperty("bidId") @NotNull final String id,
                        @JsonProperty("tenderers") @NotEmpty final List<Tenderer> tenderers,
                        @JsonProperty("relatedLots") @NotEmpty final List<RelatedLot> relatedLots) {
-        this.id = id;
+        this.bidId = id;
         this.tenderers = tenderers;
         this.relatedLots = relatedLots;
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder().append(bidId)
+                                    .append(tenderers)
+                                    .append(relatedLots)
+                                    .toHashCode();
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof BidResponse)) {
+            return false;
+        }
+        final BidResponse bidResponse = (BidResponse) obj;
+        return new EqualsBuilder().append(bidId, bidResponse.bidId)
+                                  .append(tenderers, bidResponse.tenderers)
+                                  .append(relatedLots, bidResponse.relatedLots)
+                                  .isEquals();
     }
 
     @Getter
@@ -44,14 +67,14 @@ public class BidResponse {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             if (obj == this) {
                 return true;
             }
             if (!(obj instanceof Tenderer)) {
                 return false;
             }
-            Tenderer tenderer = (Tenderer) obj;
+            final Tenderer tenderer = (Tenderer) obj;
             return new EqualsBuilder().append(id, tenderer.getId())
                                       .append(scheme, tenderer.getScheme())
                                       .isEquals();
@@ -74,39 +97,16 @@ public class BidResponse {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(final Object obj) {
             if (obj == this) {
                 return true;
             }
             if (!(obj instanceof RelatedLot)) {
                 return false;
             }
-            RelatedLot relatedLot = (RelatedLot) obj;
+            final RelatedLot relatedLot = (RelatedLot) obj;
             return new EqualsBuilder().append(id, relatedLot.getId())
                                       .isEquals();
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return new HashCodeBuilder().append(id)
-                                    .append(tenderers)
-                                    .append(relatedLots)
-                                    .toHashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof BidResponse)) {
-            return false;
-        }
-        final BidResponse bidResponse = (BidResponse) obj;
-        return new EqualsBuilder().append(id, bidResponse.id)
-                                  .append(tenderers, bidResponse.tenderers)
-                                  .append(relatedLots, bidResponse.relatedLots)
-                                  .isEquals();
     }
 }

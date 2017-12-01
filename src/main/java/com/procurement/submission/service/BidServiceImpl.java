@@ -5,6 +5,7 @@ import com.procurement.submission.model.dto.request.BidQualificationDto;
 import com.procurement.submission.model.dto.request.BidsGetDto;
 import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.dto.response.BidResponse;
+import com.procurement.submission.model.dto.response.Bids;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.JsonUtil;
@@ -47,7 +48,7 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public List<BidResponse> getBids(final BidsGetDto bidsGetDto) {
+    public Bids getBids(final BidsGetDto bidsGetDto) {
         final List<BidEntity> bids = bidRepository.findAllByOcIdAndStage(bidsGetDto.getOcid(), bidsGetDto.getStage());
         final Map<String, Set<BidQualificationDto>> bidQualificationDtos = getBidQualificationDtos(bids);
         final String key = bidQualificationDtos.keySet().iterator().next();
@@ -55,8 +56,10 @@ public class BidServiceImpl implements BidService {
         final int minBids = getRulesMinBids(bidsGetDto);
 // FIXME: 24.11.17 for each bid
         if (bidQualificationDtoList.size() >= minBids) {
-            return getBidResponses(bidQualificationDtoList);
-        } else throw new ErrorException("Insufficient number of unique bids");
+            return new Bids(getBidResponses(bidQualificationDtoList));
+        } else {
+            throw new ErrorException("Insufficient number of unique bids");
+        }
     }
 
     private Map<String, Set<BidQualificationDto>> getBidQualificationDtos(final List<BidEntity> bids) {
@@ -70,7 +73,7 @@ public class BidServiceImpl implements BidService {
         return rulesService.getRulesMinBids(bidsGetDto.getCountry(), bidsGetDto.getProcurementMethodDetail());
     }
 
-    private List<BidResponse> getBidResponses(Set<BidQualificationDto> bidQualificationDtoList) {
+    private List<BidResponse> getBidResponses(final Set<BidQualificationDto> bidQualificationDtoList) {
         return bidQualificationDtoList.stream()
                                       .map(b -> conversionService.convert(b, BidResponse.class))
                                       .collect(toList());
