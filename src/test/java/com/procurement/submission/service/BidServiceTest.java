@@ -6,7 +6,7 @@ import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.request.AddressDto;
 import com.procurement.submission.model.dto.request.BidQualificationDto;
 import com.procurement.submission.model.dto.request.BidStatus;
-import com.procurement.submission.model.dto.request.BidsGetDto;
+import com.procurement.submission.model.dto.request.BidsParamDto;
 import com.procurement.submission.model.dto.request.ContactPointDto;
 import com.procurement.submission.model.dto.request.IdentifierDto;
 import com.procurement.submission.model.dto.request.OrganizationReferenceDto;
@@ -97,7 +97,7 @@ public class BidServiceTest {
             Collections.singletonList(new BidResponse.RelatedLot("str")));
         when(conversionService.convert(any(BidQualificationDto.class), eq(BidResponse.class)))
             .thenReturn(bidResponse);
-        final Bids bids = bidService.getBids(new BidsGetDto("ocid", "method", "stage", "UA"));
+        final Bids bids = bidService.getBids(new BidsParamDto("ocid", "method", "stage", "UA"));
         final List<BidResponse> bidsList = bids.getBids();
         assertEquals(3, bidsList.size());
         bidsList.stream()
@@ -121,7 +121,7 @@ public class BidServiceTest {
         when(rulesService.getRulesMinBids("UA", "method"))
             .thenReturn(4);
         assertThrows(ErrorException.class,
-            () -> bidService.getBids(new BidsGetDto("ocid", "method", "stage", "UA")),
+            () -> bidService.getBids(new BidsParamDto("ocid", "method", "stage", "UA")),
             "Insufficient number of unique bids");
         verify(bidRepository, times(1)).findAllByOcIdAndStage("ocid", "stage");
         verify(rulesService, times(1)).getRulesMinBids("UA", "method");
@@ -135,9 +135,9 @@ public class BidServiceTest {
         BidQualificationDto bid1 = createBidQualificationDto(id1.toString(), "str1", "str1");
         BidQualificationDto bid2 = createBidQualificationDto(id2.toString(), "str2", "str2");
         BidQualificationDto bid3 = createBidQualificationDto(id3.toString(), "str3", "str3");
-        BidEntity bidEntity1 = createBibEntity(id1, "ocid1", "status1", "stage1", bid1);
-        BidEntity bidEntity2 = createBibEntity(id2, "ocid2", "status2", "stage2", bid2);
-        BidEntity bidEntity3 = createBibEntity(id3, "ocid3", "status3", "stage3", bid3);
+        BidEntity bidEntity1 = createBibEntity(id1, "ocid1", BidStatus.INVITED, "stage1", bid1);
+        BidEntity bidEntity2 = createBibEntity(id2, "ocid2", BidStatus.INVITED, "stage2", bid2);
+        BidEntity bidEntity3 = createBibEntity(id3, "ocid3", BidStatus.INVITED, "stage3", bid3);
         List<BidEntity> bidEntities = new ArrayList<>();
         bidEntities.add(bidEntity1);
         bidEntities.add(bidEntity2);
@@ -145,7 +145,7 @@ public class BidServiceTest {
         return bidEntities;
     }
 
-    private BidEntity createBibEntity(final UUID id1, final String ocid, final String status, final String stage,
+    private BidEntity createBibEntity(final UUID id1, final String ocid, final BidStatus status, final String stage,
                                       final BidQualificationDto bid) {
         BidEntity bidEntity = new BidEntity();
         bidEntity.setBidId(id1);
