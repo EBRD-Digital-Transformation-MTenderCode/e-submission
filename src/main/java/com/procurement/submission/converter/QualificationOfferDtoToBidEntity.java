@@ -19,7 +19,7 @@ public class QualificationOfferDtoToBidEntity implements Converter<Qualification
         if (Objects.isNull(bidDto.getDate())) {
             bidDto.setDate(LocalDateTime.now());
         }
-        bidEntity.setStatus(bidDto.getStatus().value());
+        bidEntity.setStatus(bidDto.getStatus());
         return bidEntity;
     }
 

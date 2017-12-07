@@ -21,7 +21,7 @@ public class QualificationOfferDtoToBidEntityTest {
         assertAll(
             () -> assertEquals(qualificationOfferDtoExpected.getOcid(), bidEntityActual.getOcId()),
             () -> assertEquals(bidExpected.getId(), bidEntityActual.getBidId().toString()),
-            () -> assertEquals(bidExpected.getStatus().value(), bidEntityActual.getStatus()),
+            () -> assertEquals(bidExpected.getStatus(), bidEntityActual.getStatus()),
             () -> assertNull(bidEntityActual.getJsonData())
         );
     }
@@ -41,7 +41,7 @@ public class QualificationOfferDtoToBidEntityTest {
             () -> assertEquals(qualificationOfferDtoExpected.getOcid(), bidEntityActual.getOcId()),
             () -> assertNotNull(bidExpected.getId()),
             () -> assertNotNull(bidExpected.getDate()),
-            () -> assertEquals(bidExpected.getStatus().value(), bidEntityActual.getStatus()),
+            () -> assertEquals(bidExpected.getStatus(), bidEntityActual.getStatus()),
             () -> assertNull(bidEntityActual.getJsonData())
         );
     }
