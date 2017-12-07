@@ -1,18 +1,26 @@
 package com.procurement.submission.controller;
 
 import com.procurement.submission.JsonUtil;
-import com.procurement.submission.model.dto.request.BidsGetDto;
+import com.procurement.submission.config.BidControllerTestConfig;
+import com.procurement.submission.model.dto.request.BidsParamDto;
 import com.procurement.submission.model.dto.response.BidResponse;
 import com.procurement.submission.model.dto.response.Bids;
 import com.procurement.submission.service.BidService;
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,63 +32,59 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = BidControllerTestConfig.class)
+@WebAppConfiguration
 class BidControllerTest {
+    @Autowired
+    private WebApplicationContext applicationContext;
+    @Autowired
+    private BidService bidService;
 
-    private static BidController bidController;
-    private static BidService bidService = mock(BidService.class);
+    private MockMvc mockMvc;
 
-    @BeforeAll
-    static void initAll() {
-        bidController = new BidController(bidService);
+    @BeforeEach
+    void initAll() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(applicationContext)
+                                 .build();
     }
 
     @Test
     @DisplayName("Test /submission/qualificationOffer status: 201 - Created")
     void saveQualificationProposalStatusCreated() throws Exception {
-        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
-                                         .build();
         mockMvc.perform(post("/submission/qualificationOffer")
-            .content(new JsonUtil().getResource("json/qualification-offer.json"))
-            .contentType(MediaType.APPLICATION_JSON))
+                            .content(new JsonUtil().getResource("json/qualification-offer.json"))
+                            .contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isCreated());
     }
 
     @Test
     @DisplayName("Test /submission/qualificationOffer status: 400 - Bad Request")
     void saveQualificationProposalBadRequest() throws Exception {
-        ControllerExceptionHandler handler = new ControllerExceptionHandler();
-        MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
-                                         .setControllerAdvice(handler)
-                                         .build();
         mockMvc.perform(post("/submission/qualificationOffer")
-            .content("{ }")
-            .contentType(MediaType.APPLICATION_JSON))
+                            .content("{ }")
+                            .contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("$.message").value("Houston we have a problem"));
+               .andExpect(jsonPath("$.message").value("Something went wrong"));
     }
 
     @Test
     @DisplayName("Test url: /submission/technicalProposal status: 201 - Created")
     void testSubmissionTechnicalProposalCreated() throws Exception {
-        final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
-                                               .build();
         mockMvc.perform(post("/submission/technicalProposal")
-            .contentType(APPLICATION_JSON)
-            .content(new JsonUtil().getResource("json/DocumentDto.json")))
+                            .contentType(APPLICATION_JSON)
+                            .content(new JsonUtil().getResource("json/DocumentDto.json")))
                .andExpect(status().isCreated());
     }
 
     @Test
     @DisplayName("Test without core fields, url: /submission/technicalProposal status: 400 - Bad Request")
     void testSubmissionTechnicalProposalBadRequestWithoutCoreFields() throws Exception {
-        final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
-                                               .setControllerAdvice(new ControllerExceptionHandler())
-                                               .build();
         mockMvc.perform(post("/submission/technicalProposal")
-            .contentType(APPLICATION_JSON)
-            .content("{ }"))
+                            .contentType(APPLICATION_JSON)
+                            .content("{ }"))
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("$.message").value("Houston we have a problem"))
+               .andExpect(jsonPath("$.message").value("Something went wrong"))
                .andExpect(jsonPath("$..errors.length()").value(1))
                .andExpect(jsonPath("$.errors[*].field", containsInAnyOrder("id")));
     }
@@ -88,38 +92,32 @@ class BidControllerTest {
     @Test
     @DisplayName("Test url: /submission/priceOffer status: 201 - Created")
     void testSubmissionPriceProposalCreated() throws Exception {
-        final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
-                                               .build();
         mockMvc.perform(post("/submission/priceOffer")
-            .contentType(APPLICATION_JSON)
-            .content(new JsonUtil().getResource("json/ValueDto.json")))
+                            .contentType(APPLICATION_JSON)
+                            .content(new JsonUtil().getResource("json/ValueDto.json")))
                .andExpect(status().isCreated());
     }
 
     @Test
     @DisplayName("Test without core fields, url: /submission/priceOffer status: 400 - Bad Request")
     void testSubmissionPriceProposalBadRequestWithoutCoreFields() throws Exception {
-        final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
-                                               .setControllerAdvice(new ControllerExceptionHandler())
-                                               .build();
         mockMvc.perform(post("/submission/priceOffer")
-            .contentType(APPLICATION_JSON)
-            .content("{ }"))
+                            .contentType(APPLICATION_JSON)
+                            .content("{ }"))
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("$.message").value("Houston we have a problem"))
+               .andExpect(jsonPath("$.message").value("Something went wrong"))
                .andExpect(jsonPath("$..errors.length()").value(2))
                .andExpect(jsonPath("$.errors[*].field", containsInAnyOrder("amount", "currency")));
     }
 
     @Test
     @DisplayName("Test url: /submission/bids - 200 - Ok")
-    void testGetBids() throws Exception {
-        final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(bidController)
-                                               .build();
+    void testGetBidsOk() throws Exception {
         final Bids bids = createBids();
-        when(bidService.getBids(any(BidsGetDto.class))).thenReturn(bids);
-        mockMvc.perform(get("/submission/bids?ocid=qwre&procurementMethodDetail=method&stage=st&country=UA")
-            .contentType(APPLICATION_JSON))
+        when(bidService.getBids(any(BidsParamDto.class))).thenReturn(bids);
+        mockMvc.perform(get(
+            "/submission/bids?ocid=ocds-213czf-000-00001&procurementMethodDetail=method&stage=st&country=UA")
+                            .contentType(APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.bids.length()").value(2))
                .andExpect(jsonPath("$.bids").isArray())
@@ -131,6 +129,37 @@ class BidControllerTest {
                .andExpect(jsonPath("$.bids[1].tenderers[0].scheme").value("tendererScheme"))
                .andExpect(jsonPath("$.bids[0].relatedLots[0].id").value("relatedLotId"))
                .andExpect(jsonPath("$.bids[1].relatedLots[0].id").value("relatedLotId"));
+    }
+
+    @Test
+    @DisplayName("Test without parameters url: /submission/bids - 400 - Bad Request")
+    void testGetBidsBadRequest() throws Exception {
+        mockMvc.perform(get("/submission/bids")
+                            .contentType(APPLICATION_JSON))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.message").value("Required String parameter 'ocid' is not present"));
+        mockMvc.perform(get("/submission/bids?ocid=qwerty")
+                            .contentType(APPLICATION_JSON))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.message")
+                              .value("Required String parameter 'procurementMethodDetail' is not present"));
+        mockMvc.perform(get("/submission/bids?ocid=ocds-213czf-000-00001&procurementMethodDetail=method")
+                            .contentType(APPLICATION_JSON))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.message").value("Required String parameter 'stage' is not present"));
+        mockMvc.perform(get("/submission/bids?ocid=qwerty&procurementMethodDetail=method&stage=stage")
+                            .contentType(APPLICATION_JSON))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.message").value("Required String parameter 'country' is not present"));
+    }
+
+    @Test
+    @DisplayName("Test with null parameters url: /submission/bids - 400 - Bad Request")
+    void testGetBidsWithNullBadRequest() throws Exception {
+            mockMvc.perform(get("/submission/bids?ocid=aa&procurementMethodDetail=&stage=&country=")
+                                .contentType(APPLICATION_JSON))
+                   .andExpect(status().isBadRequest())
+                   .andExpect(jsonPath("$.message").value("Something went wrong"));
     }
 
     private Bids createBids() {
