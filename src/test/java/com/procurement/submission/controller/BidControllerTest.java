@@ -4,7 +4,7 @@ import com.procurement.submission.JsonUtil;
 import com.procurement.submission.config.BidControllerTestConfig;
 import com.procurement.submission.model.dto.request.BidsParamDto;
 import com.procurement.submission.model.dto.response.BidResponse;
-import com.procurement.submission.model.dto.response.Bids;
+import com.procurement.submission.model.dto.response.BidsGetResponse;
 import com.procurement.submission.service.BidService;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -118,7 +117,7 @@ class BidControllerTest {
     @Test
     @DisplayName("Test get url: /submission/bids - 200 - Ok")
     void testGetBidsOk() throws Exception {
-        final Bids bids = createBids();
+        final BidsGetResponse bids = createBids();
         when(bidService.getBids(any(BidsParamDto.class))).thenReturn(bids);
         mockMvc.perform(get(
             "/submission/bids?ocid=ocds-213czf-000-00001&procurementMethodDetail=method&stage=st&country=UA")
@@ -206,8 +205,8 @@ class BidControllerTest {
                                    containsInAnyOrder("must not be blank", "size must be between 21 and 21")));
     }
 
-    private Bids createBids() {
-        return new Bids(createBidResponses());
+    private BidsGetResponse createBids() {
+        return new BidsGetResponse(createBidResponses());
     }
 
     private List<BidResponse> createBidResponses() {

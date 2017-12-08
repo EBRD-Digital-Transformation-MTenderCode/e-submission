@@ -12,7 +12,7 @@ import com.procurement.submission.model.dto.request.IdentifierDto;
 import com.procurement.submission.model.dto.request.OrganizationReferenceDto;
 import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.dto.response.BidResponse;
-import com.procurement.submission.model.dto.response.Bids;
+import com.procurement.submission.model.dto.response.BidsGetResponse;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.JsonUtil;
@@ -97,7 +97,7 @@ public class BidServiceTest {
             Collections.singletonList(new BidResponse.RelatedLot("str")));
         when(conversionService.convert(any(BidQualificationDto.class), eq(BidResponse.class)))
             .thenReturn(bidResponse);
-        final Bids bids = bidService.getBids(new BidsParamDto("ocid", "method", "stage", "UA"));
+        final BidsGetResponse bids = bidService.getBids(new BidsParamDto("ocid", "method", "stage", "UA"));
         final List<BidResponse> bidsList = bids.getBids();
         assertEquals(3, bidsList.size());
         bidsList.stream()

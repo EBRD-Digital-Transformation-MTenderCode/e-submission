@@ -3,11 +3,13 @@ package com.procurement.submission.service;
 import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.request.*;
 import com.procurement.submission.model.dto.response.BidResponse;
-import com.procurement.submission.model.dto.response.Bids;
+import com.procurement.submission.model.dto.response.BidsAfterChangeStatusResponse;
+import com.procurement.submission.model.dto.response.BidsGetResponse;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.JsonUtil;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 
@@ -44,7 +46,7 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public Bids getBids(final BidsParamDto bidsParamDto) {
+    public BidsGetResponse getBids(final BidsParamDto bidsParamDto) {
         final List<BidEntity> bids = bidRepository.findAllByOcIdAndStage(
                 bidsParamDto.getOcid(), bidsParamDto.getStage());
         final Map<String, Set<BidQualificationDto>> bidQualificationDtos = getBidQualificationDtos(bids);
@@ -53,7 +55,7 @@ public class BidServiceImpl implements BidService {
         final int minBids = getRulesMinBids(bidsParamDto);
 // FIXME: 24.11.17 for each bid
         if (bidQualificationDtoList.size() >= minBids) {
-            return new Bids(getBidResponses(bidQualificationDtoList));
+            return new BidsGetResponse(getBidResponses(bidQualificationDtoList));
         } else {
             throw new ErrorException("Insufficient number of unique bids");
         }
@@ -73,6 +75,62 @@ public class BidServiceImpl implements BidService {
                 .map(bidEntity -> setDataToBidEntity(bidEntity, idIdAqpDtoMap.get(bidEntity.getBidId().toString())))
                 .collect(toList());
         bidRepository.saveAll(bidEntitiesAfterModify);
+    }
+
+    @Override
+    public BidsAfterChangeStatusResponse changeBidsStatus(final String ocid, final String oldStage,
+                                                          final String newStage) {
+        final List<BidEntity> bidEntities =
+            Optional.ofNullable(bidRepository.findAllByOcIdAndStage(ocid, oldStage))
+                    .orElseThrow(() -> new ErrorException("We don't have data with ocid=" + ocid +
+                                                              " and previos stage=" + oldStage));
+        final List<BidEntity> newBibs =
+            bidEntities.stream()
+                       .filter(b -> b.getStatus()
+                                     .equals(BidStatus.VALID))
+                       .map(b -> createNewBid(b, newStage))
+                       .collect(toList());
+        bidRepository.saveAll(newBibs);
+        // FIXME: 08.12.17
+        return createBidsAfterChangeStatusResponse(newBibs);
+    }
+
+    private BidsAfterChangeStatusResponse createBidsAfterChangeStatusResponse(final List<BidEntity> newBibs) {
+        return new BidsAfterChangeStatusResponse(
+            newBibs.stream()
+                   .map(this::createNewBidsAfterChangeStatusResponseBid)
+                   .collect(toList())
+        );
+    }
+
+    private BidsAfterChangeStatusResponse.Bid createNewBidsAfterChangeStatusResponseBid(final BidEntity bidEntity) {
+        final BidQualificationDto bidQd = jsonUtil.toObject(BidQualificationDto.class, bidEntity.getJsonData());
+        final List<BidsAfterChangeStatusResponse.Bid.Tenderer> tenderers =
+            bidQd.getTenderers()
+                 .stream()
+                 .map(t -> new BidsAfterChangeStatusResponse.Bid.Tenderer(t.getId(), t.getName()))
+                 .collect(toList());
+        return new BidsAfterChangeStatusResponse.Bid(bidQd.getId(), bidQd.getDate(), bidQd.getStatus(), tenderers,
+                                              bidQd.getRelatedLots());
+    }
+
+    private BidEntity createNewBid(final BidEntity oldBid, final String newStage) {
+        final BidEntity newBid = new BidEntity();
+        newBid.setOcId(oldBid.getOcId());
+        newBid.setStage(newStage);
+        newBid.setBidId(oldBid.getBidId());
+        final String newJsonData = createNewJsonData(oldBid.getJsonData());
+        newBid.setJsonData(newJsonData);
+        newBid.setStatus(BidStatus.INVITED);
+        return newBid;
+    }
+
+    private String createNewJsonData(final String jsonData) {
+        final BidQualificationDto oldBqd = jsonUtil.toObject(BidQualificationDto.class, jsonData);
+        final BidQualificationDto newBqd = new BidQualificationDto(
+            oldBqd.getId(), LocalDateTime.now(), BidStatus.INVITED, oldBqd.getTenderers(),
+            new ArrayList<>(), oldBqd.getRelatedLots());
+        return jsonUtil.toJson(newBqd);
     }
 
     private Map<String, Set<BidQualificationDto>> getBidQualificationDtos(final List<BidEntity> bids) {

@@ -9,12 +9,12 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @Getter
-public class Bids {
+public class BidsGetResponse {
 
     private List<BidResponse> bids;
 
     @JsonCreator
-    public Bids(@NotEmpty @JsonProperty("bids") final List<BidResponse> bids) {
+    public BidsGetResponse(@NotEmpty @JsonProperty("bids") final List<BidResponse> bids) {
         this.bids = bids;
     }
 
@@ -29,10 +29,10 @@ public class Bids {
         if (obj == this) {
             return true;
         }
-        if (!(obj instanceof Bids)) {
+        if (!(obj instanceof BidsGetResponse)) {
             return false;
         }
-        final Bids bidsObj = (Bids) obj;
+        final BidsGetResponse bidsObj = (BidsGetResponse) obj;
         return new EqualsBuilder().append(bids, bidsObj.getBids())
                                   .isEquals();
     }
