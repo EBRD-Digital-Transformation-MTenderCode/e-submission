@@ -10,6 +10,7 @@ import com.procurement.submission.service.BidService;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
@@ -68,9 +69,9 @@ public class BidController {
 
     @PatchMapping(value = "/bids")
     @ResponseStatus(OK)
-    public void patchBids(@RequestParam final String ocid,
-                          @RequestParam final String stage,
-                          @Valid @RequestBody final List<BidAqpDto> bidAqpDtos) {
+    public void patchBids(@Size(min = 21, max = 21) @RequestParam final String ocid,
+                          @NotBlank @RequestParam final String stage,
+                          @Valid @NotEmpty @RequestBody final List<BidAqpDto> bidAqpDtos) {
         bidService.patchBids(ocid, stage, bidAqpDtos);
     }
 }

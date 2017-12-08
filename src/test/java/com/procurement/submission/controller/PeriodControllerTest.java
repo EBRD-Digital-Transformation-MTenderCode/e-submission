@@ -38,7 +38,7 @@ class PeriodControllerTest {
                             .content("{ }")
                             .contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("$.message").value("Houston we have a problem"));
+               .andExpect(jsonPath("$.message").value("Something went wrong"));
     }
 
     @Test
@@ -65,7 +65,7 @@ class PeriodControllerTest {
                             .content("{ }")
                             .contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath("$.message").value("Houston we have a problem"));
+               .andExpect(jsonPath("$.message").value("Something went wrong"));
     }
 
 }

@@ -24,10 +24,13 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -52,6 +55,8 @@ class BidControllerTest {
     @Test
     @DisplayName("Test /submission/qualificationOffer status: 201 - Created")
     void saveQualificationProposalStatusCreated() throws Exception {
+        doNothing().when(bidService)
+                   .insertData(any());
         mockMvc.perform(post("/submission/qualificationOffer")
                             .content(new JsonUtil().getResource("json/qualification-offer.json"))
                             .contentType(MediaType.APPLICATION_JSON))
@@ -111,7 +116,7 @@ class BidControllerTest {
     }
 
     @Test
-    @DisplayName("Test url: /submission/bids - 200 - Ok")
+    @DisplayName("Test get url: /submission/bids - 200 - Ok")
     void testGetBidsOk() throws Exception {
         final Bids bids = createBids();
         when(bidService.getBids(any(BidsParamDto.class))).thenReturn(bids);
@@ -132,7 +137,7 @@ class BidControllerTest {
     }
 
     @Test
-    @DisplayName("Test without parameters url: /submission/bids - 400 - Bad Request")
+    @DisplayName("Test without parameters get url: /submission/bids - 400 - Bad Request")
     void testGetBidsBadRequest() throws Exception {
         mockMvc.perform(get("/submission/bids")
                             .contentType(APPLICATION_JSON))
@@ -154,12 +159,51 @@ class BidControllerTest {
     }
 
     @Test
-    @DisplayName("Test with null parameters url: /submission/bids - 400 - Bad Request")
+    @DisplayName("Test with null parameters get url: /submission/bids - 400 - Bad Request")
     void testGetBidsWithNullBadRequest() throws Exception {
-            mockMvc.perform(get("/submission/bids?ocid=aa&procurementMethodDetail=&stage=&country=")
-                                .contentType(APPLICATION_JSON))
-                   .andExpect(status().isBadRequest())
-                   .andExpect(jsonPath("$.message").value("Something went wrong"));
+        mockMvc.perform(get("/submission/bids?ocid=aa&procurementMethodDetail=&stage=&country=")
+                            .contentType(APPLICATION_JSON))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.message").value("Something went wrong"));
+    }
+
+    @Test
+    @DisplayName("patch /submission/bids - 200 Ok")
+    public void testPatchBidsOk() throws Exception {
+        doNothing().when(bidService)
+                   .patchBids(anyString(), anyString(), anyList());
+        mockMvc.perform(patch("/submission/bids?ocid=ocds-213czf-000-00001&stage=stage")
+                            .contentType(APPLICATION_JSON)
+                            .content(new JsonUtil().getResource("json/BidAqpDtos.json")))
+               .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("patch /submission/bids - 400 BadRequest")
+    public void testPatchBidsWithoutParamBadRequest() throws Exception {
+        mockMvc.perform(patch("/submission/bids?ocid=&stage=")
+                            .contentType(APPLICATION_JSON)
+                            .content("[ ]"))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.message").value("Something went wrong"))
+               .andExpect(jsonPath("$..errors.length()").value(3))
+               .andExpect(jsonPath("$.errors[*].field",
+                                   containsInAnyOrder("patchBids.bidAqpDtos", "patchBids.ocid", "patchBids.stage")));
+    }
+
+    @Test
+    @DisplayName("patch /submission/bids - 400 BadRequest")
+    public void testPatchBidsWithNotValidParamBadRequest() throws Exception {
+        mockMvc.perform(patch("/submission/bids?ocid=ocds-213czf-000-0000&stage= ")
+                            .contentType(APPLICATION_JSON)
+                            .content(new JsonUtil().getResource("json/BidAqpDtos.json")))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.message").value("Something went wrong"))
+               .andExpect(jsonPath("$..errors.length()").value(2))
+               .andExpect(jsonPath("$.errors[*].field",
+                                   containsInAnyOrder("patchBids.stage", "patchBids.ocid")))
+               .andExpect(jsonPath("$.errors[*].message",
+                                   containsInAnyOrder("must not be blank", "size must be between 21 and 21")));
     }
 
     private Bids createBids() {
