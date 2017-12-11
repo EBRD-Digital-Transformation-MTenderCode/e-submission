@@ -5,7 +5,6 @@ import com.procurement.submission.model.dto.request.BidsParamDto;
 import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.dto.response.BidsAfterChangeStatusResponse;
 import com.procurement.submission.model.dto.response.BidsGetResponse;
-import com.procurement.submission.model.entity.BidEntity;
 import java.util.List;
 
 public interface BidService {

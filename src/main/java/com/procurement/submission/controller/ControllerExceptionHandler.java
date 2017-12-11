@@ -6,8 +6,9 @@ import com.procurement.submission.exception.ValidationException;
 import com.procurement.submission.model.dto.response.ErrorInsertResponse;
 import com.procurement.submission.model.dto.response.MappingErrorResponse;
 import com.procurement.submission.model.dto.response.ValidationErrorResponse;
-
 import java.util.function.Function;
+import javax.servlet.ServletException;
+import javax.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -16,9 +17,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import javax.servlet.ServletException;
-import javax.validation.ConstraintViolationException;
 
 import static java.util.stream.Collectors.toList;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;

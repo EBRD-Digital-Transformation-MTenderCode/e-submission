@@ -14,7 +14,8 @@ import lombok.Getter;
 @Getter
 public class BidsAfterChangeStatusResponse {
 
-    @JsonProperty("bids") List<Bid> bids;
+    @JsonProperty("bids")
+    private List<Bid> bids;
 
     @JsonCreator
     public BidsAfterChangeStatusResponse(@JsonProperty("bids") final List<Bid> bids) {
@@ -22,7 +23,7 @@ public class BidsAfterChangeStatusResponse {
     }
 
     @Getter
-    public static class Bid{
+    public static class Bid {
         @JsonProperty("id")
         private String id;
         @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -50,7 +51,7 @@ public class BidsAfterChangeStatusResponse {
         }
 
         @Getter
-        public static class Tenderer{
+        public static class Tenderer {
             @JsonProperty("id")
             private String id;
             @JsonProperty("name")

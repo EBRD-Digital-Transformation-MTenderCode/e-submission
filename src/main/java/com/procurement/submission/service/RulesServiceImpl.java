@@ -22,7 +22,6 @@ public class RulesServiceImpl implements RulesService {
                                          .orElse(0L);
     }
 
-    // TODO: 24.11.17 Create TEST
     @Override
     public int getRulesMinBids(final String country, final String method) {
         return Optional.ofNullable(rulesRepository.getValue(country, method, PARAMETER_MINBIDS))

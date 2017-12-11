@@ -33,7 +33,7 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 @RequestMapping(path = "/submission")
 public class BidController {
-
+    private static final int OCID_LENGTH = 21;
     private BidService bidService;
 
     public BidController(final BidService bidService) {
@@ -58,7 +58,8 @@ public class BidController {
     }
 
     @GetMapping(value = "/bids")
-    public ResponseEntity<BidsGetResponse> getBids(@Size(min = 21, max = 21) @RequestParam final String ocid,
+    public ResponseEntity<BidsGetResponse> getBids(@Size(min = OCID_LENGTH, max = OCID_LENGTH)
+                                                   @RequestParam final String ocid,
                                                    @NotBlank @RequestParam final String procurementMethodDetail,
                                                    @NotBlank @RequestParam final String stage,
                                                    @Size(min = 2, max = 2) @Pattern(regexp = "[a-zA-Z]*")
@@ -71,7 +72,7 @@ public class BidController {
 
     @PatchMapping(value = "/bids")
     @ResponseStatus(OK)
-    public void patchBids(@Size(min = 21, max = 21) @RequestParam final String ocid,
+    public void patchBids(@Size(min = OCID_LENGTH, max = OCID_LENGTH) @RequestParam final String ocid,
                           @NotBlank @RequestParam final String stage,
                           @Valid @NotEmpty @RequestBody final List<BidAqpDto> bidAqpDtos) {
         bidService.patchBids(ocid, stage, bidAqpDtos);
@@ -79,7 +80,8 @@ public class BidController {
 
     @PostMapping(value = "/bids/changestatus")
     @ResponseStatus(CREATED)
-    public BidsAfterChangeStatusResponse changeBidsStatus(@Size(min = 21, max = 21) @RequestParam final String ocid,
+    public BidsAfterChangeStatusResponse changeBidsStatus(@Size(min = OCID_LENGTH, max = OCID_LENGTH)
+                                                          @RequestParam final String ocid,
                                                           @NotBlank @RequestParam final String oldStage,
                                                           @NotBlank @RequestParam final String newStage) {
         return bidService.changeBidsStatus(ocid, oldStage, newStage);

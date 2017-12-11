@@ -1,22 +1,33 @@
 package com.procurement.submission.service;
 
 import com.procurement.submission.exception.ErrorException;
-import com.procurement.submission.model.dto.request.*;
+import com.procurement.submission.model.dto.request.BidAqpDto;
+import com.procurement.submission.model.dto.request.BidQualificationDto;
+import com.procurement.submission.model.dto.request.BidStatus;
+import com.procurement.submission.model.dto.request.BidsParamDto;
+import com.procurement.submission.model.dto.request.DocumentDto;
+import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.dto.response.BidResponse;
 import com.procurement.submission.model.dto.response.BidsAfterChangeStatusResponse;
 import com.procurement.submission.model.dto.response.BidsGetResponse;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.JsonUtil;
-
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
-
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 @Service
 public class BidServiceImpl implements BidService {

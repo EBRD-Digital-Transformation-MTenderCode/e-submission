@@ -1,8 +1,7 @@
 package com.procurement.submission.model.entity;
 
-import java.util.UUID;
-
 import com.procurement.submission.model.dto.request.BidStatus;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
