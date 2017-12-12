@@ -12,7 +12,7 @@ import com.procurement.submission.model.dto.request.IdentifierDto;
 import com.procurement.submission.model.dto.request.OrganizationReferenceDto;
 import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.dto.response.BidResponse;
-import com.procurement.submission.model.dto.response.BidsGetResponse;
+import com.procurement.submission.model.dto.response.BidsResponse;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.JsonUtil;
@@ -92,21 +92,22 @@ public class BidServiceTest {
             .thenReturn(bidEntities);
         when(rulesService.getRulesMinBids("UA", "method"))
             .thenReturn(2);
-        final BidResponse bidResponse = new BidResponse("id",
-            Collections.singletonList(new BidResponse.Tenderer("id", "scheme")),
+        final LocalDateTime dateTime = LocalDateTime.now();
+        final BidResponse bidResponse = new BidResponse("id", dateTime, BidStatus.INVITED,
+            Collections.singletonList(new BidResponse.Tenderer("id", "name", "scheme")),
             Collections.singletonList(new BidResponse.RelatedLot("str")));
         when(conversionService.convert(any(BidQualificationDto.class), eq(BidResponse.class)))
             .thenReturn(bidResponse);
-        final BidsGetResponse bids = bidService.getBids(new BidsParamDto("ocid", "method", "stage", "UA"));
+        final BidsResponse bids = bidService.getBids(new BidsParamDto("ocid", "method", "stage", "UA"));
         final List<BidResponse> bidsList = bids.getBids();
         assertEquals(3, bidsList.size());
         bidsList.stream()
-            .peek(b -> assertTrue(b.getBidId().equals("id")))
-            .peek(b -> b.getTenderers()
-                        .forEach(tenderer -> assertTrue(tenderer.getId().equals("id") &
-                            tenderer.getScheme().equals("scheme"))))
-            .forEach(b -> b.getRelatedLots()
-                           .forEach(relatedLots -> assertTrue(relatedLots.getId().equals("str"))));
+                .peek(b -> assertTrue(b.getBidId().equals("id")))
+                .peek(b -> b.getTenderers()
+                            .forEach(tenderer -> assertTrue(tenderer.getId().equals("id") &
+                                tenderer.getScheme().equals("scheme"))))
+                .forEach(b -> b.getRelatedLots()
+                               .forEach(relatedLots -> assertTrue(relatedLots.getId().equals("str"))));
         verify(bidRepository, times(1)).findAllByOcIdAndStage("ocid", "stage");
         verify(rulesService, times(1)).getRulesMinBids("UA", "method");
         verify(conversionService, times(3)).convert(any(BidQualificationDto.class), eq(BidResponse.class));
@@ -149,7 +150,7 @@ public class BidServiceTest {
                                       final BidQualificationDto bid) {
         BidEntity bidEntity = new BidEntity();
         bidEntity.setBidId(id1);
-        bidEntity.setOcId(ocid);
+        bidEntity.setCpId(ocid);
         bidEntity.setStatus(status);
         bidEntity.setStage(stage);
         bidEntity.setJsonData(jsonUtil.toJson(bid));
