@@ -18,9 +18,10 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_period (
 );
 
 CREATE TABLE IF NOT EXISTS  ocds.submission_bid (
-    oc_id text,
+    cp_id text,
+    stage text,
     bid_id UUID,
     json_data text,
     bid_status text,
-    primary key(oc_id, bid_id)
+    primary key(cp_id, stage, bid_id)
 )WITH CLUSTERING ORDER BY (bid_id DESC);
