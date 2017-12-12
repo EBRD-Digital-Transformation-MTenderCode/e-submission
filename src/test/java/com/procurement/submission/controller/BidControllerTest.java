@@ -2,10 +2,12 @@ package com.procurement.submission.controller;
 
 import com.procurement.submission.JsonUtil;
 import com.procurement.submission.config.BidControllerTestConfig;
+import com.procurement.submission.model.dto.request.BidStatus;
 import com.procurement.submission.model.dto.request.BidsParamDto;
 import com.procurement.submission.model.dto.response.BidResponse;
-import com.procurement.submission.model.dto.response.BidsGetResponse;
+import com.procurement.submission.model.dto.response.BidsResponse;
 import com.procurement.submission.service.BidService;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -117,7 +119,7 @@ class BidControllerTest {
     @Test
     @DisplayName("Test get url: /submission/bids - 200 - Ok")
     void testGetBidsOk() throws Exception {
-        final BidsGetResponse bids = createBids();
+        final BidsResponse bids = createBids();
         when(bidService.getBids(any(BidsParamDto.class))).thenReturn(bids);
         mockMvc.perform(get(
             "/submission/bids?ocid=ocds-213czf-000-00001&procurementMethodDetail=method&stage=st&country=UA")
@@ -205,8 +207,8 @@ class BidControllerTest {
                                    containsInAnyOrder("must not be blank", "size must be between 21 and 21")));
     }
 
-    private BidsGetResponse createBids() {
-        return new BidsGetResponse(createBidResponses());
+    private BidsResponse createBids() {
+        return new BidsResponse(createBidResponses());
     }
 
     private List<BidResponse> createBidResponses() {
@@ -217,7 +219,7 @@ class BidControllerTest {
     }
 
     private BidResponse createBidResponse() {
-        return new BidResponse("id", createTenderers(), createRelatedLots());
+        return new BidResponse("id", LocalDateTime.now(), BidStatus.INVITED, createTenderers(), createRelatedLots());
     }
 
     private List<BidResponse.RelatedLot> createRelatedLots() {
@@ -228,7 +230,7 @@ class BidControllerTest {
 
     private List<BidResponse.Tenderer> createTenderers() {
         List<BidResponse.Tenderer> tenderers = new ArrayList<>();
-        tenderers.add(new BidResponse.Tenderer("tendererId", "tendererScheme"));
+        tenderers.add(new BidResponse.Tenderer("tendererId", "tenderName", "tendererScheme"));
         return tenderers;
     }
 }

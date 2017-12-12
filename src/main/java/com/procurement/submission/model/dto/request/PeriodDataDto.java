@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 @JsonPropertyOrder({
-    "ocId",
+    "ocid",
     "country",
     "procurementMethodDetails",
     "tenderPeriod"

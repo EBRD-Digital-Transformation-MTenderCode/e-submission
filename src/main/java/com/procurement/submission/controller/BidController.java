@@ -5,8 +5,7 @@ import com.procurement.submission.model.dto.request.BidsParamDto;
 import com.procurement.submission.model.dto.request.DocumentDto;
 import com.procurement.submission.model.dto.request.QualificationOfferDto;
 import com.procurement.submission.model.dto.request.ValueDto;
-import com.procurement.submission.model.dto.response.BidsAfterChangeStatusResponse;
-import com.procurement.submission.model.dto.response.BidsGetResponse;
+import com.procurement.submission.model.dto.response.BidsResponse;
 import com.procurement.submission.service.BidService;
 import java.util.List;
 import javax.validation.Valid;
@@ -58,15 +57,15 @@ public class BidController {
     }
 
     @GetMapping(value = "/bids")
-    public ResponseEntity<BidsGetResponse> getBids(@Size(min = OCID_LENGTH, max = OCID_LENGTH)
-                                                   @RequestParam final String ocid,
-                                                   @NotBlank @RequestParam final String procurementMethodDetail,
-                                                   @NotBlank @RequestParam final String stage,
-                                                   @Size(min = 2, max = 2) @Pattern(regexp = "[a-zA-Z]*")
-                                                   @RequestParam final String country
+    public ResponseEntity<BidsResponse> getBids(@Size(min = OCID_LENGTH, max = OCID_LENGTH)
+                                                @RequestParam final String ocid,
+                                                @NotBlank @RequestParam final String procurementMethodDetail,
+                                                @NotBlank @RequestParam final String stage,
+                                                @Size(min = 2, max = 2) @Pattern(regexp = "[a-zA-Z]*")
+                                                @RequestParam final String country
     ) {
         final BidsParamDto bidsParamDto = new BidsParamDto(ocid, procurementMethodDetail, stage, country);
-        final BidsGetResponse bids = bidService.getBids(bidsParamDto);
+        final BidsResponse bids = bidService.getBids(bidsParamDto);
         return new ResponseEntity<>(bids, OK);
     }
 
@@ -80,10 +79,10 @@ public class BidController {
 
     @PostMapping(value = "/bids/changestatus")
     @ResponseStatus(CREATED)
-    public BidsAfterChangeStatusResponse changeBidsStatus(@Size(min = OCID_LENGTH, max = OCID_LENGTH)
-                                                          @RequestParam final String ocid,
-                                                          @NotBlank @RequestParam final String oldStage,
-                                                          @NotBlank @RequestParam final String newStage) {
+    public BidsResponse changeBidsStatus(@Size(min = OCID_LENGTH, max = OCID_LENGTH)
+                                         @RequestParam final String ocid,
+                                         @NotBlank @RequestParam final String oldStage,
+                                         @NotBlank @RequestParam final String newStage) {
         return bidService.changeBidsStatus(ocid, oldStage, newStage);
     }
 }

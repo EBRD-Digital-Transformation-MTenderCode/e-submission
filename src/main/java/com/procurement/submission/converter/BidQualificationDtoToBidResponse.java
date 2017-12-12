@@ -13,12 +13,13 @@ public class BidQualificationDtoToBidResponse implements Converter<BidQualificat
     public BidResponse convert(final BidQualificationDto source) {
         final List<BidResponse.Tenderer> tenderers = convertTenderers(source.getTenderers());
         final List<BidResponse.RelatedLot> relatedLots = convertRelatedLots(source.getRelatedLots());
-        return new BidResponse(source.getId(), tenderers, relatedLots);
+        return new BidResponse(source.getId(), source.getDate(), source.getStatus(), tenderers, relatedLots);
     }
 
     private List<BidResponse.Tenderer> convertTenderers(final List<OrganizationReferenceDto> source) {
         return source.stream()
-                     .map(t -> new BidResponse.Tenderer(t.getIdentifier().getId(), t.getIdentifier().getScheme()))
+                     .map(t -> new BidResponse.Tenderer(t.getIdentifier().getId(), t.getName(),
+                         t.getIdentifier().getScheme()))
                      .collect(toList());
     }
 
