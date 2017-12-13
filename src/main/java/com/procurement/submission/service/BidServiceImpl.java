@@ -109,7 +109,7 @@ public class BidServiceImpl implements BidService {
 
     private BidEntity createNewBid(final BidEntity oldBid, final String newStage) {
         final BidEntity newBid = new BidEntity();
-        newBid.setCpId(oldBid.getCpId());
+        newBid.setOcId(oldBid.getOcId());
         newBid.setStage(newStage);
         newBid.setBidId(oldBid.getBidId());
         final String newJsonData = createNewJsonData(oldBid.getJsonData());

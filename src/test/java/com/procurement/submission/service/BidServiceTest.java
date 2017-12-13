@@ -150,7 +150,7 @@ public class BidServiceTest {
                                       final BidQualificationDto bid) {
         BidEntity bidEntity = new BidEntity();
         bidEntity.setBidId(id1);
-        bidEntity.setCpId(ocid);
+        bidEntity.setOcId(ocid);
         bidEntity.setStatus(status);
         bidEntity.setStage(stage);
         bidEntity.setJsonData(jsonUtil.toJson(bid));
