@@ -133,8 +133,8 @@ class BidControllerTest {
                .andExpect(jsonPath("$.bids[1].tenderers[0].id").value("tendererId"))
                .andExpect(jsonPath("$.bids[0].tenderers[0].scheme").value("tendererScheme"))
                .andExpect(jsonPath("$.bids[1].tenderers[0].scheme").value("tendererScheme"))
-               .andExpect(jsonPath("$.bids[0].relatedLots[0].id").value("relatedLotId"))
-               .andExpect(jsonPath("$.bids[1].relatedLots[0].id").value("relatedLotId"));
+               .andExpect(jsonPath("$.bids[0].relatedLots[0]").value("relatedLotId"))
+               .andExpect(jsonPath("$.bids[1].relatedLots[0]").value("relatedLotId"));
     }
 
     @Test
@@ -222,9 +222,9 @@ class BidControllerTest {
         return new BidResponse("id", LocalDateTime.now(), BidStatus.INVITED, createTenderers(), createRelatedLots());
     }
 
-    private List<BidResponse.RelatedLot> createRelatedLots() {
-        List<BidResponse.RelatedLot> relatedLots = new ArrayList<>();
-        relatedLots.add(new BidResponse.RelatedLot("relatedLotId"));
+    private List<String> createRelatedLots() {
+        List<String> relatedLots = new ArrayList<>();
+        relatedLots.add("relatedLotId");
         return relatedLots;
     }
 

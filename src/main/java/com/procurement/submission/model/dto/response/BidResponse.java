@@ -19,7 +19,7 @@ public class BidResponse {
     private LocalDateTime date;
     private BidStatus status;
     private List<Tenderer> tenderers;
-    private List<RelatedLot> relatedLots;
+    private List<String> relatedLots;
 
     @JsonCreator
     public BidResponse(@JsonProperty("bidId") @NotNull final String id,
@@ -27,7 +27,7 @@ public class BidResponse {
                        @JsonProperty("date") @NotNull final LocalDateTime date,
                        @JsonProperty("status") @NotNull final BidStatus status,
                        @JsonProperty("tenderers") @NotEmpty final List<Tenderer> tenderers,
-                       @JsonProperty("relatedLots") @NotEmpty final List<RelatedLot> relatedLots) {
+                       @JsonProperty("relatedLots") @NotEmpty final List<String> relatedLots) {
         this.bidId = id;
         this.date = date;
         this.status = status;
@@ -101,7 +101,7 @@ public class BidResponse {
         }
     }
 
-    @Getter
+    /*@Getter
     public static class RelatedLot {
         private String id;
 
@@ -128,5 +128,5 @@ public class BidResponse {
             return new EqualsBuilder().append(id, relatedLot.getId())
                                       .isEquals();
         }
-    }
+    }*/
 }

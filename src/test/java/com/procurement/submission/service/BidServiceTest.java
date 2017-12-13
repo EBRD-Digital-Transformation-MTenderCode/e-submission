@@ -95,7 +95,7 @@ public class BidServiceTest {
         final LocalDateTime dateTime = LocalDateTime.now();
         final BidResponse bidResponse = new BidResponse("id", dateTime, BidStatus.INVITED,
             Collections.singletonList(new BidResponse.Tenderer("id", "name", "scheme")),
-            Collections.singletonList(new BidResponse.RelatedLot("str")));
+            Collections.singletonList("str"));
         when(conversionService.convert(any(BidQualificationDto.class), eq(BidResponse.class)))
             .thenReturn(bidResponse);
         final BidsResponse bids = bidService.getBids(new BidsParamDto("ocid", "method", "stage", "UA"));
@@ -107,7 +107,7 @@ public class BidServiceTest {
                             .forEach(tenderer -> assertTrue(tenderer.getId().equals("id") &
                                 tenderer.getScheme().equals("scheme"))))
                 .forEach(b -> b.getRelatedLots()
-                               .forEach(relatedLots -> assertTrue(relatedLots.getId().equals("str"))));
+                               .forEach(relatedLots -> assertTrue(relatedLots.equals("str"))));
         verify(bidRepository, times(1)).findAllByOcIdAndStage("ocid", "stage");
         verify(rulesService, times(1)).getRulesMinBids("UA", "method");
         verify(conversionService, times(3)).convert(any(BidQualificationDto.class), eq(BidResponse.class));

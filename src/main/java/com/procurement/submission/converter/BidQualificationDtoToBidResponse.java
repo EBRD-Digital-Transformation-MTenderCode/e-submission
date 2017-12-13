@@ -12,8 +12,7 @@ public class BidQualificationDtoToBidResponse implements Converter<BidQualificat
     @Override
     public BidResponse convert(final BidQualificationDto source) {
         final List<BidResponse.Tenderer> tenderers = convertTenderers(source.getTenderers());
-        final List<BidResponse.RelatedLot> relatedLots = convertRelatedLots(source.getRelatedLots());
-        return new BidResponse(source.getId(), source.getDate(), source.getStatus(), tenderers, relatedLots);
+        return new BidResponse(source.getId(), source.getDate(), source.getStatus(), tenderers, source.getRelatedLots());
     }
 
     private List<BidResponse.Tenderer> convertTenderers(final List<OrganizationReferenceDto> source) {
@@ -21,11 +20,5 @@ public class BidQualificationDtoToBidResponse implements Converter<BidQualificat
                      .map(t -> new BidResponse.Tenderer(t.getIdentifier().getId(), t.getName(),
                          t.getIdentifier().getScheme()))
                      .collect(toList());
-    }
-
-    private List<BidResponse.RelatedLot> convertRelatedLots(final List<String> relatedLots) {
-        return relatedLots.stream()
-                          .map(BidResponse.RelatedLot::new)
-                          .collect(toList());
     }
 }
