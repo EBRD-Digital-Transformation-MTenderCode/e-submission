@@ -12,7 +12,8 @@ public class BidQualificationDtoToBidResponse implements Converter<BidQualificat
     @Override
     public BidResponse convert(final BidQualificationDto source) {
         final List<BidResponse.Tenderer> tenderers = convertTenderers(source.getTenderers());
-        return new BidResponse(source.getId(), source.getDate(), source.getStatus(), tenderers, source.getRelatedLots());
+        return new BidResponse(
+            source.getId(), source.getDate(), source.getStatus(), tenderers, source.getRelatedLots());
     }
 
     private List<BidResponse.Tenderer> convertTenderers(final List<OrganizationReferenceDto> source) {
