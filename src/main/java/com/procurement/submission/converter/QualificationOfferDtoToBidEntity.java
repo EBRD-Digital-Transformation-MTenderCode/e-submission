@@ -14,6 +14,7 @@ public class QualificationOfferDtoToBidEntity implements Converter<Qualification
     public BidEntity convert(final QualificationOfferDto qualificationOfferDto) {
         final BidEntity bidEntity = new BidEntity();
         bidEntity.setOcId(qualificationOfferDto.getOcid());
+        bidEntity.setStage(qualificationOfferDto.getStage());
         final BidQualificationDto bidDto = qualificationOfferDto.getBid();
         bidEntity.setBidId(getUuid(bidDto));
         if (Objects.isNull(bidDto.getDate())) {

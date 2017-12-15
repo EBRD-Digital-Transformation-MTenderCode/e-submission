@@ -160,7 +160,7 @@ public class BidServiceTest {
     private QualificationOfferDto createQualificationOfferDto() throws URISyntaxException {
         final BidQualificationDto bidQualificationDto =
             createBidQualificationDto(UUID.randomUUID().toString(), "str1", "str1");
-        return new QualificationOfferDto("ocid", bidQualificationDto);
+        return new QualificationOfferDto("ocid", "stage", bidQualificationDto);
     }
 
     private BidQualificationDto createBidQualificationDto(
