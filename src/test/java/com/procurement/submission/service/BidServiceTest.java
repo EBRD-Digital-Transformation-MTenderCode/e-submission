@@ -3,16 +3,12 @@ package com.procurement.submission.service;
 import com.datastax.driver.core.utils.UUIDs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.procurement.submission.exception.ErrorException;
-import com.procurement.submission.model.dto.request.AddressDto;
-import com.procurement.submission.model.dto.request.BidQualificationDto;
-import com.procurement.submission.model.dto.request.BidStatus;
-import com.procurement.submission.model.dto.request.BidsParamDto;
-import com.procurement.submission.model.dto.request.ContactPointDto;
-import com.procurement.submission.model.dto.request.IdentifierDto;
-import com.procurement.submission.model.dto.request.OrganizationReferenceDto;
-import com.procurement.submission.model.dto.request.QualificationOfferDto;
-import com.procurement.submission.model.dto.response.BidResponse;
-import com.procurement.submission.model.dto.response.BidsResponse;
+import com.procurement.submission.model.ocds.Address;
+import com.procurement.submission.model.ocds.Bid;
+import com.procurement.submission.model.ocds.BidStatus;
+import com.procurement.submission.model.ocds.ContactPoint;
+import com.procurement.submission.model.ocds.Identifier;
+import com.procurement.submission.model.ocds.OrganizationReference;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.JsonUtil;
@@ -93,13 +89,13 @@ public class BidServiceTest {
         when(rulesService.getRulesMinBids("UA", "method"))
             .thenReturn(2);
         final LocalDateTime dateTime = LocalDateTime.now();
-        final BidResponse bidResponse = new BidResponse("id", dateTime, BidStatus.INVITED,
-            Collections.singletonList(new BidResponse.Tenderer("id", "name", "scheme")),
-            Collections.singletonList("str"));
-        when(conversionService.convert(any(BidQualificationDto.class), eq(BidResponse.class)))
-            .thenReturn(bidResponse);
+        final BidResponseOld bidResponseOld = new BidResponseOld("id", dateTime, BidStatus.INVITED,
+                                                                 Collections.singletonList(new BidResponseOld.Tenderer("id", "name", "scheme")),
+                                                                 Collections.singletonList("str"));
+        when(conversionService.convert(any(Bid.class), eq(BidResponseOld.class)))
+            .thenReturn(bidResponseOld);
         final BidsResponse bids = bidService.getBids(new BidsParamDto("ocid", "method", "stage", "UA"));
-        final List<BidResponse> bidsList = bids.getBids();
+        final List<BidResponseOld> bidsList = bids.getBids();
         assertEquals(3, bidsList.size());
         bidsList.stream()
                 .peek(b -> assertTrue(b.getBidId().equals("id")))
@@ -110,7 +106,7 @@ public class BidServiceTest {
                                .forEach(relatedLots -> assertTrue(relatedLots.equals("str"))));
         verify(bidRepository, times(1)).findAllByOcIdAndStage("ocid", "stage");
         verify(rulesService, times(1)).getRulesMinBids("UA", "method");
-        verify(conversionService, times(3)).convert(any(BidQualificationDto.class), eq(BidResponse.class));
+        verify(conversionService, times(3)).convert(any(Bid.class), eq(BidResponseOld.class));
     }
 
     @Test
@@ -126,16 +122,16 @@ public class BidServiceTest {
             "Insufficient number of unique bids");
         verify(bidRepository, times(1)).findAllByOcIdAndStage("ocid", "stage");
         verify(rulesService, times(1)).getRulesMinBids("UA", "method");
-        verify(conversionService, never()).convert(any(BidQualificationDto.class), eq(BidResponse.class));
+        verify(conversionService, never()).convert(any(Bid.class), eq(BidResponseOld.class));
     }
 
     private List<BidEntity> createBids() throws URISyntaxException {
         UUID id1 = UUIDs.random();
         UUID id2 = UUIDs.random();
         UUID id3 = UUIDs.random();
-        BidQualificationDto bid1 = createBidQualificationDto(id1.toString(), "str1", "str1");
-        BidQualificationDto bid2 = createBidQualificationDto(id2.toString(), "str2", "str2");
-        BidQualificationDto bid3 = createBidQualificationDto(id3.toString(), "str3", "str3");
+        Bid bid1 = createBidQualificationDto(id1.toString(), "str1", "str1");
+        Bid bid2 = createBidQualificationDto(id2.toString(), "str2", "str2");
+        Bid bid3 = createBidQualificationDto(id3.toString(), "str3", "str3");
         BidEntity bidEntity1 = createBibEntity(id1, "ocid1", BidStatus.INVITED, "stage1", bid1);
         BidEntity bidEntity2 = createBibEntity(id2, "ocid2", BidStatus.INVITED, "stage2", bid2);
         BidEntity bidEntity3 = createBibEntity(id3, "ocid3", BidStatus.INVITED, "stage3", bid3);
@@ -147,7 +143,7 @@ public class BidServiceTest {
     }
 
     private BidEntity createBibEntity(final UUID id1, final String ocid, final BidStatus status, final String stage,
-                                      final BidQualificationDto bid) {
+                                      final Bid bid) {
         BidEntity bidEntity = new BidEntity();
         bidEntity.setBidId(id1);
         bidEntity.setOcId(ocid);
@@ -158,28 +154,28 @@ public class BidServiceTest {
     }
 
     private QualificationOfferDto createQualificationOfferDto() throws URISyntaxException {
-        final BidQualificationDto bidQualificationDto =
+        final Bid bidQualificationDto =
             createBidQualificationDto(UUID.randomUUID().toString(), "str1", "str1");
         return new QualificationOfferDto("ocid", "stage", bidQualificationDto);
     }
 
-    private BidQualificationDto createBidQualificationDto(
+    private Bid createBidQualificationDto(
         final String id1, final String nameOrganizationReferenceDt, final String schemeOrganizationReferenceDt)
         throws URISyntaxException {
-        return new BidQualificationDto(id1, LocalDateTime.now(), BidStatus.PENDING,
-            Collections.singletonList(
+        return new Bid(id1, LocalDateTime.now(), BidStatus.PENDING,
+                       Collections.singletonList(
                 createOrganizationReferenceDto(nameOrganizationReferenceDt, schemeOrganizationReferenceDt)),
-            new ArrayList<>(), Collections.singletonList("str")
+                       new ArrayList<>(), Collections.singletonList("str")
         );
     }
 
-    private OrganizationReferenceDto createOrganizationReferenceDto(final String name, final String scheme)
+    private OrganizationReference createOrganizationReferenceDto(final String name, final String scheme)
         throws URISyntaxException {
-        IdentifierDto identifierDto = new IdentifierDto(scheme, "id", name, new URI("str"));
-        AddressDto address = new AddressDto("str", "str", "str", "str", "str");
-        ContactPointDto contactPoint = new ContactPointDto("str", "str", "str", "str", new URI("str"),
-            Collections.singletonList("str"));
-        return new OrganizationReferenceDto(name, "id", identifierDto, address, new LinkedHashSet<>(),
-            contactPoint);
+        Identifier identifierDto = new Identifier(scheme, "id", name, new URI("str"));
+        Address address = new Address("str", "str", "str", "str", "str");
+        ContactPoint contactPoint = new ContactPoint("str", "str", "str", "str", new URI("str"),
+                                                     Collections.singletonList("str"));
+        return new OrganizationReference(name, "id", identifierDto, address, new LinkedHashSet<>(),
+                                         contactPoint);
     }
 }

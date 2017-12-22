@@ -1,4 +1,4 @@
-package com.procurement.submission.model.dto.request;
+package com.procurement.submission.model.ocds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -18,14 +18,14 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "name",
     "id",
+    "name",
     "identifier",
     "address",
     "additionalIdentifiers",
     "contactPoint"
 })
-public class OrganizationReferenceDto {
+public class OrganizationReference {
     @JsonProperty("id")
     @JsonPropertyDescription("The id of the party being referenced. This must match the id of an entry in the parties" +
         " section.")
@@ -40,11 +40,8 @@ public class OrganizationReferenceDto {
 
     @JsonProperty("identifier")
     @Valid
-    private final IdentifierDto identifier;
-
-    @JsonProperty("address")
-    @Valid
-    private final AddressDto address;
+    @NotNull
+    private final Identifier identifier;
 
     @JsonProperty("additionalIdentifiers")
     @JsonDeserialize(as = LinkedHashSet.class)
@@ -53,20 +50,24 @@ public class OrganizationReferenceDto {
         ".open-contracting.org/latest/en/schema/identifiers/). This could be used to provide an internally used " +
         "identifier for this organization in addition to the primary legal entity identifier.")
     @Valid
-    private final Set<IdentifierDto> additionalIdentifiers;
+    private final Set<Identifier> additionalIdentifiers;
+
+    @JsonProperty("address")
+    @Valid
+    private final Address address;
 
     @JsonProperty("contactPoint")
     @Valid
-    private final ContactPointDto contactPoint;
+    private final ContactPoint contactPoint;
 
     @JsonCreator
-    public OrganizationReferenceDto(@JsonProperty("name") final String name,
-                                    @JsonProperty("id") final String id,
-                                    @JsonProperty("identifier") final IdentifierDto identifier,
-                                    @JsonProperty("address") final AddressDto address,
-                                    @JsonProperty("additionalIdentifiers") final LinkedHashSet<IdentifierDto>
-                                            additionalIdentifiers,
-                                    @JsonProperty("contactPoint") final ContactPointDto contactPoint) {
+    public OrganizationReference(@JsonProperty("id") final String id,
+                                 @JsonProperty("name") final String name,
+                                 @JsonProperty("identifier") final Identifier identifier,
+                                 @JsonProperty("address") final Address address,
+                                 @JsonProperty("additionalIdentifiers")
+                                     final LinkedHashSet<Identifier> additionalIdentifiers,
+                                 @JsonProperty("contactPoint") final ContactPoint contactPoint) {
         this.id = id;
         this.name = name;
         this.identifier = identifier;
@@ -77,8 +78,8 @@ public class OrganizationReferenceDto {
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(name)
-                                    .append(id)
+        return new HashCodeBuilder().append(id)
+                                    .append(name)
                                     .append(identifier)
                                     .append(address)
                                     .append(additionalIdentifiers)
@@ -91,12 +92,12 @@ public class OrganizationReferenceDto {
         if (other == this) {
             return true;
         }
-        if (!(other instanceof OrganizationReferenceDto)) {
+        if (!(other instanceof OrganizationReference)) {
             return false;
         }
-        final OrganizationReferenceDto rhs = (OrganizationReferenceDto) other;
-        return new EqualsBuilder().append(name, rhs.name)
-                                  .append(id, rhs.id)
+        final OrganizationReference rhs = (OrganizationReference) other;
+        return new EqualsBuilder().append(id, rhs.id)
+                                  .append(name, rhs.name)
                                   .append(identifier, rhs.identifier)
                                   .append(address, rhs.address)
                                   .append(additionalIdentifiers, rhs.additionalIdentifiers)

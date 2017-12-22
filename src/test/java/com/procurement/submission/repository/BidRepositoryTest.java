@@ -2,7 +2,7 @@ package com.procurement.submission.repository;
 
 import com.datastax.driver.core.utils.UUIDs;
 import com.procurement.submission.JsonUtil;
-import com.procurement.submission.model.dto.request.BidStatus;
+import com.procurement.submission.model.ocds.BidStatus;
 import com.procurement.submission.model.entity.BidEntity;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

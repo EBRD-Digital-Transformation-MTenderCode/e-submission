@@ -1,5 +1,5 @@
 
-package com.procurement.submission.model.dto.request;
+package com.procurement.submission.model.ocds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,7 +20,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "amount",
     "currency"
 })
-public class ValueDto {
+public class Value {
     @NotNull
     @JsonProperty("amount")
     @JsonPropertyDescription("Amount as a number.")
@@ -33,8 +33,8 @@ public class ValueDto {
     private final Currency currency;
 
     @JsonCreator
-    public ValueDto(@JsonProperty("amount") final Double amount,
-                    @JsonProperty("currency") final Currency currency) {
+    public Value(@JsonProperty("amount") final Double amount,
+                 @JsonProperty("currency") final Currency currency) {
         this.amount = amount;
         this.currency = currency;
     }
@@ -51,10 +51,10 @@ public class ValueDto {
         if (other == this) {
             return true;
         }
-        if (!(other instanceof ValueDto)) {
+        if (!(other instanceof Value)) {
             return false;
         }
-        final ValueDto rhs = (ValueDto) other;
+        final Value rhs = (Value) other;
         return new EqualsBuilder().append(amount, rhs.amount)
                                   .append(currency, rhs.currency)
                                   .isEquals();

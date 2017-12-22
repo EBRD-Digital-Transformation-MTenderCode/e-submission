@@ -1,5 +1,5 @@
 
-package com.procurement.submission.model.dto.request;
+package com.procurement.submission.model.ocds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,7 +20,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "postalCode",
     "countryName"
 })
-public class AddressDto {
+public class Address {
     @JsonProperty("streetAddress")
     @JsonPropertyDescription("The street address. For example, 1600 Amphitheatre Pkwy.")
     private final String streetAddress;
@@ -45,11 +45,11 @@ public class AddressDto {
     private final String countryName;
 
     @JsonCreator
-    public AddressDto(@JsonProperty("streetAddress") final String streetAddress,
-                      @JsonProperty("locality") final String locality,
-                      @JsonProperty("region") final String region,
-                      @JsonProperty("postalCode") final String postalCode,
-                      @JsonProperty("countryName") final String countryName) {
+    public Address(@JsonProperty("streetAddress") final String streetAddress,
+                   @JsonProperty("locality") final String locality,
+                   @JsonProperty("region") final String region,
+                   @JsonProperty("postalCode") final String postalCode,
+                   @JsonProperty("countryName") final String countryName) {
         this.streetAddress = streetAddress;
         this.locality = locality;
         this.region = region;
@@ -72,10 +72,10 @@ public class AddressDto {
         if (other == this) {
             return true;
         }
-        if (!(other instanceof AddressDto)) {
+        if (!(other instanceof Address)) {
             return false;
         }
-        final AddressDto rhs = (AddressDto) other;
+        final Address rhs = (Address) other;
         return new EqualsBuilder().append(streetAddress, rhs.streetAddress)
                                   .append(locality, rhs.locality)
                                   .append(region, rhs.region)

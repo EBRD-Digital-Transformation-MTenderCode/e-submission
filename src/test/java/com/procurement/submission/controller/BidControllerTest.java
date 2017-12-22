@@ -2,10 +2,7 @@ package com.procurement.submission.controller;
 
 import com.procurement.submission.JsonUtil;
 import com.procurement.submission.config.BidControllerTestConfig;
-import com.procurement.submission.model.dto.request.BidStatus;
-import com.procurement.submission.model.dto.request.BidsParamDto;
-import com.procurement.submission.model.dto.response.BidResponse;
-import com.procurement.submission.model.dto.response.BidsResponse;
+import com.procurement.submission.model.ocds.BidStatus;
 import com.procurement.submission.service.BidService;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -211,15 +208,15 @@ class BidControllerTest {
         return new BidsResponse(createBidResponses());
     }
 
-    private List<BidResponse> createBidResponses() {
-        List<BidResponse> bidResponses = new ArrayList<>();
-        bidResponses.add(createBidResponse());
-        bidResponses.add(createBidResponse());
-        return bidResponses;
+    private List<BidResponseOld> createBidResponses() {
+        List<BidResponseOld> bidResponsOlds = new ArrayList<>();
+        bidResponsOlds.add(createBidResponse());
+        bidResponsOlds.add(createBidResponse());
+        return bidResponsOlds;
     }
 
-    private BidResponse createBidResponse() {
-        return new BidResponse("id", LocalDateTime.now(), BidStatus.INVITED, createTenderers(), createRelatedLots());
+    private BidResponseOld createBidResponse() {
+        return new BidResponseOld("id", LocalDateTime.now(), BidStatus.INVITED, createTenderers(), createRelatedLots());
     }
 
     private List<String> createRelatedLots() {
@@ -228,9 +225,9 @@ class BidControllerTest {
         return relatedLots;
     }
 
-    private List<BidResponse.Tenderer> createTenderers() {
-        List<BidResponse.Tenderer> tenderers = new ArrayList<>();
-        tenderers.add(new BidResponse.Tenderer("tendererId", "tenderName", "tendererScheme"));
+    private List<BidResponseOld.Tenderer> createTenderers() {
+        List<BidResponseOld.Tenderer> tenderers = new ArrayList<>();
+        tenderers.add(new BidResponseOld.Tenderer("tendererId", "tenderName", "tendererScheme"));
         return tenderers;
     }
 }

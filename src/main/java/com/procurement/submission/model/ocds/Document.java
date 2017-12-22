@@ -1,4 +1,4 @@
-package com.procurement.submission.model.dto.request;
+package com.procurement.submission.model.ocds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +33,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "language",
     "relatedLots"
 })
-public class DocumentDto {
+public class Document {
     @JsonProperty("id")
     @JsonPropertyDescription("A local, unique identifier for this document. This field is used to keep track of " +
         "multiple revisions of a document through the compilation from release to record mechanism.")
@@ -101,18 +101,18 @@ public class DocumentDto {
     private final List<String> relatedLots;
 
     @JsonCreator
-    public DocumentDto(@JsonProperty("id") final String id,
-                       @JsonProperty("documentType") final DocumentType documentType,
-                       @JsonProperty("title") final String title,
-                       @JsonProperty("description") final String description,
-                       @JsonProperty("url") final URI url,
-                       @JsonProperty("datePublished") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final
+    public Document(@JsonProperty("id") final String id,
+                    @JsonProperty("documentType") final DocumentType documentType,
+                    @JsonProperty("title") final String title,
+                    @JsonProperty("description") final String description,
+                    @JsonProperty("url") final URI url,
+                    @JsonProperty("datePublished") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final
                        LocalDateTime datePublished,
-                       @JsonProperty("dateModified") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final
+                    @JsonProperty("dateModified") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final
                        LocalDateTime dateModified,
-                       @JsonProperty("format") final String format,
-                       @JsonProperty("language") final String language,
-                       @JsonProperty("relatedLots") final List<String> relatedLots) {
+                    @JsonProperty("format") final String format,
+                    @JsonProperty("language") final String language,
+                    @JsonProperty("relatedLots") final List<String> relatedLots) {
         this.id = id;
         this.documentType = documentType;
         this.title = title;
@@ -145,10 +145,10 @@ public class DocumentDto {
         if (other == this) {
             return true;
         }
-        if (!(other instanceof DocumentDto)) {
+        if (!(other instanceof Document)) {
             return false;
         }
-        final DocumentDto rhs = (DocumentDto) other;
+        final Document rhs = (Document) other;
         return new EqualsBuilder().append(id, rhs.id)
                                   .append(documentType, rhs.documentType)
                                   .append(title, rhs.title)

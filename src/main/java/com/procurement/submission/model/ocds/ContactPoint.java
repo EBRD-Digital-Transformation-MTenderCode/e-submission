@@ -1,5 +1,5 @@
 
-package com.procurement.submission.model.dto.request;
+package com.procurement.submission.model.ocds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -24,7 +24,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "url",
     "languages"
 })
-public class ContactPointDto {
+public class ContactPoint {
     @JsonProperty("name")
     @JsonPropertyDescription("The name of the contact person, department, or contact point, for correspondence " +
         "relating to this contracting process.")
@@ -56,12 +56,12 @@ public class ContactPointDto {
     private List<String> languages;
 
     @JsonCreator
-    public ContactPointDto(@JsonProperty("name") final String name,
-                           @JsonProperty("email") final String email,
-                           @JsonProperty("telephone") final String telephone,
-                           @JsonProperty("faxNumber") final String faxNumber,
-                           @JsonProperty("url") final URI url,
-                           @JsonProperty("languages") final List<String> languages) {
+    public ContactPoint(@JsonProperty("name") final String name,
+                        @JsonProperty("email") final String email,
+                        @JsonProperty("telephone") final String telephone,
+                        @JsonProperty("faxNumber") final String faxNumber,
+                        @JsonProperty("url") final URI url,
+                        @JsonProperty("languages") final List<String> languages) {
         this.name = name;
         this.email = email;
         this.telephone = telephone;
@@ -86,10 +86,10 @@ public class ContactPointDto {
         if (other == this) {
             return true;
         }
-        if (!(other instanceof ContactPointDto)) {
+        if (!(other instanceof ContactPoint)) {
             return false;
         }
-        final ContactPointDto rhs = (ContactPointDto) other;
+        final ContactPoint rhs = (ContactPoint) other;
         return new EqualsBuilder().append(name, rhs.name)
                                   .append(email, rhs.email)
                                   .append(telephone, rhs.telephone)

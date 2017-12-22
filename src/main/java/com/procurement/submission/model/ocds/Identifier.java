@@ -1,5 +1,5 @@
 
-package com.procurement.submission.model.dto.request;
+package com.procurement.submission.model.ocds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,7 +20,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "legalName",
     "uri"
 })
-public class IdentifierDto {
+public class Identifier {
     @JsonProperty("id")
     @JsonPropertyDescription("The identifier of the organization in the selected scheme.")
     private final String id;
@@ -46,10 +46,10 @@ public class IdentifierDto {
     private final URI uri;
 
     @JsonCreator
-    public IdentifierDto(@JsonProperty("scheme") final String scheme,
-                         @JsonProperty("id") final String id,
-                         @JsonProperty("legalName") final String legalName,
-                         @JsonProperty("uri") final URI uri) {
+    public Identifier(@JsonProperty("scheme") final String scheme,
+                      @JsonProperty("id") final String id,
+                      @JsonProperty("legalName") final String legalName,
+                      @JsonProperty("uri") final URI uri) {
         this.id = id;
         this.scheme = scheme;
         this.legalName = legalName;
@@ -70,10 +70,10 @@ public class IdentifierDto {
         if (other == this) {
             return true;
         }
-        if (!(other instanceof IdentifierDto)) {
+        if (!(other instanceof Identifier)) {
             return false;
         }
-        final IdentifierDto rhs = (IdentifierDto) other;
+        final Identifier rhs = (Identifier) other;
         return new EqualsBuilder().append(scheme, rhs.scheme)
                                   .append(id, rhs.id)
                                   .append(legalName, rhs.legalName)
