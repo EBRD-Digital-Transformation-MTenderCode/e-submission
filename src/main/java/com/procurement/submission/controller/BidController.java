@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 @Validated
 @RestController
@@ -29,6 +30,13 @@ public class BidController {
     @ResponseStatus(CREATED)
     public BidResponseEntity createBid(@Valid @RequestBody final BidRequestDto bidRequest) {
         final BidResponse bidResponse = bidService.createBid(bidRequest);
+        return new BidResponseEntity(true, new ArrayList<>(), bidResponse);
+    }
+
+    @PostMapping(value = "/updateBid")
+    @ResponseStatus(OK)
+    public BidResponseEntity updateBid(@Valid @RequestBody final BidRequestDto bidRequest) {
+        BidResponse bidResponse = bidService.updateBid(bidRequest);
         return new BidResponseEntity(true, new ArrayList<>(), bidResponse);
     }
 }

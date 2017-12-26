@@ -8,6 +8,7 @@ import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.JsonUtil;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
@@ -37,20 +38,37 @@ public class BidServiceImpl implements BidService {
         // TODO: 22.12.17  check that tenderers are not repeated in every bid
         final BidEntity bid = createNewBidEntity(bidRequest);
         bidRepository.save(bid);
-        final BidResponse bidResponse = createBidResponse(bid);
-        return bidResponse;
+        return createBidResponse(bid);
+    }
+
+    @Override
+    public BidResponse updateBid(final BidRequestDto bidRequest) {
+        periodService.checkPeriod(bidRequest.getOcid());
+        // TODO: 22.12.17  check that tenderers are not repeated in every bid
+        final BidEntity bidEntity = updateBidEntity(bidRequest);
+        return createBidResponse(bidEntity);
     }
 
     private BidEntity createNewBidEntity(final BidRequestDto requestDto) {
-        requestDto.getBid().setId(UUIDs.timeBased().toString());
         final LocalDateTime dateTimeNow = LocalDateTime.now();
         requestDto.getBid().setDate(dateTimeNow);
+        requestDto.getBid().setId(UUIDs.timeBased().toString());
         final BidEntity bidEntity = conversionService.convert(requestDto, BidEntity.class);
         bidEntity.setStatus(Bid.Status.PENDING);
         bidEntity.setPendingDate(dateTimeNow);
         bidEntity.setCreatedDate(dateTimeNow);
         bidEntity.setJsonData(jsonUtil.toJson(requestDto.getBid()));
         return bidEntity;
+    }
+
+    private BidEntity updateBidEntity(final BidRequestDto requestDto) {
+        final BidEntity convertedBidEntity = conversionService.convert(requestDto, BidEntity.class);
+        final BidEntity oldBidEntity = bidRepository.findByOcIdAndStageAndBidId(
+            requestDto.getOcid(), requestDto.getStage(), UUID.fromString(requestDto.getBid().getId()));
+        requestDto.getBid().setDate(LocalDateTime.now());
+        convertedBidEntity.setJsonData(jsonUtil.toJson(requestDto));
+        convertedBidEntity.setCreatedDate(oldBidEntity.getCreatedDate());
+        return convertedBidEntity;
     }
 
     private BidResponse createBidResponse(final BidEntity bid) {
