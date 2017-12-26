@@ -7,8 +7,12 @@ import com.procurement.submission.model.ocds.Bid;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
+@NoArgsConstructor
 @JsonPropertyOrder({
     "ocid",
     "stage",

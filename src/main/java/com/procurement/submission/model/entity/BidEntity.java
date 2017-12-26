@@ -1,6 +1,6 @@
 package com.procurement.submission.model.entity;
 
-import com.procurement.submission.model.ocds.BidStatus;
+import com.procurement.submission.model.ocds.Bid;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Getter;
@@ -27,7 +27,7 @@ public class BidEntity {
     private String jsonData;
 
     @Column(value = "bid_status")
-    private BidStatus status;
+    private Bid.Status status;
 
     // TODO: 22.12.17
     @Column("createdDate")

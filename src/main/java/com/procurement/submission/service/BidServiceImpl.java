@@ -1,31 +1,15 @@
 package com.procurement.submission.service;
 
 import com.datastax.driver.core.utils.UUIDs;
-import com.procurement.submission.exception.ErrorException;
-import com.procurement.submission.model.dto.request.BidAqpDto;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.response.BidResponse;
-import com.procurement.submission.model.ocds.Bid;
-import com.procurement.submission.model.ocds.BidStatus;
-import com.procurement.submission.model.ocds.Document;
 import com.procurement.submission.model.entity.BidEntity;
+import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.JsonUtil;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
-
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
 
 @Service
 public class BidServiceImpl implements BidService {
@@ -51,19 +35,27 @@ public class BidServiceImpl implements BidService {
     public BidResponse createBid(final BidRequestDto bidRequest) {
         periodService.checkPeriod(bidRequest.getOcid());
         // TODO: 22.12.17  check that tenderers are not repeated id every bid
-        final BidEntity bid = createBidEntity(bidRequest);
+        final BidEntity bid = createNewBidEntity(bidRequest);
         bidRepository.save(bid);
-        bidRequest.getBid().setId(UUIDs.timeBased().toString());
-        bidRequest.getBid().setDate(LocalDateTime.now());
-
-        final BidResponse bidResponse = conversionService.convert(bidRequest, BidResponse.class);
+        final BidResponse bidResponse = createBidResponse(bid);
         return bidResponse;
     }
 
-    private BidEntity createBidEntity(final BidRequestDto fullBid) {
-        BidEntity bidEntity = conversionService.convert(fullBid, BidEntity.class);
-
-
+    private BidEntity createNewBidEntity(final BidRequestDto requestDto) {
+        requestDto.getBid().setId(UUIDs.timeBased().toString());
+        final LocalDateTime dateTimeNow = LocalDateTime.now();
+        requestDto.getBid().setDate(dateTimeNow);
+        final BidEntity bidEntity = conversionService.convert(requestDto, BidEntity.class);
+        bidEntity.setStatus(Bid.Status.PENDING);
+        bidEntity.setPendingDate(dateTimeNow);
+        bidEntity.setCreatedDate(dateTimeNow);
+        bidEntity.setJsonData(jsonUtil.toJson(requestDto.getBid()));
         return bidEntity;
+    }
+
+    private BidResponse createBidResponse(final BidEntity bid) {
+        final BidResponse bidResponse = conversionService.convert(bid, BidResponse.class);
+        bidResponse.setBid(jsonUtil.toObject(Bid.class, bid.getJsonData()));
+        return bidResponse;
     }
 }
