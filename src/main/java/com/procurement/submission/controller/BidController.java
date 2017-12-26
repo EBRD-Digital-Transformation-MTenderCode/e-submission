@@ -2,7 +2,9 @@ package com.procurement.submission.controller;
 
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.response.BidResponse;
+import com.procurement.submission.model.dto.response.BidResponseEntity;
 import com.procurement.submission.service.BidService;
+import java.util.ArrayList;
 import javax.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,8 +27,8 @@ public class BidController {
 
     @PostMapping(value = "/createBid")
     @ResponseStatus(CREATED)
-    public BidResponse createBid(@Valid @RequestBody final BidRequestDto bidRequest) {
-        BidResponse bidResponse = bidService.createBid(bidRequest);
-        return bidResponse;
+    public BidResponseEntity createBid(@Valid @RequestBody final BidRequestDto bidRequest) {
+        final BidResponse bidResponse = bidService.createBid(bidRequest);
+        return new BidResponseEntity(true, new ArrayList<>(), bidResponse);
     }
 }

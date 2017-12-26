@@ -34,7 +34,7 @@ public class BidServiceImpl implements BidService {
     @Override
     public BidResponse createBid(final BidRequestDto bidRequest) {
         periodService.checkPeriod(bidRequest.getOcid());
-        // TODO: 22.12.17  check that tenderers are not repeated id every bid
+        // TODO: 22.12.17  check that tenderers are not repeated in every bid
         final BidEntity bid = createNewBidEntity(bidRequest);
         bidRepository.save(bid);
         final BidResponse bidResponse = createBidResponse(bid);
