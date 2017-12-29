@@ -23,13 +23,15 @@ public class BidEntity {
     @PrimaryKeyColumn(name = "bid_id", type = PrimaryKeyType.CLUSTERED)
     private UUID bidId;
 
+    @PrimaryKeyColumn(name = "bid_sign_id", type = PrimaryKeyType.CLUSTERED)
+    private UUID bidSignId;
+
     @Column(value = "json_data")
     private String jsonData;
 
     @Column(value = "bid_status")
     private Bid.Status status;
 
-    // TODO: 22.12.17
     @Column("createdDate")
     private LocalDateTime createdDate;
 

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.procurement.submission.model.ocds.Bid;
+import java.util.List;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,32 +20,32 @@ import lombok.Setter;
     "stage",
     "bid"
 })
-public class BidResponse {
+public class BidsCopyResponse {
     @NotNull
     @JsonProperty("ocid")
     private String ocid;
 
-    @NotNull
-    @JsonProperty("stage")
-    private String stage;
-
-    @NotNull
-    @JsonProperty("bidSignId")
-    private String bidSignId;
-
     @Valid
     @NotNull
-    @JsonProperty("bid")
-    private Bid bid;
+    @JsonProperty("bids")
+    private Bids bids;
 
     @JsonCreator
-    public BidResponse(@JsonProperty("ocid") final String ocid,
-                       @JsonProperty("stage") final String stage,
-                       @JsonProperty("bidSignId") final String bidSignId,
-                       @JsonProperty("bid") final Bid bid) {
+    public BidsCopyResponse(@JsonProperty("ocid") final String ocid,
+                            @JsonProperty("bids") final Bids bids) {
         this.ocid = ocid;
-        this.stage = stage;
-        this.bidSignId = bidSignId;
-        this.bid = bid;
+        this.bids = bids;
+    }
+
+    @Getter
+    public static class Bids{
+        @Valid
+        @NotBlank
+        private List<Bid> details;
+
+        @JsonCreator
+        public Bids(@JsonProperty("details") final List<Bid> details) {
+            this.details = details;
+        }
     }
 }

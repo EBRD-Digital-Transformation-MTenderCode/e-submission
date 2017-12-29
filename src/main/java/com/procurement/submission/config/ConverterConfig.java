@@ -1,5 +1,6 @@
 package com.procurement.submission.config;
 
+import com.procurement.submission.converter.BidEntityToBidResponse;
 import com.procurement.submission.converter.BidRequestDtoToBidEntity;
 import com.procurement.submission.converter.PeriodDataDtoToPeriodEntity;
 import java.util.HashSet;
@@ -14,9 +15,9 @@ public class ConverterConfig {
     @Bean
     public ConversionServiceFactoryBean conversionService() {
         final Set<Converter> converters = new HashSet<>();
-        converters.add(new PeriodDataDtoToPeriodEntity());
+        converters.add(new BidEntityToBidResponse());
         converters.add(new BidRequestDtoToBidEntity());
-        converters.add(new BidQualificationDtoToBidResponse());
+        converters.add(new PeriodDataDtoToPeriodEntity());
         final ConversionServiceFactoryBean bean = new ConversionServiceFactoryBean();
         bean.setConverters(converters);
         return bean;

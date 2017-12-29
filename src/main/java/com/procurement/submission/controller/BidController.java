@@ -1,8 +1,11 @@
 package com.procurement.submission.controller;
 
 import com.procurement.submission.model.dto.request.BidRequestDto;
+import com.procurement.submission.model.dto.request.BidsCopyDto;
 import com.procurement.submission.model.dto.response.BidResponse;
 import com.procurement.submission.model.dto.response.BidResponseEntity;
+import com.procurement.submission.model.dto.response.BidsCopyResponse;
+import com.procurement.submission.model.dto.response.BidsCopyResponseEntity;
 import com.procurement.submission.service.BidService;
 import java.util.ArrayList;
 import javax.validation.Valid;
@@ -36,7 +39,14 @@ public class BidController {
     @PostMapping(value = "/updateBid")
     @ResponseStatus(OK)
     public BidResponseEntity updateBid(@Valid @RequestBody final BidRequestDto bidRequest) {
-        BidResponse bidResponse = bidService.updateBid(bidRequest);
+        final BidResponse bidResponse = bidService.updateBid(bidRequest);
         return new BidResponseEntity(true, new ArrayList<>(), bidResponse);
+    }
+
+    @PostMapping(value = "/copyBids")
+    @ResponseStatus(OK)
+    public BidsCopyResponseEntity copyBids(@Valid @RequestBody final BidsCopyDto bidsCopyDto) {
+        final BidsCopyResponse bids = bidService.copyBids(bidsCopyDto);
+        return new BidsCopyResponseEntity(true, new ArrayList<>(), bids);
     }
 }

@@ -12,18 +12,18 @@ import lombok.Getter;
     "responseDetails",
     "data"
 })
-public class BidResponseEntity {
+public class BidsCopyResponseEntity {
     @JsonProperty("success")
     private boolean success;
     @JsonProperty("responseDetails")
     private List<Detail> responseDetails;
     @JsonProperty("data")
-    private BidResponse data;
+    private BidsCopyResponse data;
 
     @JsonCreator
-    public BidResponseEntity(@JsonProperty("success") final boolean success,
-                             @JsonProperty("responseDetails") final List<Detail> responseDetails,
-                             @JsonProperty("data") final BidResponse data) {
+    public BidsCopyResponseEntity(@JsonProperty("success") final boolean success,
+                                  @JsonProperty("responseDetails") final List<Detail> responseDetails,
+                                  @JsonProperty("data") final BidsCopyResponse data) {
         this.success = success;
         this.responseDetails = responseDetails;
         this.data = data;

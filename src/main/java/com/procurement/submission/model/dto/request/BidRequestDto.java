@@ -11,6 +11,7 @@ import lombok.Getter;
 @JsonPropertyOrder({
     "ocid",
     "stage",
+    "bidSignId",
     "bid"
 })
 public class BidRequestDto {
@@ -23,6 +24,9 @@ public class BidRequestDto {
     @JsonProperty("stage")
     private String stage;
 
+    @JsonProperty("bidSignId")
+    private String bidSignId;
+
     @NotNull
     @JsonProperty("bid")
     private Bid bid;
@@ -30,9 +34,11 @@ public class BidRequestDto {
     @JsonCreator
     public BidRequestDto(@JsonProperty("ocid") final String ocid,
                          @JsonProperty("stage") final String stage,
+                         @JsonProperty("bidSignId") final String bidSignId,
                          @JsonProperty("bid") final Bid bid) {
         this.ocid = ocid;
         this.stage = stage;
+        this.bidSignId = bidSignId;
         this.bid = bid;
     }
 }
