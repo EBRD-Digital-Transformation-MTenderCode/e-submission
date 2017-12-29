@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class QualificationOfferDtoToBidEntityTest {
 
-    @Test
+/*    @Test
     void testConvert() {
         final QualificationOfferDto qualificationOfferDtoExpected = createQualificationOfferDto();
         final Bid bidExpected = qualificationOfferDtoExpected.getBid();
@@ -49,5 +49,5 @@ public class QualificationOfferDtoToBidEntityTest {
         final JsonUtil jsonUtil = new JsonUtil();
         final String qualificationOfferStr = jsonUtil.getResource("json/qualification-offer.json");
         return jsonUtil.toObject(QualificationOfferDto.class, qualificationOfferStr);
-    }
+    }*/
 }

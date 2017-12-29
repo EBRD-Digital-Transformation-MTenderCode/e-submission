@@ -55,7 +55,7 @@ public class BidServiceTest {
         bidService = new BidServiceImpl(periodService, bidRepository, conversionService,
             jsonUtil, rulesService);
     }
-
+/*
     @Test
     @DisplayName("Test verifying invocations without null after converting.")
     void testInsertDataValid() throws URISyntaxException {
@@ -151,9 +151,9 @@ public class BidServiceTest {
         bidEntity.setStage(stage);
         bidEntity.setJsonData(jsonUtil.toJson(bid));
         return bidEntity;
-    }
+    }*/
 
-    private QualificationOfferDto createQualificationOfferDto() throws URISyntaxException {
+/*    private QualificationOfferDto createQualificationOfferDto() throws URISyntaxException {
         final Bid bidQualificationDto =
             createBidQualificationDto(UUID.randomUUID().toString(), "str1", "str1");
         return new QualificationOfferDto("ocid", "stage", bidQualificationDto);
@@ -167,7 +167,7 @@ public class BidServiceTest {
                 createOrganizationReferenceDto(nameOrganizationReferenceDt, schemeOrganizationReferenceDt)),
                        new ArrayList<>(), Collections.singletonList("str")
         );
-    }
+    }*/
 
     private OrganizationReference createOrganizationReferenceDto(final String name, final String scheme)
         throws URISyntaxException {

@@ -6,9 +6,9 @@ import org.junit.jupiter.api.Test;
 
 class QualificationOfferDtoTest extends AbstractDomainObjectTest {
 
-    @Test
+/*    @Test
     @DisplayName("Testing mapping json to QualificationOfferDto and to json")
     public void testJsonToDataDtoToJson() {
         compare(QualificationOfferDto.class, "json/qualification-offer.json");
-    }
+    }*/
 }
