@@ -1,12 +1,17 @@
 package com.procurement.submission.service;
 
 import com.procurement.submission.exception.ErrorException;
+import com.procurement.submission.model.dto.bpe.ResponseDetailsDto;
+import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.request.PeriodDataDto;
 import com.procurement.submission.model.dto.request.TenderPeriodDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import java.time.LocalDateTime;
+import java.util.Collections;
+
 import org.springframework.core.convert.ConversionService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -27,7 +32,7 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
-    public Boolean checkPeriod(final PeriodDataDto dataDto) {
+    public ResponseDto checkPeriod(final PeriodDataDto dataDto) {
         final long interval = rulesService.getInterval(dataDto);
         Boolean isValid = false;
         if (interval != 0L) {
@@ -36,7 +41,7 @@ public class PeriodServiceImpl implements PeriodService {
                 tenderPeriod.getEndDate(),
                 interval);
         }
-        return isValid;
+        return getResponseDto(dataDto.getTenderPeriod(), isValid);
     }
 
     @Override
@@ -56,8 +61,15 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
-    public SubmissionPeriodEntity savePeriod(final PeriodDataDto dataDto) {
+    public ResponseDto savePeriod(final PeriodDataDto dataDto) {
         final SubmissionPeriodEntity period = conversionService.convert(dataDto, SubmissionPeriodEntity.class);
-        return periodRepository.save(period);
+        periodRepository.save(period);
+        return getResponseDto(dataDto.getTenderPeriod(), true);
+    }
+
+    private ResponseDto getResponseDto(final TenderPeriodDto periodDto, Boolean isValid) {
+        String message =(isValid) ? "Period valid." : "Period not valid.";
+        final ResponseDetailsDto details = new ResponseDetailsDto(HttpStatus.OK.toString(), message);
+        return new ResponseDto(isValid, Collections.singletonList(details), periodDto);
     }
 }

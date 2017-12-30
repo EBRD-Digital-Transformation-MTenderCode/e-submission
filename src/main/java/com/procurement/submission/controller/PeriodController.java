@@ -1,6 +1,7 @@
 package com.procurement.submission.controller;
 
 import com.procurement.submission.exception.ValidationException;
+import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.request.PeriodDataDto;
 import com.procurement.submission.service.PeriodService;
 import javax.validation.Valid;
@@ -24,22 +25,21 @@ public class PeriodController {
     }
 
     @PostMapping("/check")
-    public ResponseEntity<Boolean> checkPeriod(@Valid @RequestBody final PeriodDataDto dataDto,
-                                               final BindingResult bindingResult) {
+    public ResponseEntity<ResponseDto> checkPeriod(@Valid @RequestBody final PeriodDataDto dataDto,
+                                                   final BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ValidationException(bindingResult);
         }
-        final Boolean isValid = periodService.checkPeriod(dataDto);
-        return new ResponseEntity<>(isValid, HttpStatus.OK);
+        return new ResponseEntity<>(periodService.checkPeriod(dataDto), HttpStatus.OK);
     }
 
     @PostMapping("/save")
     @ResponseStatus(value = HttpStatus.CREATED)
-    public void savePeriod(@Valid @RequestBody final PeriodDataDto dataDto,
+    public ResponseEntity<ResponseDto> savePeriod(@Valid @RequestBody final PeriodDataDto dataDto,
                            final BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
             throw new ValidationException(bindingResult);
         }
-        periodService.savePeriod(dataDto);
+        return new ResponseEntity<>(periodService.savePeriod(dataDto), HttpStatus.OK);
     }
 }

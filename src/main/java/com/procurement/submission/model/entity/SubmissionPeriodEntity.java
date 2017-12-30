@@ -1,6 +1,9 @@
 package com.procurement.submission.model.entity;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -16,8 +19,24 @@ public class SubmissionPeriodEntity {
     private String ocId;
 
     @Column(value = "start_date")
-    private LocalDateTime startDate;
+    private Date startDate;
 
     @Column(value = "end_date")
-    private LocalDateTime endDate;
+    private Date endDate;
+
+    public LocalDateTime getStartDate() {
+        return LocalDateTime.ofInstant(startDate.toInstant(), ZoneOffset.UTC);
+    }
+
+    public void setStartDate(LocalDateTime startDate) {
+        this.startDate = Date.from(startDate.toInstant(ZoneOffset.UTC));
+    }
+
+    public LocalDateTime getEndDate() {
+        return LocalDateTime.ofInstant(endDate.toInstant(), ZoneOffset.UTC);
+    }
+
+    public void setEndDate(LocalDateTime endDate) {
+        this.endDate = Date.from(endDate.toInstant(ZoneOffset.UTC));
+    }
 }

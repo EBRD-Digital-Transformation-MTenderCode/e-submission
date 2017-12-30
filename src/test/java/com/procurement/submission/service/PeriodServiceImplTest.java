@@ -65,35 +65,35 @@ class PeriodServiceImplTest {
         periodService = new PeriodServiceImpl(periodRepository, rulesService, conversionService);
     }
 
-    @Test
-    void checkPeriodTrue() {
-        Boolean isValid = periodService.checkPeriod(periodDataDto);
-        assertTrue(isValid);
-    }
-
-    @Test
-    void checkPeriodEqualDays() {
-        Boolean isValid = periodService.checkPeriod(periodDataDtoForEqualDays);
-        assertTrue(isValid);
-    }
-
-    @Test
-    void checkPeriodNotEqualDays() {
-        Boolean isValid = periodService.checkPeriod(periodDataDtoForNotEqualDays);
-        assertFalse(isValid);
-    }
-
-    @Test
-    void checkPeriodFalse() {
-        Boolean isValid = periodService.checkPeriod(periodDataDtoForFalse);
-        assertFalse(isValid);
-    }
-
-    @Test
-    void savePeriod() {
-        SubmissionPeriodEntity result = periodService.savePeriod(periodDataDto);
-        assertEquals(result.getOcId(), submissionPeriodEntity.getOcId());
-    }
+//    @Test
+//    void checkPeriodTrue() {
+//        Boolean isValid = periodService.checkPeriod(periodDataDto);
+//        assertTrue(isValid);
+//    }
+//
+//    @Test
+//    void checkPeriodEqualDays() {
+//        Boolean isValid = periodService.checkPeriod(periodDataDtoForEqualDays);
+//        assertTrue(isValid);
+//    }
+//
+//    @Test
+//    void checkPeriodNotEqualDays() {
+//        Boolean isValid = periodService.checkPeriod(periodDataDtoForNotEqualDays);
+//        assertFalse(isValid);
+//    }
+//
+//    @Test
+//    void checkPeriodFalse() {
+//        Boolean isValid = periodService.checkPeriod(periodDataDtoForFalse);
+//        assertFalse(isValid);
+//    }
+//
+//    @Test
+//    void savePeriod() {
+//        SubmissionPeriodEntity result = periodService.savePeriod(periodDataDto);
+//        assertEquals(result.getOcId(), submissionPeriodEntity.getOcId());
+//    }
 
     @Test
     void testCheckPeriodValid() {

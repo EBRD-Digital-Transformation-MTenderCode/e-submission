@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_rules (
     value text,
     primary key(country, method, parameter)
 );
-
 INSERT INTO ocds.submission_rules (country, method, parameter, value)  VALUES ('UA', 'micro', 'interval', '15');
+SELECT * FROM ocds.submission_rules;
 
 CREATE TABLE IF NOT EXISTS  ocds.submission_period (
     oc_id text,
@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_period (
     end_date timestamp,
     primary key(oc_id)
 );
+SELECT * FROM ocds.submission_period;
 
 CREATE TABLE IF NOT EXISTS  ocds.submission_bid (
     oc_id text,
