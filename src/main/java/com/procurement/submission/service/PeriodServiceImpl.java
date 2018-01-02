@@ -6,6 +6,7 @@ import com.procurement.submission.model.dto.request.TenderPeriodDto;
 import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
@@ -41,8 +42,10 @@ public class PeriodServiceImpl implements PeriodService {
 
     @Override
     public void checkPeriod(final String ocid) {
+        final SubmissionPeriodEntity periodEntity =
+            Optional.ofNullable(periodRepository.getByOcId(ocid))
+                    .orElseThrow(() -> new ErrorException("No period in DB"));
         final LocalDateTime localDateTime = LocalDateTime.now();
-        final SubmissionPeriodEntity periodEntity = periodRepository.getByOcId(ocid);
         final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
         final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
         if (!localDateTimeAfter || !localDateTimeBefore) {
