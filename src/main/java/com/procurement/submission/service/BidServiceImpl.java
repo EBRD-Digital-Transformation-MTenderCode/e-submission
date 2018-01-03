@@ -120,8 +120,8 @@ public class BidServiceImpl implements BidService {
 
     private BiPredicate<List<OrganizationReference>, List<OrganizationReference>> getTenderersBiPredicate() {
         return (tenderersFromDb, tenderersFromRequest) -> {
-            if (tenderersFromDb.size() == tenderersFromRequest.size()) {
-                tenderersFromDb.containsAll(tenderersFromRequest);
+            if (tenderersFromDb.size() == tenderersFromRequest.size() &&
+                tenderersFromDb.containsAll(tenderersFromRequest)) {
                 return true;
             }
             return false;
@@ -134,7 +134,7 @@ public class BidServiceImpl implements BidService {
         newBidEntity.setOcId(oldBidEntity.getOcId());
         newBidEntity.setStage(newStage);
         newBidEntity.setBidId(oldBidEntity.getBidId());
-        newBidEntity.setBidSignId(oldBidEntity.getBidSignId());
+        newBidEntity.setBidToken(oldBidEntity.getBidToken());
         Bid.Status newStatus = Bid.Status.INVITED;
         newBidEntity.setStatus(newStatus);
         final LocalDateTime dateTimeNow = LocalDateTime.now();
@@ -151,6 +151,7 @@ public class BidServiceImpl implements BidService {
         final LocalDateTime dateTimeNow = LocalDateTime.now();
         requestDto.getBid().setDate(dateTimeNow);
         requestDto.getBid().setId(UUIDs.timeBased().toString());
+        requestDto.getBid().setStatus(Bid.Status.PENDING);
         final BidEntity bidEntity = conversionService.convert(requestDto, BidEntity.class);
         bidEntity.setStatus(Bid.Status.PENDING);
         bidEntity.setPendingDate(dateTimeNow);
@@ -161,9 +162,9 @@ public class BidServiceImpl implements BidService {
 
     private BidEntity updateBidEntity(final BidRequestDto requestDto) {
         final BidEntity convertedBidEntity = conversionService.convert(requestDto, BidEntity.class);
-        final BidEntity oldBidEntity = bidRepository.findByOcIdAndStageAndBidIdAndBidSignId(
+        final BidEntity oldBidEntity = bidRepository.findByOcIdAndStageAndBidIdAndBidToken(
             requestDto.getOcid(), requestDto.getStage(), UUID.fromString(requestDto.getBid().getId()),
-            UUID.fromString(requestDto.getBidSignId()));
+            UUID.fromString(requestDto.getBidToken()));
         if (oldBidEntity != null) {
             requestDto.getBid().setDate(LocalDateTime.now());
             convertedBidEntity.setJsonData(jsonUtil.toJson(requestDto));

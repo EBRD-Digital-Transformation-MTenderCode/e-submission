@@ -14,14 +14,15 @@ public class BidRequestDtoToBidEntity implements Converter<BidRequestDto, BidEnt
         bidEntity.setOcId(bidDto.getOcid());
         bidEntity.setStage(bidDto.getStage());
         bidEntity.setBidId(UUID.fromString(bidDto.getBid().getId()));
-        bidEntity.setBidSignId(getUuid(bidDto));
+        bidEntity.setBidToken(getUuid(bidDto));
         bidEntity.setStatus(bidDto.getBid().getStatus());
+        bidEntity.setOwner(bidDto.getOwner());
         return bidEntity;
     }
 
     private UUID getUuid(final BidRequestDto bidDto) {
-        return bidDto.getBidSignId() == null ?
+        return bidDto.getBidToken() == null ?
                UUIDs.timeBased() :
-               UUID.fromString(bidDto.getBidSignId());
+               UUID.fromString(bidDto.getBidToken());
     }
 }

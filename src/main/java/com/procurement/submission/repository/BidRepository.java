@@ -21,5 +21,5 @@ public interface BidRepository extends CassandraRepository<BidEntity, String> {
 
     List<BidEntity> findAllByOcIdAndStageAndBidId(String ocid, String stage, Set<UUID> bidId);
 
-    BidEntity findByOcIdAndStageAndBidIdAndBidSignId( String ocid,  String stage, UUID bidId, UUID bidSignId);
+    BidEntity findByOcIdAndStageAndBidIdAndBidToken( String ocid,  String stage, UUID bidId, UUID bidToken);
 }

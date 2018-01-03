@@ -1,0 +1,64 @@
+{
+  "ocid": "ocds-213czf-000-00001",
+  "stage": "stage",
+  "owner": "Dart Weider",
+  "bid": {
+    "documents": [
+      {
+        "dateModified": "2018-01-02T13:28:15.532Z",
+        "datePublished": "2018-01-02T13:28:15.532Z",
+        "description": "string",
+        "documentType": "tenderNotice",
+        "format": "pdf",
+        "id": "docId1",
+        "language": "docLang",
+        "relatedLots": [
+          "lot"
+        ],
+        "title": "string",
+        "url": "docserver.com/doc0.pdf"
+      }
+    ],
+    "relatedLots": [
+      "lot"
+    ],
+    "status": "invited",
+    "tenderers": [
+      {
+        "additionalIdentifiers": [
+          {
+            "id": "string",
+            "legalName": "string",
+            "scheme": "string",
+            "uri": "company/uri"
+          }
+        ],
+        "address": {
+          "countryName": "UA",
+          "locality": "locality",
+          "postalCode": "03241",
+          "region": "region",
+          "streetAddress": "street"
+        },
+        "contactPoint": {
+          "email": "mail@g.com",
+          "faxNumber": "123213123",
+          "languages": [
+            "UA"
+          ],
+          "name": "contactName",
+          "telephone": "2142342",
+          "url": "contact/point/uri"
+        },
+        "id": "tendererId1",
+        "identifier": {
+          "id": "tendererId1",
+          "legalName": "identifierLegalName",
+          "scheme": "identifierScheme",
+          "uri": "identifier/uri"
+        },
+        "name": "tendererName"
+      }
+    ]
+  }
+}
