@@ -7,6 +7,6 @@ import org.junit.jupiter.api.Test;
 public class DocumentDtoTest extends AbstractDomainObjectTest {
     @Test
     public void testMappingToDocumentDto() {
-        compare(Document.class, "json/DocumentDto.json");
+        compare(Document.class, "json/old/DocumentDto.json");
     }
 }

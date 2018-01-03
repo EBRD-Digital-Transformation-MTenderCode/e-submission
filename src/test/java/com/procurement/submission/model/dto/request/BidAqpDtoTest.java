@@ -6,6 +6,6 @@ import org.junit.jupiter.api.Test;
 public class BidAqpDtoTest extends AbstractDomainObjectTest {
     @Test
     public void testMappingToBidAqpDto() {
-        compare(BidAqpDto.class, "json/BidAqpDto.json");
+        compare(BidAqpDto.class, "json/old/BidAqpDto.json");
     }
 }

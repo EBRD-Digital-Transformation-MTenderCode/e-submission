@@ -2,11 +2,6 @@ package com.procurement.submission.controller;
 
 import com.procurement.submission.JsonUtil;
 import com.procurement.submission.config.BidControllerTestConfig;
-import com.procurement.submission.model.ocds.BidStatus;
-import com.procurement.submission.service.BidService;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -22,10 +17,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -76,7 +67,7 @@ class BidControllerTest {
     void testSubmissionTechnicalProposalCreated() throws Exception {
         mockMvc.perform(post("/submission/technicalProposal")
                             .contentType(APPLICATION_JSON)
-                            .content(new JsonUtil().getResource("json/DocumentDto.json")))
+                            .content(new JsonUtil().getResource("json/old/DocumentDto.json")))
                .andExpect(status().isCreated());
     }
 
@@ -97,7 +88,7 @@ class BidControllerTest {
     void testSubmissionPriceProposalCreated() throws Exception {
         mockMvc.perform(post("/submission/priceOffer")
                             .contentType(APPLICATION_JSON)
-                            .content(new JsonUtil().getResource("json/ValueDto.json")))
+                            .content(new JsonUtil().getResource("json/old/ValueDto.json")))
                .andExpect(status().isCreated());
     }
 
@@ -194,7 +185,7 @@ class BidControllerTest {
     public void testPatchBidsWithNotValidParamBadRequest() throws Exception {
         mockMvc.perform(patch("/submission/bids?ocid=ocds-213czf-000-0000&stage= ")
                             .contentType(APPLICATION_JSON)
-                            .content(new JsonUtil().getResource("json/BidAqpDtos.json")))
+                            .content(new JsonUtil().getResource("json/old/BidAqpDtos.json")))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath("$.message").value("Something went wrong"))
                .andExpect(jsonPath("$..errors.length()").value(2))
