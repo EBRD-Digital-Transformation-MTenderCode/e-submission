@@ -145,6 +145,7 @@ public class BidServiceImpl implements BidService {
         final Bid newBid = new Bid(oldBid.getId(), dateTimeNow, newStatus, oldBid.getTenderers(), null, null,
             oldBid.getRelatedLots());
         newBidEntity.setJsonData(jsonUtil.toJson(newBid));
+        newBidEntity.setOwner(oldBidEntity.getOwner());
         return new AbstractMap.SimpleEntry<>(newBidEntity, newBid);
     }
 
