@@ -71,6 +71,9 @@ public class BidServiceImpl implements BidService {
     public BidsCopyResponse copyBids(final BidsCopyDto bidsCopyDto) {
         final List<BidEntity> bidEntities =
             bidRepository.findAllByOcIdAndStage(bidsCopyDto.getOcId(), bidsCopyDto.getPreviousStage());
+        if (bidEntities.isEmpty()) {
+            throw new ErrorException("Sorry guys, we don't have Bids.");
+        }
         final Map<BidEntity, Bid> entityBidMap = filteringValid(bidEntities);
         final Map<BidEntity, Bid> newBidsMap = createBidCopy(bidsCopyDto, entityBidMap);
         bidRepository.saveAll(newBidsMap.keySet());
