@@ -42,25 +42,37 @@ public class PeriodServiceImpl implements PeriodService {
 
     @Override
     public void checkPeriod(final String ocid) {
-        final SubmissionPeriodEntity periodEntity =
-            Optional.ofNullable(periodRepository.getByOcId(ocid))
-                    .orElseThrow(() -> new ErrorException("No period in DB"));
-        final LocalDateTime localDateTime = LocalDateTime.now();
-        final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
-        final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
-        if (!localDateTimeAfter || !localDateTimeBefore) {
+        if (isPeriodNow(ocid)) {
             throw new ErrorException("Not found date.");
         }
-    }
-
-    private Boolean checkInterval(final LocalDateTime startDate, final LocalDateTime endDate, final Long interval) {
-        final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
-        return days >= interval;
     }
 
     @Override
     public SubmissionPeriodEntity savePeriod(final PeriodDataDto dataDto) {
         final SubmissionPeriodEntity period = conversionService.convert(dataDto, SubmissionPeriodEntity.class);
         return periodRepository.save(period);
+    }
+
+    @Override
+    public boolean isPeriod(String ocid) {
+        return isPeriodNow(ocid);
+    }
+
+    private boolean isPeriodNow(final String ocid) {
+        final SubmissionPeriodEntity periodEntity = findPeriod(ocid);
+        final LocalDateTime localDateTime = LocalDateTime.now();
+        final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
+        final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
+        return !localDateTimeAfter || !localDateTimeBefore;
+    }
+
+    private SubmissionPeriodEntity findPeriod(String ocid) {
+        return Optional.ofNullable(periodRepository.getByOcId(ocid))
+                       .orElseThrow(() -> new ErrorException("No period in DB"));
+    }
+
+    private Boolean checkInterval(final LocalDateTime startDate, final LocalDateTime endDate, final Long interval) {
+        final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
+        return days >= interval;
     }
 }
