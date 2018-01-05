@@ -4,6 +4,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.BidsCopyDto;
+import com.procurement.submission.model.dto.request.BidsSelectionDto;
 import com.procurement.submission.model.dto.response.BidResponse;
 import com.procurement.submission.model.dto.response.BidsCopyResponse;
 import com.procurement.submission.model.entity.BidEntity;
@@ -79,6 +80,20 @@ public class BidServiceImpl implements BidService {
         bidRepository.saveAll(newBidsMap.keySet());
         final BidsCopyResponse.Bids bids = new BidsCopyResponse.Bids(new ArrayList<>(newBidsMap.values()));
         return new BidsCopyResponse(bidsCopyDto.getOcId(), bids);
+    }
+
+    @Override
+    public BidsSelectionDto selectionBids(final BidsSelectionDto bidsSelectionDto) {
+        boolean isPeriod = periodService.isPeriod(bidsSelectionDto.getOcId());
+        if (isPeriod) {
+            throw new ErrorException("Period has not yet expired");
+        }
+        int rulesMinBids = rulesService.getRulesMinBids(bidsSelectionDto.getCountry(), bidsSelectionDto.getMethod());
+
+
+
+
+        return ;
     }
 
     private Map<BidEntity, Bid> createBidCopy(final BidsCopyDto bidsCopyDto,
