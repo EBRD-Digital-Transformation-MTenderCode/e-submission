@@ -4,6 +4,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.BidsCopyDto;
+import com.procurement.submission.model.dto.request.BidsSelectionDto;
 import com.procurement.submission.model.dto.response.BidResponse;
 import com.procurement.submission.model.dto.response.BidsCopyResponse;
 import com.procurement.submission.model.entity.BidEntity;
@@ -18,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiPredicate;
 import org.springframework.core.convert.ConversionService;
@@ -70,11 +72,28 @@ public class BidServiceImpl implements BidService {
     public BidsCopyResponse copyBids(final BidsCopyDto bidsCopyDto) {
         final List<BidEntity> bidEntities =
             bidRepository.findAllByOcIdAndStage(bidsCopyDto.getOcId(), bidsCopyDto.getPreviousStage());
+        if (bidEntities.isEmpty()) {
+            throw new ErrorException("Sorry guys, we don't have Bids.");
+        }
         final Map<BidEntity, Bid> entityBidMap = filteringValid(bidEntities);
         final Map<BidEntity, Bid> newBidsMap = createBidCopy(bidsCopyDto, entityBidMap);
         bidRepository.saveAll(newBidsMap.keySet());
         final BidsCopyResponse.Bids bids = new BidsCopyResponse.Bids(new ArrayList<>(newBidsMap.values()));
         return new BidsCopyResponse(bidsCopyDto.getOcId(), bids);
+    }
+
+    @Override
+    public BidsSelectionDto selectionBids(final BidsSelectionDto bidsSelectionDto) {
+        boolean isPeriod = periodService.isPeriod(bidsSelectionDto.getOcId());
+        if (isPeriod) {
+            throw new ErrorException("Period has not yet expired");
+        }
+        int rulesMinBids = rulesService.getRulesMinBids(bidsSelectionDto.getCountry(), bidsSelectionDto.getMethod());
+
+
+
+
+        return ;
     }
 
     private Map<BidEntity, Bid> createBidCopy(final BidsCopyDto bidsCopyDto,
@@ -120,8 +139,8 @@ public class BidServiceImpl implements BidService {
 
     private BiPredicate<List<OrganizationReference>, List<OrganizationReference>> getTenderersBiPredicate() {
         return (tenderersFromDb, tenderersFromRequest) -> {
-            if (tenderersFromDb.size() == tenderersFromRequest.size()) {
-                tenderersFromDb.containsAll(tenderersFromRequest);
+            if (tenderersFromDb.size() == tenderersFromRequest.size() &&
+                tenderersFromDb.containsAll(tenderersFromRequest)) {
                 return true;
             }
             return false;
@@ -134,7 +153,7 @@ public class BidServiceImpl implements BidService {
         newBidEntity.setOcId(oldBidEntity.getOcId());
         newBidEntity.setStage(newStage);
         newBidEntity.setBidId(oldBidEntity.getBidId());
-        newBidEntity.setBidSignId(oldBidEntity.getBidSignId());
+        newBidEntity.setBidToken(oldBidEntity.getBidToken());
         Bid.Status newStatus = Bid.Status.INVITED;
         newBidEntity.setStatus(newStatus);
         final LocalDateTime dateTimeNow = LocalDateTime.now();
@@ -144,6 +163,7 @@ public class BidServiceImpl implements BidService {
         final Bid newBid = new Bid(oldBid.getId(), dateTimeNow, newStatus, oldBid.getTenderers(), null, null,
             oldBid.getRelatedLots());
         newBidEntity.setJsonData(jsonUtil.toJson(newBid));
+        newBidEntity.setOwner(oldBidEntity.getOwner());
         return new AbstractMap.SimpleEntry<>(newBidEntity, newBid);
     }
 
@@ -151,6 +171,7 @@ public class BidServiceImpl implements BidService {
         final LocalDateTime dateTimeNow = LocalDateTime.now();
         requestDto.getBid().setDate(dateTimeNow);
         requestDto.getBid().setId(UUIDs.timeBased().toString());
+        requestDto.getBid().setStatus(Bid.Status.PENDING);
         final BidEntity bidEntity = conversionService.convert(requestDto, BidEntity.class);
         bidEntity.setStatus(Bid.Status.PENDING);
         bidEntity.setPendingDate(dateTimeNow);
@@ -160,17 +181,31 @@ public class BidServiceImpl implements BidService {
     }
 
     private BidEntity updateBidEntity(final BidRequestDto requestDto) {
+        final BidEntity oldBidEntity =
+            Optional.ofNullable(bidRepository.findByOcIdAndStageAndBidIdAndBidToken(requestDto.getOcid(),
+                requestDto.getStage(), UUID.fromString(requestDto.getBid().getId()),
+                UUID.fromString(requestDto.getBidToken())))
+                    .orElseThrow(() -> new ErrorException("Don't have data."));
+        final BidEntity bidEntity = updateBidEntity(requestDto, oldBidEntity);
+        bidRepository.save(bidEntity);
+        return bidEntity;
+    }
+
+    private BidEntity updateBidEntity(final BidRequestDto requestDto, final BidEntity oldBidEntity) {
         final BidEntity convertedBidEntity = conversionService.convert(requestDto, BidEntity.class);
-        final BidEntity oldBidEntity = bidRepository.findByOcIdAndStageAndBidIdAndBidSignId(
-            requestDto.getOcid(), requestDto.getStage(), UUID.fromString(requestDto.getBid().getId()),
-            UUID.fromString(requestDto.getBidSignId()));
-        if (oldBidEntity != null) {
-            requestDto.getBid().setDate(LocalDateTime.now());
-            convertedBidEntity.setJsonData(jsonUtil.toJson(requestDto));
-            convertedBidEntity.setCreatedDate(oldBidEntity.getCreatedDate());
-            return convertedBidEntity;
-        }
-        throw new ErrorException("Don't have data.");
+        requestDto.getBid().setDate(LocalDateTime.now());
+        convertedBidEntity.setJsonData(jsonUtil.toJson(requestDto.getBid()));
+        convertedBidEntity.setCreatedDate(oldBidEntity.getCreatedDate());
+        convertedBidEntity.setPendingDate(isSetPending(requestDto, oldBidEntity) ?
+                                          LocalDateTime.now() :
+                                          oldBidEntity.getPendingDate());
+        return convertedBidEntity;
+    }
+
+    private boolean isSetPending(final BidRequestDto requestDto, final BidEntity oldBidEntity) {
+        return oldBidEntity.getPendingDate() == null &&
+            oldBidEntity.getStatus() != Bid.Status.PENDING &&
+            requestDto.getBid().getStatus() == Bid.Status.PENDING;
     }
 
     private BidResponse createBidResponse(final BidEntity bid) {

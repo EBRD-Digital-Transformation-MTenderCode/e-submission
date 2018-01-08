@@ -23,7 +23,7 @@ class BidRepositoryTest {
         bidEntity.setOcId("ocds-213czf-000-00001");
         bidEntity.setBidId(UUIDs.timeBased());
         bidEntity.setStatus(Bid.Status.PENDING);
-        bidEntity.setJsonData(new JsonUtil().getResource("json/qualification-offer.json"));
+        bidEntity.setJsonData(new JsonUtil().getResource("json/old/qualification-offer.json"));
         bidRepository = mock(BidRepository.class);
         when(bidRepository.save(bidEntity)).thenReturn(bidEntity);
     }

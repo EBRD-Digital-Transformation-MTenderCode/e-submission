@@ -2,14 +2,16 @@ package com.procurement.submission.controller;
 
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.BidsCopyDto;
+import com.procurement.submission.model.dto.request.BidsSelectionDto;
 import com.procurement.submission.model.dto.response.BidResponse;
 import com.procurement.submission.model.dto.response.BidResponseEntity;
 import com.procurement.submission.model.dto.response.BidsCopyResponse;
-import com.procurement.submission.model.dto.response.BidsCopyResponseEntity;
+import com.procurement.submission.model.dto.response.BidsResponseEntity;
 import com.procurement.submission.service.BidService;
 import java.util.ArrayList;
 import javax.validation.Valid;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,8 +47,16 @@ public class BidController {
 
     @PostMapping(value = "/copyBids")
     @ResponseStatus(OK)
-    public BidsCopyResponseEntity copyBids(@Valid @RequestBody final BidsCopyDto bidsCopyDto) {
+    public BidsResponseEntity<BidsCopyResponse> copyBids(@Valid @RequestBody final BidsCopyDto bidsCopyDto) {
         final BidsCopyResponse bids = bidService.copyBids(bidsCopyDto);
-        return new BidsCopyResponseEntity(true, new ArrayList<>(), bids);
+        return new BidsResponseEntity<>(true, new ArrayList<>(), bids);
+    }
+
+    @GetMapping(value = "/selectionOfBidsForQualificationEvaluation")
+    @ResponseStatus(OK)
+    public BidsResponseEntity<BidsSelectionDto> selectionBids(
+        @Valid @RequestBody final BidsSelectionDto bidsSelectionDto) {
+        final BidsSelectionDto bids = bidService.selectionBids(bidsSelectionDto);
+        return new BidsResponseEntity<>(true, new ArrayList<>(), bids);
     }
 }

@@ -16,7 +16,9 @@ import lombok.Setter;
 @JsonPropertyOrder({
     "ocid",
     "stage",
-    "bid"
+    "bidToken",
+    "bid",
+    "owner"
 })
 public class BidResponse {
     @NotNull
@@ -28,22 +30,28 @@ public class BidResponse {
     private String stage;
 
     @NotNull
-    @JsonProperty("bidSignId")
-    private String bidSignId;
+    @JsonProperty("bidToken")
+    private String bidToken;
 
     @Valid
     @NotNull
     @JsonProperty("bid")
     private Bid bid;
 
+    @NotNull
+    @JsonProperty("owner")
+    private String owner;
+
     @JsonCreator
     public BidResponse(@JsonProperty("ocid") final String ocid,
                        @JsonProperty("stage") final String stage,
-                       @JsonProperty("bidSignId") final String bidSignId,
-                       @JsonProperty("bid") final Bid bid) {
+                       @JsonProperty("bidToken") final String bidToken,
+                       @JsonProperty("bid") final Bid bid,
+                       @JsonProperty("owner") final String owner) {
         this.ocid = ocid;
         this.stage = stage;
-        this.bidSignId = bidSignId;
+        this.bidToken = bidToken;
         this.bid = bid;
+        this.owner = owner;
     }
 }

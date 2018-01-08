@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.List;
+import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -11,32 +12,24 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 @Getter
 @JsonPropertyOrder({
     "ocid",
-    "country",
     "stage",
     "previousStage",
-    "procurementMethodDetails",
     "lots"
 })
 public class BidsCopyDto {
     private String ocId;
-    private String country;
     private String stage;
     private String previousStage;
-    private String procurementMethodDetails;
     private List<Lot> lots;
 
     @JsonCreator
     public BidsCopyDto(@JsonProperty("ocid") final String ocId,
-                       @JsonProperty("country") final String country,
                        @JsonProperty("stage") final String stage,
                        @JsonProperty("previousStage") final String previousStage,
-                       @JsonProperty("procurementMethodDetails") final String procurementMethodDetails,
                        @JsonProperty("lots") final List<Lot> lots) {
         this.ocId = ocId;
-        this.country = country;
         this.stage = stage;
         this.previousStage = previousStage;
-        this.procurementMethodDetails = procurementMethodDetails;
         this.lots = lots;
     }
 

@@ -12,7 +12,8 @@ public class BidEntityToBidResponse implements Converter<BidEntity, BidResponse>
         BidResponse bidResponse = new BidResponse();
         bidResponse.setOcid(bidEntity.getOcId());
         bidResponse.setStage(bidEntity.getStage());
-        bidResponse.setBidSignId(bidEntity.getBidSignId().toString());
+        bidResponse.setBidToken(bidEntity.getBidToken().toString());
+        bidResponse.setOwner(bidEntity.getOwner());
         return bidResponse;
     }
 }

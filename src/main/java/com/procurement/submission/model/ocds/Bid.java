@@ -1,6 +1,7 @@
 package com.procurement.submission.model.ocds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -20,6 +21,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "id",
     "date",
@@ -80,6 +82,10 @@ public class Bid {
 
     public void setDate(LocalDateTime date) {
         this.date = date;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     @Override

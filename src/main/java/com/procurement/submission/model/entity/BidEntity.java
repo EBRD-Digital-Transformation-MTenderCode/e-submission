@@ -23,8 +23,8 @@ public class BidEntity {
     @PrimaryKeyColumn(name = "bid_id", type = PrimaryKeyType.CLUSTERED)
     private UUID bidId;
 
-    @PrimaryKeyColumn(name = "bid_sign_id", type = PrimaryKeyType.CLUSTERED)
-    private UUID bidSignId;
+    @PrimaryKeyColumn(name = "bid_token", type = PrimaryKeyType.CLUSTERED)
+    private UUID bidToken;
 
     @Column(value = "json_data")
     private String jsonData;
@@ -32,9 +32,12 @@ public class BidEntity {
     @Column(value = "bid_status")
     private Bid.Status status;
 
-    @Column("createdDate")
+    @Column("created_date")
     private LocalDateTime createdDate;
 
-    @Column("pendingDate")
+    @Column("pending_date")
     private LocalDateTime pendingDate;
+
+    @Column("owner")
+    private String owner;
 }
