@@ -11,10 +11,11 @@ INSERT INTO ocds.submission_rules (country, method, parameter, value)  VALUES ('
 SELECT * FROM ocds.submission_rules;
 
 CREATE TABLE IF NOT EXISTS  ocds.submission_period (
-    oc_id text,
+    cp_id text,
+    stage text,
     start_date timestamp,
     end_date timestamp,
-    primary key(oc_id)
+    primary key(oc_id, stage)
 );
 SELECT * FROM ocds.submission_period;
 

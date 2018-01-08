@@ -84,16 +84,13 @@ public class BidServiceImpl implements BidService {
 
     @Override
     public BidsSelectionDto selectionBids(final BidsSelectionDto bidsSelectionDto) {
-        boolean isPeriod = periodService.isPeriod(bidsSelectionDto.getOcId());
-        if (isPeriod) {
-            throw new ErrorException("Period has not yet expired");
-        }
-        int rulesMinBids = rulesService.getRulesMinBids(bidsSelectionDto.getCountry(), bidsSelectionDto.getMethod());
+//        boolean isPeriod = periodService.isPeriod(bidsSelectionDto.getOcId());
+//        if (isPeriod) {
+//            throw new ErrorException("Period has not yet expired");
+//        }
+//        int rulesMinBids = rulesService.getRulesMinBids(bidsSelectionDto.getCountry(), bidsSelectionDto.getMethod());
 
-
-
-
-        return ;
+        return null;
     }
 
     private Map<BidEntity, Bid> createBidCopy(final BidsCopyDto bidsCopyDto,

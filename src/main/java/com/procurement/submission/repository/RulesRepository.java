@@ -8,9 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RulesRepository extends CassandraRepository<RulesEntity, String> {
 
-    @Query(value = "select * from submission_rules where country=?0 AND method=?1 AND parameter=?2 LIMIT 1")
-    RulesEntity getRule(String country, String method, String parameter);
-
     @Query(value = "select value from submission_rules where country=?0 AND method=?1 AND parameter=?2 LIMIT 1")
     String getValue(String country, String method, String parameter);
 }

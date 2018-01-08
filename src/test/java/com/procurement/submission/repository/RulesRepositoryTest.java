@@ -22,23 +22,15 @@ class RulesRepositoryTest {
         rulesEntity.setParameter("interval");
         rulesEntity.setValue("15");
         rulesRepository = mock(RulesRepository.class);
-        when(rulesRepository.getRule(rulesEntity.getCountry(), rulesEntity.getMethod(), rulesEntity.getParameter()))
-            .thenReturn(rulesEntity);
         when(rulesRepository.getValue(rulesEntity.getCountry(), rulesEntity.getMethod(), rulesEntity.getParameter())
         ).thenReturn(rulesEntity.getValue());
     }
 
-    @Test
-    public void getRuleTest() {
-        RulesEntity result = rulesRepository.getRule(rulesEntity.getCountry(), rulesEntity.getMethod(), rulesEntity
-            .getParameter());
-        assertEquals(result.getValue(), rulesEntity.getValue());
-    }
 
     @Test
     public void getValueTest() {
         String value = rulesRepository.getValue(rulesEntity.getCountry(), rulesEntity.getMethod(), rulesEntity
-            .getParameter());
+                .getParameter());
         assertEquals(value, rulesEntity.getValue());
     }
 }
