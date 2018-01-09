@@ -7,11 +7,10 @@ import com.procurement.submission.model.dto.response.SavePeriodResponse;
 import com.procurement.submission.model.entity.PeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.utils.DateUtil;
-import org.springframework.core.convert.ConversionService;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.stereotype.Service;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -42,7 +41,7 @@ public class PeriodServiceImpl implements PeriodService {
                                    final LocalDateTime endDate) {
         final int interval = rulesService.getInterval(country, pmd);
         final Boolean isValid = checkInterval(startDate, endDate, interval);
-        return new ResponseDto(true, null, new CheckPeriodResponse(isValid));
+        return getResponseDto(new CheckPeriodResponse(isValid));
     }
 
     @Override
@@ -56,13 +55,11 @@ public class PeriodServiceImpl implements PeriodService {
         period.setStartDate(dateUtil.localToDate(startDate));
         period.setEndDate(dateUtil.localToDate(endDate));
         periodRepository.save(period);
-        return new ResponseDto(
-                true,
-                null,
-                new SavePeriodResponse(period.getCpId(),
-                        dateUtil.dateToLocal(period.getStartDate()),
-                        dateUtil.dateToLocal(period.getEndDate())));
-    }
+        return getResponseDto(new SavePeriodResponse(
+                period.getCpId(),
+                dateUtil.dateToLocal(period.getStartDate()),
+                dateUtil.dateToLocal(period.getEndDate())));
+        }
 
 
     @Override
@@ -84,5 +81,9 @@ public class PeriodServiceImpl implements PeriodService {
     private Boolean checkInterval(final LocalDateTime startDate, final LocalDateTime endDate, final int interval) {
         final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
         return days >= interval;
+    }
+
+    private ResponseDto getResponseDto(final Object data){
+        return new ResponseDto(true, null, data);
     }
 }

@@ -1,5 +1,6 @@
 package com.procurement.submission.model.dto.bpe;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class ResponseDto<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T data;
 
+    @JsonCreator
     public ResponseDto(@JsonProperty("success") final Boolean success,
                        @JsonProperty("details") final List<ResponseDetailsDto> details,
                        @JsonProperty("data") final T data) {
