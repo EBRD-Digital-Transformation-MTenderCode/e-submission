@@ -11,6 +11,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.DAYS;
 
@@ -55,18 +56,28 @@ public class PeriodServiceImpl implements PeriodService {
         period.setStartDate(dateUtil.localToDate(startDate));
         period.setEndDate(dateUtil.localToDate(endDate));
         periodRepository.save(period);
-        return getResponseDto(period);
+        return new ResponseDto(
+                true,
+                null,
+                new SavePeriodResponse(period.getCpId(),
+                        dateUtil.dateToLocal(period.getStartDate()),
+                        dateUtil.dateToLocal(period.getEndDate())));
     }
 
 
     @Override
     public void checkPeriod(final String cpid) {
         final LocalDateTime localDateTime = dateUtil.localNowUTC();
-        final PeriodEntity periodEntity = periodRepository.getByCpId(cpid);
-        final boolean localDateTimeAfter = localDateTime.isAfter(dateUtil.dateToLocal(periodEntity.getStartDate()));
-        final boolean localDateTimeBefore = localDateTime.isBefore(dateUtil.dateToLocal(periodEntity.getEndDate()));
-        if (!localDateTimeAfter || !localDateTimeBefore) {
-            throw new ErrorException("Not found date.");
+        final Optional<PeriodEntity> entityOptional = periodRepository.getByCpId(cpid);
+        if (entityOptional.isPresent()) {
+            final PeriodEntity periodEntity = entityOptional.get();
+            final boolean localDateTimeAfter = localDateTime.isAfter(dateUtil.dateToLocal(periodEntity.getStartDate()));
+            final boolean localDateTimeBefore = localDateTime.isBefore(dateUtil.dateToLocal(periodEntity.getEndDate()));
+            if (!localDateTimeAfter || !localDateTimeBefore) {
+                throw new ErrorException("Date does not match period.");
+            }
+        } else {
+            throw new ErrorException("Period not found");
         }
     }
 
@@ -74,16 +85,4 @@ public class PeriodServiceImpl implements PeriodService {
         final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
         return days >= interval;
     }
-
-    private ResponseDto getResponseDto(final PeriodEntity period) {
-        return new ResponseDto(
-                true,
-                null,
-                new SavePeriodResponse(
-                        period.getCpId(),
-                        dateUtil.dateToLocal(period.getStartDate()),
-                        dateUtil.dateToLocal(period.getEndDate())));
-    }
-
-
 }
