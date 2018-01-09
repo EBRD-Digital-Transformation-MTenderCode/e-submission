@@ -61,7 +61,6 @@ public class PeriodServiceImpl implements PeriodService {
                 dateUtil.dateToLocal(period.getEndDate())));
         }
 
-
     @Override
     public void checkPeriod(final String cpid) {
         final LocalDateTime localDateTime = dateUtil.localNowUTC();
