@@ -5,6 +5,7 @@ import com.procurement.submission.model.dto.request.BidsCopyDto;
 import com.procurement.submission.model.dto.request.BidsSelectionDto;
 import com.procurement.submission.model.dto.response.BidResponse;
 import com.procurement.submission.model.dto.response.BidsCopyResponse;
+import com.procurement.submission.model.dto.response.BidsSelectionResponse;
 import javax.validation.Valid;
 
 public interface BidService {
@@ -15,5 +16,5 @@ public interface BidService {
 
     BidsCopyResponse copyBids(BidsCopyDto bidsCopyDto);
 
-    BidsSelectionDto selectionBids(BidsSelectionDto bidsSelectionDto);
+    BidsSelectionResponse selectionBids(BidsSelectionDto bidsSelectionDto);
 }

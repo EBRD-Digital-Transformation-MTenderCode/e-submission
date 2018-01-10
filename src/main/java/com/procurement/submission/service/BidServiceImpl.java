@@ -7,6 +7,7 @@ import com.procurement.submission.model.dto.request.BidsCopyDto;
 import com.procurement.submission.model.dto.request.BidsSelectionDto;
 import com.procurement.submission.model.dto.response.BidResponse;
 import com.procurement.submission.model.dto.response.BidsCopyResponse;
+import com.procurement.submission.model.dto.response.BidsSelectionResponse;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.model.ocds.OrganizationReference;
@@ -83,17 +84,21 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public BidsSelectionDto selectionBids(final BidsSelectionDto bidsSelectionDto) {
+    public BidsSelectionResponse selectionBids(final BidsSelectionDto bidsSelectionDto) {
         boolean isPeriod = periodService.isPeriod(bidsSelectionDto.getOcId());
         if (isPeriod) {
             throw new ErrorException("Period has not yet expired");
         }
-        int rulesMinBids = rulesService.getRulesMinBids(bidsSelectionDto.getCountry(), bidsSelectionDto.getMethod());
-
-
-
-
-        return ;
+        final List<BidEntity> pendingBids =
+            pendingFilter(bidRepository.findAllByOcIdAndStage(bidsSelectionDto.getOcId(), bidsSelectionDto.getStage()));
+        int rulesMinBids = rulesService.getRulesMinBids(bidsSelectionDto.getCountry(), bidsSelectionDto.getPmd());
+        if (pendingBids.size() < rulesMinBids) {
+            throw new ErrorException("Bids with status PENDING are less minimum count of bids.");
+        }
+        final List<BidsSelectionResponse.Bid> responseBids = pendingBids.stream()
+                                                                        .map(this::convertBids)
+                                                                        .collect(toList());
+        return new BidsSelectionResponse(bidsSelectionDto.getOcId(), responseBids);
     }
 
     private Map<BidEntity, Bid> createBidCopy(final BidsCopyDto bidsCopyDto,
@@ -228,5 +233,18 @@ public class BidServiceImpl implements BidService {
             }
         }
         return false;
+    }
+
+    private BidsSelectionResponse.Bid convertBids(final BidEntity bidEntity) {
+        final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
+        final BidsSelectionResponse.Bid bidSelection = conversionService.convert(bid, BidsSelectionResponse.Bid.class);
+        bidSelection.setPendingDate(bidEntity.getPendingDate());
+        return bidSelection;
+    }
+
+    private List<BidEntity> pendingFilter(final List<BidEntity> bids) {
+        return bids.stream()
+                   .filter(b -> b.getStatus() == Bid.Status.PENDING)
+                   .collect(toList());
     }
 }
