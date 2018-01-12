@@ -9,6 +9,8 @@ import com.procurement.submission.model.dto.response.BidsCopyResponse;
 import com.procurement.submission.model.dto.response.BidsSelectionResponse;
 import com.procurement.submission.model.dto.response.BidsWithdrawnRs;
 import com.procurement.submission.model.dto.response.CommonBidResponse;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 
 public interface BidService {
 
@@ -23,4 +25,6 @@ public interface BidService {
     BidsWithdrawnRs updateBidsByLots(BidsUpdateByLotsDto bidsUpdateByLotsDto);
 
     BidWithdrawnRs updateStatusDetail(String cpid, String stage, String bidId, String awardStatus);
+
+    BidWithdrawnRs setFinalStatuses( String cpid, String stage);
 }

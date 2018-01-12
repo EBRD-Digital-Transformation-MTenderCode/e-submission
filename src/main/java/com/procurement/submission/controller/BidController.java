@@ -111,4 +111,14 @@ public class BidController {
         final BidWithdrawnRs bidWithdrawnRs = bidService.updateStatusDetail(cpid, stage, bidId, awardStatus);
         return new BidsResponseEntity<>(true, new ArrayList<>(), bidWithdrawnRs);
     }
+
+    @PostMapping(value = "/setFinalStatuses/{cpid}")
+    @ResponseStatus(OK)
+    public BidsResponseEntity<BidWithdrawnRs> setFinalStatuses(
+        @PathVariable @Size(min = OCID_LENGTH, max = OCID_LENGTH) final String cpid,
+        @RequestParam @NotBlank final String stage
+    ) {
+        final BidWithdrawnRs bidWithdrawnRs = bidService.setFinalStatuses(cpid, stage);
+        return new BidsResponseEntity<>(true, new ArrayList<>(), bidWithdrawnRs);
+    }
 }

@@ -183,6 +183,16 @@ public class BidServiceImpl implements BidService {
         return conversionService.convert(bid, BidWithdrawnRs.class);
     }
 
+    @Override
+    public BidWithdrawnRs setFinalStatuses(final String cpid, final String stage) {
+        final List<BidEntity> bidEntities = bidRepository.findAllByOcIdAndStage(cpid, stage);
+        final Map<BidEntity, Bid> bidMap = filterByStatus(bidEntities, PENDING);
+
+
+
+        return
+    }
+
     private Map<BidEntity, Bid> createBidCopy(final BidsCopyDto bidsCopyDto, final Map<BidEntity, Bid> entityBidMap) {
         final List<String> lotsDto = collectLots(bidsCopyDto.getLots());
         return entityBidMap.entrySet().stream()
