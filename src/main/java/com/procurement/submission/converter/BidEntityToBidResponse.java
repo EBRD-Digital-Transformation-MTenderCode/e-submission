@@ -1,19 +1,19 @@
 package com.procurement.submission.converter;
 
-import com.procurement.submission.model.dto.response.BidResponse;
+import com.procurement.submission.model.dto.response.CommonBidResponse;
 import com.procurement.submission.model.entity.BidEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.lang.Nullable;
 
-public class BidEntityToBidResponse implements Converter<BidEntity, BidResponse> {
+public class BidEntityToBidResponse implements Converter<BidEntity, CommonBidResponse> {
     @Nullable
     @Override
-    public BidResponse convert(final BidEntity bidEntity) {
-        BidResponse bidResponse = new BidResponse();
-        bidResponse.setOcid(bidEntity.getOcId());
-        bidResponse.setStage(bidEntity.getStage());
-        bidResponse.setBidToken(bidEntity.getBidToken().toString());
-        bidResponse.setOwner(bidEntity.getOwner());
-        return bidResponse;
+    public CommonBidResponse convert(final BidEntity bidEntity) {
+        CommonBidResponse commonBidResponse = new CommonBidResponse();
+        commonBidResponse.setOcid(bidEntity.getOcId());
+        commonBidResponse.setStage(bidEntity.getStage());
+        commonBidResponse.setBidToken(bidEntity.getBidToken().toString());
+        commonBidResponse.setOwner(bidEntity.getOwner());
+        return commonBidResponse;
     }
 }

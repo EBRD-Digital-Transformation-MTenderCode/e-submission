@@ -58,6 +58,11 @@ public class PeriodServiceImpl implements PeriodService {
         return isPeriodNow(ocid);
     }
 
+    @Override
+    public SubmissionPeriodEntity getPeriod(final String ocId) {
+        return periodRepository.getByOcId(ocId);
+    }
+
     private boolean isPeriodNow(final String ocid) {
         final SubmissionPeriodEntity periodEntity = findPeriod(ocid);
         final LocalDateTime localDateTime = LocalDateTime.now();

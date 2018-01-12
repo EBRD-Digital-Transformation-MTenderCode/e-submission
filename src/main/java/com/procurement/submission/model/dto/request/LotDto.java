@@ -13,6 +13,8 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "id"
 })
 public class LotDto {
+    @NotNull
+    @JsonProperty("id")
     private String id;
 
     @JsonCreator

@@ -14,4 +14,6 @@ public interface PeriodService {
     boolean isPeriod(String ocid);
 
     SubmissionPeriodEntity savePeriod(PeriodDataDto data);
+
+    SubmissionPeriodEntity getPeriod(String ocId);
 }

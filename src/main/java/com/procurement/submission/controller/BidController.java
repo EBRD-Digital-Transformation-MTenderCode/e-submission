@@ -3,7 +3,11 @@ package com.procurement.submission.controller;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.BidsCopyDto;
 import com.procurement.submission.model.dto.request.BidsSelectionDto;
-import com.procurement.submission.model.dto.response.BidResponse;
+import com.procurement.submission.model.dto.request.BidsUpdateByLotsDto;
+import com.procurement.submission.model.dto.request.LotDto;
+import com.procurement.submission.model.dto.request.LotsDto;
+import com.procurement.submission.model.dto.response.BidsWithdrawnRs;
+import com.procurement.submission.model.dto.response.CommonBidResponse;
 import com.procurement.submission.model.dto.response.BidResponseEntity;
 import com.procurement.submission.model.dto.response.BidsCopyResponse;
 import com.procurement.submission.model.dto.response.BidsResponseEntity;
@@ -11,8 +15,11 @@ import com.procurement.submission.model.dto.response.BidsSelectionResponse;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.service.BidService;
 import java.util.ArrayList;
+import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import org.springframework.validation.annotation.Validated;
@@ -42,15 +49,15 @@ public class BidController {
     @PostMapping(value = "/createBid")
     @ResponseStatus(CREATED)
     public BidResponseEntity createBid(@Valid @RequestBody final BidRequestDto bidRequest) {
-        final BidResponse bidResponse = bidService.createBid(bidRequest);
-        return new BidResponseEntity(true, new ArrayList<>(), bidResponse);
+        final CommonBidResponse commonBidResponse = bidService.createBid(bidRequest);
+        return new BidResponseEntity(true, new ArrayList<>(), commonBidResponse);
     }
 
     @PostMapping(value = "/updateBid")
     @ResponseStatus(OK)
     public BidResponseEntity updateBid(@Valid @RequestBody final BidRequestDto bidRequest) {
-        final BidResponse bidResponse = bidService.updateBid(bidRequest);
-        return new BidResponseEntity(true, new ArrayList<>(), bidResponse);
+        final CommonBidResponse commonBidResponse = bidService.updateBid(bidRequest);
+        return new BidResponseEntity(true, new ArrayList<>(), commonBidResponse);
     }
 
     @PostMapping(value = "/copyBids")
@@ -61,7 +68,7 @@ public class BidController {
     }
 
     /**
-     * @param ocId
+     * @param cpid
      * @param country
      * @param pmd     - procurementMethodDetails
      * @param stage
@@ -69,16 +76,29 @@ public class BidController {
      * @return
      * @apiNote .../submission/selectionOfBids/ocds-213czf-000-00001?country=UA&pmd=method&stage=stage&status=PENDING
      */
-    @GetMapping(value = "/selectionOfBids/{ocId}")
+    @GetMapping(value = "/selectionOfBids/{cpid}")
     @ResponseStatus(OK)
     public BidsResponseEntity<BidsSelectionResponse> selectionOfBids(
-        @Size(min = OCID_LENGTH, max = OCID_LENGTH) @PathVariable final String ocId,
-        @Size(min = 2, max = 2) @Pattern(regexp = "[a-zA-Z]*") @RequestParam final String country,
-        @NotBlank @RequestParam final String pmd,
-        @NotBlank @RequestParam final String stage,
+        @PathVariable @Size(min = OCID_LENGTH, max = OCID_LENGTH) final String cpid,
+        @RequestParam @Size(min = 2, max = 2) @Pattern(regexp = "[a-zA-Z]*") final String country,
+        @RequestParam @NotBlank final String pmd,
+        @RequestParam @NotBlank final String stage,
         @RequestParam final Bid.Status status) {
         final BidsSelectionResponse bids =
-            bidService.selectionBids(new BidsSelectionDto(ocId, country, pmd, stage, status));
+            bidService.selectionBids(new BidsSelectionDto(cpid, country, pmd, stage, status));
         return new BidsResponseEntity<>(true, new ArrayList<>(), bids);
+    }
+
+    @PostMapping(value = "/updateStatus/{cpid}")
+    @ResponseStatus(OK)
+    public BidsResponseEntity<BidsWithdrawnRs> updateStatus(
+        @PathVariable @Size(min = OCID_LENGTH, max = OCID_LENGTH) final String cpid,
+        @RequestParam @NotBlank final String stage,
+        @RequestParam @Size(min = 2, max = 2) @Pattern(regexp = "[a-zA-Z]*") final String country,
+        @RequestParam @NotBlank final String pmd,
+        @RequestBody @NotNull final LotsDto lots) {
+        final BidsWithdrawnRs bidsWithdrawnRs =
+            bidService.updateBidsByLots(new BidsUpdateByLotsDto(cpid, stage, country, pmd, lots));
+        return new BidsResponseEntity<>(true, new ArrayList<>(), bidsWithdrawnRs);
     }
 }

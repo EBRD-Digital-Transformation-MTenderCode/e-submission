@@ -1,6 +1,6 @@
 package com.procurement.submission.converter;
 
-import com.procurement.submission.model.dto.response.BidsSelectionResponse;
+import com.procurement.submission.model.dto.response.BidWithdrawnRs;
 import com.procurement.submission.model.dto.response.OrganizationReferenceRs;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.model.ocds.OrganizationReference;
@@ -9,16 +9,12 @@ import org.springframework.core.convert.converter.Converter;
 
 import static java.util.stream.Collectors.toList;
 
-public class BidToBidsSelectionResponseBid implements Converter<Bid, BidsSelectionResponse.Bid> {
-
+public class BidToBidWithdrawnRs implements Converter<Bid, BidWithdrawnRs> {
     @Override
-    public BidsSelectionResponse.Bid convert(final Bid bid) {
-        BidsSelectionResponse.Bid newBid = new BidsSelectionResponse.Bid();
-        newBid.setId(bid.getId());
-        newBid.setRelatedLots(bid.getRelatedLots());
-        newBid.setValue(bid.getValue());
-        newBid.setTenderers(createTenderers(bid.getTenderers()));
-        return newBid;
+    public BidWithdrawnRs convert(final Bid bid) {
+        final List<OrganizationReferenceRs> tenderers = createTenderers(bid.getTenderers());
+        return new BidWithdrawnRs(bid.getId(), bid.getDate(), bid.getStatus(), tenderers, bid.getValue(),
+            bid.getDocuments(), bid.getRelatedLots());
     }
 
     // TODO: 11.01.18 refactor - create converter from this

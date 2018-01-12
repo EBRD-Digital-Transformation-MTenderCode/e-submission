@@ -20,12 +20,12 @@ public class BidResponseEntity {
     @JsonProperty("responseDetails")
     private List<Detail> responseDetails;
     @JsonProperty("data")
-    private BidResponse data;
+    private CommonBidResponse data;
 
     @JsonCreator
     public BidResponseEntity(@JsonProperty("success") final boolean success,
                              @JsonProperty("responseDetails") final List<Detail> responseDetails,
-                             @JsonProperty("data") final BidResponse data) {
+                             @JsonProperty("data") final CommonBidResponse data) {
         this.success = success;
         this.responseDetails = responseDetails;
         this.data = data;

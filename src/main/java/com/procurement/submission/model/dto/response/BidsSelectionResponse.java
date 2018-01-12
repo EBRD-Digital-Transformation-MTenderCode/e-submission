@@ -31,11 +31,11 @@ public class BidsSelectionResponse {
     @Valid
     @NotEmpty
     @JsonProperty("bids")
-    private List<BidsSelectionResponse.Bid> bids;
+    private List<Bid> bids;
 
     @JsonCreator
     public BidsSelectionResponse(@JsonProperty("ocid") @NotNull final String ocid,
-                                 @JsonProperty("bids") @Valid @NotNull final List<BidsSelectionResponse.Bid> bids) {
+                                 @JsonProperty("bids") @Valid @NotNull final List<Bid> bids) {
         this.ocid = ocid;
         this.bids = bids;
     }
@@ -57,7 +57,7 @@ public class BidsSelectionResponse {
         private LocalDateTime createDate;
         private LocalDateTime pendingDate;
         private Value value;
-        private List<OrganizationReference> tenderers;
+        private List<OrganizationReferenceRs> tenderers;
 
         @JsonCreator
         public Bid(@JsonProperty("id") @NotNull final String id,
@@ -65,7 +65,7 @@ public class BidsSelectionResponse {
                    @JsonProperty("createDate") @NotNull final LocalDateTime createDate,
                    @JsonProperty("pendingDate") @NotNull final LocalDateTime pendingDate,
                    @JsonProperty("value") @Valid final Value value,
-                   @JsonProperty("tenderers") @NotEmpty @Valid final List<OrganizationReference> tenderers) {
+                   @JsonProperty("tenderers") @NotEmpty @Valid final List<OrganizationReferenceRs> tenderers) {
             this.id = id;
             this.relatedLots = relatedLots;
             this.createDate = createDate;
@@ -75,7 +75,7 @@ public class BidsSelectionResponse {
         }
     }
 
-    @Getter
+/*    @Getter
     @JsonPropertyOrder({
         "id",
         "name"
@@ -90,5 +90,5 @@ public class BidsSelectionResponse {
             this.id = id;
             this.name = name;
         }
-    }
+    }*/
 }
