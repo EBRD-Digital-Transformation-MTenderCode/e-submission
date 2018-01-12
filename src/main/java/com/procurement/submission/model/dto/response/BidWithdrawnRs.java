@@ -1,6 +1,7 @@
 package com.procurement.submission.model.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.procurement.submission.model.ocds.Bid;
@@ -14,10 +15,12 @@ import javax.validation.constraints.NotNull;
 import lombok.Getter;
 
 @Getter
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({
     "id",
     "date",
     "status",
+    "statusDetails",
     "tenderers",
     "value",
     "documents",
@@ -27,6 +30,7 @@ public class BidWithdrawnRs {
     private String id;
     private LocalDateTime date;
     private Bid.Status status;
+    private Bid.StatusDetail statusDetail;
     private List<OrganizationReferenceRs> tenderers;
     private Value value;
     private List<Document> documents;
@@ -36,13 +40,15 @@ public class BidWithdrawnRs {
     public BidWithdrawnRs(@JsonProperty("id") @NotNull final String id,
                           @JsonProperty("date") @NotNull final LocalDateTime date,
                           @JsonProperty("status") @NotNull final Bid.Status status,
+                          @JsonProperty("statusDetail") final Bid.StatusDetail statusDetail,
                           @JsonProperty("tenderers") @NotEmpty @Valid final List<OrganizationReferenceRs> tenderers,
                           @JsonProperty("value") @Valid final Value value,
-                          @JsonProperty("documents") @NotNull @Valid final List<Document> documents,
+                          @JsonProperty("documents") @Valid final List<Document> documents,
                           @JsonProperty("relatedLots") @NotNull final List<String> relatedLots) {
         this.id = id;
         this.date = date;
         this.status = status;
+        this.statusDetail = statusDetail;
         this.relatedLots = relatedLots;
         this.value = value;
         this.documents = documents;

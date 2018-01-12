@@ -43,6 +43,9 @@ public class Bid {
     @JsonProperty("status")
     private Status status;
 
+    @JsonProperty("statusDetail")
+    private StatusDetail statusDetail;
+
     @Valid
     @NotEmpty
     @JsonProperty("tenderers")
@@ -63,6 +66,7 @@ public class Bid {
     public Bid(@JsonProperty("id") final String id,
                @JsonProperty("date") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final LocalDateTime date,
                @JsonProperty("status") final Status status,
+               @JsonProperty("statusDetail") final StatusDetail statusDetail,
                @JsonProperty("tenderers") final List<OrganizationReference> tenderers,
                @JsonProperty("value") final Value value,
                @JsonProperty("documents") final List<Document> documents,
@@ -70,6 +74,7 @@ public class Bid {
         this.id = id;
         this.date = date;
         this.status = status;
+        this.statusDetail = statusDetail;
         this.tenderers = tenderers;
         this.value = value;
         this.documents = documents;
@@ -152,6 +157,43 @@ public class Bid {
         @JsonCreator
         public static Status fromValue(final String value) {
             final Status constant = CONSTANTS.get(value);
+            if (constant == null) {
+                throw new IllegalArgumentException(value);
+            }
+            return constant;
+        }
+    }
+
+    public enum StatusDetail {
+        DISQUALIFIED("disqualified"),
+        VALID("valid");
+
+        private static final Map<String, StatusDetail> CONSTANTS = new HashMap<String, StatusDetail>();
+        private final String value;
+
+        static {
+            for (final StatusDetail c : values()) {
+                CONSTANTS.put(c.value, c);
+            }
+        }
+
+        StatusDetail(final String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return this.value;
+        }
+
+        @JsonValue
+        public String value() {
+            return this.value;
+        }
+
+        @JsonCreator
+        public static StatusDetail fromValue(final String value) {
+            final StatusDetail constant = CONSTANTS.get(value);
             if (constant == null) {
                 throw new IllegalArgumentException(value);
             }

@@ -13,7 +13,7 @@ public class BidToBidWithdrawnRs implements Converter<Bid, BidWithdrawnRs> {
     @Override
     public BidWithdrawnRs convert(final Bid bid) {
         final List<OrganizationReferenceRs> tenderers = createTenderers(bid.getTenderers());
-        return new BidWithdrawnRs(bid.getId(), bid.getDate(), bid.getStatus(), tenderers, bid.getValue(),
+        return new BidWithdrawnRs(bid.getId(), bid.getDate(), bid.getStatus(), bid.getStatusDetail(), tenderers, bid.getValue(),
             bid.getDocuments(), bid.getRelatedLots());
     }
 
