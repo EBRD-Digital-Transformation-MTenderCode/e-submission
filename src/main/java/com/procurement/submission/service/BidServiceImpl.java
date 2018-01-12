@@ -32,8 +32,10 @@ import java.util.function.BiPredicate;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
+import static com.procurement.submission.model.ocds.Bid.Status.DISQUALIFIED;
 import static com.procurement.submission.model.ocds.Bid.Status.INVITED;
 import static com.procurement.submission.model.ocds.Bid.Status.PENDING;
+import static com.procurement.submission.model.ocds.Bid.Status.VALID;
 import static com.procurement.submission.model.ocds.Bid.Status.WITHDRAWN;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.counting;
@@ -158,6 +160,27 @@ public class BidServiceImpl implements BidService {
         final BidsWithdrawnRs.TenderPeriod tenderPeriod = new BidsWithdrawnRs.TenderPeriod(period.getEndDate());
         bidRepository.saveAll(bidEntitiesWithdrawn);
         return new BidsWithdrawnRs(tenderPeriod, organizationReferencesRs, responseBids);
+    }
+
+    @Override
+    public BidWithdrawnRs updateStatusDetail(final String cpid, final String stage, final String bidId,
+                                             final String awardStatus) {
+        final UUID uuid = UUID.fromString(bidId);
+        final BidEntity bidEntity = Optional.ofNullable(bidRepository.findByOcIdAndStageAndBidId(cpid, stage, uuid))
+                                            .orElseThrow(() -> new ErrorException("No Bid"));
+        final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
+        if (awardStatus.equals("unsuccessful")) {
+            bid.setStatus(DISQUALIFIED);
+            bid.setDate(LocalDateTime.now());
+            bidEntity.setStatus(DISQUALIFIED);
+        } else if (awardStatus.equals("active")) {
+            bid.setStatus(VALID);
+            bid.setDate(LocalDateTime.now());
+            bidEntity.setStatus(VALID);
+        }
+        bidEntity.setJsonData(jsonUtil.toJson(bid));
+        bidRepository.save(bidEntity);
+        return conversionService.convert(bid, BidWithdrawnRs.class);
     }
 
     private Map<BidEntity, Bid> createBidCopy(final BidsCopyDto bidsCopyDto, final Map<BidEntity, Bid> entityBidMap) {

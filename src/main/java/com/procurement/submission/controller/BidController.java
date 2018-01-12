@@ -4,21 +4,19 @@ import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.BidsCopyDto;
 import com.procurement.submission.model.dto.request.BidsSelectionDto;
 import com.procurement.submission.model.dto.request.BidsUpdateByLotsDto;
-import com.procurement.submission.model.dto.request.LotDto;
 import com.procurement.submission.model.dto.request.LotsDto;
-import com.procurement.submission.model.dto.response.BidsWithdrawnRs;
-import com.procurement.submission.model.dto.response.CommonBidResponse;
 import com.procurement.submission.model.dto.response.BidResponseEntity;
+import com.procurement.submission.model.dto.response.BidWithdrawnRs;
 import com.procurement.submission.model.dto.response.BidsCopyResponse;
 import com.procurement.submission.model.dto.response.BidsResponseEntity;
 import com.procurement.submission.model.dto.response.BidsSelectionResponse;
+import com.procurement.submission.model.dto.response.BidsWithdrawnRs;
+import com.procurement.submission.model.dto.response.CommonBidResponse;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.service.BidService;
 import java.util.ArrayList;
-import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
@@ -100,5 +98,17 @@ public class BidController {
         final BidsWithdrawnRs bidsWithdrawnRs =
             bidService.updateBidsByLots(new BidsUpdateByLotsDto(cpid, stage, country, pmd, lots));
         return new BidsResponseEntity<>(true, new ArrayList<>(), bidsWithdrawnRs);
+    }
+
+    @PostMapping(value = "/updateStatusDetail/{cpid}")
+    @ResponseStatus(OK)
+    public BidsResponseEntity<BidWithdrawnRs> updateStatusDetail(
+        @PathVariable @Size(min = OCID_LENGTH, max = OCID_LENGTH) final String cpid,
+        @RequestParam @NotBlank final String stage,
+        @RequestParam @NotBlank final String bidId,
+        @RequestParam @NotBlank final String awardStatus
+    ) {
+        final BidWithdrawnRs bidWithdrawnRs = bidService.updateStatusDetail(cpid, stage, bidId, awardStatus);
+        return new BidsResponseEntity<>(true, new ArrayList<>(), bidWithdrawnRs);
     }
 }
