@@ -191,6 +191,7 @@ public class BidServiceImpl implements BidService {
                 bidMap.entrySet().stream()
                       .map(e -> setStatus(e, Bid.Status.valueOf(e.getValue().getStatusDetail().toString())))
                       .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        bidMapWithStatus.forEach((key, value) -> value.setStatusDetail(null));
         bidMapWithStatus.forEach((key, value) -> key.setJsonData(jsonUtil.toJson(value)));
         return bidMapWithStatus.entrySet().stream()
                                .map(e -> conversionService.convert(e.getValue(), BidWithdrawnRs.class))

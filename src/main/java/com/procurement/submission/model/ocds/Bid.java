@@ -93,6 +93,10 @@ public class Bid {
         this.status = status;
     }
 
+    public void setStatusDetail(StatusDetail statusDetail) {
+        this.statusDetail = statusDetail;
+    }
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder().append(id)
