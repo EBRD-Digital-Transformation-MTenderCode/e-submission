@@ -15,6 +15,7 @@ import com.procurement.submission.model.dto.response.CommonBidResponse;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.service.BidService;
 import java.util.ArrayList;
+import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -114,11 +115,11 @@ public class BidController {
 
     @PostMapping(value = "/setFinalStatuses/{cpid}")
     @ResponseStatus(OK)
-    public BidsResponseEntity<BidWithdrawnRs> setFinalStatuses(
+    public BidsResponseEntity<List<BidWithdrawnRs>> setFinalStatuses(
         @PathVariable @Size(min = OCID_LENGTH, max = OCID_LENGTH) final String cpid,
         @RequestParam @NotBlank final String stage
     ) {
-        final BidWithdrawnRs bidWithdrawnRs = bidService.setFinalStatuses(cpid, stage);
+        final List<BidWithdrawnRs> bidWithdrawnRs = bidService.setFinalStatuses(cpid, stage);
         return new BidsResponseEntity<>(true, new ArrayList<>(), bidWithdrawnRs);
     }
 }
