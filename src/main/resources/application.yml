@@ -1,9 +1,9 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
-    name: e-notice
+    name: e-submission
   data:
     cassandra:
       contact-points: 127.0.0.1

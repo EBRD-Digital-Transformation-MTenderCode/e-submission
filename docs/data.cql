@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_period (
     stage text,
     start_date timestamp,
     end_date timestamp,
-    primary key(oc_id, stage)
+    primary key(cp_id, stage)
 );
 SELECT * FROM ocds.submission_period;
 

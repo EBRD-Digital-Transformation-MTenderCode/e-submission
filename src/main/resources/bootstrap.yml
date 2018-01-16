@@ -2,9 +2,9 @@
 server:
   port: @project.service.port@
 
-spring:
-  application:
-    name: Submission
+#spring:
+#  application:
+#    name: e-submission
 
 #  cloud:
 #    config:
