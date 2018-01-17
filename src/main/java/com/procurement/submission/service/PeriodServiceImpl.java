@@ -19,17 +19,14 @@ public class PeriodServiceImpl implements PeriodService {
 
     private final PeriodRepository periodRepository;
     private final RulesService rulesService;
-    private final ConversionService conversionService;
     private final DateUtil dateUtil;
 
 
     public PeriodServiceImpl(final PeriodRepository periodRepository,
                              final RulesService rulesService,
-                             final ConversionService conversionService,
                              final DateUtil dateUtil) {
         this.periodRepository = periodRepository;
         this.rulesService = rulesService;
-        this.conversionService = conversionService;
         this.dateUtil = dateUtil;
     }
 
@@ -45,6 +42,13 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
+    public void checkPeriod(final String cpid) {
+        if (isPeriodValid(cpid)) {
+            throw new ErrorException("Not found date.");
+        }
+    }
+
+    @Override
     public ResponseDto savePeriod(final String cpid,
                                   final String stage,
                                   final LocalDateTime startDate,
@@ -57,24 +61,27 @@ public class PeriodServiceImpl implements PeriodService {
         periodRepository.save(period);
         return getResponseDto(new SavePeriodResponse(
                 period.getCpId(),
-                dateUtil.dateToLocal(period.getStartDate()),
-                dateUtil.dateToLocal(period.getEndDate())));
-        }
+                period.getStartDate(),
+                period.getEndDate()));
+    }
 
     @Override
-    public void checkPeriod(final String cpid) {
-        final LocalDateTime localDateTime = dateUtil.localNowUTC();
+    public PeriodEntity getPeriod(final String cpid) {
         final Optional<PeriodEntity> entityOptional = periodRepository.getByCpId(cpid);
         if (entityOptional.isPresent()) {
-            final PeriodEntity periodEntity = entityOptional.get();
-            final boolean localDateTimeAfter = localDateTime.isAfter(dateUtil.dateToLocal(periodEntity.getStartDate()));
-            final boolean localDateTimeBefore = localDateTime.isBefore(dateUtil.dateToLocal(periodEntity.getEndDate()));
-            if (!localDateTimeAfter || !localDateTimeBefore) {
-                throw new ErrorException("Date does not match period.");
-            }
+            return entityOptional.get();
         } else {
             throw new ErrorException("Period not found");
         }
+    }
+
+    @Override
+    public boolean isPeriodValid(final String cpid) {
+        final LocalDateTime localDateTime = dateUtil.localNowUTC();
+        final PeriodEntity periodEntity = getPeriod(cpid);
+        final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
+        final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
+        return !localDateTimeAfter || !localDateTimeBefore;
     }
 
     private Boolean checkInterval(final LocalDateTime startDate, final LocalDateTime endDate, final int interval) {
@@ -82,7 +89,8 @@ public class PeriodServiceImpl implements PeriodService {
         return days >= interval;
     }
 
-    private ResponseDto getResponseDto(final Object data){
+    private ResponseDto getResponseDto(final Object data) {
         return new ResponseDto(true, null, data);
     }
+
 }

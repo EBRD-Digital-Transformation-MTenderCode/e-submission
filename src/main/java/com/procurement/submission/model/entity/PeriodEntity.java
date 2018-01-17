@@ -1,5 +1,7 @@
 package com.procurement.submission.model.entity;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -25,4 +27,13 @@ public class PeriodEntity {
 
     @Column(value = "end_date")
     private Date endDate;
+
+
+    public LocalDateTime getStartDate() {
+        return LocalDateTime.ofInstant(startDate.toInstant(), ZoneOffset.UTC);
+    }
+
+    public LocalDateTime getEndDate() {
+        return LocalDateTime.ofInstant(endDate.toInstant(), ZoneOffset.UTC);
+    }
 }
