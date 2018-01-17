@@ -17,7 +17,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonPropertyOrder({
     "ocid",
-    "stage",
     "bid"
 })
 public class BidsCopyResponse {

@@ -20,7 +20,7 @@ import lombok.Setter;
     "bid",
     "owner"
 })
-public class BidResponse {
+public class CommonBidResponse {
     @NotNull
     @JsonProperty("ocid")
     private String ocid;
@@ -43,11 +43,11 @@ public class BidResponse {
     private String owner;
 
     @JsonCreator
-    public BidResponse(@JsonProperty("ocid") final String ocid,
-                       @JsonProperty("stage") final String stage,
-                       @JsonProperty("bidToken") final String bidToken,
-                       @JsonProperty("bid") final Bid bid,
-                       @JsonProperty("owner") final String owner) {
+    public CommonBidResponse(@JsonProperty("ocid") final String ocid,
+                             @JsonProperty("stage") final String stage,
+                             @JsonProperty("bidToken") final String bidToken,
+                             @JsonProperty("bid") final Bid bid,
+                             @JsonProperty("owner") final String owner) {
         this.ocid = ocid;
         this.stage = stage;
         this.bidToken = bidToken;

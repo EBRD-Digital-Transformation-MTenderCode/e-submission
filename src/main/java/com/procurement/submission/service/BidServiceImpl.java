@@ -5,9 +5,16 @@ import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.BidsCopyDto;
 import com.procurement.submission.model.dto.request.BidsSelectionDto;
-import com.procurement.submission.model.dto.response.BidResponse;
+import com.procurement.submission.model.dto.request.BidsUpdateByLotsDto;
+import com.procurement.submission.model.dto.request.LotDto;
+import com.procurement.submission.model.dto.request.LotsDto;
+import com.procurement.submission.model.dto.response.BidWithdrawnRs;
 import com.procurement.submission.model.dto.response.BidsCopyResponse;
+import com.procurement.submission.model.dto.response.BidsSelectionResponse;
+import com.procurement.submission.model.dto.response.BidsWithdrawnRs;
+import com.procurement.submission.model.dto.response.CommonBidResponse;
 import com.procurement.submission.model.entity.BidEntity;
+import com.procurement.submission.model.entity.SubmissionPeriodEntity;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.model.ocds.OrganizationReference;
 import com.procurement.submission.repository.BidRepository;
@@ -25,6 +32,14 @@ import java.util.function.BiPredicate;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
+import static com.procurement.submission.model.ocds.Bid.Status.DISQUALIFIED;
+import static com.procurement.submission.model.ocds.Bid.Status.INVITED;
+import static com.procurement.submission.model.ocds.Bid.Status.PENDING;
+import static com.procurement.submission.model.ocds.Bid.Status.VALID;
+import static com.procurement.submission.model.ocds.Bid.Status.WITHDRAWN;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -49,7 +64,7 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public BidResponse createBid(final BidRequestDto bidRequest) {
+    public CommonBidResponse createBid(final BidRequestDto bidRequest) {
         periodService.checkPeriod(bidRequest.getOcid());
         final List<BidEntity> bidEntities =
             bidRepository.findAllByOcIdAndStage(bidRequest.getOcid(), bidRequest.getStage());
@@ -62,7 +77,7 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public BidResponse updateBid(final BidRequestDto bidRequest) {
+    public CommonBidResponse updateBid(final BidRequestDto bidRequest) {
         periodService.checkPeriod(bidRequest.getOcid());
         final BidEntity bidEntity = updateBidEntity(bidRequest);
         return createBidResponse(bidEntity);
@@ -75,7 +90,7 @@ public class BidServiceImpl implements BidService {
         if (bidEntities.isEmpty()) {
             throw new ErrorException("Sorry guys, we don't have Bids.");
         }
-        final Map<BidEntity, Bid> entityBidMap = filteringValid(bidEntities);
+        final Map<BidEntity, Bid> entityBidMap = filterByStatus(bidEntities, PENDING);
         final Map<BidEntity, Bid> newBidsMap = createBidCopy(bidsCopyDto, entityBidMap);
         bidRepository.saveAll(newBidsMap.keySet());
         final BidsCopyResponse.Bids bids = new BidsCopyResponse.Bids(new ArrayList<>(newBidsMap.values()));
@@ -83,28 +98,117 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public BidsSelectionDto selectionBids(final BidsSelectionDto bidsSelectionDto) {
-//        boolean isPeriod = periodService.isPeriod(bidsSelectionDto.getOcId());
-//        if (isPeriod) {
-//            throw new ErrorException("Period has not yet expired");
-//        }
-//        int rulesMinBids = rulesService.getRulesMinBids(bidsSelectionDto.getCountry(), bidsSelectionDto.getMethod());
-
-        return null;
+    public BidsSelectionResponse selectionBids(final BidsSelectionDto bidsSelectionDto) {
+        boolean isPeriod = periodService.isPeriod(bidsSelectionDto.getOcId());
+        if (isPeriod) {
+            throw new ErrorException("Period has not yet expired");
+        }
+        final List<BidEntity> pendingBids =
+            pendingFilter(bidRepository.findAllByOcIdAndStage(bidsSelectionDto.getOcId(), bidsSelectionDto.getStage()));
+        int rulesMinBids = rulesService.getRulesMinBids(bidsSelectionDto.getCountry(), bidsSelectionDto.getPmd());
+        if (pendingBids.size() < rulesMinBids) {
+            throw new ErrorException("Bids with status PENDING are less minimum count of bids.");
+        }
+        final List<BidsSelectionResponse.Bid> responseBids = pendingBids.stream()
+                                                                        .map(this::convertBids)
+                                                                        .collect(toList());
+        return new BidsSelectionResponse(bidsSelectionDto.getOcId(), responseBids);
     }
 
-    private Map<BidEntity, Bid> createBidCopy(final BidsCopyDto bidsCopyDto,
-                                              final Map<BidEntity, Bid> entityBidMap) {
-        final List<String> lotsDto = collectLots(bidsCopyDto);
+    @Override
+    public BidsWithdrawnRs updateBidsByLots(final BidsUpdateByLotsDto bidsDto) {
+        final List<BidEntity> allDidEntities =
+            bidRepository.findAllByOcIdAndStage(bidsDto.getOcid(), bidsDto.getStage());
+        if (allDidEntities.isEmpty()) {
+            throw new ErrorException("You don't have bids.");
+        }
+
+        //collect invited bids
+        final Map<BidEntity, Bid> mapInvitedBids = filterByStatus(allDidEntities, INVITED);
+        mapInvitedBids.entrySet().forEach(e -> setStatus(e, WITHDRAWN));
+        final List<BidEntity> bidEntitiesWithdrawn = collectBids(mapInvitedBids);
+        final List<OrganizationReference> organizationReferencesRs = new ArrayList<>();
+        final List<BidWithdrawnRs> responseBids = new ArrayList<>();
+        mapInvitedBids.forEach((key, value) -> organizationReferencesRs.addAll(value.getTenderers()));
+        mapInvitedBids.entrySet().stream()
+                      .map(e -> conversionService.convert(e.getValue(), BidWithdrawnRs.class))
+                      .forEach(responseBids::add);
+
+        //collect pending bids by lost and with rule
+        final Map<BidEntity, Bid> mapPendingBids = filterByStatus(allDidEntities, PENDING);
+        final List<String> lotsStr = collectLots(bidsDto.getLots());
+        final Map<BidEntity, Bid> mapPendingByLotsBids =
+            mapPendingBids.entrySet().stream()
+                          .filter(e -> containsAny(e.getValue().getRelatedLots(), lotsStr))
+                          .peek(mapPendingBids::remove)
+                          .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        mapPendingByLotsBids.entrySet().forEach(e -> setStatus(e, WITHDRAWN));
+        bidEntitiesWithdrawn.addAll(collectBids(mapPendingByLotsBids));
+        mapPendingByLotsBids.forEach((key, value) -> organizationReferencesRs.addAll(value.getTenderers()));
+        final int ruleMinBids = rulesService.getRulesMinBids(bidsDto.getCountry(), bidsDto.getPmd());
+        final List<Bid> bidWithdrawnFilteredByRuleMap = filterByRule(mapPendingByLotsBids, ruleMinBids);
+        bidWithdrawnFilteredByRuleMap.stream()
+                                     .map(bid -> conversionService.convert(bid, BidWithdrawnRs.class))
+                                     .forEach(responseBids::add);
+
+        //collect pending bids with rule
+        final List<Bid> pendingBidsWithoutInLots = filterByRule(mapPendingBids, ruleMinBids);
+        pendingBidsWithoutInLots.forEach(bid -> responseBids.add(conversionService.convert(bid, BidWithdrawnRs.class)));
+        pendingBidsWithoutInLots.forEach(bid -> organizationReferencesRs.addAll(bid.getTenderers()));
+
+        final SubmissionPeriodEntity period = periodService.getPeriod(bidsDto.getOcid());
+        final BidsWithdrawnRs.TenderPeriod tenderPeriod = new BidsWithdrawnRs.TenderPeriod(period.getEndDate());
+        bidRepository.saveAll(bidEntitiesWithdrawn);
+        return new BidsWithdrawnRs(tenderPeriod, organizationReferencesRs, responseBids);
+    }
+
+    @Override
+    public BidWithdrawnRs updateStatusDetail(final String cpid, final String stage, final String bidId,
+                                             final String awardStatus) {
+        final UUID uuid = UUID.fromString(bidId);
+        final BidEntity bidEntity = Optional.ofNullable(bidRepository.findByOcIdAndStageAndBidId(cpid, stage, uuid))
+                                            .orElseThrow(() -> new ErrorException("No Bid"));
+        final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
+        if (awardStatus.equals("unsuccessful")) {
+            bid.setStatus(DISQUALIFIED);
+            bid.setDate(LocalDateTime.now());
+            bidEntity.setStatus(DISQUALIFIED);
+        } else if (awardStatus.equals("active")) {
+            bid.setStatus(VALID);
+            bid.setDate(LocalDateTime.now());
+            bidEntity.setStatus(VALID);
+        }
+        bidEntity.setJsonData(jsonUtil.toJson(bid));
+        bidRepository.save(bidEntity);
+        return conversionService.convert(bid, BidWithdrawnRs.class);
+    }
+
+    @Override
+    public List<BidWithdrawnRs> setFinalStatuses(final String cpid, final String stage) {
+        final List<BidEntity> bidEntities = bidRepository.findAllByOcIdAndStage(cpid, stage);
+        final Map<BidEntity, Bid> bidMap = filterByStatus(bidEntities, PENDING);
+        final Map<BidEntity, Bid> bidMapWithStatus =
+                bidMap.entrySet().stream()
+                      .map(e -> setStatus(e, Bid.Status.valueOf(e.getValue().getStatusDetail().toString())))
+                      .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        bidMapWithStatus.forEach((key, value) -> value.setStatusDetail(null));
+        bidMapWithStatus.forEach((key, value) -> key.setJsonData(jsonUtil.toJson(value)));
+        return bidMapWithStatus.entrySet().stream()
+                               .map(e -> conversionService.convert(e.getValue(), BidWithdrawnRs.class))
+                               .collect(toList());
+    }
+
+    private Map<BidEntity, Bid> createBidCopy(final BidsCopyDto bidsCopyDto, final Map<BidEntity, Bid> entityBidMap) {
+        final List<String> lotsDto = collectLots(bidsCopyDto.getLots());
         return entityBidMap.entrySet().stream()
                            .filter(e -> containsAny(e.getValue().getRelatedLots(), lotsDto))
                            .map(e -> copyBidEntity(e, bidsCopyDto.getStage()))
                            .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private HashMap<BidEntity, Bid> filteringValid(final List<BidEntity> bidEntities) {
+    private Map<BidEntity, Bid> filterByStatus(final List<BidEntity> bidEntities, final Bid.Status status) {
         return bidEntities.stream()
-                          .filter(b -> b.getStatus() == Bid.Status.VALID)
+                          .filter(b -> b.getStatus() == status)
                           .collect(
                               HashMap<BidEntity, Bid>::new,
                               (k, v) -> k.put(v, jsonUtil.toObject(Bid.class, v.getJsonData())),
@@ -120,12 +224,12 @@ public class BidServiceImpl implements BidService {
 
     private boolean isExistTenderers(final List<Bid> bids, final BidRequestDto bidRequest) {
         final List<String> bidRequestRelatedLots = bidRequest.getBid().getRelatedLots();
-        final BiPredicate<List<OrganizationReference>, List<OrganizationReference>> predicate =
-            getTenderersBiPredicate();
+        final BiPredicate<List<OrganizationReference>, List<OrganizationReference>> isTenderersSame =
+            isTenderersSameBiPredicate();
         final List<OrganizationReference> bidRequestTenderers = bidRequest.getBid().getTenderers();
         return bids.stream()
                    .filter(b -> b.getRelatedLots().containsAll(bidRequestRelatedLots))
-                   .anyMatch(b -> predicate.test(b.getTenderers(), bidRequestTenderers));
+                   .anyMatch(b -> isTenderersSame.test(b.getTenderers(), bidRequestTenderers));
     }
 
     private List<Bid> getCollectedBids(final List<BidEntity> bidEntities) {
@@ -134,7 +238,7 @@ public class BidServiceImpl implements BidService {
                           .collect(toList());
     }
 
-    private BiPredicate<List<OrganizationReference>, List<OrganizationReference>> getTenderersBiPredicate() {
+    private BiPredicate<List<OrganizationReference>, List<OrganizationReference>> isTenderersSameBiPredicate() {
         return (tenderersFromDb, tenderersFromRequest) -> {
             if (tenderersFromDb.size() == tenderersFromRequest.size() &&
                 tenderersFromDb.containsAll(tenderersFromRequest)) {
@@ -151,13 +255,13 @@ public class BidServiceImpl implements BidService {
         newBidEntity.setStage(newStage);
         newBidEntity.setBidId(oldBidEntity.getBidId());
         newBidEntity.setBidToken(oldBidEntity.getBidToken());
-        Bid.Status newStatus = Bid.Status.INVITED;
+        final Bid.Status newStatus = INVITED;
         newBidEntity.setStatus(newStatus);
         final LocalDateTime dateTimeNow = LocalDateTime.now();
         newBidEntity.setCreatedDate(dateTimeNow);
         newBidEntity.setPendingDate(null);
         final Bid oldBid = entrySet.getValue();
-        final Bid newBid = new Bid(oldBid.getId(), dateTimeNow, newStatus, oldBid.getTenderers(), null, null,
+        final Bid newBid = new Bid(oldBid.getId(), dateTimeNow, newStatus, null, oldBid.getTenderers(), null, null,
             oldBid.getRelatedLots());
         newBidEntity.setJsonData(jsonUtil.toJson(newBid));
         newBidEntity.setOwner(oldBidEntity.getOwner());
@@ -168,9 +272,9 @@ public class BidServiceImpl implements BidService {
         final LocalDateTime dateTimeNow = LocalDateTime.now();
         requestDto.getBid().setDate(dateTimeNow);
         requestDto.getBid().setId(UUIDs.timeBased().toString());
-        requestDto.getBid().setStatus(Bid.Status.PENDING);
+        requestDto.getBid().setStatus(PENDING);
         final BidEntity bidEntity = conversionService.convert(requestDto, BidEntity.class);
-        bidEntity.setStatus(Bid.Status.PENDING);
+        bidEntity.setStatus(PENDING);
         bidEntity.setPendingDate(dateTimeNow);
         bidEntity.setCreatedDate(dateTimeNow);
         bidEntity.setJsonData(jsonUtil.toJson(requestDto.getBid()));
@@ -201,19 +305,23 @@ public class BidServiceImpl implements BidService {
 
     private boolean isSetPending(final BidRequestDto requestDto, final BidEntity oldBidEntity) {
         return oldBidEntity.getPendingDate() == null &&
-            oldBidEntity.getStatus() != Bid.Status.PENDING &&
-            requestDto.getBid().getStatus() == Bid.Status.PENDING;
+            oldBidEntity.getStatus() != PENDING &&
+            requestDto.getBid().getStatus() == PENDING;
     }
 
-    private BidResponse createBidResponse(final BidEntity bid) {
-        final BidResponse bidResponse = conversionService.convert(bid, BidResponse.class);
-        bidResponse.setBid(jsonUtil.toObject(Bid.class, bid.getJsonData()));
-        return bidResponse;
+    private CommonBidResponse createBidResponse(final BidEntity bid) {
+        final CommonBidResponse commonBidResponse = conversionService.convert(bid, CommonBidResponse.class);
+        commonBidResponse.setBid(jsonUtil.toObject(Bid.class, bid.getJsonData()));
+        return commonBidResponse;
     }
 
-    private List<String> collectLots(final BidsCopyDto bidsCopyDto) {
-        return bidsCopyDto.getLots().stream()
-                          .map(BidsCopyDto.Lot::getId)
+    private List<String> collectLots(final LotsDto bidsCopyDto) {
+        return collectLots(bidsCopyDto.getLots());
+    }
+
+    private List<String> collectLots(final List<LotDto> bidsCopyDto) {
+        return bidsCopyDto.stream()
+                          .map(LotDto::getId)
                           .collect(toList());
     }
 
@@ -225,5 +333,48 @@ public class BidServiceImpl implements BidService {
             }
         }
         return false;
+    }
+
+    private BidsSelectionResponse.Bid convertBids(final BidEntity bidEntity) {
+        final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
+        final BidsSelectionResponse.Bid bidSelection = conversionService.convert(bid, BidsSelectionResponse.Bid.class);
+        bidSelection.setCreateDate(bidEntity.getCreatedDate());
+        bidSelection.setPendingDate(bidEntity.getPendingDate());
+        return bidSelection;
+    }
+
+    private List<BidEntity> pendingFilter(final List<BidEntity> bids) {
+        return bids.stream()
+                   .filter(b -> b.getStatus() == PENDING)
+                   .collect(toList());
+    }
+
+    // TODO: 11.01.18 refactor this
+    private List<Bid> filterByRule(final Map<BidEntity, Bid> bidMap, final int ruleMinBids) {
+        final Map<Bid, Long> collect = bidMap.entrySet().stream()
+                                             .map(Map.Entry::getValue)
+                                             .collect(groupingBy(identity(), counting()));
+        return collect.entrySet().stream()
+                      .filter(e -> ruleMinBids > e.getValue())
+                      .map(Map.Entry::getKey)
+                      .collect(toList());
+    }
+
+    private List<BidEntity> collectBids(Map<BidEntity, Bid> mapBids) {
+        return mapBids.entrySet().stream()
+                      .map(this::setJsonData)
+                      .collect(toList());
+    }
+
+    private BidEntity setJsonData(Map.Entry<BidEntity, Bid> entry) {
+        entry.getKey().setJsonData(jsonUtil.toJson(entry.getValue()));
+        return entry.getKey();
+    }
+
+    private Map.Entry<BidEntity, Bid> setStatus(final Map.Entry<BidEntity, Bid> entry, final Bid.Status status) {
+        entry.getKey().setStatus(status);
+        entry.getValue().setStatus(status);
+        entry.getValue().setDate(LocalDateTime.now());
+        return entry;
     }
 }

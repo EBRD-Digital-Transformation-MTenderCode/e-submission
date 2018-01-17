@@ -3,17 +3,27 @@ package com.procurement.submission.service;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.BidsCopyDto;
 import com.procurement.submission.model.dto.request.BidsSelectionDto;
-import com.procurement.submission.model.dto.response.BidResponse;
+import com.procurement.submission.model.dto.request.BidsUpdateByLotsDto;
+import com.procurement.submission.model.dto.response.BidWithdrawnRs;
 import com.procurement.submission.model.dto.response.BidsCopyResponse;
-import javax.validation.Valid;
+import com.procurement.submission.model.dto.response.BidsSelectionResponse;
+import com.procurement.submission.model.dto.response.BidsWithdrawnRs;
+import com.procurement.submission.model.dto.response.CommonBidResponse;
+import java.util.List;
 
 public interface BidService {
 
-    BidResponse createBid(BidRequestDto bidRequest);
+    CommonBidResponse createBid(BidRequestDto bidRequest);
 
-    BidResponse updateBid(BidRequestDto bidRequest);
+    CommonBidResponse updateBid(BidRequestDto bidRequest);
 
     BidsCopyResponse copyBids(BidsCopyDto bidsCopyDto);
 
-    BidsSelectionDto selectionBids(BidsSelectionDto bidsSelectionDto);
+    BidsSelectionResponse selectionBids(BidsSelectionDto bidsSelectionDto);
+
+    BidsWithdrawnRs updateBidsByLots(BidsUpdateByLotsDto bidsUpdateByLotsDto);
+
+    BidWithdrawnRs updateStatusDetail(String cpid, String stage, String bidId, String awardStatus);
+
+    List<BidWithdrawnRs> setFinalStatuses(String cpid, String stage);
 }
