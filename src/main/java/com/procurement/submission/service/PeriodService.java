@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface PeriodService {
 
-    ResponseDto checkPeriod(String country,
+    ResponseDto checkInterval(String country,
                             String pmd,
                             String stage,
                             LocalDateTime startDate,

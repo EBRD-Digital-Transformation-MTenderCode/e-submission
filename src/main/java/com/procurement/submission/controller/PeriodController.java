@@ -26,7 +26,7 @@ public class PeriodController {
                                                    @RequestParam("startDate") final LocalDateTime startDate,
                                                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                                                    @RequestParam("endDate") final LocalDateTime endDate) {
-        return new ResponseEntity<>(periodService.checkPeriod(country, pmd, stage, startDate, endDate), HttpStatus.OK);
+        return new ResponseEntity<>(periodService.checkInterval(country, pmd, stage, startDate, endDate), HttpStatus.OK);
     }
 
     @PostMapping("/save")

@@ -31,7 +31,7 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
-    public ResponseDto checkPeriod(final String country,
+    public ResponseDto checkInterval(final String country,
                                    final String pmd,
                                    final String stage,
                                    final LocalDateTime startDate,
