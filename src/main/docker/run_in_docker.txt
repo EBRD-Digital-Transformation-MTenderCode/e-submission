@@ -1,0 +1,30 @@
+#*****************************#
+# Create Network if not exist #
+#*****************************#
+
+docker network create \
+  --driver bridge \
+  --subnet 192.168.100.0/24 \
+  --gateway 192.168.100.1 \
+  ocds-network
+
+
+#****************************************#
+# Run E-SUBMISSION                       #
+# Need assign uri, username and password #
+#****************************************#
+
+mvn clean package docker:build
+docker login https://docker-registry.eprocurement.systems
+Username: docker
+Password: 3FFcKYtMxzmwFMa
+docker push docker-registry.eprocurement.systems/e-submission:17.12.1
+
+docker run -d --name=submission-1 \
+  --env __PROP_spring_cloud_config_uri=http://config-server-1:8700 \
+  --env __PROP_spring_profiles_active=default \
+  --env __PROP_spring_cloud_config_label=6ed7abb \
+  --publish 9061:8080 \
+  --network ocds-network \
+  --dns 10.0.10.115 \
+  docker-registry.eprocurement.systems/e-submission:17.12.1

@@ -1,15 +1,10 @@
-#-Dspring.cloud.config.uri=http://IP:PORT
 server:
   port: @project.service.port@
 
-#spring:
-#  application:
-#    name: e-submission
-
-#  cloud:
-#    config:
-#      failFast: true
-#      name: Notifier
-#      label: v1
-#      username:
-#      password:
+spring:
+  application:
+    name: e-submission
+  cloud:
+    config:
+      failFast: true
+      name: e-submission
