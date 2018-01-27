@@ -25,26 +25,26 @@ public class BidController {
     }
 
     @PostMapping(value = "/bid")
-    public ResponseEntity<ResponseDto> createBid(@RequestParam("ocid") final String ocId,
-                                                 @RequestParam("stage") final String stage,
-                                                 @RequestParam("owner") final String owner,
+    public ResponseEntity<ResponseDto> createBid(@RequestParam final String ocId,
+                                                 @RequestParam final String stage,
+                                                 @RequestParam final String owner,
                                                  @Valid @RequestBody final Bid bidDto) {
         return new ResponseEntity<>(bidService.createBid(ocId, stage, owner, bidDto), HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/bid")
-    public ResponseEntity<ResponseDto> updateBid(@RequestParam("ocid") final String ocId,
-                                                 @RequestParam("stage") final String stage,
-                                                 @RequestParam("token") final String token,
-                                                 @RequestParam("owner") final String owner,
+    public ResponseEntity<ResponseDto> updateBid(@RequestParam final String ocId,
+                                                 @RequestParam final String stage,
+                                                 @RequestParam final String token,
+                                                 @RequestParam final String owner,
                                                  @Valid @RequestBody final Bid bidDto) {
         return new ResponseEntity<>(bidService.updateBid(ocId, stage, token, owner, bidDto), HttpStatus.OK);
     }
 
     @PostMapping(value = "/copyBids")
-    public ResponseEntity<ResponseDto> copyBids(@RequestParam("ocid") final String ocId,
-                                                @RequestParam("stage") final String stage,
-                                                @RequestParam("previousStage") final String previousStage,
+    public ResponseEntity<ResponseDto> copyBids(@RequestParam final String ocId,
+                                                @RequestParam final String stage,
+                                                @RequestParam final String previousStage,
                                                 @Valid @RequestBody final BidsCopyDto bidsCopyDto) {
         return new ResponseEntity<>(bidService.copyBids(ocId, stage, previousStage, bidsCopyDto), HttpStatus.OK);
     }
@@ -60,7 +60,6 @@ public class BidController {
     }
 
     @PutMapping(value = "/updateStatus")
-    @ResponseStatus(OK)
     public ResponseEntity<ResponseDto> updateStatus(@RequestParam final String ocId,
                                                     @RequestParam final String stage,
                                                     @RequestParam final String country,
@@ -70,7 +69,6 @@ public class BidController {
     }
 
     @PutMapping(value = "/updateStatusDetail")
-    @ResponseStatus(OK)
     public ResponseEntity<ResponseDto> updateStatusDetail(@RequestParam final String ocId,
                                                           @RequestParam final String stage,
                                                           @RequestParam final String bidId,
@@ -79,7 +77,6 @@ public class BidController {
     }
 
     @PutMapping(value = "/setFinalStatuses")
-    @ResponseStatus(OK)
     public ResponseEntity<ResponseDto> setFinalStatuses(@RequestParam final String ocId,
                                                         @RequestParam final String stage) {
         return new ResponseEntity<>(bidService.setFinalStatuses(ocId, stage), HttpStatus.OK);
