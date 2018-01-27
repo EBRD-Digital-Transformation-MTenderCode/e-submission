@@ -9,7 +9,6 @@ import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.utils.DateUtil;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 import static java.time.temporal.ChronoUnit.DAYS;
@@ -32,10 +31,10 @@ public class PeriodServiceImpl implements PeriodService {
 
     @Override
     public ResponseDto checkInterval(final String country,
-                                   final String pmd,
-                                   final String stage,
-                                   final LocalDateTime startDate,
-                                   final LocalDateTime endDate) {
+                                     final String pmd,
+                                     final String stage,
+                                     final LocalDateTime startDate,
+                                     final LocalDateTime endDate) {
         final int interval = rulesService.getInterval(country, pmd);
         final Boolean isValid = checkInterval(startDate, endDate, interval);
         return getResponseDto(new CheckPeriodResponse(isValid));

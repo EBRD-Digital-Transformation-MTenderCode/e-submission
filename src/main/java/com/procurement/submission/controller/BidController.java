@@ -44,7 +44,7 @@ public class BidController {
     @PostMapping(value = "/copyBids")
     public ResponseEntity<ResponseDto> copyBids(@RequestParam("ocid") final String ocId,
                                                 @RequestParam("stage") final String stage,
-                                                @RequestParam("stage") final String previousStage,
+                                                @RequestParam("previousStage") final String previousStage,
                                                 @Valid @RequestBody final BidsCopyDto bidsCopyDto) {
         return new ResponseEntity<>(bidService.copyBids(ocId, stage, previousStage, bidsCopyDto), HttpStatus.OK);
     }

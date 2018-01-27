@@ -2,9 +2,8 @@ package com.procurement.submission.service;
 
 import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.repository.RulesRepository;
-import org.springframework.stereotype.Service;
-
 import java.util.Optional;
+import org.springframework.stereotype.Service;
 
 @Service
 public class RulesServiceImpl implements RulesService {
