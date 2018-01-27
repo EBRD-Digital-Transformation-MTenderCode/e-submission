@@ -22,12 +22,12 @@ SELECT * FROM ocds.submission_period;
 CREATE TABLE IF NOT EXISTS  ocds.submission_bid (
     oc_id text,
     stage text,
-    bid_id UUID,
-    bid_token UUID,
-    json_data text,
-    bid_status text,
+    owner text,
+    bid_id text,
+    token_entity text,
+    status text,
     created_date timestamp,
     pending_date timestamp,
-    owner text,
-    primary key(oc_id, stage, bid_id, bid_token)
-)WITH CLUSTERING ORDER BY (stage DESC, bid_id DESC);
+    json_data text,
+    primary key(oc_id, stage, bid_id, token_entity)
+);

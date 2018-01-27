@@ -1,12 +1,11 @@
 package com.procurement.submission.model.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.procurement.submission.model.ocds.Bid;
-import java.util.List;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,23 +15,23 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @JsonPropertyOrder({
-    "ocid",
-    "bid"
+        "token",
+        "bid"
 })
-public class BidsCopyResponse {
+@JsonInclude(value = JsonInclude.Include.NON_NULL)
+public class BidResponseDto {
     @NotNull
-    @JsonProperty("ocid")
-    private String ocid;
-
+    @JsonProperty("token")
+    private String token;
     @Valid
     @NotNull
-    @JsonProperty("bids")
-    private List<Bid> bids;
+    @JsonProperty("bid")
+    private Bid bid;
 
     @JsonCreator
-    public BidsCopyResponse(@JsonProperty("ocid") final String ocid,
-                            @JsonProperty("bids") final List<Bid> bids) {
-        this.ocid = ocid;
-        this.bids = bids;
+    public BidResponseDto(@JsonProperty("token") final String token,
+                          @JsonProperty("bid") final Bid bid) {
+        this.token = token;
+        this.bid = bid;
     }
 }

@@ -1,14 +1,7 @@
 package com.procurement.submission.service;
 
-import com.procurement.submission.JsonUtil;
-import com.procurement.submission.model.dto.request.PeriodDataDto;
-import com.procurement.submission.repository.RulesRepository;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class RulesServiceImplTest {
 

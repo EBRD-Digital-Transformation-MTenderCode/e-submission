@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.procurement.submission.model.ocds.OrganizationReference;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
@@ -16,21 +17,21 @@ import lombok.Getter;
     "tenderers",
     "bids"
 })
-public class BidsWithdrawnRs {
+public class BidsUpdateStatusResponse {
 
     @JsonProperty("tenderPeriod")
     private TenderPeriod tenderPeriod;
 
     @JsonProperty("tenderers")
-    private List<OrganizationReference> tenderers;
+    private Set<OrganizationReference> tenderers;
 
     @JsonProperty("bids")
-    private List<BidWithdrawnRs> bids;
+    private List<BidUpdate> bids;
 
     @JsonCreator
-    public BidsWithdrawnRs(@JsonProperty("tenderPeriod") @NotNull final TenderPeriod tenderPeriod,
-                           @JsonProperty("tenderers") @NotEmpty final List<OrganizationReference> tenderers,
-                           @JsonProperty("bids") @NotEmpty final List<BidWithdrawnRs> bids) {
+    public BidsUpdateStatusResponse(@JsonProperty("tenderPeriod") @NotNull final TenderPeriod tenderPeriod,
+                                    @JsonProperty("tenderers") @NotEmpty final Set<OrganizationReference> tenderers,
+                                    @JsonProperty("bids") @NotEmpty final List<BidUpdate> bids) {
         this.tenderPeriod = tenderPeriod;
         this.tenderers = tenderers;
         this.bids = bids;

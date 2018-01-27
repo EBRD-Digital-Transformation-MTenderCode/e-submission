@@ -26,7 +26,7 @@ import lombok.Getter;
     "documents",
     "relatedLots"
 })
-public class BidWithdrawnRs {
+public class BidUpdate {
     private String id;
     private LocalDateTime date;
     private Bid.Status status;
@@ -37,14 +37,14 @@ public class BidWithdrawnRs {
     private List<String> relatedLots;
 
     @JsonCreator
-    public BidWithdrawnRs(@JsonProperty("id") @NotNull final String id,
-                          @JsonProperty("date") @NotNull final LocalDateTime date,
-                          @JsonProperty("status") @NotNull final Bid.Status status,
-                          @JsonProperty("statusDetail") final Bid.StatusDetail statusDetail,
-                          @JsonProperty("tenderers") @NotEmpty @Valid final List<OrganizationReferenceRs> tenderers,
-                          @JsonProperty("value") @Valid final Value value,
-                          @JsonProperty("documents") @Valid final List<Document> documents,
-                          @JsonProperty("relatedLots") @NotNull final List<String> relatedLots) {
+    public BidUpdate(@JsonProperty("id") @NotNull final String id,
+                     @JsonProperty("date") @NotNull final LocalDateTime date,
+                     @JsonProperty("status") @NotNull final Bid.Status status,
+                     @JsonProperty("statusDetail") final Bid.StatusDetail statusDetail,
+                     @JsonProperty("tenderers") @NotEmpty @Valid final List<OrganizationReferenceRs> tenderers,
+                     @JsonProperty("value") @Valid final Value value,
+                     @JsonProperty("documents") @Valid final List<Document> documents,
+                     @JsonProperty("relatedLots") @NotNull final List<String> relatedLots) {
         this.id = id;
         this.date = date;
         this.status = status;

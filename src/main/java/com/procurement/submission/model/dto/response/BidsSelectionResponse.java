@@ -19,8 +19,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({
-    "ocid",
-    "bid"
+        "ocid",
+        "bids"
 })
 public class BidsSelectionResponse {
 
@@ -44,12 +44,12 @@ public class BidsSelectionResponse {
     @Setter
     @NoArgsConstructor
     @JsonPropertyOrder({
-        "id",
-        "relatedLots",
-        "createDate",
-        "pendingDate",
-        "value",
-        "tenderers"
+            "id",
+            "relatedLots",
+            "createDate",
+            "pendingDate",
+            "value",
+            "tenderers"
     })
     public static class Bid {
         private String id;
@@ -74,21 +74,4 @@ public class BidsSelectionResponse {
             this.tenderers = tenderers;
         }
     }
-
-/*    @Getter
-    @JsonPropertyOrder({
-        "id",
-        "name"
-    })
-    public static class OrganizationReference {
-        private String id;
-        private String name;
-
-        @JsonCreator
-        public OrganizationReference(@JsonProperty("id") @NotNull final String id,
-                                     @JsonProperty("name") @NotNull final String name) {
-            this.id = id;
-            this.name = name;
-        }
-    }*/
 }

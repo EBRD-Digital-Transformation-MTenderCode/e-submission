@@ -42,10 +42,25 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
-    public void checkPeriod(final String cpid) {
+    public void checkCurrentDateInPeriod(final String cpid) {
         if (isPeriodValid(cpid)) {
-            throw new ErrorException("Not found date.");
+            throw new ErrorException("Date does not match the period.");
         }
+    }
+
+    @Override
+    public void checkIsPeriodExpired(final String cpid) {
+        if (isPeriodValid(cpid)) {
+            throw new ErrorException("Period has not yet expired.");
+        }
+    }
+
+    public boolean isPeriodValid(final String cpid) {
+        final LocalDateTime localDateTime = dateUtil.localNowUTC();
+        final PeriodEntity periodEntity = getPeriod(cpid);
+        final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
+        final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
+        return !localDateTimeAfter || !localDateTimeBefore;
     }
 
     @Override
@@ -73,15 +88,6 @@ public class PeriodServiceImpl implements PeriodService {
         } else {
             throw new ErrorException("Period not found");
         }
-    }
-
-    @Override
-    public boolean isPeriodValid(final String cpid) {
-        final LocalDateTime localDateTime = dateUtil.localNowUTC();
-        final PeriodEntity periodEntity = getPeriod(cpid);
-        final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
-        final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
-        return !localDateTimeAfter || !localDateTimeBefore;
     }
 
     private Boolean checkInterval(final LocalDateTime startDate, final LocalDateTime endDate, final int interval) {

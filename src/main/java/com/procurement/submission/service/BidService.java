@@ -1,29 +1,44 @@
 package com.procurement.submission.service;
 
-import com.procurement.submission.model.dto.request.BidRequestDto;
+import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.request.BidsCopyDto;
-import com.procurement.submission.model.dto.request.BidsSelectionDto;
-import com.procurement.submission.model.dto.request.BidsUpdateByLotsDto;
-import com.procurement.submission.model.dto.response.BidWithdrawnRs;
-import com.procurement.submission.model.dto.response.BidsCopyResponse;
-import com.procurement.submission.model.dto.response.BidsSelectionResponse;
-import com.procurement.submission.model.dto.response.BidsWithdrawnRs;
-import com.procurement.submission.model.dto.response.CommonBidResponse;
-import java.util.List;
+import com.procurement.submission.model.dto.request.LotsDto;
+import com.procurement.submission.model.ocds.Bid;
 
 public interface BidService {
 
-    CommonBidResponse createBid(BidRequestDto bidRequest);
+    ResponseDto createBid(String ocId,
+                          String stage,
+                          String owner,
+                          Bid bidDto);
 
-    CommonBidResponse updateBid(BidRequestDto bidRequest);
+    ResponseDto updateBid(String ocId,
+                          String stage,
+                          String token,
+                          String owner,
+                          Bid bidDto);
 
-    BidsCopyResponse copyBids(BidsCopyDto bidsCopyDto);
+    ResponseDto copyBids(String ocId,
+                         String stage,
+                         String previousStage,
+                         BidsCopyDto bidsCopyDto);
 
-    BidsSelectionResponse selectionBids(BidsSelectionDto bidsSelectionDto);
+    ResponseDto getBids(String ocId,
+                        String country,
+                        String pmd,
+                        String stage,
+                        Bid.Status status);
 
-    BidsWithdrawnRs updateBidsByLots(BidsUpdateByLotsDto bidsUpdateByLotsDto);
+    ResponseDto updateBidsByLots(String ocId,
+                                     String stage,
+                                     String country,
+                                     String pmd,
+                                     LotsDto lots);
 
-    BidWithdrawnRs updateStatusDetail(String cpid, String stage, String bidId, String awardStatus);
+    ResponseDto updateStatusDetail(String ocId,
+                                      String stage,
+                                      String bidId,
+                                      String awardStatus);
 
-    List<BidWithdrawnRs> setFinalStatuses(String cpid, String stage);
+    ResponseDto setFinalStatuses(String ocId, String stage);
 }

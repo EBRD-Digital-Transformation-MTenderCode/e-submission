@@ -6,7 +6,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableSwagger2
-//@EnableWebMvc
 @ComponentScan(basePackages = "com.procurement.submission.controller")
 public class WebConfig {
 }

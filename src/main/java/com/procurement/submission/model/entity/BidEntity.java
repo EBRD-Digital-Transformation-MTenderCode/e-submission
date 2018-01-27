@@ -1,8 +1,8 @@
 package com.procurement.submission.model.entity;
 
-import com.procurement.submission.model.ocds.Bid;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.time.ZoneOffset;
+import java.util.Date;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -21,23 +21,39 @@ public class BidEntity {
     private String stage;
 
     @PrimaryKeyColumn(name = "bid_id", type = PrimaryKeyType.CLUSTERED)
-    private UUID bidId;
+    private String bidId;
 
-    @PrimaryKeyColumn(name = "bid_token", type = PrimaryKeyType.CLUSTERED)
-    private UUID bidToken;
+    @PrimaryKeyColumn(name = "token_entity", type = PrimaryKeyType.CLUSTERED)
+    private String token;
+
+    @Column("owner")
+    private String owner;
+
+    @Column(value = "status")
+    private String status;
+
+    @Column("created_date")
+    private Date createdDate;
+
+    @Column("pending_date")
+    private Date pendingDate;
 
     @Column(value = "json_data")
     private String jsonData;
 
-    @Column(value = "bid_status")
-    private Bid.Status status;
+    public LocalDateTime getCreatedDate() {
+        return LocalDateTime.ofInstant(createdDate.toInstant(), ZoneOffset.UTC);
+    }
 
-    @Column("created_date")
-    private LocalDateTime createdDate;
+    public void setCreatedDate(LocalDateTime createdDate) {
+        this.createdDate = Date.from(createdDate.toInstant(ZoneOffset.UTC));
+    }
 
-    @Column("pending_date")
-    private LocalDateTime pendingDate;
+    public LocalDateTime getPendingDate() {
+        return LocalDateTime.ofInstant(pendingDate.toInstant(), ZoneOffset.UTC);
+    }
 
-    @Column("owner")
-    private String owner;
+    public void setPendingDate(LocalDateTime pendingDate) {
+        this.pendingDate = Date.from(pendingDate.toInstant(ZoneOffset.UTC));
+    }
 }

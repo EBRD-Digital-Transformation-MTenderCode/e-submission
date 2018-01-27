@@ -19,9 +19,9 @@ public interface PeriodService {
                            LocalDateTime startDate,
                            LocalDateTime endDate);
 
-    void checkPeriod(String cpid);
+    void checkCurrentDateInPeriod(String cpid);
 
-    boolean isPeriodValid(String cpId);
+    void checkIsPeriodExpired(String cpId);
 
     PeriodEntity getPeriod(String cpId);
 

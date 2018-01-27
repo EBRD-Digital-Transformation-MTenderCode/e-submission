@@ -1,4 +1,4 @@
-package com.procurement.submission.model.dto.response;
+package com.procurement.submission.model.dto.response.errors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

@@ -1,22 +1,10 @@
 package com.procurement.submission.service;
 
-import com.procurement.submission.JsonUtil;
-import com.procurement.submission.exception.ErrorException;
-import com.procurement.submission.model.dto.request.PeriodDataDto;
-import com.procurement.submission.model.dto.request.TenderPeriodDto;
-import com.procurement.submission.model.entity.PeriodEntity;
-import com.procurement.submission.repository.PeriodRepository;
-import java.time.LocalDateTime;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.springframework.core.convert.ConversionService;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class PeriodServiceImplTest {
 
@@ -67,25 +55,25 @@ class PeriodServiceImplTest {
 
 //    @Test
 //    void checkPeriodTrue() {
-//        Boolean isValid = periodService.checkPeriod(periodDataDto);
+//        Boolean isValid = periodService.checkCurrentDateInPeriod(periodDataDto);
 //        assertTrue(isValid);
 //    }
 //
 //    @Test
 //    void checkPeriodEqualDays() {
-//        Boolean isValid = periodService.checkPeriod(periodDataDtoForEqualDays);
+//        Boolean isValid = periodService.checkCurrentDateInPeriod(periodDataDtoForEqualDays);
 //        assertTrue(isValid);
 //    }
 //
 //    @Test
 //    void checkPeriodNotEqualDays() {
-//        Boolean isValid = periodService.checkPeriod(periodDataDtoForNotEqualDays);
+//        Boolean isValid = periodService.checkCurrentDateInPeriod(periodDataDtoForNotEqualDays);
 //        assertFalse(isValid);
 //    }
 //
 //    @Test
 //    void checkPeriodFalse() {
-//        Boolean isValid = periodService.checkPeriod(periodDataDtoForFalse);
+//        Boolean isValid = periodService.checkCurrentDateInPeriod(periodDataDtoForFalse);
 //        assertFalse(isValid);
 //    }
 //
@@ -97,13 +85,13 @@ class PeriodServiceImplTest {
 
 //    @Test
 //    void testCheckPeriodValid() {
-//        periodService.checkPeriod("validPeriod");
+//        periodService.checkCurrentDateInPeriod("validPeriod");
 //    }
 //
 //    @Test
 //    void testCheckPeriodAfter() {
 //        ErrorException exception = assertThrows(ErrorException.class,
-//            () -> periodService.checkPeriod("afterPeriod")
+//            () -> periodService.checkCurrentDateInPeriod("afterPeriod")
 //        );
 //        assertEquals("Not found date.", exception.getMessage());
 //    }
@@ -111,7 +99,7 @@ class PeriodServiceImplTest {
 //    @Test
 //    void testCheckPeriodBefore() {
 //        ErrorException exception = assertThrows(ErrorException.class,
-//            () -> periodService.checkPeriod("beforePeriod")
+//            () -> periodService.checkCurrentDateInPeriod("beforePeriod")
 //        );
 //        assertEquals("Not found date.", exception.getMessage());
 //    }

@@ -38,23 +38,23 @@ import static org.mockito.Mockito.when;
 
 public class BidServiceTest {
 
-    private PeriodService periodService;
-    private BidRepository bidRepository;
-    private ConversionService conversionService;
-    private BidService bidService;
-    private RulesService rulesService;
-
-    private static JsonUtil jsonUtil = new JsonUtil(new ObjectMapper());
-
-    @BeforeEach
-    void initEach() {
-        periodService = mock(PeriodService.class);
-        bidRepository = mock(BidRepository.class);
-        conversionService = mock(ConversionService.class);
-        rulesService = mock(RulesService.class);
-        bidService = new BidServiceImpl(periodService, bidRepository, conversionService,
-            jsonUtil, rulesService);
-    }
+//    private PeriodService periodService;
+//    private BidRepository bidRepository;
+//    private ConversionService conversionService;
+//    private BidService bidService;
+//    private RulesService rulesService;
+//
+//    private static JsonUtil jsonUtil = new JsonUtil(new ObjectMapper());
+//
+//    @BeforeEach
+//    void initEach() {
+//        periodService = mock(PeriodService.class);
+//        bidRepository = mock(BidRepository.class);
+//        conversionService = mock(ConversionService.class);
+//        rulesService = mock(RulesService.class);
+//        bidService = new BidServiceImpl(periodService, bidRepository, conversionService,
+//            jsonUtil, rulesService);
+//    }
 /*
     @Test
     @DisplayName("Test verifying invocations without null after converting.")
@@ -63,7 +63,7 @@ public class BidServiceTest {
         when(conversionService.convert(qualificationOfferDto, BidEntity.class)).thenReturn(new BidEntity());
         when(bidRepository.save(new BidEntity())).thenReturn(new BidEntity());
         bidService.insertData(qualificationOfferDto);
-        verify(periodService, times(1)).checkPeriod("ocid");
+        verify(periodService, times(1)).checkCurrentDateInPeriod("ocid");
         verify(conversionService, times(1)).convert(qualificationOfferDto, BidEntity.class);
         verify(bidRepository, times(1)).save(any(BidEntity.class));
     }
@@ -75,7 +75,7 @@ public class BidServiceTest {
         when(conversionService.convert(qualificationOfferDto, BidEntity.class)).thenReturn(null);
         when(bidRepository.save(new BidEntity())).thenReturn(new BidEntity());
         bidService.insertData(qualificationOfferDto);
-        verify(periodService, times(1)).checkPeriod("ocid");
+        verify(periodService, times(1)).checkCurrentDateInPeriod("ocid");
         verify(conversionService, times(1)).convert(qualificationOfferDto, BidEntity.class);
         verify(bidRepository, never()).save(any(BidEntity.class));
     }

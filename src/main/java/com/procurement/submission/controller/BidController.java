@@ -1,125 +1,87 @@
 package com.procurement.submission.controller;
 
-import com.procurement.submission.model.dto.request.BidRequestDto;
+import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.request.BidsCopyDto;
-import com.procurement.submission.model.dto.request.BidsSelectionDto;
-import com.procurement.submission.model.dto.request.BidsUpdateByLotsDto;
 import com.procurement.submission.model.dto.request.LotsDto;
-import com.procurement.submission.model.dto.response.BidResponseEntity;
-import com.procurement.submission.model.dto.response.BidWithdrawnRs;
-import com.procurement.submission.model.dto.response.BidsCopyResponse;
-import com.procurement.submission.model.dto.response.BidsResponseEntity;
-import com.procurement.submission.model.dto.response.BidsSelectionResponse;
-import com.procurement.submission.model.dto.response.BidsWithdrawnRs;
-import com.procurement.submission.model.dto.response.CommonBidResponse;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.service.BidService;
-import java.util.ArrayList;
-import java.util.List;
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 @Validated
 @RestController
 @RequestMapping(path = "/submission")
 public class BidController {
-    private static final int OCID_LENGTH = 21;
+
     private BidService bidService;
 
     public BidController(final BidService bidService) {
         this.bidService = bidService;
     }
 
-    @PostMapping(value = "/createBid")
-    @ResponseStatus(CREATED)
-    public BidResponseEntity createBid(@Valid @RequestBody final BidRequestDto bidRequest) {
-        final CommonBidResponse commonBidResponse = bidService.createBid(bidRequest);
-        return new BidResponseEntity(true, new ArrayList<>(), commonBidResponse);
+    @PostMapping(value = "/bid")
+    public ResponseEntity<ResponseDto> createBid(@RequestParam("ocid") final String ocId,
+                                                 @RequestParam("stage") final String stage,
+                                                 @RequestParam("owner") final String owner,
+                                                 @Valid @RequestBody final Bid bidDto) {
+        return new ResponseEntity<>(bidService.createBid(ocId, stage, owner, bidDto), HttpStatus.CREATED);
     }
 
-    @PostMapping(value = "/updateBid")
-    @ResponseStatus(OK)
-    public BidResponseEntity updateBid(@Valid @RequestBody final BidRequestDto bidRequest) {
-        final CommonBidResponse commonBidResponse = bidService.updateBid(bidRequest);
-        return new BidResponseEntity(true, new ArrayList<>(), commonBidResponse);
+    @PutMapping(value = "/bid")
+    public ResponseEntity<ResponseDto> updateBid(@RequestParam("ocid") final String ocId,
+                                                 @RequestParam("stage") final String stage,
+                                                 @RequestParam("token") final String token,
+                                                 @RequestParam("owner") final String owner,
+                                                 @Valid @RequestBody final Bid bidDto) {
+        return new ResponseEntity<>(bidService.updateBid(ocId, stage, token, owner, bidDto), HttpStatus.OK);
     }
 
     @PostMapping(value = "/copyBids")
-    @ResponseStatus(OK)
-    public BidsResponseEntity<BidsCopyResponse> copyBids(@Valid @RequestBody final BidsCopyDto bidsCopyDto) {
-        final BidsCopyResponse bids = bidService.copyBids(bidsCopyDto);
-        return new BidsResponseEntity<>(true, new ArrayList<>(), bids);
+    public ResponseEntity<ResponseDto> copyBids(@RequestParam("ocid") final String ocId,
+                                                @RequestParam("stage") final String stage,
+                                                @RequestParam("stage") final String previousStage,
+                                                @Valid @RequestBody final BidsCopyDto bidsCopyDto) {
+        return new ResponseEntity<>(bidService.copyBids(ocId, stage, previousStage, bidsCopyDto), HttpStatus.OK);
     }
 
-    /**
-     * @param cpid
-     * @param country
-     * @param pmd     - procurementMethodDetails
-     * @param stage
-     * @param status  - must write in uppercase
-     * @return
-     * @apiNote .../submission/selectionOfBids/ocds-213czf-000-00001?country=UA&pmd=method&stage=stage&status=PENDING
-     */
-    @GetMapping(value = "/selectionOfBids/{cpid}")
-    @ResponseStatus(OK)
-    public BidsResponseEntity<BidsSelectionResponse> selectionOfBids(
-        @PathVariable @Size(min = OCID_LENGTH, max = OCID_LENGTH) final String cpid,
-        @RequestParam @Size(min = 2, max = 2) @Pattern(regexp = "[a-zA-Z]*") final String country,
-        @RequestParam @NotBlank final String pmd,
-        @RequestParam @NotBlank final String stage,
-        @RequestParam final Bid.Status status) {
-        final BidsSelectionResponse bids =
-            bidService.selectionBids(new BidsSelectionDto(cpid, country, pmd, stage, status));
-        return new BidsResponseEntity<>(true, new ArrayList<>(), bids);
+
+    @GetMapping(value = "/bids")
+    public ResponseEntity<ResponseDto> getBids(@RequestParam final String ocId,
+                                               @RequestParam final String country,
+                                               @RequestParam final String pmd,
+                                               @RequestParam final String stage,
+                                               @RequestParam final Bid.Status status) {
+        return new ResponseEntity<>(bidService.getBids(ocId, country, pmd, stage, status), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/updateStatus/{cpid}")
+    @PutMapping(value = "/updateStatus")
     @ResponseStatus(OK)
-    public BidsResponseEntity<BidsWithdrawnRs> updateStatus(
-        @PathVariable @Size(min = OCID_LENGTH, max = OCID_LENGTH) final String cpid,
-        @RequestParam @NotBlank final String stage,
-        @RequestParam @Size(min = 2, max = 2) @Pattern(regexp = "[a-zA-Z]*") final String country,
-        @RequestParam @NotBlank final String pmd,
-        @RequestBody @NotNull final LotsDto lots) {
-        final BidsWithdrawnRs bidsWithdrawnRs =
-            bidService.updateBidsByLots(new BidsUpdateByLotsDto(cpid, stage, country, pmd, lots));
-        return new BidsResponseEntity<>(true, new ArrayList<>(), bidsWithdrawnRs);
+    public ResponseEntity<ResponseDto> updateStatus(@RequestParam final String ocId,
+                                                    @RequestParam final String stage,
+                                                    @RequestParam final String country,
+                                                    @RequestParam final String pmd,
+                                                    @RequestBody final LotsDto lots) {
+        return new ResponseEntity<>(bidService.updateBidsByLots(ocId, stage, country, pmd, lots), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/updateStatusDetail/{cpid}")
+    @PutMapping(value = "/updateStatusDetail")
     @ResponseStatus(OK)
-    public BidsResponseEntity<BidWithdrawnRs> updateStatusDetail(
-        @PathVariable @Size(min = OCID_LENGTH, max = OCID_LENGTH) final String cpid,
-        @RequestParam @NotBlank final String stage,
-        @RequestParam @NotBlank final String bidId,
-        @RequestParam @NotBlank final String awardStatus
-    ) {
-        final BidWithdrawnRs bidWithdrawnRs = bidService.updateStatusDetail(cpid, stage, bidId, awardStatus);
-        return new BidsResponseEntity<>(true, new ArrayList<>(), bidWithdrawnRs);
+    public ResponseEntity<ResponseDto> updateStatusDetail(@RequestParam final String ocId,
+                                                          @RequestParam final String stage,
+                                                          @RequestParam final String bidId,
+                                                          @RequestParam final String awardStatus) {
+        return new ResponseEntity<>(bidService.updateStatusDetail(ocId, stage, bidId, awardStatus), HttpStatus.OK);
     }
 
-    @PostMapping(value = "/setFinalStatuses/{cpid}")
+    @PutMapping(value = "/setFinalStatuses")
     @ResponseStatus(OK)
-    public BidsResponseEntity<List<BidWithdrawnRs>> setFinalStatuses(
-        @PathVariable @Size(min = OCID_LENGTH, max = OCID_LENGTH) final String cpid,
-        @RequestParam @NotBlank final String stage
-    ) {
-        final List<BidWithdrawnRs> bidWithdrawnRs = bidService.setFinalStatuses(cpid, stage);
-        return new BidsResponseEntity<>(true, new ArrayList<>(), bidWithdrawnRs);
+    public ResponseEntity<ResponseDto> setFinalStatuses(@RequestParam final String ocId,
+                                                        @RequestParam final String stage) {
+        return new ResponseEntity<>(bidService.setFinalStatuses(ocId, stage), HttpStatus.OK);
     }
 }

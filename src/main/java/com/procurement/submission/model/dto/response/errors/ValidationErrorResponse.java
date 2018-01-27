@@ -1,4 +1,4 @@
-package com.procurement.submission.model.dto.response;
+package com.procurement.submission.model.dto.response.errors;
 
 import java.util.List;
 import lombok.Getter;
