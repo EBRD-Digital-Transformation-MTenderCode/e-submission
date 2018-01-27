@@ -151,25 +151,25 @@ public class BidServiceImpl implements BidService {
     public ResponseDto copyBids(final String ocId,
                                 final String stage,
                                 final String previousStage,
-                                final BidsCopyDto bidsCopyDto) {
+                                final LotsDto lots) {
         final List<BidEntity> bidEntities = bidRepository.findAllByOcIdAndStage(ocId, previousStage);
         if (bidEntities.isEmpty()) {
             throw new ErrorException("Bids not found.");
         }
         final Map<BidEntity, Bid> entityBidMap = filterByStatus(bidEntities, PENDING.value());
-        final Map<BidEntity, Bid> newBidsMap = createBidCopy(bidsCopyDto, entityBidMap, stage);
+        final Map<BidEntity, Bid> newBidsMap = createBidCopy(lots, entityBidMap, stage);
         bidRepository.saveAll(newBidsMap.keySet());
         final List<Bid> bids = new ArrayList<>(newBidsMap.values());
         return new ResponseDto<>(true, null, new BidsCopyResponse(ocId, bids));
     }
 
 
-    private Map<BidEntity, Bid> createBidCopy(final BidsCopyDto bidsCopyDto,
+    private Map<BidEntity, Bid> createBidCopy(final LotsDto lotsDto,
                                               final Map<BidEntity, Bid> entityBidMap,
                                               final String stage) {
-        final List<String> lotsDto = collectLots(bidsCopyDto.getLots());
+        final List<String> lots = collectLots(lotsDto.getLots());
         return entityBidMap.entrySet().stream()
-                .filter(e -> containsAny(e.getValue().getRelatedLots(), lotsDto))
+                .filter(e -> containsAny(e.getValue().getRelatedLots(), lots))
                 .map(e -> copyBidEntity(e, stage))
                 .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }

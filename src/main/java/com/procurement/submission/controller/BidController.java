@@ -45,8 +45,8 @@ public class BidController {
     public ResponseEntity<ResponseDto> copyBids(@RequestParam final String ocId,
                                                 @RequestParam final String stage,
                                                 @RequestParam final String previousStage,
-                                                @Valid @RequestBody final BidsCopyDto bidsCopyDto) {
-        return new ResponseEntity<>(bidService.copyBids(ocId, stage, previousStage, bidsCopyDto), HttpStatus.OK);
+                                                @Valid @RequestBody final LotsDto lots) {
+        return new ResponseEntity<>(bidService.copyBids(ocId, stage, previousStage, lots), HttpStatus.OK);
     }
 
 

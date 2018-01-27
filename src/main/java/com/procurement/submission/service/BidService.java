@@ -21,7 +21,7 @@ public interface BidService {
     ResponseDto copyBids(String ocId,
                          String stage,
                          String previousStage,
-                         BidsCopyDto bidsCopyDto);
+                         LotsDto lots);
 
     ResponseDto getBids(String ocId,
                         String country,
