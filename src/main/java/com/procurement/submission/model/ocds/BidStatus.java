@@ -2,6 +2,7 @@ package com.procurement.submission.model.ocds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,7 +40,8 @@ public enum BidStatus {
     public static BidStatus fromValue(final String value) {
         final BidStatus constant = CONSTANTS.get(value);
         if (constant == null) {
-            throw new IllegalArgumentException(value);
+            throw new IllegalArgumentException(
+                    "Unknown enum type " + value + ", Allowed values are " + Arrays.toString(values()));
         }
         return constant;
     }

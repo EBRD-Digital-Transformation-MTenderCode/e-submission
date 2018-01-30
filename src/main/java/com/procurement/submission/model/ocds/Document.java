@@ -11,6 +11,7 @@ import com.procurement.submission.databinding.LocalDateTimeDeserializer;
 import com.procurement.submission.databinding.LocalDateTimeSerializer;
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -231,7 +232,8 @@ public class Document {
         public static DocumentType fromValue(final String value) {
             final DocumentType constant = CONSTANTS.get(value);
             if (constant == null) {
-                throw new IllegalArgumentException(value);
+                throw new IllegalArgumentException(
+                        "Unknown enum type " + value + ", Allowed values are " + Arrays.toString(values()));
             }
             return constant;
         }

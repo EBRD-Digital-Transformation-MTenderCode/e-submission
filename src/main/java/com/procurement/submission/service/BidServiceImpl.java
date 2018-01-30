@@ -321,7 +321,10 @@ public class BidServiceImpl implements BidService {
             bid.setStatus(VALID);
             bid.setDate(dateUtil.localNowUTC());
             bidEntity.setStatus(VALID.value());
+        }else {
+            throw new ErrorException("Invalid Award status.");
         }
+
         bidEntity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(bidEntity);
         final BidUpdate bidUpdate = conversionService.convert(bid, BidUpdate.class);

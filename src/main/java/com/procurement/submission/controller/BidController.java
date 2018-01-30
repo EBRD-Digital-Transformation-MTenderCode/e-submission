@@ -55,8 +55,10 @@ public class BidController {
                                                @RequestParam final String country,
                                                @RequestParam final String pmd,
                                                @RequestParam final String stage,
-                                               @RequestParam final Bid.Status status) {
-        return new ResponseEntity<>(bidService.getBids(ocId, country, pmd, stage, status), HttpStatus.OK);
+                                               @RequestParam final String status) {
+        return new ResponseEntity<>(
+                bidService.getBids(ocId, country, pmd, stage, Bid.Status.fromValue(status)),
+                HttpStatus.OK);
     }
 
     @PutMapping(value = "/updateStatus")
