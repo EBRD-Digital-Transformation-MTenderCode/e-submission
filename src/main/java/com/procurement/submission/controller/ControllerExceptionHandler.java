@@ -23,7 +23,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
-    private static final String MESSAGE = "Something went wrong";
+    private static final String MESSAGE = "Request data not valid.";
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ValidationErrorResponse> handleValidationContractProcessPeriod(
