@@ -2,7 +2,6 @@ package com.procurement.submission.service;
 
 import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
-import com.procurement.submission.model.dto.response.CheckPeriodResponse;
 import com.procurement.submission.model.dto.response.SavePeriodResponse;
 import com.procurement.submission.model.entity.PeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
@@ -37,7 +36,7 @@ public class PeriodServiceImpl implements PeriodService {
                                      final LocalDateTime endDate) {
         final int interval = rulesService.getInterval(country, pmd);
         final Boolean isValid = checkInterval(startDate, endDate, interval);
-        return getResponseDto(new CheckPeriodResponse(isValid));
+        return new ResponseDto<>(isValid, null, null);
     }
 
     @Override
@@ -73,10 +72,11 @@ public class PeriodServiceImpl implements PeriodService {
         period.setStartDate(dateUtil.localToDate(startDate));
         period.setEndDate(dateUtil.localToDate(endDate));
         periodRepository.save(period);
-        return getResponseDto(new SavePeriodResponse(
-                period.getCpId(),
-                period.getStartDate(),
-                period.getEndDate()));
+        return new ResponseDto<>(true, null,
+                new SavePeriodResponse(
+                        period.getCpId(),
+                        period.getStartDate(),
+                        period.getEndDate()));
     }
 
     @Override
@@ -93,9 +93,4 @@ public class PeriodServiceImpl implements PeriodService {
         final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
         return days >= interval;
     }
-
-    private ResponseDto getResponseDto(final Object data) {
-        return new ResponseDto(true, null, data);
-    }
-
 }
