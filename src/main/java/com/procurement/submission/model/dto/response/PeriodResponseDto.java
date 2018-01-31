@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
         "startDate",
         "endDate"
 })
-public class SavePeriodResponse {
+public class PeriodResponseDto {
 
     @JsonProperty("tenderId")
     private final String tenderId;
@@ -35,9 +35,9 @@ public class SavePeriodResponse {
     private final LocalDateTime endDate;
 
     @JsonCreator
-    public SavePeriodResponse(@JsonProperty("tenderId") final String tenderId,
-                              @JsonProperty("startDate") final LocalDateTime startDate,
-                              @JsonProperty("endDate") final LocalDateTime endDate) {
+    public PeriodResponseDto(@JsonProperty("tenderId") final String tenderId,
+                             @JsonProperty("startDate") final LocalDateTime startDate,
+                             @JsonProperty("endDate") final LocalDateTime endDate) {
         this.tenderId = tenderId;
         this.startDate = startDate;
         this.endDate = endDate;
