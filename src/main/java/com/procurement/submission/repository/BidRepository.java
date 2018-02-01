@@ -9,10 +9,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BidRepository extends CassandraRepository<BidEntity, String> {
 
-    List<BidEntity> findAllByOcIdAndStage(String ocId, String stage);
+    List<BidEntity> findAllByCpIdAndStage(String cpId, String stage);
 
-    BidEntity findByOcIdAndStageAndToken(String ocid, String stage, String token);
+    BidEntity findByCpIdAndStageAndToken(String cpId, String stage, String token);
 
-    @Query(value = "SELECT * FROM submission_bid WHERE oc_id=?0 AND stage=?1 AND bid_id=?2 LIMIT 1")
-    BidEntity findByOcIdAndStageAndBidId(String ocId, String stage, String bidId);
+    @Query(value = "SELECT * FROM submission_bid WHERE cp_id=?0 AND stage=?1 AND bid_id=?2 LIMIT 1")
+    BidEntity findByCpIdAndStageAndBidId(String cpId, String stage, String bidId);
 }

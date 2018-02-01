@@ -16,23 +16,16 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @JsonPropertyOrder({
-    "ocid",
-    "bid"
+    "bids"
 })
 public class BidsCopyResponse {
-    @NotNull
-    @JsonProperty("ocid")
-    private String ocid;
-
     @Valid
     @NotNull
     @JsonProperty("bids")
     private List<Bid> bids;
 
     @JsonCreator
-    public BidsCopyResponse(@JsonProperty("ocid") final String ocid,
-                            @JsonProperty("bids") final List<Bid> bids) {
-        this.ocid = ocid;
+    public BidsCopyResponse(@JsonProperty("bids") final List<Bid> bids) {
         this.bids = bids;
     }
 }

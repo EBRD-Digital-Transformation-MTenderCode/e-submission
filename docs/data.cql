@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_period (
 SELECT * FROM ocds.submission_period;
 
 CREATE TABLE IF NOT EXISTS  ocds.submission_bid (
-    oc_id text,
+    cp_id text,
     stage text,
     owner text,
     bid_id text,
@@ -29,5 +29,5 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_bid (
     created_date timestamp,
     pending_date timestamp,
     json_data text,
-    primary key(oc_id, stage, bid_id, token_entity)
+    primary key(cp_id, stage, bid_id, token_entity)
 );

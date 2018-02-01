@@ -14,8 +14,8 @@ import org.springframework.data.cassandra.core.mapping.Table;
 @Setter
 @Table("submission_bid")
 public class BidEntity {
-    @PrimaryKeyColumn(name = "oc_id", type = PrimaryKeyType.PARTITIONED)
-    private String ocId;
+    @PrimaryKeyColumn(name = "cp_id", type = PrimaryKeyType.PARTITIONED)
+    private String cpId;
 
     @PrimaryKeyColumn(name = "stage", type = PrimaryKeyType.CLUSTERED)
     private String stage;

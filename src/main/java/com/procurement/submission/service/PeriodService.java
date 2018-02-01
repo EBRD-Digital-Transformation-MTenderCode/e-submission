@@ -14,15 +14,15 @@ public interface PeriodService {
                             LocalDateTime startDate,
                             LocalDateTime endDate);
 
-    ResponseDto savePeriod(String cpid,
+    ResponseDto savePeriod(String cpId,
                            String stage,
                            LocalDateTime startDate,
                            LocalDateTime endDate);
 
-    void checkCurrentDateInPeriod(String cpid, String stage);
+    void checkCurrentDateInPeriod(String cpId, String stage);
 
-    void checkIsPeriodExpired(String cpId);
+    void checkIsPeriodExpired(String cpId, String stage);
 
-    PeriodEntity getPeriod(String cpId);
+    PeriodEntity getPeriod(String cpId, String stage);
 
 }

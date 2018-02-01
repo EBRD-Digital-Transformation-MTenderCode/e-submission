@@ -19,14 +19,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({
-        "ocid",
         "bids"
 })
 public class BidsSelectionResponse {
-
-    @NotNull
-    @JsonProperty("ocid")
-    private String ocid;
 
     @Valid
     @NotEmpty
@@ -34,9 +29,7 @@ public class BidsSelectionResponse {
     private List<Bid> bids;
 
     @JsonCreator
-    public BidsSelectionResponse(@JsonProperty("ocid") @NotNull final String ocid,
-                                 @JsonProperty("bids") @Valid @NotNull final List<Bid> bids) {
-        this.ocid = ocid;
+    public BidsSelectionResponse(@JsonProperty("bids") @Valid @NotNull final List<Bid> bids) {
         this.bids = bids;
     }
 

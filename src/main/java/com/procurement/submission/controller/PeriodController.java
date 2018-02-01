@@ -19,23 +19,23 @@ public class PeriodController {
     }
 
     @PostMapping("/check")
-    public ResponseEntity<ResponseDto> checkPeriod(@RequestParam("country") final String country,
-                                                   @RequestParam("pmd") final String pmd,
-                                                   @RequestParam("stage") final String stage,
+    public ResponseEntity<ResponseDto> checkPeriod(@RequestParam final String country,
+                                                   @RequestParam final String pmd,
+                                                   @RequestParam final String stage,
                                                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                                   @RequestParam("startDate") final LocalDateTime startDate,
+                                                   @RequestParam final LocalDateTime startDate,
                                                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                                   @RequestParam("endDate") final LocalDateTime endDate) {
+                                                   @RequestParam final LocalDateTime endDate) {
         return new ResponseEntity<>(periodService.checkInterval(country, pmd, stage, startDate, endDate), HttpStatus.OK);
     }
 
     @PostMapping("/save")
-    public ResponseEntity<ResponseDto> savePeriod(@RequestParam("cpid") final String cpid,
-                                                  @RequestParam("stage") final String stage,
+    public ResponseEntity<ResponseDto> savePeriod(@RequestParam final String cpid,
+                                                  @RequestParam final String stage,
                                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                                  @RequestParam("startDate") final LocalDateTime startDate,
+                                                  @RequestParam final LocalDateTime startDate,
                                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                                  @RequestParam("endDate") final LocalDateTime endDate) {
+                                                  @RequestParam final LocalDateTime endDate) {
         return new ResponseEntity<>(periodService.savePeriod(cpid, stage, startDate, endDate), HttpStatus.CREATED);
     }
 }

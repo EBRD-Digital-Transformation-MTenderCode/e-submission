@@ -8,9 +8,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.procurement.submission.databinding.LocalDateTimeDeserializer;
 import com.procurement.submission.databinding.LocalDateTimeSerializer;
-import lombok.Getter;
-
 import java.time.LocalDateTime;
+import lombok.Getter;
 
 @Getter
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -20,9 +19,6 @@ import java.time.LocalDateTime;
         "endDate"
 })
 public class PeriodResponseDto {
-
-    @JsonProperty("tenderId")
-    private final String tenderId;
 
     @JsonProperty("startDate")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -35,10 +31,8 @@ public class PeriodResponseDto {
     private final LocalDateTime endDate;
 
     @JsonCreator
-    public PeriodResponseDto(@JsonProperty("tenderId") final String tenderId,
-                             @JsonProperty("startDate") final LocalDateTime startDate,
+    public PeriodResponseDto(@JsonProperty("startDate") final LocalDateTime startDate,
                              @JsonProperty("endDate") final LocalDateTime endDate) {
-        this.tenderId = tenderId;
         this.startDate = startDate;
         this.endDate = endDate;
     }

@@ -12,33 +12,33 @@ public interface BidService {
                           String owner,
                           Bid bidDto);
 
-    ResponseDto updateBid(String ocId,
+    ResponseDto updateBid(String cpId,
                           String stage,
                           String token,
                           String owner,
                           Bid bidDto);
 
-    ResponseDto copyBids(String ocId,
+    ResponseDto copyBids(String cpId,
                          String stage,
                          String previousStage,
                          LotsDto lots);
 
-    ResponseDto getBids(String ocId,
+    ResponseDto getBids(String cpId,
+                        String stage,
                         String country,
                         String pmd,
-                        String stage,
                         Bid.Status status);
 
-    ResponseDto updateBidsByLots(String ocId,
+    ResponseDto updateBidsByLots(String cpId,
                                      String stage,
                                      String country,
                                      String pmd,
                                      LotsDto lots);
 
-    ResponseDto updateStatusDetail(String ocId,
+    ResponseDto updateStatusDetail(String cpId,
                                       String stage,
                                       String bidId,
                                       String awardStatus);
 
-    ResponseDto setFinalStatuses(String ocId, String stage);
+    ResponseDto setFinalStatuses(String cpId, String stage);
 }
