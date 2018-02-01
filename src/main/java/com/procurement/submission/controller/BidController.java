@@ -1,6 +1,7 @@
 package com.procurement.submission.controller;
 
 import com.procurement.submission.model.dto.bpe.ResponseDto;
+import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.LotsDto;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.service.BidService;
@@ -25,8 +26,8 @@ public class BidController {
     public ResponseEntity<ResponseDto> createBid(@RequestParam final String cpId,
                                                  @RequestParam final String stage,
                                                  @RequestParam final String owner,
-                                                 @Valid @RequestBody final Bid bidDto) {
-        return new ResponseEntity<>(bidService.createBid(cpId, stage, owner, bidDto), HttpStatus.CREATED);
+                                                 @Valid @RequestBody final BidRequestDto bidDto) {
+        return new ResponseEntity<>(bidService.createBid(cpId, stage, owner, bidDto.getBid()), HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/bid")
@@ -34,8 +35,8 @@ public class BidController {
                                                  @RequestParam final String stage,
                                                  @RequestParam final String token,
                                                  @RequestParam final String owner,
-                                                 @Valid @RequestBody final Bid bidDto) {
-        return new ResponseEntity<>(bidService.updateBid(cpId, stage, token, owner, bidDto), HttpStatus.OK);
+                                                 @Valid @RequestBody final BidRequestDto bidDto) {
+        return new ResponseEntity<>(bidService.updateBid(cpId, stage, token, owner, bidDto.getBid()), HttpStatus.OK);
     }
 
     @PostMapping(value = "/copyBids")

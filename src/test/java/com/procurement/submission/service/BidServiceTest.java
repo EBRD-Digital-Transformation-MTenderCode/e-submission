@@ -169,13 +169,13 @@ public class BidServiceTest {
         );
     }*/
 
-    private OrganizationReference createOrganizationReferenceDto(final String name, final String scheme)
-        throws URISyntaxException {
-        Identifier identifierDto = new Identifier(scheme, "id", name, new URI("str"));
-        Address address = new Address("str", "str", "str", "str", "str");
-        ContactPoint contactPoint = new ContactPoint("str", "str", "str", "str", new URI("str"),
-                                                     Collections.singletonList("str"));
-        return new OrganizationReference(name, "id", identifierDto, address, new LinkedHashSet<>(),
-                                         contactPoint);
-    }
+//    private OrganizationReference createOrganizationReferenceDto(final String name, final String scheme)
+//        throws URISyntaxException {
+//        Identifier identifierDto = new Identifier(scheme, "id", name, new URI("str"));
+//        Address address = new Address("str", "str", "str", "str", "str");
+//        ContactPoint contactPoint = new ContactPoint("str", "str", "str", "str", new URI("str"),
+//                                                     Collections.singletonList("str"));
+//        return new OrganizationReference(name, "id", identifierDto, address, new LinkedHashSet<>(),
+//                                         contactPoint);
+//    }
 }
