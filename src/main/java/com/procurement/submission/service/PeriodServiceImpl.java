@@ -40,7 +40,7 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
-    public void checkCurrentDateInPeriod(final String cpid) {
+    public void checkCurrentDateInPeriod(final String cpid, final String stage) {
         if (isPeriodValid(cpid)) {
             throw new ErrorException("Date does not match the period.");
         }

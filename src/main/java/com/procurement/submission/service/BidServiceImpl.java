@@ -48,8 +48,8 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public ResponseDto createBid(final String ocId, final String stage, final String owner, final Bid bidDto) {
-        periodService.checkCurrentDateInPeriod(ocId);
+    public ResponseDto createBid(final String cpId, final String stage, final String owner, final Bid bidDto) {
+        periodService.checkCurrentDateInPeriod(cpId, stage);
         final List<BidEntity> bidEntities = bidRepository.findAllByOcIdAndStage(ocId, stage);
         if (!bidEntities.isEmpty()) {
             checkTenderers(bidEntities, bidDto);

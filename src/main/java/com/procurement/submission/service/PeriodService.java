@@ -19,7 +19,7 @@ public interface PeriodService {
                            LocalDateTime startDate,
                            LocalDateTime endDate);
 
-    void checkCurrentDateInPeriod(String cpid);
+    void checkCurrentDateInPeriod(String cpid, String stage);
 
     void checkIsPeriodExpired(String cpId);
 

@@ -7,7 +7,7 @@ import com.procurement.submission.model.ocds.Bid;
 
 public interface BidService {
 
-    ResponseDto createBid(String ocId,
+    ResponseDto createBid(String cpId,
                           String stage,
                           String owner,
                           Bid bidDto);

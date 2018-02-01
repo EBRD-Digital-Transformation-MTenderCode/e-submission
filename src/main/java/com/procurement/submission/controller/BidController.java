@@ -25,11 +25,11 @@ public class BidController {
     }
 
     @PostMapping(value = "/bid")
-    public ResponseEntity<ResponseDto> createBid(@RequestParam final String ocId,
+    public ResponseEntity<ResponseDto> createBid(@RequestParam final String cpId,
                                                  @RequestParam final String stage,
                                                  @RequestParam final String owner,
                                                  @Valid @RequestBody final Bid bidDto) {
-        return new ResponseEntity<>(bidService.createBid(ocId, stage, owner, bidDto), HttpStatus.CREATED);
+        return new ResponseEntity<>(bidService.createBid(cpId, stage, owner, bidDto), HttpStatus.CREATED);
     }
 
     @PutMapping(value = "/bid")
