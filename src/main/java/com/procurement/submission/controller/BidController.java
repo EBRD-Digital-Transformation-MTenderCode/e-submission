@@ -46,7 +46,6 @@ public class BidController {
         return new ResponseEntity<>(bidService.copyBids(cpId, stage, previousStage, lots), HttpStatus.OK);
     }
 
-
     @GetMapping(value = "/bids")
     public ResponseEntity<ResponseDto> getBids(@RequestParam final String cpId,
                                                @RequestParam final String stage,

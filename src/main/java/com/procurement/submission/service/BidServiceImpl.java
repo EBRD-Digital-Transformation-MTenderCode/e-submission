@@ -1,6 +1,7 @@
 package com.procurement.submission.service;
 
 import com.datastax.driver.core.utils.UUIDs;
+import com.google.common.base.Strings;
 import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.request.LotDto;
@@ -125,9 +126,12 @@ public class BidServiceImpl implements BidService {
                                  final String token,
                                  final String owner,
                                  final Bid bidDto) {
-        bidDto.setDate(dateUtil.localNowUTC());
-        final BidEntity entity = Optional.ofNullable(bidRepository.findByCpIdAndStageAndToken(cpId, stage, token))
+        if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException("Invalid bid id.");
+        final BidEntity entity = Optional
+                .ofNullable(bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage, bidDto.getId(), token))
                 .orElseThrow(() -> new ErrorException("Bid not found."));
+        if (!entity.getOwner().equals(owner)) throw new ErrorException("Invalid owner.");
+        bidDto.setDate(dateUtil.localNowUTC());
         setPendingDate(bidDto, entity);
         entity.setJsonData(jsonUtil.toJson(bidDto));
         bidRepository.save(entity);

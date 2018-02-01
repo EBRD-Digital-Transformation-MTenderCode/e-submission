@@ -11,8 +11,7 @@ public interface BidRepository extends CassandraRepository<BidEntity, String> {
 
     List<BidEntity> findAllByCpIdAndStage(String cpId, String stage);
 
-    BidEntity findByCpIdAndStageAndToken(String cpId, String stage, String token);
+    BidEntity findByCpIdAndStageAndBidIdAndToken(String cpId, String stage, String bidId, String token);
 
-    @Query(value = "SELECT * FROM submission_bid WHERE cp_id=?0 AND stage=?1 AND bid_id=?2 LIMIT 1")
     BidEntity findByCpIdAndStageAndBidId(String cpId, String stage, String bidId);
 }

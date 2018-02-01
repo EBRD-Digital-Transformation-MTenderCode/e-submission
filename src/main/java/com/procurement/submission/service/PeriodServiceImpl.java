@@ -41,14 +41,14 @@ public class PeriodServiceImpl implements PeriodService {
 
     @Override
     public void checkCurrentDateInPeriod(final String cpId, final String stage) {
-        if (isPeriodValid(cpId, stage)) {
+        if (!isPeriodValid(cpId, stage)) {
             throw new ErrorException("Date does not match the period.");
         }
     }
 
     @Override
     public void checkIsPeriodExpired(final String cpId, final String stage) {
-        if (isPeriodValid(cpId, stage)) {
+        if (!isPeriodValid(cpId, stage)) {
             throw new ErrorException("Period has not yet expired.");
         }
     }
@@ -58,7 +58,7 @@ public class PeriodServiceImpl implements PeriodService {
         final PeriodEntity periodEntity = getPeriod(cpId, stage);
         final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
         final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
-        return localDateTimeAfter && localDateTimeBefore;
+        return (localDateTimeAfter && localDateTimeBefore);
     }
 
     @Override
