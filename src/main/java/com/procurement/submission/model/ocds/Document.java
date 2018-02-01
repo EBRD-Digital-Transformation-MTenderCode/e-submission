@@ -51,33 +51,29 @@ public class Document {
 
     @JsonProperty("title")
     @JsonPropertyDescription("The document title.")
-    /*@Pattern(regexp = "^(title_(((([A-Za-z]{2,3}(-([A-Za-z]{3}(-[A-Za-z]{3}){0,2}))?)|[A-Za-z]{4}|[A-Za-z]{5,8})(-" +
-        "([A-Za-z]{4}))?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*(-([0-9A-WY-Za-wy-z]" +
-        "(-[A-Za-z0-9]{2,8})+))*(-(x(-[A-Za-z0-9]{1,8})+))?)|(x(-[A-Za-z0-9]{1,8})+)))$")*/
     private final String title;
 
     @JsonProperty("description")
     @JsonPropertyDescription("A short description of the document. We recommend descriptions do not exceed 250 words." +
         " In the event the document is not accessible online, the description field can be used to describe " +
         "arrangements for obtaining a copy of the document.")
-    /*@Pattern(regexp = "^(description_(((([A-Za-z]{2,3}(-([A-Za-z]{3}(-[A-Za-z]{3}){0,2}))?)|[A-Za-z]{4}|[A-Za-z]{5," +
-        "8})(-([A-Za-z]{4}))?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*(-([0-9A-WY-Za-wy-z]" +
-        "(-[A-Za-z0-9]{2,8})+))*(-(x(-[A-Za-z0-9]{1,8})+))?)|(x(-[A-Za-z0-9]{1,8})+)))$")*/
     private final String description;
 
     @JsonProperty("url")
     @JsonPropertyDescription(" direct link to the document or attachment. The server providing access to this " +
         "document should be configured to correctly report the document mime type.")
-    private final URI url;
+    private final String url;
 
     @JsonProperty("datePublished")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonPropertyDescription("The date on which the document was first published. This is particularly important for " +
         "legally important documents such as notices of a tender.")
     private final LocalDateTime datePublished;
 
     @JsonProperty("dateModified")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonPropertyDescription("Date that the document was last modified")
     private final LocalDateTime dateModified;
 
@@ -106,11 +102,9 @@ public class Document {
                     @JsonProperty("documentType") final DocumentType documentType,
                     @JsonProperty("title") final String title,
                     @JsonProperty("description") final String description,
-                    @JsonProperty("url") final URI url,
-                    @JsonProperty("datePublished") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final
-                       LocalDateTime datePublished,
-                    @JsonProperty("dateModified") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final
-                       LocalDateTime dateModified,
+                    @JsonProperty("url") final String url,
+                    @JsonProperty("datePublished") final LocalDateTime datePublished,
+                    @JsonProperty("dateModified") final LocalDateTime dateModified,
                     @JsonProperty("format") final String format,
                     @JsonProperty("language") final String language,
                     @JsonProperty("relatedLots") final List<String> relatedLots) {

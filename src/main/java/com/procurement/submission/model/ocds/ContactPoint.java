@@ -50,7 +50,7 @@ public class ContactPoint {
 
     @JsonProperty("url")
     @JsonPropertyDescription("A web address for the contact point/person.")
-    private final URI url;
+    private final String url;
 
     @JsonProperty("languages")
     private List<String> languages;
@@ -60,7 +60,7 @@ public class ContactPoint {
                         @JsonProperty("email") final String email,
                         @JsonProperty("telephone") final String telephone,
                         @JsonProperty("faxNumber") final String faxNumber,
-                        @JsonProperty("url") final URI url,
+                        @JsonProperty("url") final String url,
                         @JsonProperty("languages") final List<String> languages) {
         this.name = name;
         this.email = email;

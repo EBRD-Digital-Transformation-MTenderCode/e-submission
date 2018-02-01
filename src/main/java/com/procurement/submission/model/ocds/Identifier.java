@@ -34,22 +34,19 @@ public class Identifier {
 
     @JsonProperty("legalName")
     @JsonPropertyDescription("The legally registered name of the organization.")
-    @Pattern(regexp = "^(legalName_(((([A-Za-z]{2,3}(-([A-Za-z]{3}(-[A-Za-z]{3}){0,2}))?)|[A-Za-z]{4}|[A-Za-z]{5,8})" +
-        "(-([A-Za-z]{4}))?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*(-([0-9A-WY-Za-wy-z]" +
-        "(-[A-Za-z0-9]{2,8})+))*(-(x(-[A-Za-z0-9]{1,8})+))?)|(x(-[A-Za-z0-9]{1,8})+)))$")
     private final String legalName;
 
     @JsonProperty("uri")
     @JsonPropertyDescription("A URI to identify the organization, such as those provided by [Open Corporates]" +
         "(http://www.opencorporates.com) or some other relevant URI provider. This is not for listing the website of " +
         "the organization: that can be done through the URL field of the Organization contact point.")
-    private final URI uri;
+    private final String uri;
 
     @JsonCreator
     public Identifier(@JsonProperty("scheme") final String scheme,
                       @JsonProperty("id") final String id,
                       @JsonProperty("legalName") final String legalName,
-                      @JsonProperty("uri") final URI uri) {
+                      @JsonProperty("uri") final String uri) {
         this.id = id;
         this.scheme = scheme;
         this.legalName = legalName;
