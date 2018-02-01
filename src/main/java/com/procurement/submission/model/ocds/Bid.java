@@ -40,7 +40,6 @@ public class Bid {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime date;
 
-    @NotNull
     @JsonProperty("status")
     private Status status;
 
@@ -48,7 +47,6 @@ public class Bid {
     private StatusDetail statusDetail;
 
     @Valid
-    @NotEmpty
     @JsonProperty("tenderers")
     private List<OrganizationReference> tenderers;
 
