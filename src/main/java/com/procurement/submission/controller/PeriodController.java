@@ -38,4 +38,15 @@ public class PeriodController {
                                                   @RequestParam final LocalDateTime endDate) {
         return new ResponseEntity<>(periodService.savePeriod(cpId, stage, startDate, endDate), HttpStatus.CREATED);
     }
+
+    @PostMapping("/new")
+    public ResponseEntity<ResponseDto> getNewPeriod(@RequestParam final String cpId,
+                                                  @RequestParam final String stage,
+                                                  @RequestParam final String country,
+                                                  @RequestParam final String pmd,
+                                                  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                                                  @RequestParam final LocalDateTime startDate) {
+        return new ResponseEntity<>(periodService.saveNewPeriod(cpId, stage, country, pmd,startDate), HttpStatus
+                .CREATED);
+    }
 }

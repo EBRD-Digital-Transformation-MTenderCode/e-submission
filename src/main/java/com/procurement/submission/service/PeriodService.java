@@ -9,15 +9,17 @@ import org.springframework.stereotype.Service;
 public interface PeriodService {
 
     ResponseDto checkInterval(String country,
-                            String pmd,
-                            String stage,
-                            LocalDateTime startDate,
-                            LocalDateTime endDate);
+                              String pmd,
+                              String stage,
+                              LocalDateTime startDate,
+                              LocalDateTime endDate);
 
     ResponseDto savePeriod(String cpId,
                            String stage,
                            LocalDateTime startDate,
                            LocalDateTime endDate);
+
+    ResponseDto saveNewPeriod(String cpId, String stage, String country, String pmd, LocalDateTime startDate);
 
     void checkCurrentDateInPeriod(String cpId, String stage);
 

@@ -79,6 +79,25 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
+    public ResponseDto saveNewPeriod(final String cpId,
+                                    final String stage,
+                                    final String country,
+                                    final String pmd,
+                                    final LocalDateTime startDate) {
+        final PeriodEntity period = new PeriodEntity();
+        period.setCpId(cpId);
+        period.setStage(stage);
+        period.setStartDate(dateUtil.localToDate(startDate));
+        final int interval = rulesService.getInterval(country, pmd);
+        period.setEndDate(dateUtil.localToDate(startDate.plusDays(interval)));
+        periodRepository.save(period);
+        return new ResponseDto<>(true, null,
+                new PeriodResponseDto(
+                        period.getStartDate(),
+                        period.getEndDate()));
+    }
+
+    @Override
     public PeriodEntity getPeriod(final String cpId, final String stage) {
         final Optional<PeriodEntity> entityOptional = periodRepository.getByCpIdAndStage(cpId, stage);
         if (entityOptional.isPresent()) {
