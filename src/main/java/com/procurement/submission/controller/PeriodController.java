@@ -46,7 +46,7 @@ public class PeriodController {
                                                   @RequestParam final String pmd,
                                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                                                   @RequestParam final LocalDateTime startDate) {
-        return new ResponseEntity<>(periodService.saveNewPeriod(cpId, stage, country, pmd,startDate), HttpStatus
+        return new ResponseEntity<>(periodService.saveNewPeriod(cpId, stage, country, pmd, startDate), HttpStatus
                 .CREATED);
     }
 }
