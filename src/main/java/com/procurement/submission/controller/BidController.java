@@ -54,7 +54,7 @@ public class BidController {
                                                @RequestParam final String pmd,
                                                @RequestParam final String status) {
         return new ResponseEntity<>(
-                bidService.getBids(cpId, stage, country, pmd,  Bid.Status.fromValue(status)),
+                bidService.getBids(cpId, stage, country, pmd, Bid.Status.fromValue(status)),
                 HttpStatus.OK);
     }
 
