@@ -58,7 +58,7 @@ public class BidController {
                 HttpStatus.OK);
     }
 
-    @PutMapping(value = "/updateStatus")
+    @PatchMapping(value = "/updateStatus")
     public ResponseEntity<ResponseDto> updateStatus(@RequestParam final String cpId,
                                                     @RequestParam final String stage,
                                                     @RequestParam final String country,
@@ -67,7 +67,7 @@ public class BidController {
         return new ResponseEntity<>(bidService.updateBidsByLots(cpId, stage, country, pmd, lots), HttpStatus.OK);
     }
 
-    @PutMapping(value = "/updateStatusDetail")
+    @PatchMapping(value = "/updateStatusDetail")
     public ResponseEntity<ResponseDto> updateStatusDetail(@RequestParam final String cpId,
                                                           @RequestParam final String stage,
                                                           @RequestParam final String bidId,
@@ -75,7 +75,7 @@ public class BidController {
         return new ResponseEntity<>(bidService.updateStatusDetail(cpId, stage, bidId, awardStatus), HttpStatus.OK);
     }
 
-    @PutMapping(value = "/setFinalStatuses")
+    @PatchMapping(value = "/setFinalStatuses")
     public ResponseEntity<ResponseDto> setFinalStatuses(@RequestParam final String cpId,
                                                         @RequestParam final String stage) {
         return new ResponseEntity<>(bidService.setFinalStatuses(cpId, stage), HttpStatus.OK);
