@@ -40,7 +40,7 @@ public class PeriodController {
     }
 
     @PostMapping("/new")
-    public ResponseEntity<ResponseDto> getNewPeriod(@RequestParam final String cpId,
+    public ResponseEntity<ResponseDto> saveNewPeriod(@RequestParam final String cpId,
                                                   @RequestParam final String stage,
                                                   @RequestParam final String country,
                                                   @RequestParam final String pmd,
