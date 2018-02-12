@@ -3,6 +3,7 @@ package com.procurement.submission.model.entity;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Date;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
@@ -21,10 +22,10 @@ public class BidEntity {
     private String stage;
 
     @PrimaryKeyColumn(name = "bid_id", type = PrimaryKeyType.CLUSTERED)
-    private String bidId;
+    private UUID bidId;
 
     @PrimaryKeyColumn(name = "token_entity", type = PrimaryKeyType.CLUSTERED)
-    private String token;
+    private UUID token;
 
     @Column("owner")
     private String owner;
