@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_bid (
     stage text,
     owner text,
     bid_id text,
-    token_entity text,
+    token_entity uuid,
     status text,
     created_date timestamp,
     pending_date timestamp,
