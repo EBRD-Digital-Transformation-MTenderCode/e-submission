@@ -8,12 +8,6 @@ import org.springframework.stereotype.Service;
 @Service
 public interface PeriodService {
 
-    ResponseDto checkInterval(String country,
-                              String pmd,
-                              String stage,
-                              LocalDateTime startDate,
-                              LocalDateTime endDate);
-
     ResponseDto savePeriod(String cpId,
                            String stage,
                            LocalDateTime startDate,
@@ -26,5 +20,17 @@ public interface PeriodService {
     void checkIsPeriodExpired(String cpId, String stage);
 
     PeriodEntity getPeriod(String cpId, String stage);
+
+    ResponseDto checkPeriod(String cpId,
+                            String country,
+                            String pmd,
+                            String stage,
+                            LocalDateTime startDate,
+                            LocalDateTime endDate);
+
+    ResponseDto periodValidation(String country,
+                                 String pmd,
+                                 LocalDateTime startDate,
+                                 LocalDateTime endDate);
 
 }

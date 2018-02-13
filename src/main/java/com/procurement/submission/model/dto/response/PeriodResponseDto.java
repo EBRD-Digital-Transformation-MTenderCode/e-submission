@@ -14,7 +14,6 @@ import lombok.Getter;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({
-        "tenderId",
         "startDate",
         "endDate"
 })

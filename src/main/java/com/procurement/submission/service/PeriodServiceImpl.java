@@ -2,6 +2,7 @@ package com.procurement.submission.service;
 
 import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
+import com.procurement.submission.model.dto.response.CheckPeriodResponseDto;
 import com.procurement.submission.model.dto.response.PeriodResponseDto;
 import com.procurement.submission.model.entity.PeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
@@ -28,37 +29,30 @@ public class PeriodServiceImpl implements PeriodService {
         this.dateUtil = dateUtil;
     }
 
-    @Override
-    public ResponseDto checkInterval(final String country,
-                                     final String pmd,
-                                     final String stage,
-                                     final LocalDateTime startDate,
-                                     final LocalDateTime endDate) {
-        final int interval = rulesService.getInterval(country, pmd);
-        if (!checkInterval(startDate, endDate, interval)) throw new ErrorException("Invalid period.");
-        return new ResponseDto<>(true, null, new PeriodResponseDto(startDate, endDate));
-    }
-
-    @Override
-    public void checkCurrentDateInPeriod(final String cpId, final String stage) {
-        if (!isPeriodValid(cpId, stage)) {
-            throw new ErrorException("Date does not match the period.");
-        }
-    }
-
-    @Override
-    public void checkIsPeriodExpired(final String cpId, final String stage) {
-        if (!isPeriodValid(cpId, stage)) {
-            throw new ErrorException("Period has not yet expired.");
-        }
-    }
-
     public boolean isPeriodValid(final String cpId, final String stage) {
         final LocalDateTime localDateTime = dateUtil.localNowUTC();
         final PeriodEntity periodEntity = getPeriod(cpId, stage);
         final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
         final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
         return (localDateTimeAfter && localDateTimeBefore);
+    }
+
+    public boolean isPeriodChange(final String cpId,
+                                  final String stage,
+                                  final LocalDateTime startDate,
+                                  final LocalDateTime endDate) {
+        PeriodEntity period = getPeriod(cpId, stage);
+        if ((period.getStartDate() != startDate) || (period.getEndDate() != endDate)) return false;
+        return true;
+    }
+
+    private Boolean checkInterval(final String country,
+                                  final String pmd,
+                                  final LocalDateTime startDate,
+                                  final LocalDateTime endDate) {
+        final int interval = rulesService.getInterval(country, pmd);
+        final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
+        return days >= interval;
     }
 
     @Override
@@ -80,10 +74,10 @@ public class PeriodServiceImpl implements PeriodService {
 
     @Override
     public ResponseDto saveNewPeriod(final String cpId,
-                                    final String stage,
-                                    final String country,
-                                    final String pmd,
-                                    final LocalDateTime startDate) {
+                                     final String stage,
+                                     final String country,
+                                     final String pmd,
+                                     final LocalDateTime startDate) {
         final PeriodEntity period = new PeriodEntity();
         period.setCpId(cpId);
         period.setStage(stage);
@@ -98,6 +92,20 @@ public class PeriodServiceImpl implements PeriodService {
     }
 
     @Override
+    public void checkCurrentDateInPeriod(final String cpId, final String stage) {
+        if (!isPeriodValid(cpId, stage)) {
+            throw new ErrorException("Date does not match the period.");
+        }
+    }
+
+    @Override
+    public void checkIsPeriodExpired(final String cpId, final String stage) {
+        if (!isPeriodValid(cpId, stage)) {
+            throw new ErrorException("Period has not yet expired.");
+        }
+    }
+
+    @Override
     public PeriodEntity getPeriod(final String cpId, final String stage) {
         final Optional<PeriodEntity> entityOptional = periodRepository.getByCpIdAndStage(cpId, stage);
         if (entityOptional.isPresent()) {
@@ -107,8 +115,27 @@ public class PeriodServiceImpl implements PeriodService {
         }
     }
 
-    private Boolean checkInterval(final LocalDateTime startDate, final LocalDateTime endDate, final int interval) {
-        final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
-        return days >= interval;
+    @Override
+    public ResponseDto checkPeriod(final String cpId,
+                                   final String country,
+                                   final String pmd,
+                                   final String stage,
+                                   final LocalDateTime startDate,
+                                   final LocalDateTime endDate) {
+        return new ResponseDto<>(true, null,
+                new CheckPeriodResponseDto(
+                        checkInterval(country, pmd, startDate, endDate),
+                        isPeriodChange(cpId, stage, startDate, endDate)
+                ));
     }
+
+    @Override
+    public ResponseDto periodValidation(final String country,
+                                        final String pmd,
+                                        final LocalDateTime startDate,
+                                        final LocalDateTime endDate) {
+        return new ResponseDto<>(true, null,
+                new CheckPeriodResponseDto(checkInterval(country, pmd, startDate, endDate), null));
+    }
+
 }
