@@ -21,8 +21,8 @@ public class CheckPeriodResponseDto {
     private final Boolean periodChange;
 
     @JsonCreator
-    public CheckPeriodResponseDto(@JsonProperty("isPeriodValid") final Boolean periodValid,
-                                  @JsonProperty("isPeriodChange") final Boolean periodChange) {
+    public CheckPeriodResponseDto(@JsonProperty("periodValid") final Boolean periodValid,
+                                  @JsonProperty("periodChange") final Boolean periodChange) {
         this.periodValid = periodValid;
         this.periodChange = periodChange;
     }
