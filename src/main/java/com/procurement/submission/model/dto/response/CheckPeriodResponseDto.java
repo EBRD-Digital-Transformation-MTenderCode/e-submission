@@ -9,21 +9,21 @@ import lombok.Getter;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @JsonPropertyOrder({
-        "periodValid",
-        "periodChange"
+        "isPeriodValid",
+        "isPeriodChanged"
 })
 public class CheckPeriodResponseDto {
 
     @JsonProperty("periodValid")
-    private final Boolean periodValid;
+    private final Boolean isPeriodValid;
 
     @JsonProperty("periodChange")
-    private final Boolean periodChange;
+    private final Boolean isPeriodChanged;
 
     @JsonCreator
-    public CheckPeriodResponseDto(@JsonProperty("periodValid") final Boolean periodValid,
-                                  @JsonProperty("periodChange") final Boolean periodChange) {
-        this.periodValid = periodValid;
-        this.periodChange = periodChange;
+    public CheckPeriodResponseDto(@JsonProperty("isPeriodValid") final Boolean isPeriodValid,
+                                  @JsonProperty("isPeriodChanged") final Boolean isPeriodChanged) {
+        this.isPeriodValid = isPeriodValid;
+        this.isPeriodChanged = isPeriodChanged;
     }
 }
