@@ -14,10 +14,10 @@ import lombok.Getter;
 })
 public class CheckPeriodResponseDto {
 
-    @JsonProperty("periodValid")
+    @JsonProperty("isPeriodValid")
     private final Boolean isPeriodValid;
 
-    @JsonProperty("periodChange")
+    @JsonProperty("isPeriodChanged")
     private final Boolean isPeriodChanged;
 
     @JsonCreator
