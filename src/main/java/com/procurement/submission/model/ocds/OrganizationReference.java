@@ -12,10 +12,12 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @Getter
+@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "id",
@@ -29,7 +31,7 @@ public class OrganizationReference {
     @JsonProperty("id")
     @JsonPropertyDescription("The id of the party being referenced. This must match the id of an entry in the parties" +
         " section.")
-    private final String id;
+    private String id;
 
     @JsonProperty("name")
     @JsonPropertyDescription("The name of the party being referenced. This must match the name of an entry in the " +

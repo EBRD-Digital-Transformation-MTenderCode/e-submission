@@ -54,10 +54,16 @@ public class BidServiceImpl implements BidService {
         if (!bidEntities.isEmpty()) {
             checkTenderers(bidEntities, bidDto);
         }
+        processTenderers(bidDto);
         final BidEntity entity = getNewBidEntity(cpId, stage, owner, bidDto);
         bidRepository.save(entity);
         return getResponseDto(entity.getToken().toString(), bidDto);
     }
+
+    private void processTenderers(final Bid bidDto) {
+        bidDto.getTenderers().forEach(t -> t.setId(t.getIdentifier().getScheme() + "-" + t.getIdentifier().getId()));
+    }
+
 
     @Override
     public ResponseDto updateBid(final String cpId,
@@ -195,7 +201,7 @@ public class BidServiceImpl implements BidService {
                         .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
         bidMapWithStatus.forEach((key, value) -> value.setStatusDetail(null));
         bidMapWithStatus.forEach((key, value) -> key.setJsonData(jsonUtil.toJson(value)));
-        List<BidUpdate> bidUpdateList = bidMapWithStatus.entrySet().stream()
+        final List<BidUpdate> bidUpdateList = bidMapWithStatus.entrySet().stream()
                 .map(e -> conversionService.convert(e.getValue(), BidUpdate.class))
                 .collect(toList());
         return new ResponseDto<>(true,
