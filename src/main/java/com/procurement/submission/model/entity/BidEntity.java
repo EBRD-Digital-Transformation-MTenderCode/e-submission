@@ -46,7 +46,7 @@ public class BidEntity {
         return LocalDateTime.ofInstant(createdDate.toInstant(), ZoneOffset.UTC);
     }
 
-    public void setCreatedDate(LocalDateTime createdDate) {
+    public void setCreatedDate(final LocalDateTime createdDate) {
         this.createdDate = Date.from(createdDate.toInstant(ZoneOffset.UTC));
     }
 
@@ -54,7 +54,7 @@ public class BidEntity {
         return LocalDateTime.ofInstant(pendingDate.toInstant(), ZoneOffset.UTC);
     }
 
-    public void setPendingDate(LocalDateTime pendingDate) {
+    public void setPendingDate(final LocalDateTime pendingDate) {
         this.pendingDate = Date.from(pendingDate.toInstant(ZoneOffset.UTC));
     }
 }

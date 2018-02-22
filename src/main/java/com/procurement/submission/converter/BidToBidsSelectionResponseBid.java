@@ -13,7 +13,7 @@ public class BidToBidsSelectionResponseBid implements Converter<Bid, BidsSelecti
 
     @Override
     public BidsSelectionResponse.Bid convert(final Bid bid) {
-        BidsSelectionResponse.Bid newBid = new BidsSelectionResponse.Bid();
+        final BidsSelectionResponse.Bid newBid = new BidsSelectionResponse.Bid();
         newBid.setId(bid.getId());
         newBid.setRelatedLots(bid.getRelatedLots());
         newBid.setValue(bid.getValue());

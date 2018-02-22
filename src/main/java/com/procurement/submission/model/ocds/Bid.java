@@ -80,19 +80,19 @@ public class Bid {
         this.relatedLots = relatedLots;
     }
 
-    public void setId(String id) {
+    public void setId(final String id) {
         this.id = id;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(final LocalDateTime date) {
         this.date = date;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(final Status status) {
         this.status = status;
     }
 
-    public void setStatusDetail(StatusDetail statusDetail) {
+    public void setStatusDetail(final StatusDetail statusDetail) {
         this.statusDetail = statusDetail;
     }
 

@@ -1,0 +1,55 @@
+{
+  "bid": {
+    "tenderers": [
+      {
+        "name": "",
+        "identifier": {
+          "scheme": "UA-EDR",
+          "id": "12354",
+          "legalName": "UA",
+          "uri": ""
+        },
+        "additionalIdentifiers": [
+          {
+            "scheme": "",
+            "id": "",
+            "legalName": "",
+            "uri": ""
+          }
+        ],
+        "address": {
+          "streetAddress": "",
+          "locality": "",
+          "region": "",
+          "postalCode": "",
+          "countryName": ""
+        },
+        "contactPoint": {
+          "name": "",
+          "email": "",
+          "telephone": "",
+          "faxNumber": "",
+          "url": ""
+        }
+      }
+    ],
+    "value": {
+      "amount": 0,
+      "currency": "AED"
+    },
+    "documents": [
+      {
+        "documentType": "tenderNotice",
+        "id": "",
+        "url": "",
+        "title": "",
+        "description": "",
+        "language": "",
+        "relatedLot": ""
+      }
+    ],
+    "relatedLots": [
+      ""
+    ]
+  }
+}

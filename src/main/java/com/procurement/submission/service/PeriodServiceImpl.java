@@ -34,14 +34,14 @@ public class PeriodServiceImpl implements PeriodService {
         final PeriodEntity periodEntity = getPeriod(cpId, stage);
         final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
         final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
-        return (localDateTimeAfter && localDateTimeBefore);
+        return localDateTimeAfter && localDateTimeBefore;
     }
 
     public boolean isPeriodChange(final String cpId,
                                   final String stage,
                                   final LocalDateTime startDate,
                                   final LocalDateTime endDate) {
-        PeriodEntity period = getPeriod(cpId, stage);
+        final PeriodEntity period = getPeriod(cpId, stage);
         if ((period.getStartDate() != startDate) || (period.getEndDate() != endDate)) return false;
         return true;
     }

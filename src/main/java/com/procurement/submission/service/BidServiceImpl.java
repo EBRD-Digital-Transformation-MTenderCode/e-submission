@@ -55,6 +55,9 @@ public class BidServiceImpl implements BidService {
             checkTenderers(bidEntities, bidDto);
         }
         processTenderers(bidDto);
+        bidDto.setDate(dateUtil.localNowUTC());
+        bidDto.setId(UUIDs.timeBased().toString());
+        bidDto.setStatus(PENDING);
         final BidEntity entity = getNewBidEntity(cpId, stage, owner, bidDto);
         bidRepository.save(entity);
         return getResponseDto(entity.getToken().toString(), bidDto);
@@ -242,10 +245,6 @@ public class BidServiceImpl implements BidService {
     }
 
     private BidEntity getNewBidEntity(final String cpId, final String stage, final String owner, final Bid bidDto) {
-        final LocalDateTime dateTimeNow = dateUtil.localNowUTC();
-        bidDto.setDate(dateTimeNow);
-        bidDto.setId(UUIDs.timeBased().toString());
-        bidDto.setStatus(PENDING);
         final BidEntity bidEntity = new BidEntity();
         bidEntity.setCpId(cpId);
         bidEntity.setStage(stage);
@@ -253,8 +252,8 @@ public class BidServiceImpl implements BidService {
         bidEntity.setStatus(bidDto.getStatus().value());
         bidEntity.setBidId(UUID.fromString(bidDto.getId()));
         bidEntity.setToken(UUIDs.timeBased());
-        bidEntity.setPendingDate(dateTimeNow);
-        bidEntity.setCreatedDate(dateTimeNow);
+        bidEntity.setPendingDate(bidDto.getDate());
+        bidEntity.setCreatedDate(bidDto.getDate());
         bidEntity.setJsonData(jsonUtil.toJson(bidDto));
         return bidEntity;
     }
@@ -333,13 +332,13 @@ public class BidServiceImpl implements BidService {
         return bidSelection;
     }
 
-    private List<BidEntity> collectBids(Map<BidEntity, Bid> mapBids) {
+    private List<BidEntity> collectBids(final Map<BidEntity, Bid> mapBids) {
         return mapBids.entrySet().stream()
                 .map(this::setJsonData)
                 .collect(toList());
     }
 
-    private BidEntity setJsonData(Map.Entry<BidEntity, Bid> entry) {
+    private BidEntity setJsonData(final Map.Entry<BidEntity, Bid> entry) {
         entry.getKey().setJsonData(jsonUtil.toJson(entry.getValue()));
         return entry.getKey();
     }
@@ -368,8 +367,8 @@ public class BidServiceImpl implements BidService {
                         HashMap::putAll);
     }
 
-    private <T> boolean containsAny(Collection<T> src, Collection<T> dest) {
-        for (T value : dest) {
+    private <T> boolean containsAny(final Collection<T> src, final Collection<T> dest) {
+        for (final T value : dest) {
             if (src.contains(value)) {
                 System.out.println(value);
                 return true;
