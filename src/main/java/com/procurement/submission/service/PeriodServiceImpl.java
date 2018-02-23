@@ -12,14 +12,14 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 public class PeriodServiceImpl implements PeriodService {
-
+    private static final String TEST_PARAM = "test";
     private final PeriodRepository periodRepository;
     private final RulesService rulesService;
     private final DateUtil dateUtil;
-
 
     public PeriodServiceImpl(final PeriodRepository periodRepository,
                              final RulesService rulesService,
@@ -51,6 +51,10 @@ public class PeriodServiceImpl implements PeriodService {
                                   final LocalDateTime startDate,
                                   final LocalDateTime endDate) {
         final int interval = rulesService.getInterval(country, pmd);
+        if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)){
+            final long minutes = MINUTES.between(startDate, endDate);
+            return minutes >= interval;
+        }
         final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
         return days >= interval;
     }
