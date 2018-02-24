@@ -118,12 +118,12 @@ public class BidServiceImpl implements BidService {
                                         final String country,
                                         final String pmd,
                                         final LotsDto lotsDto) {
-        final List<BidEntity> allDidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
-        if (allDidEntities.isEmpty()) {
+        final List<BidEntity> allBidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
+        if (allBidEntities.isEmpty()) {
             throw new ErrorException("Bids not found.");
         }
         //collect invited bids
-        final Map<BidEntity, Bid> mapInvitedBids = filterByStatus(allDidEntities, INVITED.value());
+        final Map<BidEntity, Bid> mapInvitedBids = filterByStatus(allBidEntities, INVITED.value());
         mapInvitedBids.entrySet().forEach(e -> setStatus(e, WITHDRAWN));
         final List<BidEntity> bidEntitiesWithdrawn = collectBids(mapInvitedBids);
         final Set<OrganizationReference> organizationReferencesRs = new HashSet<>();
@@ -134,7 +134,7 @@ public class BidServiceImpl implements BidService {
                 .forEach(responseBids::add);
 
         //collect pending bids by lost and with rule
-        final Map<BidEntity, Bid> mapPendingBids = filterByStatus(allDidEntities, PENDING.value());
+        final Map<BidEntity, Bid> mapPendingBids = filterByStatus(allBidEntities, PENDING.value());
         final List<String> lotsStr = collectLots(lotsDto.getLots());
         final Map<BidEntity, Bid> mapPendingByLotsBids =
                 mapPendingBids.entrySet().stream()
