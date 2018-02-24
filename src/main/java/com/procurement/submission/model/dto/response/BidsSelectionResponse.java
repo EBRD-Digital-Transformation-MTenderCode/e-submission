@@ -29,7 +29,7 @@ public class BidsSelectionResponse {
     private List<Bid> bids;
 
     @JsonCreator
-    public BidsSelectionResponse(@JsonProperty("bids") @Valid @NotNull final List<Bid> bids) {
+    public BidsSelectionResponse(@JsonProperty("bids") final List<Bid> bids) {
         this.bids = bids;
     }
 
@@ -53,12 +53,12 @@ public class BidsSelectionResponse {
         private List<OrganizationReferenceRs> tenderers;
 
         @JsonCreator
-        public Bid(@JsonProperty("id") @NotNull final String id,
-                   @JsonProperty("relatedLots") @NotNull final List<String> relatedLots,
-                   @JsonProperty("createDate") @NotNull final LocalDateTime createDate,
-                   @JsonProperty("pendingDate") @NotNull final LocalDateTime pendingDate,
-                   @JsonProperty("value") @Valid final Value value,
-                   @JsonProperty("tenderers") @NotEmpty @Valid final List<OrganizationReferenceRs> tenderers) {
+        public Bid(@JsonProperty("id") final String id,
+                   @JsonProperty("relatedLots") final List<String> relatedLots,
+                   @JsonProperty("createDate") final LocalDateTime createDate,
+                   @JsonProperty("pendingDate") final LocalDateTime pendingDate,
+                   @JsonProperty("value") final Value value,
+                   @JsonProperty("tenderers") final List<OrganizationReferenceRs> tenderers) {
             this.id = id;
             this.relatedLots = relatedLots;
             this.createDate = createDate;

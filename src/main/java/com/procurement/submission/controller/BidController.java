@@ -3,7 +3,6 @@ package com.procurement.submission.controller;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.LotsDto;
-import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.service.BidService;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -48,14 +47,11 @@ public class BidController {
     }
 
     @GetMapping(value = "/bids")
-    public ResponseEntity<ResponseDto> getBids(@RequestParam final String cpId,
-                                               @RequestParam final String stage,
-                                               @RequestParam final String country,
-                                               @RequestParam final String pmd,
-                                               @RequestParam final String status) {
-        return new ResponseEntity<>(
-                bidService.getBids(cpId, stage, country, pmd, Bid.Status.fromValue(status)),
-                HttpStatus.OK);
+    public ResponseEntity<ResponseDto> getPendingBids(@RequestParam final String cpId,
+                                                      @RequestParam final String stage,
+                                                      @RequestParam final String country,
+                                                      @RequestParam final String pmd) {
+        return new ResponseEntity<>(bidService.getBids(cpId, stage, country, pmd), HttpStatus.OK);
     }
 
     @PostMapping(value = "/updateStatus")

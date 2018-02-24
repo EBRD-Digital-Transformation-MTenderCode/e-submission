@@ -25,8 +25,7 @@ public interface BidService {
     ResponseDto getBids(String cpId,
                         String stage,
                         String country,
-                        String pmd,
-                        Bid.Status status);
+                        String pmd);
 
     ResponseDto updateBidsByLots(String cpId,
                                  String stage,
