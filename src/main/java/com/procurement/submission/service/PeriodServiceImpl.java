@@ -104,7 +104,7 @@ public class PeriodServiceImpl implements PeriodService {
 
     @Override
     public void checkIsPeriodExpired(final String cpId, final String stage) {
-        if (!isPeriodValid(cpId, stage)) {
+        if (isPeriodValid(cpId, stage)) {
             throw new ErrorException("Period has not yet expired.");
         }
     }
