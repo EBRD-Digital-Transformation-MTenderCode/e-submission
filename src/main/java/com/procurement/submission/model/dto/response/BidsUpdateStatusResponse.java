@@ -39,10 +39,13 @@ public class BidsUpdateStatusResponse {
 
     @Getter
     public static class TenderPeriod {
+        private LocalDateTime startDate;
         private LocalDateTime endDate;
 
         @JsonCreator
-        public TenderPeriod(@JsonProperty("endDate") final LocalDateTime endDate) {
+        public TenderPeriod(@JsonProperty("startDate") final LocalDateTime startDate,
+                            @JsonProperty("endDate") final LocalDateTime endDate) {
+            this.startDate = startDate;
             this.endDate = endDate;
         }
     }

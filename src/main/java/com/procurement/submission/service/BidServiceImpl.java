@@ -117,7 +117,7 @@ public class BidServiceImpl implements BidService {
                                         final String stage,
                                         final String country,
                                         final String pmd,
-                                        final LotsDto lotsDto) {
+                                        final LotsDto unsuccessfulLots) {
         final List<BidEntity> allBidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
         if (allBidEntities.isEmpty()) {
             throw new ErrorException("Bids not found.");
@@ -135,7 +135,7 @@ public class BidServiceImpl implements BidService {
 
         //collect pending bids by lost and with rule
         final Map<BidEntity, Bid> mapPendingBids = filterByStatus(allBidEntities, PENDING.value());
-        final List<String> lotsStr = collectLots(lotsDto.getLots());
+        final List<String> lotsStr = collectLots(unsuccessfulLots.getLots());
         final Map<BidEntity, Bid> mapPendingByLotsBids =
                 mapPendingBids.entrySet().stream()
                         .filter(e -> containsAny(e.getValue().getRelatedLots(), lotsStr))
@@ -155,9 +155,11 @@ public class BidServiceImpl implements BidService {
         pendingBidsWithoutInLots.forEach(bid -> responseBids.add(conversionService.convert(bid, BidUpdate.class)));
         pendingBidsWithoutInLots.forEach(bid -> organizationReferencesRs.addAll(bid.getTenderers()));
 
-        final PeriodEntity period = periodService.getPeriod(cpId, stage);
-        final BidsUpdateStatusResponse.TenderPeriod tenderPeriod = new BidsUpdateStatusResponse.TenderPeriod(period.getEndDate());
         bidRepository.saveAll(bidEntitiesWithdrawn);
+
+        final PeriodEntity period = periodService.getPeriod(cpId, stage);
+        final BidsUpdateStatusResponse.TenderPeriod tenderPeriod =
+                new BidsUpdateStatusResponse.TenderPeriod(period.getStartDate(), period.getEndDate());
         return new ResponseDto<>(true,
                 null,
                 new BidsUpdateStatusResponse(tenderPeriod, organizationReferencesRs, responseBids));

@@ -59,8 +59,9 @@ public class BidController {
                                                     @RequestParam final String stage,
                                                     @RequestParam final String country,
                                                     @RequestParam final String pmd,
-                                                    @RequestBody final LotsDto lots) {
-        return new ResponseEntity<>(bidService.updateBidsByLots(cpId, stage, country, pmd, lots), HttpStatus.OK);
+                                                    @RequestBody final LotsDto unsuccessfulLots) {
+        return new ResponseEntity<>(bidService.updateBidsByLots(cpId, stage, country, pmd, unsuccessfulLots),
+                HttpStatus.OK);
     }
 
     @PostMapping(value = "/updateStatusDetail")

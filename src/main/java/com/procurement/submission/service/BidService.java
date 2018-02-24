@@ -31,7 +31,7 @@ public interface BidService {
                                  String stage,
                                  String country,
                                  String pmd,
-                                 LotsDto lots);
+                                 LotsDto unsuccessfulLots);
 
     ResponseDto updateStatusDetail(String cpId,
                                    String stage,

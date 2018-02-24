@@ -8,11 +8,11 @@ import lombok.Getter;
 
 @Getter
 public class LotsDto {
-    @JsonProperty("lots")
+    @JsonProperty("unsuccessfulLots")
     private List<LotDto> lots;
 
     @JsonCreator
-    public LotsDto(@JsonProperty("lots") @NotEmpty final List<LotDto> lots) {
+    public LotsDto(@JsonProperty("unsuccessfulLots") @NotEmpty final List<LotDto> lots) {
         this.lots = lots;
     }
 }
