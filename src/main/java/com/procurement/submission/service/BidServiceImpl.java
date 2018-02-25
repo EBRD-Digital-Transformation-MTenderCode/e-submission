@@ -321,7 +321,7 @@ public class BidServiceImpl implements BidService {
 
     private List<BidEntity> pendingFilter(final List<BidEntity> bids) {
         return bids.stream()
-                .filter(b -> b.getStatus() == PENDING.value())
+                .filter(b -> b.getStatus().equals(PENDING.value()))
                 .collect(toList());
     }
 
