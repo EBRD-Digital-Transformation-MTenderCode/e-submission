@@ -328,7 +328,7 @@ public class BidServiceImpl implements BidService {
     private BidsSelectionResponse.Bid convertBids(final BidEntity bidEntity) {
         final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
         final BidsSelectionResponse.Bid bidSelection = conversionService.convert(bid, BidsSelectionResponse.Bid.class);
-        bidSelection.setCreateDate(bidEntity.getCreatedDate());
+        bidSelection.setCreatedDate(bidEntity.getCreatedDate());
         bidSelection.setPendingDate(bidEntity.getPendingDate());
         return bidSelection;
     }
