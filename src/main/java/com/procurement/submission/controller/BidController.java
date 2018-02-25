@@ -51,7 +51,7 @@ public class BidController {
                                                       @RequestParam final String stage,
                                                       @RequestParam final String country,
                                                       @RequestParam final String pmd) {
-        return new ResponseEntity<>(bidService.getBids(cpId, stage, country, pmd), HttpStatus.OK);
+        return new ResponseEntity<>(bidService.getPendingBids(cpId, stage, country, pmd), HttpStatus.OK);
     }
 
     @PostMapping(value = "/updateStatus")

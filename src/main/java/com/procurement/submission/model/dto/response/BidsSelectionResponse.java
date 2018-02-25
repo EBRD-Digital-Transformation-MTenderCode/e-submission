@@ -39,6 +39,7 @@ public class BidsSelectionResponse {
     @JsonPropertyOrder({
             "id",
             "relatedLots",
+            "date",
             "createDate",
             "pendingDate",
             "value",
@@ -47,6 +48,7 @@ public class BidsSelectionResponse {
     public static class Bid {
         private String id;
         private List<String> relatedLots;
+        private LocalDateTime date;
         private LocalDateTime createDate;
         private LocalDateTime pendingDate;
         private Value value;
@@ -55,12 +57,14 @@ public class BidsSelectionResponse {
         @JsonCreator
         public Bid(@JsonProperty("id") final String id,
                    @JsonProperty("relatedLots") final List<String> relatedLots,
+                   @JsonProperty("date") final LocalDateTime date,
                    @JsonProperty("createDate") final LocalDateTime createDate,
                    @JsonProperty("pendingDate") final LocalDateTime pendingDate,
                    @JsonProperty("value") final Value value,
                    @JsonProperty("tenderers") final List<OrganizationReferenceRs> tenderers) {
             this.id = id;
             this.relatedLots = relatedLots;
+            this.date = date;
             this.createDate = createDate;
             this.pendingDate = pendingDate;
             this.value = value;

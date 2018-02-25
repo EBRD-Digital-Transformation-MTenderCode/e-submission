@@ -22,7 +22,7 @@ public interface BidService {
                          String previousStage,
                          LotsDto lots);
 
-    ResponseDto getBids(String cpId,
+    ResponseDto getPendingBids(String cpId,
                         String stage,
                         String country,
                         String pmd);

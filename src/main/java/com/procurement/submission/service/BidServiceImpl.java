@@ -96,10 +96,10 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public ResponseDto getBids(final String cpId,
-                               final String stage,
-                               final String country,
-                               final String pmd) {
+    public ResponseDto getPendingBids(final String cpId,
+                                      final String stage,
+                                      final String country,
+                                      final String pmd) {
         periodService.checkIsPeriodExpired(cpId, stage);
         final List<BidEntity> pendingBids = pendingFilter(bidRepository.findAllByCpIdAndStage(cpId, stage));
         final int rulesMinBids = rulesService.getRulesMinBids(country, pmd);

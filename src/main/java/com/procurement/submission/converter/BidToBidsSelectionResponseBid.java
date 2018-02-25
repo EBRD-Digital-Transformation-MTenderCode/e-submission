@@ -15,6 +15,7 @@ public class BidToBidsSelectionResponseBid implements Converter<Bid, BidsSelecti
     public BidsSelectionResponse.Bid convert(final Bid bid) {
         final BidsSelectionResponse.Bid newBid = new BidsSelectionResponse.Bid();
         newBid.setId(bid.getId());
+        newBid.setDate(bid.getDate());
         newBid.setRelatedLots(bid.getRelatedLots());
         newBid.setValue(bid.getValue());
         newBid.setTenderers(createTenderers(bid.getTenderers()));
