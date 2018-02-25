@@ -3,6 +3,8 @@ package com.procurement.submission.model.dto.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.procurement.submission.databinding.LocalDateTimeSerializer;
 import com.procurement.submission.model.ocds.OrganizationReference;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,7 +41,10 @@ public class BidsUpdateStatusResponse {
 
     @Getter
     public static class TenderPeriod {
+
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
         private LocalDateTime startDate;
+        @JsonSerialize(using = LocalDateTimeSerializer.class)
         private LocalDateTime endDate;
 
         @JsonCreator

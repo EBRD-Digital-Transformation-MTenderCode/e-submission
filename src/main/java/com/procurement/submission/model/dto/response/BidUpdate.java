@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.procurement.submission.databinding.LocalDateTimeSerializer;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.model.ocds.Document;
 import com.procurement.submission.model.ocds.Value;
@@ -28,6 +30,7 @@ import lombok.Getter;
 })
 public class BidUpdate {
     private String id;
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime date;
     private Bid.Status status;
     private Bid.StatusDetail statusDetail;
