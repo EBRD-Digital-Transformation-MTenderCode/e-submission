@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_rules (
     primary key(country, method, parameter)
 );
 INSERT INTO ocds.submission_rules (country, method, parameter, value)  VALUES ('UA', 'micro', 'interval', '15');
+INSERT INTO ocds.submission_rules (country, method, parameter, value)  VALUES ('UA', 'micro', 'minBids', '2');
+
 SELECT * FROM ocds.submission_rules;
 
 CREATE TABLE IF NOT EXISTS  ocds.submission_period (
