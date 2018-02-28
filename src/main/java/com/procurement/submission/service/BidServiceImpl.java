@@ -26,6 +26,8 @@ import static java.util.stream.Collectors.*;
 
 @Service
 public class BidServiceImpl implements BidService {
+
+    private final static String BID_NOT_FOUND = "Bid not found.";
     private final PeriodService periodService;
     private final BidRepository bidRepository;
     private final ConversionService conversionService;
@@ -86,7 +88,7 @@ public class BidServiceImpl implements BidService {
                                 final LotsDto lots) {
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, previousStage);
         if (bidEntities.isEmpty()) {
-            throw new ErrorException("Bids not found.");
+            throw new ErrorException(BID_NOT_FOUND);
         }
         final Map<BidEntity, Bid> entityBidMap = filterByStatus(bidEntities, PENDING.value());
         final Map<BidEntity, Bid> newBidsMap = createBidCopy(lots, entityBidMap, stage);
@@ -120,7 +122,7 @@ public class BidServiceImpl implements BidService {
                                         final LotsDto unsuccessfulLots) {
         final List<BidEntity> allBidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
         if (allBidEntities.isEmpty()) {
-            throw new ErrorException("Bids not found.");
+            throw new ErrorException(BID_NOT_FOUND);
         }
         //collect invited bids
         final Map<BidEntity, Bid> mapInvitedBids = filterByStatus(allBidEntities, INVITED.value());
@@ -166,22 +168,22 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public ResponseDto updateStatusDetail(final String cpId,
-                                          final String stage,
-                                          final String bidId,
-                                          final String awardStatus) {
-        final BidEntity bidEntity = Optional.ofNullable(bidRepository.findByCpIdAndStageAndBidId(cpId, stage,
-                UUID.fromString(bidId)))
-                .orElseThrow(() -> new ErrorException("Bid not found."));
+    public ResponseDto updateStatusDetails(final String cpId,
+                                           final String stage,
+                                           final String bidId,
+                                           final String awardStatus) {
+        final BidEntity bidEntity = Optional.ofNullable(
+                bidRepository.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId)))
+                .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
         final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
         if (awardStatus.equals("unsuccessful")) {
-            bid.setStatus(DISQUALIFIED);
             bid.setDate(dateUtil.localNowUTC());
-            bidEntity.setStatus(DISQUALIFIED.value());
+            bid.setStatusDetails(Bid.StatusDetails.DISQUALIFIED);
+            bidEntity.setStatus(Bid.StatusDetails.DISQUALIFIED.value());
         } else if (awardStatus.equals("active")) {
-            bid.setStatus(VALID);
             bid.setDate(dateUtil.localNowUTC());
-            bidEntity.setStatus(VALID.value());
+            bid.setStatusDetails(Bid.StatusDetails.VALID);
+            bidEntity.setStatus(Bid.StatusDetails.VALID.value());
         } else {
             throw new ErrorException("Invalid Award status.");
         }
@@ -189,21 +191,21 @@ public class BidServiceImpl implements BidService {
         bidEntity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(bidEntity);
         final BidUpdate bidUpdate = conversionService.convert(bid, BidUpdate.class);
-        return new ResponseDto<>(true, null, bidUpdate);
+        return new ResponseDto<>(true, null, new BidsUpdateStatusDetailsResponse(bidUpdate));
     }
 
     @Override
     public ResponseDto setFinalStatuses(final String cpId, final String stage) {
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
         if (bidEntities.isEmpty()) {
-            throw new ErrorException("Bids not found.");
+            throw new ErrorException(BID_NOT_FOUND);
         }
         final Map<BidEntity, Bid> bidMap = filterByStatus(bidEntities, PENDING.value());
         final Map<BidEntity, Bid> bidMapWithStatus =
                 bidMap.entrySet().stream()
-                        .map(e -> setStatus(e, Bid.Status.valueOf(e.getValue().getStatusDetail().toString())))
+                        .map(e -> setStatus(e, Bid.Status.valueOf(e.getValue().getStatusDetails().toString())))
                         .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
-        bidMapWithStatus.forEach((key, value) -> value.setStatusDetail(null));
+        bidMapWithStatus.forEach((key, value) -> value.setStatusDetails(null));
         bidMapWithStatus.forEach((key, value) -> key.setJsonData(jsonUtil.toJson(value)));
         final List<BidUpdate> bidUpdateList = bidMapWithStatus.entrySet().stream()
                 .map(e -> conversionService.convert(e.getValue(), BidUpdate.class))
@@ -268,7 +270,7 @@ public class BidServiceImpl implements BidService {
         final BidEntity entity = Optional
                 .ofNullable(bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage,
                         UUID.fromString(bidDto.getId()), UUID.fromString(token)))
-                .orElseThrow(() -> new ErrorException("Bid not found."));
+                .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
         if (!entity.getOwner().equals(owner)) throw new ErrorException("Invalid owner.");
         bidDto.setDate(dateUtil.localNowUTC());
         setPendingDate(bidDto, entity);
@@ -377,7 +379,6 @@ public class BidServiceImpl implements BidService {
         }
         return false;
     }
-
 
     private Map.Entry<BidEntity, Bid> setStatus(final Map.Entry<BidEntity, Bid> entry, final Bid.Status status) {
         entry.getKey().setStatus(status.value());

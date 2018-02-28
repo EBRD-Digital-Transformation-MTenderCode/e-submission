@@ -64,12 +64,12 @@ public class BidController {
                 HttpStatus.OK);
     }
 
-    @PostMapping(value = "/updateStatusDetail")
-    public ResponseEntity<ResponseDto> updateStatusDetail(@RequestParam final String cpId,
-                                                          @RequestParam final String stage,
-                                                          @RequestParam final String bidId,
-                                                          @RequestParam final String awardStatus) {
-        return new ResponseEntity<>(bidService.updateStatusDetail(cpId, stage, bidId, awardStatus), HttpStatus.OK);
+    @PostMapping(value = "/updateStatusDetails")
+    public ResponseEntity<ResponseDto> updateStatusDetails(@RequestParam final String cpId,
+                                                           @RequestParam final String stage,
+                                                           @RequestParam final String bidId,
+                                                           @RequestParam final String awardStatus) {
+        return new ResponseEntity<>(bidService.updateStatusDetails(cpId, stage, bidId, awardStatus), HttpStatus.OK);
     }
 
     @PostMapping(value = "/setFinalStatuses")

@@ -15,9 +15,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@JsonPropertyOrder({
-    "bids"
-})
 public class BidsCopyResponse {
     @Valid
     @NotNull

@@ -20,9 +20,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonPropertyOrder({
-        "bids"
-})
 public class BidsSelectionResponse {
 
     @Valid

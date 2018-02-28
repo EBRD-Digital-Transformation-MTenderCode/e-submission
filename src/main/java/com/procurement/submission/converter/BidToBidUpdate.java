@@ -15,7 +15,7 @@ public class BidToBidUpdate implements Converter<Bid, BidUpdate> {
         return new BidUpdate(bid.getId(),
                 bid.getDate(),
                 bid.getStatus(),
-                bid.getStatusDetail(),
+                bid.getStatusDetails(),
                 createTenderers(bid.getTenderers()),
                 bid.getValue(),
                 bid.getDocuments(),

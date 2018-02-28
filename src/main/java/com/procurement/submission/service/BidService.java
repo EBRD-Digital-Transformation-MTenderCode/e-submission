@@ -33,10 +33,10 @@ public interface BidService {
                                  String pmd,
                                  LotsDto unsuccessfulLots);
 
-    ResponseDto updateStatusDetail(String cpId,
-                                   String stage,
-                                   String bidId,
-                                   String awardStatus);
+    ResponseDto updateStatusDetails(String cpId,
+                                    String stage,
+                                    String bidId,
+                                    String awardStatus);
 
     ResponseDto setFinalStatuses(String cpId, String stage);
 }
