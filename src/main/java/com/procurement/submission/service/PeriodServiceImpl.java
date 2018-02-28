@@ -51,7 +51,7 @@ public class PeriodServiceImpl implements PeriodService {
                                   final LocalDateTime startDate,
                                   final LocalDateTime endDate) {
         final int interval = rulesService.getInterval(country, pmd);
-        if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)){
+        if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)) {
             final long minutes = MINUTES.between(startDate, endDate);
             return minutes >= interval;
         }
@@ -138,8 +138,8 @@ public class PeriodServiceImpl implements PeriodService {
                                         final String pmd,
                                         final LocalDateTime startDate,
                                         final LocalDateTime endDate) {
-        return new ResponseDto<>(true, null,
-                new CheckPeriodResponseDto(checkInterval(country, pmd, startDate, endDate), null));
+        final Boolean isPeriodValid = checkInterval(country, pmd, startDate, endDate);
+        return new ResponseDto<>(isPeriodValid, null, new CheckPeriodResponseDto(isPeriodValid, null));
     }
 
 }
