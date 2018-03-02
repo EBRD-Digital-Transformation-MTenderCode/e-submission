@@ -3,7 +3,7 @@ package com.procurement.submission.service;
 import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto;
-import com.procurement.submission.model.dto.response.PeriodResponseDto;
+import com.procurement.submission.model.dto.response.Period;
 import com.procurement.submission.model.entity.PeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.utils.DateUtil;
@@ -71,7 +71,7 @@ public class PeriodServiceImpl implements PeriodService {
         period.setEndDate(dateUtil.localToDate(endDate));
         periodRepository.save(period);
         return new ResponseDto<>(true, null,
-                new PeriodResponseDto(
+                new Period(
                         period.getStartDate(),
                         period.getEndDate()));
     }
@@ -90,7 +90,7 @@ public class PeriodServiceImpl implements PeriodService {
         period.setEndDate(dateUtil.localToDate(startDate.plusDays(interval)));
         periodRepository.save(period);
         return new ResponseDto<>(true, null,
-                new PeriodResponseDto(
+                new Period(
                         period.getStartDate(),
                         period.getEndDate()));
     }
