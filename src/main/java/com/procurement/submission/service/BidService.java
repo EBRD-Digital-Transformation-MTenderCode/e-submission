@@ -36,7 +36,7 @@ public interface BidService {
     ResponseDto updateStatusDetails(String cpId,
                                     String stage,
                                     String bidId,
-                                    String awardStatus);
+                                    String awardStatusDetails);
 
     ResponseDto setFinalStatuses(String cpId, String stage);
 }

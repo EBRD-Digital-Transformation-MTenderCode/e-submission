@@ -171,16 +171,16 @@ public class BidServiceImpl implements BidService {
     public ResponseDto updateStatusDetails(final String cpId,
                                            final String stage,
                                            final String bidId,
-                                           final String awardStatus) {
+                                           final String awardStatusDetails) {
         final BidEntity bidEntity = Optional.ofNullable(
                 bidRepository.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId)))
                 .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
         final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
-        if (awardStatus.equals("unsuccessful")) {
+        if (awardStatusDetails.equals("unsuccessful")) {
             bid.setDate(dateUtil.localNowUTC());
             bid.setStatusDetails(Bid.StatusDetails.DISQUALIFIED);
             bidEntity.setStatus(Bid.StatusDetails.DISQUALIFIED.value());
-        } else if (awardStatus.equals("active")) {
+        } else if (awardStatusDetails.equals("active")) {
             bid.setDate(dateUtil.localNowUTC());
             bid.setStatusDetails(Bid.StatusDetails.VALID);
             bidEntity.setStatus(Bid.StatusDetails.VALID.value());
