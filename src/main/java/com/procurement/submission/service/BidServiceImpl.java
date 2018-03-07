@@ -198,7 +198,7 @@ public class BidServiceImpl implements BidService {
         //set status from statusDetails
         for (Bid bid : bids) {
             if (bid.getStatus().equals(Bid.Status.PENDING)) {
-                bid.setStatus(Bid.Status.valueOf(bid.getStatusDetails().value()));
+                bid.setStatus(Bid.Status.fromValue(bid.getStatusDetails().value()));
                 bid.setStatusDetails(Bid.StatusDetails.EMPTY);
             }
         }
