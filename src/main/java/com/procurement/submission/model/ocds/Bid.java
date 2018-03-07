@@ -155,7 +155,8 @@ public class Bid {
 
     public enum StatusDetails {
         DISQUALIFIED("disqualified"),
-        VALID("valid");
+        VALID("valid"),
+        EMPTY("empty");
 
         private static final Map<String, StatusDetails> CONSTANTS = new HashMap<String, StatusDetails>();
         private final String value;
