@@ -128,6 +128,7 @@ public class BidServiceImpl implements BidService {
         bids.stream()
                 .filter(bid -> bid.getStatus().equals(INVITED))
                 .forEach(bid -> {
+                    bid.setDate(dateUtil.localNowUTC());
                     bid.setStatus(WITHDRAWN);
                     updatedBids.add(bid);
                 });
@@ -136,6 +137,7 @@ public class BidServiceImpl implements BidService {
         bids.stream()
                 .filter(bid -> containsAny(bid.getRelatedLots(), lotsStr))
                 .forEach(bid -> {
+                    bid.setDate(dateUtil.localNowUTC());
                     bid.setStatus(WITHDRAWN);
                     updatedBids.add(bid);
                 });
@@ -173,14 +175,13 @@ public class BidServiceImpl implements BidService {
                 .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
         final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
         if (awardStatusDetails.equals("unsuccessful")) {
-            bid.setDate(dateUtil.localNowUTC());
             bid.setStatusDetails(Bid.StatusDetails.DISQUALIFIED);
         } else if (awardStatusDetails.equals("active")) {
-            bid.setDate(dateUtil.localNowUTC());
             bid.setStatusDetails(Bid.StatusDetails.VALID);
         } else {
             throw new ErrorException("Invalid Award status.");
         }
+        bid.setDate(dateUtil.localNowUTC());
         bidEntity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(bidEntity);
         final BidUpdate bidUpdate = conversionService.convert(bid, BidUpdate.class);
@@ -198,6 +199,7 @@ public class BidServiceImpl implements BidService {
         //set status from statusDetails
         for (Bid bid : bids) {
             if (bid.getStatus().equals(Bid.Status.PENDING)) {
+                bid.setDate(dateUtil.localNowUTC());
                 bid.setStatus(Bid.Status.fromValue(bid.getStatusDetails().value()));
                 bid.setStatusDetails(Bid.StatusDetails.EMPTY);
             }
