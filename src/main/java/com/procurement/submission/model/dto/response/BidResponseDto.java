@@ -16,6 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @JsonPropertyOrder({
         "token",
+        "bidId",
         "bid"
 })
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
@@ -23,6 +24,9 @@ public class BidResponseDto {
     @NotNull
     @JsonProperty("token")
     private String token;
+    @NotNull
+    @JsonProperty("bidId")
+    private String bidId;
     @Valid
     @NotNull
     @JsonProperty("bid")
@@ -30,8 +34,10 @@ public class BidResponseDto {
 
     @JsonCreator
     public BidResponseDto(@JsonProperty("token") final String token,
+                          @JsonProperty("bidId") final String bidId,
                           @JsonProperty("bid") final Bid bid) {
         this.token = token;
+        this.bidId = bidId;
         this.bid = bid;
     }
 }

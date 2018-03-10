@@ -284,7 +284,7 @@ public class BidServiceImpl implements BidService {
     }
 
     private ResponseDto<BidResponseDto> getResponseDto(final String token, final Bid bid) {
-        final BidResponseDto responseDto = new BidResponseDto(token, bid);
+        final BidResponseDto responseDto = new BidResponseDto(token, bid.getId(), bid);
         return new ResponseDto<>(true, null, responseDto);
     }
 
