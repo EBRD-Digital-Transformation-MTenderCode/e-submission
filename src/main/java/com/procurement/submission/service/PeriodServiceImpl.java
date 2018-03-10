@@ -1,6 +1,7 @@
 package com.procurement.submission.service;
 
 import com.procurement.submission.exception.ErrorException;
+import com.procurement.submission.model.dto.bpe.ResponseDetailsDto;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto;
 import com.procurement.submission.model.dto.response.Period;
@@ -8,6 +9,9 @@ import com.procurement.submission.model.entity.PeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.utils.DateUtil;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -139,7 +143,15 @@ public class PeriodServiceImpl implements PeriodService {
                                         final LocalDateTime startDate,
                                         final LocalDateTime endDate) {
         final Boolean isPeriodValid = checkInterval(country, pmd, startDate, endDate);
-        return new ResponseDto<>(isPeriodValid, null, new CheckPeriodResponseDto(isPeriodValid, null));
+        if (!isPeriodValid) {
+            return new ResponseDto<>(false,
+                    Collections.singletonList(new ResponseDetailsDto("period", "Invalid period.")),
+                    null);
+        }else{
+            return new ResponseDto<>(true, null,
+                    new CheckPeriodResponseDto(true, null));
+        }
+
     }
 
 }
