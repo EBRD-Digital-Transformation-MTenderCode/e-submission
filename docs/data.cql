@@ -29,7 +29,6 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_bid (
     token_entity uuid,
     status text,
     created_date timestamp,
-    pending_date timestamp,
     json_data text,
     primary key(cp_id, stage, bid_id, token_entity)
 );

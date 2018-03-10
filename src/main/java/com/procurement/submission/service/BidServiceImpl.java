@@ -253,7 +253,6 @@ public class BidServiceImpl implements BidService {
         bidEntity.setStatus(bidDto.getStatus().value());
         bidEntity.setBidId(UUID.fromString(bidDto.getId()));
         bidEntity.setToken(UUIDs.random());
-        bidEntity.setPendingDate(bidDto.getDate());
         bidEntity.setCreatedDate(bidDto.getDate());
         bidEntity.setJsonData(jsonUtil.toJson(bidDto));
         return bidEntity;
@@ -271,17 +270,8 @@ public class BidServiceImpl implements BidService {
                 .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
         if (!entity.getOwner().equals(owner)) throw new ErrorException("Invalid owner.");
         bidDto.setDate(dateUtil.localNowUTC());
-        setPendingDate(bidDto, entity);
         entity.setJsonData(jsonUtil.toJson(bidDto));
         bidRepository.save(entity);
-    }
-
-    private void setPendingDate(final Bid bidDto, final BidEntity entity) {
-        if (Objects.isNull(entity.getPendingDate())
-                && !entity.getStatus().equals(PENDING.value())
-                && bidDto.getStatus().equals(PENDING)) {
-            entity.setPendingDate(bidDto.getDate());
-        }
     }
 
     private ResponseDto<BidResponseDto> getResponseDto(final String token, final Bid bid) {
@@ -310,7 +300,6 @@ public class BidServiceImpl implements BidService {
         newBidEntity.setStatus(newStatus.value());
         final LocalDateTime dateTimeNow = dateUtil.localNowUTC();
         newBidEntity.setCreatedDate(dateTimeNow);
-        newBidEntity.setPendingDate(dateTimeNow);
         final Bid oldBid = entrySet.getValue();
         final Bid newBid = new Bid(oldBid.getId(), dateTimeNow, newStatus, null, oldBid.getTenderers(), null, null,
                 oldBid.getRelatedLots());
@@ -329,7 +318,6 @@ public class BidServiceImpl implements BidService {
         final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
         final BidsSelectionResponse.Bid bidSelection = conversionService.convert(bid, BidsSelectionResponse.Bid.class);
         bidSelection.setCreatedDate(bidEntity.getCreatedDate());
-        bidSelection.setPendingDate(bidEntity.getPendingDate());
         return bidSelection;
     }
 

@@ -40,7 +40,6 @@ public class BidsSelectionResponse {
             "relatedLots",
             "date",
             "createdDate",
-            "pendingDate",
             "value",
             "tenderers"
     })
@@ -51,8 +50,6 @@ public class BidsSelectionResponse {
         private LocalDateTime date;
         @JsonSerialize(using = LocalDateTimeSerializer.class)
         private LocalDateTime createdDate;
-        @JsonSerialize(using = LocalDateTimeSerializer.class)
-        private LocalDateTime pendingDate;
         private Value value;
         private List<OrganizationReferenceRs> tenderers;
     }
