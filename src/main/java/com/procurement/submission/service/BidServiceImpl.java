@@ -6,6 +6,7 @@ import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.request.LotDto;
 import com.procurement.submission.model.dto.request.LotsDto;
+import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
 import com.procurement.submission.model.dto.response.*;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.model.entity.PeriodEntity;
@@ -115,7 +116,7 @@ public class BidServiceImpl implements BidService {
                                         final String stage,
                                         final String country,
                                         final String pmd,
-                                        final LotsDto unsuccessfulLots) {
+                                        final UnsuccessfulLotsDto unsuccessfulLots) {
         /*get all bids entities from db*/
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
         if (bidEntities.isEmpty()) {

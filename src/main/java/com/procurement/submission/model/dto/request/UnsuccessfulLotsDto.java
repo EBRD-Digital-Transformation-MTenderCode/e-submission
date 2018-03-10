@@ -7,12 +7,12 @@ import javax.validation.constraints.NotEmpty;
 import lombok.Getter;
 
 @Getter
-public class LotsDto {
-    @JsonProperty("lots")
+public class UnsuccessfulLotsDto {
+    @JsonProperty("unsuccessfulLots")
     private List<LotDto> lots;
 
     @JsonCreator
-    public LotsDto(@JsonProperty("lots") @NotEmpty final List<LotDto> lots) {
+    public UnsuccessfulLotsDto(@JsonProperty("unsuccessfulLots") @NotEmpty final List<LotDto> lots) {
         this.lots = lots;
     }
 }

@@ -2,6 +2,7 @@ package com.procurement.submission.service;
 
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.request.LotsDto;
+import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
 import com.procurement.submission.model.ocds.Bid;
 
 public interface BidService {
@@ -31,7 +32,7 @@ public interface BidService {
                                  String stage,
                                  String country,
                                  String pmd,
-                                 LotsDto unsuccessfulLots);
+                                 UnsuccessfulLotsDto unsuccessfulLots);
 
     ResponseDto updateStatusDetails(String cpId,
                                     String stage,

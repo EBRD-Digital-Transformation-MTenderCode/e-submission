@@ -3,6 +3,7 @@ package com.procurement.submission.controller;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.LotsDto;
+import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
 import com.procurement.submission.service.BidService;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -59,7 +60,7 @@ public class BidController {
                                                     @RequestParam final String stage,
                                                     @RequestParam final String country,
                                                     @RequestParam final String pmd,
-                                                    @RequestBody final LotsDto unsuccessfulLots) {
+                                                    @RequestBody final UnsuccessfulLotsDto unsuccessfulLots) {
         return new ResponseEntity<>(bidService.updateBidsByLots(cpId, stage, country, pmd, unsuccessfulLots),
                 HttpStatus.OK);
     }
