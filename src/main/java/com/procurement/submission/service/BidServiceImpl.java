@@ -310,7 +310,7 @@ public class BidServiceImpl implements BidService {
         newBidEntity.setStatus(newStatus.value());
         final LocalDateTime dateTimeNow = dateUtil.localNowUTC();
         newBidEntity.setCreatedDate(dateTimeNow);
-        newBidEntity.setPendingDate(null);
+        newBidEntity.setPendingDate(dateTimeNow);
         final Bid oldBid = entrySet.getValue();
         final Bid newBid = new Bid(oldBid.getId(), dateTimeNow, newStatus, null, oldBid.getTenderers(), null, null,
                 oldBid.getRelatedLots());
