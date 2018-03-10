@@ -251,7 +251,7 @@ public class BidServiceImpl implements BidService {
         bidEntity.setOwner(owner);
         bidEntity.setStatus(bidDto.getStatus().value());
         bidEntity.setBidId(UUID.fromString(bidDto.getId()));
-        bidEntity.setToken(UUIDs.timeBased());
+        bidEntity.setToken(UUIDs.random());
         bidEntity.setPendingDate(bidDto.getDate());
         bidEntity.setCreatedDate(bidDto.getDate());
         bidEntity.setJsonData(jsonUtil.toJson(bidDto));
@@ -354,13 +354,6 @@ public class BidServiceImpl implements BidService {
             }
         }
         return false;
-    }
-
-    private Map.Entry<BidEntity, Bid> setStatus(final Map.Entry<BidEntity, Bid> entry, final Bid.Status status) {
-        entry.getKey().setStatus(status.value());
-        entry.getValue().setStatus(status);
-        entry.getValue().setDate(LocalDateTime.now());
-        return entry;
     }
 
 }
