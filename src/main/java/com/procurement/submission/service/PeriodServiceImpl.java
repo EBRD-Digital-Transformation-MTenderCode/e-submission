@@ -148,8 +148,7 @@ public class PeriodServiceImpl implements PeriodService {
                     Collections.singletonList(new ResponseDetailsDto("period", "Invalid period.")),
                     null);
         }else{
-            return new ResponseDto<>(true, null,
-                    new CheckPeriodResponseDto(true, null));
+            return new ResponseDto<>(true, null,"Period is valid.");
         }
 
     }
