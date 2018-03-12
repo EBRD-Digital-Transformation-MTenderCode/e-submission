@@ -103,7 +103,7 @@ public class BidServiceImpl implements BidService {
         final List<BidEntity> pendingBids = pendingFilter(bidRepository.findAllByCpIdAndStage(cpId, stage));
         final int rulesMinBids = rulesService.getRulesMinBids(country, pmd);
         if (pendingBids.size() < rulesMinBids) {
-            throw new ErrorException("Bids with status PENDING are less minimum count of bids.");
+            return new ResponseDto<>(true, null, new BidsSelectionResponse(new ArrayList<>()));
         }
         final List<BidsSelectionResponse.Bid> responseBids = pendingBids.stream()
                 .map(this::convertBids)
