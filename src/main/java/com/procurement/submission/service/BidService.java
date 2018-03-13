@@ -1,6 +1,7 @@
 package com.procurement.submission.service;
 
 import com.procurement.submission.model.dto.bpe.ResponseDto;
+import com.procurement.submission.model.dto.request.AwardStatusDetails;
 import com.procurement.submission.model.dto.request.LotsDto;
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
 import com.procurement.submission.model.ocds.Bid;
@@ -37,7 +38,7 @@ public interface BidService {
     ResponseDto updateStatusDetails(String cpId,
                                     String stage,
                                     String bidId,
-                                    String awardStatusDetails);
+                                    AwardStatusDetails awardStatusDetails);
 
     ResponseDto setFinalStatuses(String cpId, String stage);
 }

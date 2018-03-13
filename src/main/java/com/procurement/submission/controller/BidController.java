@@ -1,6 +1,7 @@
 package com.procurement.submission.controller;
 
 import com.procurement.submission.model.dto.bpe.ResponseDto;
+import com.procurement.submission.model.dto.request.AwardStatusDetails;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.LotsDto;
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
@@ -70,7 +71,8 @@ public class BidController {
                                                            @RequestParam final String stage,
                                                            @RequestParam final String bidId,
                                                            @RequestParam final String awardStatusDetails) {
-        return new ResponseEntity<>(bidService.updateStatusDetails(cpId, stage, bidId, awardStatusDetails), HttpStatus.OK);
+        return new ResponseEntity<>(bidService.updateStatusDetails(cpId, stage, bidId, AwardStatusDetails.fromValue(awardStatusDetails)),
+                HttpStatus.OK);
     }
 
     @PostMapping(value = "/setFinalStatuses")

@@ -4,6 +4,7 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.base.Strings;
 import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
+import com.procurement.submission.model.dto.request.AwardStatusDetails;
 import com.procurement.submission.model.dto.request.LotDto;
 import com.procurement.submission.model.dto.request.LotsDto;
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
@@ -200,17 +201,21 @@ public class BidServiceImpl implements BidService {
     public ResponseDto updateStatusDetails(final String cpId,
                                            final String stage,
                                            final String bidId,
-                                           final String awardStatusDetails) {
+                                           final AwardStatusDetails awardStatusDetails) {
         final BidEntity bidEntity = Optional.ofNullable(
                 bidRepository.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId)))
                 .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
         final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
-        if (awardStatusDetails.equals("unsuccessful")) {
-            bid.setStatusDetails(Bid.StatusDetails.DISQUALIFIED);
-        } else if (awardStatusDetails.equals("active")) {
-            bid.setStatusDetails(Bid.StatusDetails.VALID);
-        } else {
-            throw new ErrorException("Invalid Award status.");
+        switch (awardStatusDetails){
+            case EMPTY:{
+                bid.setStatusDetails(Bid.StatusDetails.EMPTY);
+            }
+            case ACTIVE:{
+                bid.setStatusDetails(Bid.StatusDetails.VALID);
+            }
+            case UNSUCCESSFUL:{
+                bid.setStatusDetails(Bid.StatusDetails.DISQUALIFIED);
+            }
         }
         bid.setDate(dateUtil.localNowUTC());
         bidEntity.setJsonData(jsonUtil.toJson(bid));
