@@ -209,12 +209,15 @@ public class BidServiceImpl implements BidService {
         switch (awardStatusDetails){
             case EMPTY:{
                 bid.setStatusDetails(Bid.StatusDetails.EMPTY);
+                break;
             }
             case ACTIVE:{
                 bid.setStatusDetails(Bid.StatusDetails.VALID);
+                break;
             }
             case UNSUCCESSFUL:{
                 bid.setStatusDetails(Bid.StatusDetails.DISQUALIFIED);
+                break;
             }
         }
         bid.setDate(dateUtil.localNowUTC());
