@@ -7,6 +7,7 @@ import com.procurement.submission.model.ocds.Bid;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,8 +17,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class BidsCopyResponse {
+
     @Valid
-    @NotNull
+    @NotEmpty
     @JsonProperty("bids")
     private List<Bid> bids;
 

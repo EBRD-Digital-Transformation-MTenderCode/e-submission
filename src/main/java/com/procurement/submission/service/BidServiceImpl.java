@@ -18,12 +18,13 @@ import com.procurement.submission.utils.JsonUtil;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 import static com.procurement.submission.model.ocds.Bid.Status.*;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 @Service
 public class BidServiceImpl implements BidService {
@@ -101,14 +102,13 @@ public class BidServiceImpl implements BidService {
                                       final String pmd) {
         periodService.checkIsPeriodExpired(cpId, stage);
         final List<BidEntity> pendingBids = pendingFilter(bidRepository.findAllByCpIdAndStage(cpId, stage));
-        final int rulesMinBids = rulesService.getRulesMinBids(country, pmd);
-        if (pendingBids.size() < rulesMinBids) {
-            return new ResponseDto<>(true, null, new BidsSelectionResponse(new ArrayList<>()));
-        }
-        final List<BidsSelectionResponse.Bid> responseBids = pendingBids.stream()
-                .map(this::convertBids)
-                .collect(toList());
-        return new ResponseDto<>(true, null, new BidsSelectionResponse(responseBids));
+        final int minNumberOfBids = rulesService.getRulesMinBids(country, pmd);
+        final List<Bid> bids = getBidsFromEntities(pendingBids);
+        final List<String> relatedLotsFromBids = getRelatedLotsIdFromBids(bids);
+        final Map<String, Long> uniqueLots = getUniqueLots(relatedLotsFromBids);
+        final List<String> successfulLots = getSuccessfulLots(uniqueLots, minNumberOfBids);
+        final List<Bid> successfulBids = getSuccessfulBids(bids, successfulLots);
+        return new ResponseDto<>(true, null, new BidsSelectionResponse(successfulBids));
     }
 
     @Override
@@ -207,6 +207,36 @@ public class BidServiceImpl implements BidService {
         }
         return new ResponseDto<>(true, null,
                 new BidsUpdateStatusResponse(null, null, bids));
+    }
+
+    private List<String> getRelatedLotsIdFromBids(final List<Bid> bids) {
+        return bids.stream()
+                .flatMap(bid -> bid.getRelatedLots().stream())
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, Long> getUniqueLots(final List<String> lots) {
+        return lots.stream().collect(groupingBy(Function.identity(), Collectors.counting()));
+    }
+
+    private List<String> getSuccessfulLots(final Map<String, Long> uniqueLots,
+                                           final int minNumberOfBids) {
+        return uniqueLots.entrySet()
+                .stream()
+                .filter(map -> map.getValue() >= minNumberOfBids)
+                .map(map -> map.getKey())
+                .collect(Collectors.toList());
+    }
+
+    private List<Bid> getSuccessfulBids(final List<Bid> bids, final List<String> successfulLots) {
+        final List<Bid> successfullBids = new ArrayList<>();
+        bids.forEach(bid ->
+                bid.getRelatedLots()
+                        .stream()
+                        .filter(successfulLots::contains)
+                        .map(lot -> bid)
+                        .forEach(successfullBids::add));
+        return successfullBids;
     }
 
     private void processTenderers(final Bid bidDto) {
@@ -312,13 +342,6 @@ public class BidServiceImpl implements BidService {
         return bids.stream()
                 .filter(b -> b.getStatus().equals(PENDING.value()))
                 .collect(toList());
-    }
-
-    private BidsSelectionResponse.Bid convertBids(final BidEntity bidEntity) {
-        final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
-        final BidsSelectionResponse.Bid bidSelection = conversionService.convert(bid, BidsSelectionResponse.Bid.class);
-        bidSelection.setCreatedDate(bidEntity.getCreatedDate());
-        return bidSelection;
     }
 
     private List<String> collectLots(final List<LotDto> lots) {
