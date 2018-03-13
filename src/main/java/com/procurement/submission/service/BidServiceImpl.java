@@ -111,6 +111,36 @@ public class BidServiceImpl implements BidService {
         return new ResponseDto<>(true, null, new BidsSelectionResponse(successfulBids));
     }
 
+    private List<String> getRelatedLotsIdFromBids(final List<Bid> bids) {
+        return bids.stream()
+                .flatMap(bid -> bid.getRelatedLots().stream())
+                .collect(Collectors.toList());
+    }
+
+    private Map<String, Long> getUniqueLots(final List<String> lots) {
+        return lots.stream().collect(groupingBy(Function.identity(), Collectors.counting()));
+    }
+
+    private List<String> getSuccessfulLots(final Map<String, Long> uniqueLots,
+                                           final int minNumberOfBids) {
+        return uniqueLots.entrySet()
+                .stream()
+                .filter(map -> map.getValue() >= minNumberOfBids)
+                .map(map -> map.getKey())
+                .collect(Collectors.toList());
+    }
+
+    private List<Bid> getSuccessfulBids(final List<Bid> bids, final List<String> successfulLots) {
+        final List<Bid> successfullBids = new ArrayList<>();
+        bids.forEach(bid ->
+                bid.getRelatedLots()
+                        .stream()
+                        .filter(successfulLots::contains)
+                        .map(lot -> bid)
+                        .forEach(successfullBids::add));
+        return successfullBids;
+    }
+
     @Override
     public ResponseDto updateBidsByLots(final String cpId,
                                         final String stage,
@@ -207,36 +237,6 @@ public class BidServiceImpl implements BidService {
         }
         return new ResponseDto<>(true, null,
                 new BidsUpdateStatusResponse(null, null, bids));
-    }
-
-    private List<String> getRelatedLotsIdFromBids(final List<Bid> bids) {
-        return bids.stream()
-                .flatMap(bid -> bid.getRelatedLots().stream())
-                .collect(Collectors.toList());
-    }
-
-    private Map<String, Long> getUniqueLots(final List<String> lots) {
-        return lots.stream().collect(groupingBy(Function.identity(), Collectors.counting()));
-    }
-
-    private List<String> getSuccessfulLots(final Map<String, Long> uniqueLots,
-                                           final int minNumberOfBids) {
-        return uniqueLots.entrySet()
-                .stream()
-                .filter(map -> map.getValue() >= minNumberOfBids)
-                .map(map -> map.getKey())
-                .collect(Collectors.toList());
-    }
-
-    private List<Bid> getSuccessfulBids(final List<Bid> bids, final List<String> successfulLots) {
-        final List<Bid> successfullBids = new ArrayList<>();
-        bids.forEach(bid ->
-                bid.getRelatedLots()
-                        .stream()
-                        .filter(successfulLots::contains)
-                        .map(lot -> bid)
-                        .forEach(successfullBids::add));
-        return successfullBids;
     }
 
     private void processTenderers(final Bid bidDto) {
