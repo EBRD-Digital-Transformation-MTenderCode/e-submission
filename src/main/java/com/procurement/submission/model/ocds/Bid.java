@@ -15,18 +15,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 @Getter
+@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "id",
     "date",
     "status",
+    "statusDetails",
     "tenderers",
     "value",
     "documents",
@@ -43,8 +44,8 @@ public class Bid {
     @JsonProperty("status")
     private Status status;
 
-    @JsonProperty("statusDetail")
-    private StatusDetail statusDetail;
+    @JsonProperty("statusDetails")
+    private StatusDetails statusDetails;
 
     @Valid
     @JsonProperty("tenderers")
@@ -65,7 +66,7 @@ public class Bid {
     public Bid(@JsonProperty("id") final String id,
                @JsonProperty("date") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final LocalDateTime date,
                @JsonProperty("status") final Status status,
-               @JsonProperty("statusDetail") final StatusDetail statusDetail,
+               @JsonProperty("statusDetails") final StatusDetails statusDetails,
                @JsonProperty("tenderers") final List<OrganizationReference> tenderers,
                @JsonProperty("value") final Value value,
                @JsonProperty("documents") final List<Document> documents,
@@ -73,27 +74,11 @@ public class Bid {
         this.id = id;
         this.date = date;
         this.status = status;
-        this.statusDetail = statusDetail;
+        this.statusDetails = statusDetails;
         this.tenderers = tenderers;
         this.value = value;
         this.documents = documents;
         this.relatedLots = relatedLots;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setDate(LocalDateTime date) {
-        this.date = date;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
-    }
-
-    public void setStatusDetail(StatusDetail statusDetail) {
-        this.statusDetail = statusDetail;
     }
 
     @Override
@@ -168,20 +153,21 @@ public class Bid {
         }
     }
 
-    public enum StatusDetail {
+    public enum StatusDetails {
         DISQUALIFIED("disqualified"),
-        VALID("valid");
+        VALID("valid"),
+        EMPTY("empty");
 
-        private static final Map<String, StatusDetail> CONSTANTS = new HashMap<String, StatusDetail>();
+        private static final Map<String, StatusDetails> CONSTANTS = new HashMap<String, StatusDetails>();
         private final String value;
 
         static {
-            for (final StatusDetail c : values()) {
+            for (final StatusDetails c : values()) {
                 CONSTANTS.put(c.value, c);
             }
         }
 
-        StatusDetail(final String value) {
+        StatusDetails(final String value) {
             this.value = value;
         }
 
@@ -196,8 +182,8 @@ public class Bid {
         }
 
         @JsonCreator
-        public static StatusDetail fromValue(final String value) {
-            final StatusDetail constant = CONSTANTS.get(value);
+        public static StatusDetails fromValue(final String value) {
+            final StatusDetails constant = CONSTANTS.get(value);
             if (constant == null) {
                 throw new IllegalArgumentException(
                         "Unknown enum type " + value + ", Allowed values are " + Arrays.toString(values()));

@@ -1,40 +1,12 @@
 package com.procurement.submission.service;
 
-import com.datastax.driver.core.utils.UUIDs;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.procurement.submission.exception.ErrorException;
-import com.procurement.submission.model.ocds.Address;
-import com.procurement.submission.model.ocds.Bid;
-import com.procurement.submission.model.ocds.BidStatus;
-import com.procurement.submission.model.ocds.ContactPoint;
-import com.procurement.submission.model.ocds.Identifier;
-import com.procurement.submission.model.ocds.OrganizationReference;
-import com.procurement.submission.model.entity.BidEntity;
-import com.procurement.submission.repository.BidRepository;
-import com.procurement.submission.utils.JsonUtil;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.core.convert.ConversionService;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class BidServiceTest {
 

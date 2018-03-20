@@ -14,23 +14,23 @@ import static org.mockito.Mockito.mock;
 @EnableWebMvc
 public class BidControllerTestConfig {
 
-    @Bean
-    public MethodValidationPostProcessor methodValidationPostProcessor() {
-        return new MethodValidationPostProcessor();
-    }
-
-    @Bean
-    public BidService bidService() {
-        return mock(BidService.class);
-    }
-
-    @Bean
-    public BidController bidController() {
-        return new BidController(bidService());
-    }
-
-    @Bean
-    public ControllerExceptionHandler controllerExceptionHandler() {
-        return new ControllerExceptionHandler();
-    }
+//    @Bean
+//    public MethodValidationPostProcessor methodValidationPostProcessor() {
+//        return new MethodValidationPostProcessor();
+//    }
+//
+//    @Bean
+//    public BidService bidService() {
+//        return mock(BidService.class);
+//    }
+//
+//    @Bean
+//    public BidController bidController() {
+//        return new BidController(bidService());
+//    }
+//
+//    @Bean
+//    public ControllerExceptionHandler controllerExceptionHandler() {
+//        return new ControllerExceptionHandler();
+//    }
 }

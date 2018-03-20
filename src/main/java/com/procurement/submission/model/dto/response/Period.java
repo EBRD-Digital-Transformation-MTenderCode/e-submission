@@ -17,7 +17,7 @@ import lombok.Getter;
         "startDate",
         "endDate"
 })
-public class PeriodResponseDto {
+public class Period {
 
     @JsonProperty("startDate")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
@@ -30,8 +30,8 @@ public class PeriodResponseDto {
     private final LocalDateTime endDate;
 
     @JsonCreator
-    public PeriodResponseDto(@JsonProperty("startDate") final LocalDateTime startDate,
-                             @JsonProperty("endDate") final LocalDateTime endDate) {
+    public Period(@JsonProperty("startDate") final LocalDateTime startDate,
+                  @JsonProperty("endDate") final LocalDateTime endDate) {
         this.startDate = startDate;
         this.endDate = endDate;
     }

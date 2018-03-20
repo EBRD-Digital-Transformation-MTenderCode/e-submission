@@ -12,7 +12,9 @@ import lombok.Getter;
     "name"
 })
 public class OrganizationReferenceRs {
+
     private String id;
+
     private String name;
 
     @JsonCreator

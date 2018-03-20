@@ -8,9 +8,6 @@ import javax.validation.constraints.NotEmpty;
 import lombok.Getter;
 
 @Getter
-@JsonPropertyOrder({
-        "bids"
-})
 public class BidsUpdateFinalStatusResponse {
 
     @JsonProperty("bids")

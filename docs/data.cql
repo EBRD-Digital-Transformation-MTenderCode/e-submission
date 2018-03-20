@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_rules (
     primary key(country, method, parameter)
 );
 INSERT INTO ocds.submission_rules (country, method, parameter, value)  VALUES ('UA', 'micro', 'interval', '15');
+INSERT INTO ocds.submission_rules (country, method, parameter, value)  VALUES ('UA', 'micro', 'minBids', '2');
+
 SELECT * FROM ocds.submission_rules;
 
 CREATE TABLE IF NOT EXISTS  ocds.submission_period (
@@ -23,11 +25,10 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_bid (
     cp_id text,
     stage text,
     owner text,
-    bid_id text,
+    bid_id uuid,
     token_entity uuid,
     status text,
     created_date timestamp,
-    pending_date timestamp,
     json_data text,
     primary key(cp_id, stage, bid_id, token_entity)
 );

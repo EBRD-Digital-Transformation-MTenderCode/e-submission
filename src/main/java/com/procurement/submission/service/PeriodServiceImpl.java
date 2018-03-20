@@ -1,25 +1,29 @@
 package com.procurement.submission.service;
 
 import com.procurement.submission.exception.ErrorException;
+import com.procurement.submission.model.dto.bpe.ResponseDetailsDto;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto;
-import com.procurement.submission.model.dto.response.PeriodResponseDto;
+import com.procurement.submission.model.dto.response.Period;
 import com.procurement.submission.model.entity.PeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.utils.DateUtil;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 public class PeriodServiceImpl implements PeriodService {
-
+    private static final String TEST_PARAM = "test";
     private final PeriodRepository periodRepository;
     private final RulesService rulesService;
     private final DateUtil dateUtil;
-
 
     public PeriodServiceImpl(final PeriodRepository periodRepository,
                              final RulesService rulesService,
@@ -34,14 +38,14 @@ public class PeriodServiceImpl implements PeriodService {
         final PeriodEntity periodEntity = getPeriod(cpId, stage);
         final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
         final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
-        return (localDateTimeAfter && localDateTimeBefore);
+        return localDateTimeAfter && localDateTimeBefore;
     }
 
     public boolean isPeriodChange(final String cpId,
                                   final String stage,
                                   final LocalDateTime startDate,
                                   final LocalDateTime endDate) {
-        PeriodEntity period = getPeriod(cpId, stage);
+        final PeriodEntity period = getPeriod(cpId, stage);
         if ((period.getStartDate() != startDate) || (period.getEndDate() != endDate)) return false;
         return true;
     }
@@ -51,6 +55,10 @@ public class PeriodServiceImpl implements PeriodService {
                                   final LocalDateTime startDate,
                                   final LocalDateTime endDate) {
         final int interval = rulesService.getInterval(country, pmd);
+        if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)) {
+            final long minutes = MINUTES.between(startDate, endDate);
+            return minutes >= interval;
+        }
         final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
         return days >= interval;
     }
@@ -67,7 +75,7 @@ public class PeriodServiceImpl implements PeriodService {
         period.setEndDate(dateUtil.localToDate(endDate));
         periodRepository.save(period);
         return new ResponseDto<>(true, null,
-                new PeriodResponseDto(
+                new Period(
                         period.getStartDate(),
                         period.getEndDate()));
     }
@@ -86,7 +94,7 @@ public class PeriodServiceImpl implements PeriodService {
         period.setEndDate(dateUtil.localToDate(startDate.plusDays(interval)));
         periodRepository.save(period);
         return new ResponseDto<>(true, null,
-                new PeriodResponseDto(
+                new Period(
                         period.getStartDate(),
                         period.getEndDate()));
     }
@@ -100,7 +108,7 @@ public class PeriodServiceImpl implements PeriodService {
 
     @Override
     public void checkIsPeriodExpired(final String cpId, final String stage) {
-        if (!isPeriodValid(cpId, stage)) {
+        if (isPeriodValid(cpId, stage)) {
             throw new ErrorException("Period has not yet expired.");
         }
     }
@@ -134,8 +142,15 @@ public class PeriodServiceImpl implements PeriodService {
                                         final String pmd,
                                         final LocalDateTime startDate,
                                         final LocalDateTime endDate) {
-        return new ResponseDto<>(true, null,
-                new CheckPeriodResponseDto(checkInterval(country, pmd, startDate, endDate), null));
+        final Boolean isPeriodValid = checkInterval(country, pmd, startDate, endDate);
+        if (!isPeriodValid) {
+            return new ResponseDto<>(false,
+                    Collections.singletonList(new ResponseDetailsDto("period", "Invalid period.")),
+                    null);
+        }else{
+            return new ResponseDto<>(true, null,"Period is valid.");
+        }
+
     }
 
 }

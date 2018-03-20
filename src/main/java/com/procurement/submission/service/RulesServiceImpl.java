@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class RulesServiceImpl implements RulesService {
-    private static final String PARAMETER_MINBIDS = "minBids";
+    private static final String PARAMETER_MIN_BIDS = "minBids";
     private static final String PARAMETER_INTERVAL = "interval";
 
     private RulesRepository rulesRepository;
@@ -26,9 +26,9 @@ public class RulesServiceImpl implements RulesService {
 
     @Override
     public int getRulesMinBids(final String country, final String method) {
-        return Optional.ofNullable(rulesRepository.getValue(country, method, PARAMETER_MINBIDS))
+        return Optional.ofNullable(rulesRepository.getValue(country, method, PARAMETER_MIN_BIDS))
                 .map(Integer::parseInt)
                 .orElseThrow(() -> new ErrorException("We don't have rules with country: " + country +
-                        ", method: " + method + ", parameter: " + PARAMETER_MINBIDS));
+                        ", method: " + method + ", parameter: " + PARAMETER_MIN_BIDS));
     }
 }
