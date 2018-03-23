@@ -2,13 +2,13 @@ CREATE KEYSPACE IF NOT EXISTS ocds WITH replication = {'class':'SimpleStrategy',
 
 CREATE TABLE IF NOT EXISTS  ocds.submission_rules (
     country text,
-    method text,
+    pmd text,
     parameter text,
     value text,
-    primary key(country, method, parameter)
+    primary key(country, pmd, parameter)
 );
-INSERT INTO ocds.submission_rules (country, method, parameter, value)  VALUES ('UA', 'micro', 'interval', '15');
-INSERT INTO ocds.submission_rules (country, method, parameter, value)  VALUES ('UA', 'micro', 'minBids', '2');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'interval', '15');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'minBids', '2');
 
 SELECT * FROM ocds.submission_rules;
 
