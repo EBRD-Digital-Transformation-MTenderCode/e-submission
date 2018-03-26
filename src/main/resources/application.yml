@@ -13,4 +13,8 @@ spring:
       username: caclient
       password: brT4Kn27RQs
 
+eureka:
+  client:
+    enabled: false
+
 ocds.prefix: ocds-t1s2t3
