@@ -20,7 +20,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 public class PeriodServiceImpl implements PeriodService {
-    private static final String TEST_PARAM = "test";
+    private static final String TEST_PARAM = "TEST";
     private final PeriodRepository periodRepository;
     private final RulesService rulesService;
     private final DateUtil dateUtil;
