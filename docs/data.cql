@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_rules (
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'interval', '15');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'minBids', '2');
 
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('test', 'test', 'interval', '1');
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('test', 'test', 'minBids', '3');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST', 'interval', '1');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST', 'minBids', '3');
 
 SELECT * FROM ocds.submission_rules;
 
