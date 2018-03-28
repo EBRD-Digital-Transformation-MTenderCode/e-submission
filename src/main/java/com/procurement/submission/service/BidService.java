@@ -5,6 +5,7 @@ import com.procurement.submission.model.dto.request.AwardStatusDetails;
 import com.procurement.submission.model.dto.request.LotsDto;
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
 import com.procurement.submission.model.ocds.Bid;
+import java.time.LocalDateTime;
 
 public interface BidService {
 
@@ -22,6 +23,8 @@ public interface BidService {
     ResponseDto copyBids(String cpId,
                          String stage,
                          String previousStage,
+                         LocalDateTime startDate,
+                         LocalDateTime endDate,
                          LotsDto lots);
 
     ResponseDto getPendingBids(String cpId,

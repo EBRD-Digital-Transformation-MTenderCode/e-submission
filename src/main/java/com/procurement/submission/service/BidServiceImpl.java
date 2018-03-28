@@ -8,7 +8,13 @@ import com.procurement.submission.model.dto.request.AwardStatusDetails;
 import com.procurement.submission.model.dto.request.LotDto;
 import com.procurement.submission.model.dto.request.LotsDto;
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
-import com.procurement.submission.model.dto.response.*;
+import com.procurement.submission.model.dto.response.BidResponseDto;
+import com.procurement.submission.model.dto.response.BidUpdate;
+import com.procurement.submission.model.dto.response.BidsCopyResponse;
+import com.procurement.submission.model.dto.response.BidsSelectionResponse;
+import com.procurement.submission.model.dto.response.BidsUpdateStatusDetailsResponse;
+import com.procurement.submission.model.dto.response.BidsUpdateStatusResponse;
+import com.procurement.submission.model.dto.response.Period;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.model.entity.PeriodEntity;
 import com.procurement.submission.model.ocds.Bid;
@@ -24,8 +30,12 @@ import java.util.stream.Collectors;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
-import static com.procurement.submission.model.ocds.Bid.Status.*;
-import static java.util.stream.Collectors.*;
+import static com.procurement.submission.model.ocds.Bid.Status.INVITED;
+import static com.procurement.submission.model.ocds.Bid.Status.PENDING;
+import static com.procurement.submission.model.ocds.Bid.Status.WITHDRAWN;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 @Service
 public class BidServiceImpl implements BidService {
@@ -61,12 +71,14 @@ public class BidServiceImpl implements BidService {
         }
         processTenderers(bidDto);
         bidDto.setDate(dateUtil.localNowUTC());
-        bidDto.setId(UUIDs.timeBased().toString());
+        bidDto.setId(UUIDs.timeBased()
+                          .toString());
         bidDto.setStatus(PENDING);
         bidDto.setStatusDetails(Bid.StatusDetails.EMPTY);
         final BidEntity entity = getNewBidEntity(cpId, stage, owner, bidDto);
         bidRepository.save(entity);
-        return getResponseDto(entity.getToken().toString(), bidDto);
+        return getResponseDto(entity.getToken()
+                                    .toString(), bidDto);
     }
 
     @Override
@@ -84,13 +96,20 @@ public class BidServiceImpl implements BidService {
     public ResponseDto copyBids(final String cpId,
                                 final String stage,
                                 final String previousStage,
+                                final LocalDateTime startDate,
+                                final LocalDateTime endDate,
                                 final LotsDto lots) {
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, previousStage);
         if (bidEntities.isEmpty()) {
             throw new ErrorException(BID_NOT_FOUND);
         }
-        final Map<BidEntity, Bid> entityBidMap = filterByStatus(bidEntities, PENDING.value());
-        final Map<BidEntity, Bid> newBidsMap = createBidCopy(lots, entityBidMap, stage);
+
+        periodService.savePeriod(cpId, stage, startDate, endDate);
+
+        final Map<BidEntity, Bid> validBids = filterNewStage(bidEntities, lots);
+
+        // final Map<BidEntity, Bid> entityBidMap = filterByStatus(bidEntities, PENDING.value());
+        final Map<BidEntity, Bid> newBidsMap = createBidCopy(lots, validBids, stage);
         bidRepository.saveAll(newBidsMap.keySet());
         final List<Bid> bids = new ArrayList<>(newBidsMap.values());
         return new ResponseDto<>(true, null, new BidsCopyResponse(bids));
@@ -114,31 +133,33 @@ public class BidServiceImpl implements BidService {
 
     private List<String> getRelatedLotsIdFromBids(final List<Bid> bids) {
         return bids.stream()
-                .flatMap(bid -> bid.getRelatedLots().stream())
-                .collect(Collectors.toList());
+                   .flatMap(bid -> bid.getRelatedLots()
+                                      .stream())
+                   .collect(Collectors.toList());
     }
 
     private Map<String, Long> getUniqueLots(final List<String> lots) {
-        return lots.stream().collect(groupingBy(Function.identity(), Collectors.counting()));
+        return lots.stream()
+                   .collect(groupingBy(Function.identity(), Collectors.counting()));
     }
 
     private List<String> getSuccessfulLots(final Map<String, Long> uniqueLots,
                                            final int minNumberOfBids) {
         return uniqueLots.entrySet()
-                .stream()
-                .filter(map -> map.getValue() >= minNumberOfBids)
-                .map(map -> map.getKey())
-                .collect(Collectors.toList());
+                         .stream()
+                         .filter(map -> map.getValue() >= minNumberOfBids)
+                         .map(map -> map.getKey())
+                         .collect(Collectors.toList());
     }
 
     private List<Bid> getSuccessfulBids(final List<Bid> bids, final List<String> successfulLots) {
         final List<Bid> successfullBids = new ArrayList<>();
         bids.forEach(bid ->
-                bid.getRelatedLots()
-                        .stream()
-                        .filter(successfulLots::contains)
-                        .map(lot -> bid)
-                        .forEach(successfullBids::add));
+                         bid.getRelatedLots()
+                            .stream()
+                            .filter(successfulLots::contains)
+                            .map(lot -> bid)
+                            .forEach(successfullBids::add));
         return successfullBids;
     }
 
@@ -158,31 +179,35 @@ public class BidServiceImpl implements BidService {
         /*set status WITHDRAWN for bids in INVITED status*/
         final List<Bid> updatedBids = new ArrayList<>();
         bids.stream()
-                .filter(bid -> bid.getStatus().equals(INVITED))
-                .forEach(bid -> {
-                    bid.setDate(dateUtil.localNowUTC());
-                    bid.setStatus(WITHDRAWN);
-                    updatedBids.add(bid);
-                });
+            .filter(bid -> bid.getStatus()
+                              .equals(INVITED))
+            .forEach(bid -> {
+                bid.setDate(dateUtil.localNowUTC());
+                bid.setStatus(WITHDRAWN);
+                updatedBids.add(bid);
+            });
         /*set status WITHDRAWN for bids with unsuccessful lots*/
         final List<String> lotsStr = collectLots(unsuccessfulLots.getLots());
         bids.stream()
-                .filter(bid -> containsAny(bid.getRelatedLots(), lotsStr))
-                .forEach(bid -> {
-                    bid.setDate(dateUtil.localNowUTC());
-                    bid.setStatus(WITHDRAWN);
-                    updatedBids.add(bid);
-                });
+            .filter(bid -> containsAny(bid.getRelatedLots(), lotsStr))
+            .forEach(bid -> {
+                bid.setDate(dateUtil.localNowUTC());
+                bid.setStatus(WITHDRAWN);
+                updatedBids.add(bid);
+            });
         /*get entities for update*/
         final List<BidEntity> updatedBidEntities = new ArrayList<>();
         updatedBids.forEach(bid ->
-                bidEntities.stream()
-                        .filter(entity -> entity.getBidId().toString().equals(bid.getId()))
-                        .forEach(entity -> {
-                            entity.setStatus(bid.getStatus().value());
-                            entity.setJsonData(jsonUtil.toJson(bid));
-                            updatedBidEntities.add(entity);
-                        })
+                                bidEntities.stream()
+                                           .filter(entity -> entity.getBidId()
+                                                                   .toString()
+                                                                   .equals(bid.getId()))
+                                           .forEach(entity -> {
+                                               entity.setStatus(bid.getStatus()
+                                                                   .value());
+                                               entity.setJsonData(jsonUtil.toJson(bid));
+                                               updatedBidEntities.add(entity);
+                                           })
         );
         /*save updated entities*/
         bidRepository.saveAll(updatedBidEntities);
@@ -194,7 +219,7 @@ public class BidServiceImpl implements BidService {
         final Period tenderPeriod = new Period(period.getStartDate(), period.getEndDate());
 
         return new ResponseDto<>(true, null,
-                new BidsUpdateStatusResponse(tenderPeriod, tenderers, bids));
+                                 new BidsUpdateStatusResponse(tenderPeriod, tenderers, bids));
     }
 
     @Override
@@ -203,19 +228,19 @@ public class BidServiceImpl implements BidService {
                                            final String bidId,
                                            final AwardStatusDetails awardStatusDetails) {
         final BidEntity bidEntity = Optional.ofNullable(
-                bidRepository.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId)))
-                .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
+            bidRepository.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId)))
+                                            .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
         final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
-        switch (awardStatusDetails){
-            case EMPTY:{
+        switch (awardStatusDetails) {
+            case EMPTY: {
                 bid.setStatusDetails(Bid.StatusDetails.EMPTY);
                 break;
             }
-            case ACTIVE:{
+            case ACTIVE: {
                 bid.setStatusDetails(Bid.StatusDetails.VALID);
                 break;
             }
-            case UNSUCCESSFUL:{
+            case UNSUCCESSFUL: {
                 bid.setStatusDetails(Bid.StatusDetails.DISQUALIFIED);
                 break;
             }
@@ -237,18 +262,23 @@ public class BidServiceImpl implements BidService {
         final List<Bid> bids = getBidsFromEntities(bidEntities);
         //set status from statusDetails
         for (Bid bid : bids) {
-            if (bid.getStatus().equals(Bid.Status.PENDING)) {
+            if (bid.getStatus()
+                   .equals(Bid.Status.PENDING)) {
                 bid.setDate(dateUtil.localNowUTC());
-                bid.setStatus(Bid.Status.fromValue(bid.getStatusDetails().value()));
+                bid.setStatus(Bid.Status.fromValue(bid.getStatusDetails()
+                                                      .value()));
                 bid.setStatusDetails(Bid.StatusDetails.EMPTY);
             }
         }
         return new ResponseDto<>(true, null,
-                new BidsUpdateStatusResponse(null, null, bids));
+                                 new BidsUpdateStatusResponse(null, null, bids));
     }
 
     private void processTenderers(final Bid bidDto) {
-        bidDto.getTenderers().forEach(t -> t.setId(t.getIdentifier().getScheme() + "-" + t.getIdentifier().getId()));
+        bidDto.getTenderers()
+              .forEach(t -> t.setId(t.getIdentifier()
+                                     .getScheme() + "-" + t.getIdentifier()
+                                                           .getId()));
     }
 
     private void checkTenderers(final List<BidEntity> bidEntities, final Bid bidDto) {
@@ -259,24 +289,25 @@ public class BidServiceImpl implements BidService {
 
     private List<Bid> getBidsFromEntities(final List<BidEntity> bidEntities) {
         return bidEntities.stream()
-                .map(b -> jsonUtil.toObject(Bid.class, b.getJsonData()))
-                .collect(toList());
+                          .map(b -> jsonUtil.toObject(Bid.class, b.getJsonData()))
+                          .collect(toList());
     }
 
     private boolean isExistTenderers(final List<Bid> bids, final Bid bidDto) {
         final List<String> bidRequestRelatedLots = bidDto.getRelatedLots();
         final BiPredicate<List<OrganizationReference>, List<OrganizationReference>> isTenderersSame =
-                isTenderersSameBiPredicate();
+            isTenderersSameBiPredicate();
         final List<OrganizationReference> bidRequestTenderers = bidDto.getTenderers();
         return bids.stream()
-                .filter(b -> b.getRelatedLots().containsAll(bidRequestRelatedLots))
-                .anyMatch(b -> isTenderersSame.test(b.getTenderers(), bidRequestTenderers));
+                   .filter(b -> b.getRelatedLots()
+                                 .containsAll(bidRequestRelatedLots))
+                   .anyMatch(b -> isTenderersSame.test(b.getTenderers(), bidRequestTenderers));
     }
 
     private BiPredicate<List<OrganizationReference>, List<OrganizationReference>> isTenderersSameBiPredicate() {
         return (tenderersFromDb, tenderersFromRequest) -> {
             if (tenderersFromDb.size() == tenderersFromRequest.size() &&
-                    tenderersFromDb.containsAll(tenderersFromRequest)) {
+                tenderersFromDb.containsAll(tenderersFromRequest)) {
                 return true;
             }
             return false;
@@ -288,7 +319,8 @@ public class BidServiceImpl implements BidService {
         bidEntity.setCpId(cpId);
         bidEntity.setStage(stage);
         bidEntity.setOwner(owner);
-        bidEntity.setStatus(bidDto.getStatus().value());
+        bidEntity.setStatus(bidDto.getStatus()
+                                  .value());
         bidEntity.setBidId(UUID.fromString(bidDto.getId()));
         bidEntity.setToken(UUIDs.random());
         bidEntity.setCreatedDate(bidDto.getDate());
@@ -303,10 +335,12 @@ public class BidServiceImpl implements BidService {
                                  final Bid bidDto) {
         if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException("Invalid bid id.");
         final BidEntity entity = Optional
-                .ofNullable(bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage,
-                        UUID.fromString(bidDto.getId()), UUID.fromString(token)))
-                .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
-        if (!entity.getOwner().equals(owner)) throw new ErrorException("Invalid owner.");
+            .ofNullable(bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage,
+                                                                         UUID.fromString(bidDto.getId()), UUID
+                                                                             .fromString(token)))
+            .orElseThrow(() -> new ErrorException(BID_NOT_FOUND));
+        if (!entity.getOwner()
+                   .equals(owner)) throw new ErrorException("Invalid owner.");
         bidDto.setDate(dateUtil.localNowUTC());
         entity.setJsonData(jsonUtil.toJson(bidDto));
         bidRepository.save(entity);
@@ -321,10 +355,12 @@ public class BidServiceImpl implements BidService {
                                               final Map<BidEntity, Bid> entityBidMap,
                                               final String stage) {
         final List<String> lots = collectLots(lotsDto.getLots());
-        return entityBidMap.entrySet().stream()
-                .filter(e -> containsAny(e.getValue().getRelatedLots(), lots))
-                .map(e -> copyBidEntity(e, stage))
-                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
+        return entityBidMap.entrySet()
+                           .stream()
+                           .filter(e -> containsAny(e.getValue()
+                                                     .getRelatedLots(), lots))
+                           .map(e -> copyBidEntity(e, stage))
+                           .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private Map.Entry<BidEntity, Bid> copyBidEntity(final Map.Entry<BidEntity, Bid> entrySet, final String stage) {
@@ -340,7 +376,7 @@ public class BidServiceImpl implements BidService {
         newBidEntity.setCreatedDate(dateTimeNow);
         final Bid oldBid = entrySet.getValue();
         final Bid newBid = new Bid(oldBid.getId(), dateTimeNow, newStatus, null, oldBid.getTenderers(), null, null,
-                oldBid.getRelatedLots());
+                                   oldBid.getRelatedLots());
         newBidEntity.setJsonData(jsonUtil.toJson(newBid));
         newBidEntity.setOwner(oldBidEntity.getOwner());
         return new AbstractMap.SimpleEntry<>(newBidEntity, newBid);
@@ -348,22 +384,24 @@ public class BidServiceImpl implements BidService {
 
     private List<BidEntity> pendingFilter(final List<BidEntity> bids) {
         return bids.stream()
-                .filter(b -> b.getStatus().equals(PENDING.value()))
-                .collect(toList());
+                   .filter(b -> b.getStatus()
+                                 .equals(PENDING.value()))
+                   .collect(toList());
     }
 
     private List<String> collectLots(final List<LotDto> lots) {
         return lots.stream()
-                .map(LotDto::getId)
-                .collect(toList());
+                   .map(LotDto::getId)
+                   .collect(toList());
     }
 
     private Map<BidEntity, Bid> filterByStatus(final List<BidEntity> bidEntities, final String status) {
         return bidEntities.stream()
-                .filter(b -> b.getStatus().equals(status))
-                .collect(HashMap<BidEntity, Bid>::new,
-                        (k, v) -> k.put(v, jsonUtil.toObject(Bid.class, v.getJsonData())),
-                        HashMap::putAll);
+                          .filter(b -> b.getStatus()
+                                        .equals(status))
+                          .collect(HashMap<BidEntity, Bid>::new,
+                                   (k, v) -> k.put(v, jsonUtil.toObject(Bid.class, v.getJsonData())),
+                                   HashMap::putAll);
     }
 
     private <T> boolean containsAny(final Collection<T> src, final Collection<T> dest) {
@@ -376,4 +414,23 @@ public class BidServiceImpl implements BidService {
         return false;
     }
 
+    private Map<BidEntity, Bid> filterNewStage(List<BidEntity> bidEntities, LotsDto lots) {
+        Map<BidEntity, Bid> validBids = new HashMap<>();
+
+        for (BidEntity bidEntity : bidEntities) {
+            Bid bid = jsonUtil.toObject(Bid.class, bidEntity
+                .getJsonData());
+            if (bid.getStatus() == Bid.Status.VALID && bid.getStatusDetails() == Bid.StatusDetails.EMPTY) {
+                for (int i = 0; i < bid.getRelatedLots()
+                                       .size(); i++) {
+                    if (lots.getLots()
+                            .contains(bid.getRelatedLots()
+                                         .get(i))) {
+                        validBids.put(bidEntity, bid);
+                    }
+                }
+            }
+        }
+        return validBids;
+    }
 }
