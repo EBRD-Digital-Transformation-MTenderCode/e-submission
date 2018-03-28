@@ -80,16 +80,16 @@ public class BidServiceImpl implements BidService {
 
     @Override
     public ResponseDto copyBids(final String cpId,
-                                final String stage,
+                                final String newStage,
                                 final String previousStage,
                                 final LocalDateTime startDate,
                                 final LocalDateTime endDate,
-                                final LotsDto lots) {
+                                final LotsDto lotsDto) {
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, previousStage);
         if (bidEntities.isEmpty()) throw new ErrorException(ErrorType.BID_NOT_FOUND);
-        periodService.savePeriod(cpId, stage, startDate, endDate);
-        final Map<BidEntity, Bid> validBids = filterForNewStage(bidEntities, lots);
-        final Map<BidEntity, Bid> newBids = createBidCopy(lots, validBids, stage);
+        periodService.savePeriod(cpId, newStage, startDate, endDate);
+        final Map<BidEntity, Bid> validBids = filterForNewStage(bidEntities, lotsDto);
+        final Map<BidEntity, Bid> newBids = createBidCopy(lotsDto, validBids, newStage);
         bidRepository.saveAll(newBids.keySet());
         final List<Bid> bids = new ArrayList<>(newBids.values());
         return new ResponseDto<>(true, null, new BidsCopyResponse(bids));

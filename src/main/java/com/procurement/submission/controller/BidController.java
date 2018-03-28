@@ -12,13 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @RestController
@@ -50,15 +44,15 @@ public class BidController {
 
     @PostMapping(value = "/copyBids")
     public ResponseEntity<ResponseDto> copyBids(@RequestParam(value = "cpid") final String cpId,
-                                                @RequestParam(value = "stage") final String stage,
-                                                @RequestParam(value = "previosstage") final String previousStage,
+                                                @RequestParam(value = "stage") final String newStage,
+                                                @RequestParam(value = "previousStage") final String previousStage,
                                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                                @RequestParam(value = "startdate") final LocalDateTime startDate,
+                                                @RequestParam(value = "startDate") final LocalDateTime startDate,
                                                 @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                                                @RequestParam(value = "enddate") final LocalDateTime endDate,
-                                                @Valid @RequestBody final LotsDto lots) {
-        return new ResponseEntity<>(bidService.copyBids(cpId, stage, previousStage, startDate, endDate, lots),
-                                    HttpStatus.OK);
+                                                @RequestParam(value = "endDate") final LocalDateTime endDate,
+                                                @Valid @RequestBody final LotsDto lotsDto) {
+        return new ResponseEntity<>(bidService.copyBids(cpId, newStage, previousStage, startDate, endDate, lotsDto),
+                HttpStatus.OK);
     }
 
     @GetMapping(value = "/bids")
@@ -76,7 +70,7 @@ public class BidController {
                                                     @RequestParam final String pmd,
                                                     @RequestBody final UnsuccessfulLotsDto unsuccessfulLots) {
         return new ResponseEntity<>(bidService.updateBidsByLots(cpId, stage, country, pmd, unsuccessfulLots),
-                                    HttpStatus.OK);
+                HttpStatus.OK);
     }
 
     @PostMapping(value = "/updateStatusDetails")
@@ -85,8 +79,8 @@ public class BidController {
                                                            @RequestParam final String bidId,
                                                            @RequestParam final String awardStatusDetails) {
         return new ResponseEntity<>(bidService.updateStatusDetails(cpId, stage, bidId, AwardStatusDetails.fromValue
-            (awardStatusDetails)),
-                                    HttpStatus.OK);
+                (awardStatusDetails)),
+                HttpStatus.OK);
     }
 
     @PostMapping(value = "/setFinalStatuses")

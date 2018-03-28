@@ -21,11 +21,11 @@ public interface BidService {
                           Bid bidDto);
 
     ResponseDto copyBids(String cpId,
-                         String stage,
+                         String newStage,
                          String previousStage,
                          LocalDateTime startDate,
                          LocalDateTime endDate,
-                         LotsDto lots);
+                         LotsDto lotsDto);
 
     ResponseDto getPendingBids(String cpId,
                         String stage,
