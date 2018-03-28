@@ -273,19 +273,6 @@ public class BidServiceImpl implements BidService {
                 (tenderersFromDb.size() == tenderersFromRequest.size() && tenderersFromDb.containsAll(tenderersFromRequest));
     }
 
-    private BidEntity getNewBidEntity(final String cpId, final String stage, final String owner, final Bid bidDto) {
-        final BidEntity bidEntity = new BidEntity();
-        bidEntity.setCpId(cpId);
-        bidEntity.setStage(stage);
-        bidEntity.setOwner(owner);
-        bidEntity.setStatus(bidDto.getStatus().value());
-        bidEntity.setBidId(UUID.fromString(bidDto.getId()));
-        bidEntity.setToken(UUIDs.random());
-        bidEntity.setCreatedDate(bidDto.getDate());
-        bidEntity.setJsonData(jsonUtil.toJson(bidDto));
-        return bidEntity;
-    }
-
     private void updateBidEntity(final String cpId,
                                  final String stage,
                                  final String token,
@@ -364,5 +351,18 @@ public class BidServiceImpl implements BidService {
             }
         }
         return false;
+    }
+
+    private BidEntity getNewBidEntity(final String cpId, final String stage, final String owner, final Bid bidDto) {
+        final BidEntity bidEntity = new BidEntity();
+        bidEntity.setCpId(cpId);
+        bidEntity.setStage(stage);
+        bidEntity.setOwner(owner);
+        bidEntity.setStatus(bidDto.getStatus().value());
+        bidEntity.setBidId(UUID.fromString(bidDto.getId()));
+        bidEntity.setToken(UUIDs.random());
+        bidEntity.setCreatedDate(bidDto.getDate());
+        bidEntity.setJsonData(jsonUtil.toJson(bidDto));
+        return bidEntity;
     }
 }
