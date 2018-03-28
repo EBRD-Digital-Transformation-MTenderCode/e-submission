@@ -103,7 +103,6 @@ public class BidServiceImpl implements BidService {
         if (bidEntities.isEmpty()) {
             throw new ErrorException(BID_NOT_FOUND);
         }
-
         periodService.savePeriod(cpId, stage, startDate, endDate);
 
         final Map<BidEntity, Bid> validBids = filterNewStage(bidEntities, lots);
@@ -418,14 +417,10 @@ public class BidServiceImpl implements BidService {
         Map<BidEntity, Bid> validBids = new HashMap<>();
 
         for (BidEntity bidEntity : bidEntities) {
-            Bid bid = jsonUtil.toObject(Bid.class, bidEntity
-                .getJsonData());
+            Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
             if (bid.getStatus() == Bid.Status.VALID && bid.getStatusDetails() == Bid.StatusDetails.EMPTY) {
-                for (int i = 0; i < bid.getRelatedLots()
-                                       .size(); i++) {
-                    if (lots.getLots()
-                            .contains(bid.getRelatedLots()
-                                         .get(i))) {
+                for (int i = 0; i < bid.getRelatedLots().size(); i++) {
+                    if (lots.getLots().contains(bid.getRelatedLots().get(i))) {
                         validBids.put(bidEntity, bid);
                     }
                 }
