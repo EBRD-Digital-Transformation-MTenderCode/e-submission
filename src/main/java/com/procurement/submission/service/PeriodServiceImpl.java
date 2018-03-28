@@ -41,10 +41,7 @@ public class PeriodServiceImpl implements PeriodService {
         period.setStartDate(dateUtil.localToDate(startDate));
         period.setEndDate(dateUtil.localToDate(endDate));
         periodRepository.save(period);
-        return new ResponseDto<>(true, null,
-                new Period(
-                        period.getStartDate(),
-                        period.getEndDate()));
+        return new ResponseDto<>(true, null, new Period(period.getStartDate(), period.getEndDate()));
     }
 
     @Override
@@ -60,10 +57,7 @@ public class PeriodServiceImpl implements PeriodService {
         final int interval = rulesService.getInterval(country, pmd);
         period.setEndDate(dateUtil.localToDate(startDate.plusDays(interval)));
         periodRepository.save(period);
-        return new ResponseDto<>(true, null,
-                new Period(
-                        period.getStartDate(),
-                        period.getEndDate()));
+        return new ResponseDto<>(true, null, new Period(period.getStartDate(), period.getEndDate()));
     }
 
     @Override
@@ -83,11 +77,8 @@ public class PeriodServiceImpl implements PeriodService {
     @Override
     public PeriodEntity getPeriod(final String cpId, final String stage) {
         final Optional<PeriodEntity> entityOptional = periodRepository.getByCpIdAndStage(cpId, stage);
-        if (entityOptional.isPresent()) {
-            return entityOptional.get();
-        } else {
-            throw new ErrorException(ErrorType.PERIOD_NOT_FOUND);
-        }
+        if (!entityOptional.isPresent()) throw new ErrorException(ErrorType.PERIOD_NOT_FOUND);
+        return entityOptional.get();
     }
 
     @Override
@@ -100,8 +91,7 @@ public class PeriodServiceImpl implements PeriodService {
         return new ResponseDto<>(true, null,
                 new CheckPeriodResponseDto(
                         checkInterval(country, pmd, startDate, endDate),
-                        isPeriodChange(cpId, stage, startDate, endDate)
-                ));
+                        isPeriodChange(cpId, stage, startDate, endDate)));
     }
 
     @Override
@@ -109,11 +99,9 @@ public class PeriodServiceImpl implements PeriodService {
                                         final String pmd,
                                         final LocalDateTime startDate,
                                         final LocalDateTime endDate) {
-        if (checkInterval(country, pmd, startDate, endDate)) {
-            return new ResponseDto<>(true, null, "Period is valid.");
-        } else {
+        if (checkInterval(country, pmd, startDate, endDate))
             throw new ErrorException(ErrorType.INVALID_PERIOD);
-        }
+        return new ResponseDto<>(true, null, "Period is valid.");
     }
 
     public boolean isPeriodValid(final String cpId, final String stage) {
@@ -131,8 +119,7 @@ public class PeriodServiceImpl implements PeriodService {
                                   final LocalDateTime startDate,
                                   final LocalDateTime endDate) {
         final PeriodEntity period = getPeriod(cpId, stage);
-        if ((period.getStartDate() != startDate) || (period.getEndDate() != endDate)) return false;
-        return true;
+        return (period.getStartDate() == startDate) && (period.getEndDate() == endDate);
     }
 
     private Boolean checkInterval(final String country,
