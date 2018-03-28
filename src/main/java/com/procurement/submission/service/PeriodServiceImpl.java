@@ -1,7 +1,7 @@
 package com.procurement.submission.service;
 
 import com.procurement.submission.exception.ErrorException;
-import com.procurement.submission.model.dto.bpe.ResponseDetailsDto;
+import com.procurement.submission.exception.ErrorType;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto;
 import com.procurement.submission.model.dto.response.Period;
@@ -9,9 +9,6 @@ import com.procurement.submission.model.entity.PeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.utils.DateUtil;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 
@@ -31,36 +28,6 @@ public class PeriodServiceImpl implements PeriodService {
         this.periodRepository = periodRepository;
         this.rulesService = rulesService;
         this.dateUtil = dateUtil;
-    }
-
-    public boolean isPeriodValid(final String cpId, final String stage) {
-        final LocalDateTime localDateTime = dateUtil.localNowUTC();
-        final PeriodEntity periodEntity = getPeriod(cpId, stage);
-        final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate());
-        final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate());
-        return localDateTimeAfter && localDateTimeBefore;
-    }
-
-    public boolean isPeriodChange(final String cpId,
-                                  final String stage,
-                                  final LocalDateTime startDate,
-                                  final LocalDateTime endDate) {
-        final PeriodEntity period = getPeriod(cpId, stage);
-        if ((period.getStartDate() != startDate) || (period.getEndDate() != endDate)) return false;
-        return true;
-    }
-
-    private Boolean checkInterval(final String country,
-                                  final String pmd,
-                                  final LocalDateTime startDate,
-                                  final LocalDateTime endDate) {
-        final int interval = rulesService.getInterval(country, pmd);
-        if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)) {
-            final long minutes = MINUTES.between(startDate, endDate);
-            return minutes >= interval;
-        }
-        final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
-        return days >= interval;
     }
 
     @Override
@@ -102,14 +69,14 @@ public class PeriodServiceImpl implements PeriodService {
     @Override
     public void checkCurrentDateInPeriod(final String cpId, final String stage) {
         if (!isPeriodValid(cpId, stage)) {
-            throw new ErrorException("Date does not match the period.");
+            throw new ErrorException(ErrorType.INVALID_DATE);
         }
     }
 
     @Override
     public void checkIsPeriodExpired(final String cpId, final String stage) {
-        if (isPeriodValid(cpId, stage)) {
-            throw new ErrorException("Period has not yet expired.");
+        if (!isPeriodValid(cpId, stage)) {
+            throw new ErrorException(ErrorType.PERIOD_NOT_EXPIRED);
         }
     }
 
@@ -119,7 +86,7 @@ public class PeriodServiceImpl implements PeriodService {
         if (entityOptional.isPresent()) {
             return entityOptional.get();
         } else {
-            throw new ErrorException("Period not found");
+            throw new ErrorException(ErrorType.PERIOD_NOT_FOUND);
         }
     }
 
@@ -142,15 +109,42 @@ public class PeriodServiceImpl implements PeriodService {
                                         final String pmd,
                                         final LocalDateTime startDate,
                                         final LocalDateTime endDate) {
-        final Boolean isPeriodValid = checkInterval(country, pmd, startDate, endDate);
-        if (!isPeriodValid) {
-            return new ResponseDto<>(false,
-                    Collections.singletonList(new ResponseDetailsDto("period", "Invalid period.")),
-                    null);
-        }else{
-            return new ResponseDto<>(true, null,"Period is valid.");
+        if (checkInterval(country, pmd, startDate, endDate)) {
+            return new ResponseDto<>(true, null, "Period is valid.");
+        } else {
+            throw new ErrorException(ErrorType.INVALID_PERIOD);
         }
-
     }
 
+    public boolean isPeriodValid(final String cpId, final String stage) {
+        final LocalDateTime localDateTime = dateUtil.localNowUTC();
+        final PeriodEntity periodEntity = getPeriod(cpId, stage);
+        final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate())
+                && localDateTime.isEqual(periodEntity.getStartDate());
+        final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate())
+                && localDateTime.isEqual(periodEntity.getEndDate());
+        return localDateTimeAfter && localDateTimeBefore;
+    }
+
+    public boolean isPeriodChange(final String cpId,
+                                  final String stage,
+                                  final LocalDateTime startDate,
+                                  final LocalDateTime endDate) {
+        final PeriodEntity period = getPeriod(cpId, stage);
+        if ((period.getStartDate() != startDate) || (period.getEndDate() != endDate)) return false;
+        return true;
+    }
+
+    private Boolean checkInterval(final String country,
+                                  final String pmd,
+                                  final LocalDateTime startDate,
+                                  final LocalDateTime endDate) {
+        final int interval = rulesService.getInterval(country, pmd);
+        if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)) {
+            final long minutes = MINUTES.between(startDate, endDate);
+            return minutes >= interval;
+        }
+        final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
+        return days >= interval;
+    }
 }

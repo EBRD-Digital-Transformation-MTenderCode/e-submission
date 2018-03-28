@@ -1,11 +1,6 @@
 package com.procurement.submission.config;
 
-import com.procurement.submission.controller.BidController;
-import com.procurement.submission.controller.ControllerExceptionHandler;
-import com.procurement.submission.service.BidService;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import static org.mockito.Mockito.mock;

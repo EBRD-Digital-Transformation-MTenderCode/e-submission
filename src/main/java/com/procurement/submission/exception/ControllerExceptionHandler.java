@@ -1,22 +1,15 @@
-package com.procurement.submission.controller;
+package com.procurement.submission.exception;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.procurement.submission.exception.ErrorException;
-import com.procurement.submission.exception.ValidationException;
 import com.procurement.submission.model.dto.bpe.ResponseDetailsDto;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
-import com.procurement.submission.model.dto.response.errors.ErrorInsertResponse;
-import com.procurement.submission.model.dto.response.errors.MappingErrorResponse;
-import com.procurement.submission.model.dto.response.errors.ValidationErrorResponse;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.ServletException;
 import javax.validation.ConstraintViolationException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -25,18 +18,12 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import static java.util.stream.Collectors.toList;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.OK;
 
 @ControllerAdvice
 public class ControllerExceptionHandler {
 
-    @ResponseBody
-    @ResponseStatus(OK)
-    @ExceptionHandler(ValidationException.class)
-    public ResponseDto handleValidationContractProcessPeriod(final ValidationException e) {
-        return new ResponseDto<>(false, getErrors(e.getErrors()), null);
-    }
+    private static final String ERROR_PREFIX = "400.04.";
 
     @ResponseBody
     @ResponseStatus(OK)
@@ -75,23 +62,26 @@ public class ControllerExceptionHandler {
 
     @ResponseBody
     @ResponseStatus(OK)
-    @ExceptionHandler(ErrorException.class)
-    public ResponseDto handleErrorInsertException(final ErrorException e) {
-        return new ResponseDto<>(false, getErrors(e.getClass().getName(), e.getMessage()), null);
-    }
-
-    @ResponseBody
-    @ResponseStatus(OK)
     @ExceptionHandler(ServletException.class)
     public ResponseDto handleErrorInsertException(final ServletException e) {
         return new ResponseDto<>(false, getErrors(e.getClass().getName(), e.getMessage()), null);
     }
 
+    @ResponseBody
+    @ResponseStatus(OK)
+    @ExceptionHandler(ErrorException.class)
+    public ResponseDto handleErrorInsertException(final ErrorException e) {
+        return new ResponseDto<>(false, getErrors(e.getCode(), e.getMessage()), null);
+    }
+
+    private List<ResponseDetailsDto> getErrors(final String code, final String error) {
+        return Collections.singletonList(new ResponseDetailsDto(ERROR_PREFIX + code, error));
+    }
     private List<ResponseDetailsDto> getErrors(final BindingResult result) {
         return result.getFieldErrors()
                 .stream()
                 .map(f -> new ResponseDetailsDto(
-                        f.getField(),
+                        ERROR_PREFIX + f.getField(),
                         f.getCode() + " : " + f.getDefaultMessage()))
                 .collect(Collectors.toList());
     }
@@ -100,12 +90,8 @@ public class ControllerExceptionHandler {
         return e.getConstraintViolations()
                 .stream()
                 .map(f -> new ResponseDetailsDto(
-                        f.getPropertyPath().toString(),
+                        ERROR_PREFIX + f.getPropertyPath().toString(),
                         f.getMessage() + " " + f.getMessageTemplate()))
                 .collect(toList());
-    }
-
-    private List<ResponseDetailsDto> getErrors(final String code, final String error) {
-        return Arrays.asList(new ResponseDetailsDto(code, error));
     }
 }
