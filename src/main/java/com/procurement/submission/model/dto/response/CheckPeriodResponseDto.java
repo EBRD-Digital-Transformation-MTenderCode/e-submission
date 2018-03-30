@@ -8,16 +8,10 @@ import lombok.Getter;
 
 @Getter
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonPropertyOrder({
-        "isPeriodValid",
-        "isPeriodChanged"
-})
 public class CheckPeriodResponseDto {
 
-    @JsonProperty("isPeriodValid")
     private final Boolean isPeriodValid;
 
-    @JsonProperty("isPeriodChanged")
     private final Boolean isPeriodChanged;
 
     @JsonCreator

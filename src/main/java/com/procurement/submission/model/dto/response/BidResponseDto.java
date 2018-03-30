@@ -14,21 +14,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@JsonPropertyOrder({
-        "token",
-        "bidId",
-        "bid"
-})
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class BidResponseDto {
 
-    @JsonProperty("token")
     private String token;
 
-    @JsonProperty("bidId")
     private String bidId;
 
-    @JsonProperty("bid")
     private Bid bid;
 
     @JsonCreator

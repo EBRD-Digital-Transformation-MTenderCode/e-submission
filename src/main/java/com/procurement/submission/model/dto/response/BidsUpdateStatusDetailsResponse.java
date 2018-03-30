@@ -12,7 +12,6 @@ import lombok.Getter;
 @Getter
 public class BidsUpdateStatusDetailsResponse {
 
-    @JsonProperty("bid")
     private BidUpdate bid;
 
     @JsonCreator

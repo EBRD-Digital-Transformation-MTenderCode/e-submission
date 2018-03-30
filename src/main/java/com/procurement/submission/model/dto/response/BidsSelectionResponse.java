@@ -16,7 +16,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class BidsSelectionResponse {
 
-    @JsonProperty("bids")
     private List<Bid> bids;
 
     @JsonCreator

@@ -4,17 +4,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.procurement.submission.databinding.LocalDateTimeDeserializer;
 import com.procurement.submission.databinding.LocalDateTimeSerializer;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -24,14 +21,14 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "id",
-    "date",
-    "status",
-    "statusDetails",
-    "tenderers",
-    "value",
-    "documents",
-    "relatedLots"
+        "id",
+        "date",
+        "status",
+        "statusDetails",
+        "tenderers",
+        "value",
+        "documents",
+        "relatedLots"
 })
 public class Bid {
     @JsonProperty("id")
@@ -48,6 +45,7 @@ public class Bid {
     private StatusDetails statusDetails;
 
     @Valid
+    @NotEmpty
     @JsonProperty("tenderers")
     private List<OrganizationReference> tenderers;
 
@@ -84,13 +82,13 @@ public class Bid {
     @Override
     public int hashCode() {
         return new HashCodeBuilder().append(id)
-                                    .append(date)
-                                    .append(status)
-                                    .append(tenderers)
-                                    .append(value)
-                                    .append(documents)
-                                    .append(relatedLots)
-                                    .toHashCode();
+                .append(date)
+                .append(status)
+                .append(tenderers)
+                .append(value)
+                .append(documents)
+                .append(relatedLots)
+                .toHashCode();
     }
 
     @Override
@@ -103,92 +101,12 @@ public class Bid {
         }
         final Bid bqd = (Bid) obj;
         return new EqualsBuilder().append(id, bqd.id)
-                                  .append(date, bqd.date)
-                                  .append(status, bqd.status)
-                                  .append(tenderers, bqd.tenderers)
-                                  .append(value, bqd.value)
-                                  .append(documents, bqd.documents)
-                                  .append(relatedLots, bqd.relatedLots)
-                                  .isEquals();
-    }
-
-    public enum Status {
-        INVITED("invited"),
-        PENDING("pending"),
-        VALID("valid"),
-        DISQUALIFIED("disqualified"),
-        WITHDRAWN("withdrawn");
-
-        private static final Map<String, Status> CONSTANTS = new HashMap<String, Status>();
-        private final String value;
-
-        static {
-            for (final Status c : values()) {
-                CONSTANTS.put(c.value, c);
-            }
-        }
-
-        Status(final String value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return this.value;
-        }
-
-        @JsonValue
-        public String value() {
-            return this.value;
-        }
-
-        @JsonCreator
-        public static Status fromValue(final String value) {
-            final Status constant = CONSTANTS.get(value);
-            if (constant == null) {
-                throw new IllegalArgumentException(
-                        "Unknown enum type " + value + ", Allowed values are " + Arrays.toString(values()));
-            }
-            return constant;
-        }
-    }
-
-    public enum StatusDetails {
-        DISQUALIFIED("disqualified"),
-        VALID("valid"),
-        EMPTY("empty");
-
-        private static final Map<String, StatusDetails> CONSTANTS = new HashMap<String, StatusDetails>();
-        private final String value;
-
-        static {
-            for (final StatusDetails c : values()) {
-                CONSTANTS.put(c.value, c);
-            }
-        }
-
-        StatusDetails(final String value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return this.value;
-        }
-
-        @JsonValue
-        public String value() {
-            return this.value;
-        }
-
-        @JsonCreator
-        public static StatusDetails fromValue(final String value) {
-            final StatusDetails constant = CONSTANTS.get(value);
-            if (constant == null) {
-                throw new IllegalArgumentException(
-                        "Unknown enum type " + value + ", Allowed values are " + Arrays.toString(values()));
-            }
-            return constant;
-        }
+                .append(date, bqd.date)
+                .append(status, bqd.status)
+                .append(tenderers, bqd.tenderers)
+                .append(value, bqd.value)
+                .append(documents, bqd.documents)
+                .append(relatedLots, bqd.relatedLots)
+                .isEquals();
     }
 }

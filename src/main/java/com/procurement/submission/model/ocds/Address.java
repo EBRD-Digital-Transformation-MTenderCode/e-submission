@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import lombok.Getter;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -21,27 +22,24 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "countryName"
 })
 public class Address {
+
+    @NotNull
     @JsonProperty("streetAddress")
-    @JsonPropertyDescription("The street address. For example, 1600 Amphitheatre Pkwy.")
     private final String streetAddress;
 
+    @NotNull
     @JsonProperty("locality")
-    @JsonPropertyDescription("The locality. For example, Mountain View.")
     private final String locality;
 
+    @NotNull
     @JsonProperty("region")
-    @JsonPropertyDescription("The region. For example, CA.")
     private final String region;
 
     @JsonProperty("postalCode")
-    @JsonPropertyDescription("The postal code. For example, 94043.")
     private final String postalCode;
 
+    @NotNull
     @JsonProperty("countryName")
-    @JsonPropertyDescription("The country name. For example, United States.")
-    @Pattern(regexp = "^(countryName_(((([A-Za-z]{2,3}(-([A-Za-z]{3}(-[A-Za-z]{3}){0,2}))?)|[A-Za-z]{4}|[A-Za-z]{5," +
-        "8})(-([A-Za-z]{4}))?(-([A-Za-z]{2}|[0-9]{3}))?(-([A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*(-([0-9A-WY-Za-wy-z]" +
-        "(-[A-Za-z0-9]{2,8})+))*(-(x(-[A-Za-z0-9]{1,8})+))?)|(x(-[A-Za-z0-9]{1,8})+)))$")
     private final String countryName;
 
     @JsonCreator

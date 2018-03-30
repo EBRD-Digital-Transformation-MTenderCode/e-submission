@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.validation.Valid;
@@ -28,38 +29,32 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
     "contactPoint"
 })
 public class OrganizationReference {
+
     @JsonProperty("id")
-    @JsonPropertyDescription("The id of the party being referenced. This must match the id of an entry in the parties" +
-        " section.")
     private String id;
 
-    @JsonProperty("name")
-    @JsonPropertyDescription("The name of the party being referenced. This must match the name of an entry in the " +
-        "parties section.")
     @Size(min = 1)
     @NotNull
+    @JsonProperty("name")
     private final String name;
 
-    @JsonProperty("identifier")
     @Valid
     @NotNull
+    @JsonProperty("identifier")
     private final Identifier identifier;
 
-    @JsonProperty("additionalIdentifiers")
-    @JsonDeserialize(as = LinkedHashSet.class)
-    @JsonPropertyDescription("(Deprecated outside the parties section) A list of additional / supplemental " +
-        "identifiers for the organization, using the [organization identifier guidance](http://standard" +
-        ".open-contracting.org/latest/en/schema/identifiers/). This could be used to provide an internally used " +
-        "identifier for this organization in addition to the primary legal entity identifier.")
     @Valid
+    @JsonProperty("additionalIdentifiers")
     private final Set<Identifier> additionalIdentifiers;
 
-    @JsonProperty("address")
     @Valid
+    @NotNull
+    @JsonProperty("address")
     private final Address address;
 
-    @JsonProperty("contactPoint")
     @Valid
+    @NotNull
+    @JsonProperty("contactPoint")
     private final ContactPoint contactPoint;
 
     @JsonCreator
@@ -68,7 +63,7 @@ public class OrganizationReference {
                                  @JsonProperty("identifier") final Identifier identifier,
                                  @JsonProperty("address") final Address address,
                                  @JsonProperty("additionalIdentifiers")
-                                     final LinkedHashSet<Identifier> additionalIdentifiers,
+                                     final HashSet<Identifier> additionalIdentifiers,
                                  @JsonProperty("contactPoint") final ContactPoint contactPoint) {
         this.id = id;
         this.name = name;
