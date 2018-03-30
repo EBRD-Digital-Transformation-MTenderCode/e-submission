@@ -4,7 +4,7 @@ import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.exception.ErrorType;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto;
-import com.procurement.submission.model.dto.response.Period;
+import com.procurement.submission.model.ocds.Period;
 import com.procurement.submission.model.entity.PeriodEntity;
 import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.utils.DateUtil;

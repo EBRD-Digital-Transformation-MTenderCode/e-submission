@@ -1,4 +1,4 @@
-package com.procurement.submission.model.dto.response;
+package com.procurement.submission.model.ocds;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;

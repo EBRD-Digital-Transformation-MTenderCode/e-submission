@@ -15,27 +15,27 @@ import lombok.Getter;
 
 @Getter
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-public class BidUpdate {
+public class BidUpdateDto {
 
     private String id;
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     private LocalDateTime date;
     private Status status;
     private StatusDetails statusDetails;
-    private List<OrganizationReferenceRs> tenderers;
+    private List<OrganizationReferenceDto> tenderers;
     private Value value;
     private List<Document> documents;
     private List<String> relatedLots;
 
     @JsonCreator
-    public BidUpdate(@JsonProperty("id") final String id,
-                     @JsonProperty("date") final LocalDateTime date,
-                     @JsonProperty("status") final Status status,
-                     @JsonProperty("statusDetails") final StatusDetails statusDetails,
-                     @JsonProperty("tenderers") final List<OrganizationReferenceRs> tenderers,
-                     @JsonProperty("value") final Value value,
-                     @JsonProperty("documents") final List<Document> documents,
-                     @JsonProperty("relatedLots") final List<String> relatedLots) {
+    public BidUpdateDto(@JsonProperty("id") final String id,
+                        @JsonProperty("date") final LocalDateTime date,
+                        @JsonProperty("status") final Status status,
+                        @JsonProperty("statusDetails") final StatusDetails statusDetails,
+                        @JsonProperty("tenderers") final List<OrganizationReferenceDto> tenderers,
+                        @JsonProperty("value") final Value value,
+                        @JsonProperty("documents") final List<Document> documents,
+                        @JsonProperty("relatedLots") final List<String> relatedLots) {
         this.id = id;
         this.date = date;
         this.status = status;

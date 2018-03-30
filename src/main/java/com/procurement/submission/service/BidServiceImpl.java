@@ -12,10 +12,7 @@ import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
 import com.procurement.submission.model.dto.response.*;
 import com.procurement.submission.model.entity.BidEntity;
 import com.procurement.submission.model.entity.PeriodEntity;
-import com.procurement.submission.model.ocds.Bid;
-import com.procurement.submission.model.ocds.OrganizationReference;
-import com.procurement.submission.model.ocds.Status;
-import com.procurement.submission.model.ocds.StatusDetails;
+import com.procurement.submission.model.ocds.*;
 import com.procurement.submission.repository.BidRepository;
 import com.procurement.submission.utils.DateUtil;
 import com.procurement.submission.utils.JsonUtil;
@@ -89,7 +86,7 @@ public class BidServiceImpl implements BidService {
         final Map<BidEntity, Bid> newBids = createBidCopy(lotsDto, validBids, newStage);
         bidRepository.saveAll(newBids.keySet());
         final List<Bid> bids = new ArrayList<>(newBids.values());
-        return new ResponseDto<>(true, null, new BidsCopyResponse(bids));
+        return new ResponseDto<>(true, null, new BidsCopyResponseDto(bids));
     }
 
     @Override
@@ -105,7 +102,7 @@ public class BidServiceImpl implements BidService {
         final Map<String, Long> uniqueLots = getUniqueLots(relatedLotsFromBids);
         final List<String> successfulLots = getSuccessfulLots(uniqueLots, minNumberOfBids);
         final List<Bid> successfulBids = getSuccessfulBids(bids, successfulLots);
-        return new ResponseDto<>(true, null, new BidsSelectionResponse(successfulBids));
+        return new ResponseDto<>(true, null, new BidsSelectionResponseDto(successfulBids));
     }
 
     @Override
@@ -158,7 +155,7 @@ public class BidServiceImpl implements BidService {
         final Period tenderPeriod = new Period(period.getStartDate(), period.getEndDate());
 
         return new ResponseDto<>(true, null,
-                new BidsUpdateStatusResponse(tenderPeriod, tenderers, bids));
+                new BidsUpdateStatusResponseDto(tenderPeriod, tenderers, bids));
     }
 
     @Override
@@ -187,7 +184,7 @@ public class BidServiceImpl implements BidService {
         bid.setDate(dateUtil.localNowUTC());
         bidEntity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(bidEntity);
-        return new ResponseDto<>(true, null, new BidsUpdateStatusDetailsResponse(getBidUpdate(bid)));
+        return new ResponseDto<>(true, null, new BidsUpdateStatusDetailsResponseDto(getBidUpdate(bid)));
     }
 
     @Override
@@ -204,7 +201,7 @@ public class BidServiceImpl implements BidService {
             }
         }
         return new ResponseDto<>(true, null,
-                new BidsUpdateStatusResponse(null, null, bids));
+                new BidsUpdateStatusResponseDto(null, null, bids));
     }
 
     private List<String> getRelatedLotsIdFromBids(final List<Bid> bids) {
@@ -349,8 +346,8 @@ public class BidServiceImpl implements BidService {
         return false;
     }
 
-    public BidUpdate getBidUpdate(final Bid bid) {
-        return new BidUpdate(bid.getId(),
+    public BidUpdateDto getBidUpdate(final Bid bid) {
+        return new BidUpdateDto(bid.getId(),
                 bid.getDate(),
                 bid.getStatus(),
                 bid.getStatusDetails(),
@@ -360,9 +357,9 @@ public class BidServiceImpl implements BidService {
                 bid.getRelatedLots());
     }
 
-    private List<OrganizationReferenceRs> createTenderers(final List<OrganizationReference> tenderers) {
+    private List<OrganizationReferenceDto> createTenderers(final List<OrganizationReference> tenderers) {
         return tenderers.stream()
-                .map(t -> new OrganizationReferenceRs(t.getId(), t.getName()))
+                .map(t -> new OrganizationReferenceDto(t.getId(), t.getName()))
                 .collect(toList());
     }
 
