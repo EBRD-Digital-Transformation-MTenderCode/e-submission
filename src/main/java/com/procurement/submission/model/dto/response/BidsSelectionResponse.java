@@ -16,8 +16,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class BidsSelectionResponse {
 
-    @Valid
-    @NotEmpty
     @JsonProperty("bids")
     private List<Bid> bids;
 

@@ -40,14 +40,14 @@ public class BidUpdate {
     private List<String> relatedLots;
 
     @JsonCreator
-    public BidUpdate(@JsonProperty("id") @NotNull final String id,
-                     @JsonProperty("date") @NotNull final LocalDateTime date,
-                     @JsonProperty("status") @NotNull final Bid.Status status,
+    public BidUpdate(@JsonProperty("id") final String id,
+                     @JsonProperty("date") final LocalDateTime date,
+                     @JsonProperty("status") final Bid.Status status,
                      @JsonProperty("statusDetails") final Bid.StatusDetails statusDetails,
-                     @JsonProperty("tenderers") @NotEmpty @Valid final List<OrganizationReferenceRs> tenderers,
-                     @JsonProperty("value") @Valid final Value value,
-                     @JsonProperty("documents") @Valid final List<Document> documents,
-                     @JsonProperty("relatedLots") @NotNull final List<String> relatedLots) {
+                     @JsonProperty("tenderers") final List<OrganizationReferenceRs> tenderers,
+                     @JsonProperty("value") final Value value,
+                     @JsonProperty("documents") final List<Document> documents,
+                     @JsonProperty("relatedLots") final List<String> relatedLots) {
         this.id = id;
         this.date = date;
         this.status = status;

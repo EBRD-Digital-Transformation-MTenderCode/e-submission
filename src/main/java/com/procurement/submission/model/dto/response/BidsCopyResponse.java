@@ -18,8 +18,6 @@ import lombok.Setter;
 @NoArgsConstructor
 public class BidsCopyResponse {
 
-    @Valid
-    @NotEmpty
     @JsonProperty("bids")
     private List<Bid> bids;
 

@@ -21,14 +21,13 @@ import lombok.Setter;
 })
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public class BidResponseDto {
-    @NotNull
+
     @JsonProperty("token")
     private String token;
-    @NotNull
+
     @JsonProperty("bidId")
     private String bidId;
-    @Valid
-    @NotNull
+
     @JsonProperty("bid")
     private Bid bid;
 

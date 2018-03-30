@@ -2,6 +2,7 @@ package com.procurement.submission.model.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.procurement.submission.exception.EnumException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,8 +30,7 @@ public enum AwardStatusDetails {
     public static AwardStatusDetails fromValue(final String value) {
         final AwardStatusDetails constant = CONSTANTS.get(value);
         if (constant == null) {
-            throw new IllegalArgumentException(
-                    "Unknown enum type " + value + ", Allowed values are " + Arrays.toString(values()));
+            throw new EnumException(AwardStatusDetails.class.getName(), value, Arrays.toString(values()));
         }
         return constant;
     }

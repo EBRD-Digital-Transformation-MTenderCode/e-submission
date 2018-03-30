@@ -8,6 +8,7 @@ import lombok.Getter;
 
 @Getter
 public class LotsDto {
+
     @JsonProperty("lots")
     private List<LotDto> lots;
 

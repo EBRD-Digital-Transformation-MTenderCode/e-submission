@@ -11,8 +11,7 @@ import org.springframework.context.annotation.Import;
 @Import({
         WebConfig.class,
         ServiceConfig.class,
-        DatabaseConfig.class,
-        ConverterConfig.class
+        DatabaseConfig.class
 })
 public class ApplicationConfig {
     @Bean

@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_rules (
     value text,
     primary key(country, pmd, parameter)
 );
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'interval', '15');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'interval', '30');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'minBids', '2');
 
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST', 'interval', '1');
