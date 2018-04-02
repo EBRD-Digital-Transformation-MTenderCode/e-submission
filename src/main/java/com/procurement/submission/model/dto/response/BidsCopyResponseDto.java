@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.procurement.submission.model.ocds.Bid;
+import com.procurement.submission.model.ocds.Bids;
 import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
@@ -18,10 +19,10 @@ import lombok.Setter;
 @NoArgsConstructor
 public class BidsCopyResponseDto {
 
-    private List<Bid> bids;
+    private Bids bids;
 
     @JsonCreator
-    public BidsCopyResponseDto(@JsonProperty("bids") final List<Bid> bids) {
+    public BidsCopyResponseDto(@JsonProperty("bids") final Bids bids) {
         this.bids = bids;
     }
 }

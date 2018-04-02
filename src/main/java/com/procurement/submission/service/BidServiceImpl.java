@@ -86,7 +86,7 @@ public class BidServiceImpl implements BidService {
         final Map<BidEntity, Bid> newBids = createBidCopy(lotsDto, validBids, newStage);
         bidRepository.saveAll(newBids.keySet());
         final List<Bid> bids = new ArrayList<>(newBids.values());
-        return new ResponseDto<>(true, null, new BidsCopyResponseDto(bids));
+        return new ResponseDto<>(true, null, new BidsCopyResponseDto(new Bids(bids)));
     }
 
     @Override
