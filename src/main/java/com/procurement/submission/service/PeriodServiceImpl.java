@@ -4,16 +4,14 @@ import com.procurement.submission.exception.ErrorException;
 import com.procurement.submission.exception.ErrorType;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto;
-import com.procurement.submission.model.ocds.Period;
 import com.procurement.submission.model.entity.PeriodEntity;
+import com.procurement.submission.model.ocds.Period;
 import com.procurement.submission.repository.PeriodRepository;
 import com.procurement.submission.utils.DateUtil;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
-
-import static java.time.temporal.ChronoUnit.DAYS;
-import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 public class PeriodServiceImpl implements PeriodService {
@@ -128,10 +126,10 @@ public class PeriodServiceImpl implements PeriodService {
                                   final LocalDateTime endDate) {
         final int interval = rulesService.getInterval(country, pmd);
         if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)) {
-            final long minutes = MINUTES.between(startDate, endDate);
+            final long minutes = ChronoUnit.MINUTES.between(startDate, endDate);
             return minutes >= interval;
         }
-        final long days = DAYS.between(startDate.toLocalDate(), endDate.toLocalDate());
+        final Long days = ChronoUnit.DAYS.between(startDate, endDate);
         return days >= interval;
     }
 }
