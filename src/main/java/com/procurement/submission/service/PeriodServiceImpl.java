@@ -99,7 +99,7 @@ public class PeriodServiceImpl implements PeriodService {
                                         final String pmd,
                                         final LocalDateTime startDate,
                                         final LocalDateTime endDate) {
-        if (checkInterval(country, pmd, startDate, endDate))
+        if (!checkInterval(country, pmd, startDate, endDate))
             throw new ErrorException(ErrorType.INVALID_PERIOD);
         return new ResponseDto<>(true, null, "Period is valid.");
     }
