@@ -129,7 +129,7 @@ public class PeriodServiceImpl implements PeriodService {
             final long minutes = ChronoUnit.MINUTES.between(startDate, endDate);
             return minutes >= interval;
         }
-        final Long days = ChronoUnit.DAYS.between(startDate, endDate);
+        final long days = ChronoUnit.DAYS.between(startDate, endDate);
         return days >= interval;
     }
 }
