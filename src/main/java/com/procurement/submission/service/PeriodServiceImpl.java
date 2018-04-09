@@ -106,9 +106,9 @@ public class PeriodServiceImpl implements PeriodService {
         final LocalDateTime localDateTime = dateUtil.localNowUTC();
         final PeriodEntity periodEntity = getPeriod(cpId, stage);
         final boolean localDateTimeAfter = localDateTime.isAfter(periodEntity.getStartDate())
-                && localDateTime.isEqual(periodEntity.getStartDate());
+                || localDateTime.isEqual(periodEntity.getStartDate());
         final boolean localDateTimeBefore = localDateTime.isBefore(periodEntity.getEndDate())
-                && localDateTime.isEqual(periodEntity.getEndDate());
+                || localDateTime.isEqual(periodEntity.getEndDate());
         return localDateTimeAfter && localDateTimeBefore;
     }
 
