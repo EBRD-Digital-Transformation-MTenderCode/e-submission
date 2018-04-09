@@ -117,7 +117,7 @@ public class PeriodServiceImpl implements PeriodService {
                                   final LocalDateTime startDate,
                                   final LocalDateTime endDate) {
         final PeriodEntity period = getPeriod(cpId, stage);
-        return (period.getStartDate() == startDate) && (period.getEndDate() == endDate);
+        return (!period.getStartDate().equals(startDate)) || (!period.getEndDate().equals(endDate));
     }
 
     private Boolean checkInterval(final String country,
