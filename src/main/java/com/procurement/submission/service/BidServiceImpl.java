@@ -328,7 +328,10 @@ public class BidServiceImpl implements BidService {
         bidEntities.forEach(bidEntity -> {
             final Bid bid = jsonUtil.toObject(Bid.class, bidEntity.getJsonData());
             if (bid.getStatus().equals(Status.VALID) && bid.getStatusDetails().equals(StatusDetails.EMPTY))
-                if (bid.getRelatedLots().stream().anyMatch(lotsID::contains)) validBids.put(bidEntity, bid);
+                for (final String lot : bid.getRelatedLots()) {
+                    if (lotsID.contains(lot))
+                        validBids.put(bidEntity, bid);
+                }
         });
         return validBids;
     }
