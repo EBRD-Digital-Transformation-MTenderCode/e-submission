@@ -181,7 +181,7 @@ public class BidServiceImpl implements BidService {
 
     @Override
     public ResponseDto setFinalStatuses(final String cpId, final String stage) {
-        final List<BidEntity> bidEntities = pendingFilter(bidRepository.findAllByCpIdAndStage(cpId, stage));
+        final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
         if (bidEntities.isEmpty()) throw new ErrorException(ErrorType.BID_NOT_FOUND);
         final List<Bid> bids = getBidsFromEntities(bidEntities);
         //set status from statusDetails
@@ -196,8 +196,7 @@ public class BidServiceImpl implements BidService {
         final List<BidEntity> updatedBidEntities = getUpdatedBidEntities(bidEntities, bids);
         /*save updated entities*/
         bidRepository.saveAll(updatedBidEntities);
-        return new ResponseDto<>(true, null,
-                new BidsUpdateStatusResponseDto(null, null, bids));
+        return new ResponseDto<>(true, null, new BidsFinalStatusResponseDto(bids));
     }
 
     private List<BidEntity> getUpdatedBidEntities(final List<BidEntity> bidEntities, final List<Bid> bids) {
