@@ -77,7 +77,7 @@ public class BidController {
                                                     @RequestParam("pmd") final String pmd,
                                                     @RequestBody final UnsuccessfulLotsDto data) {
         return new ResponseEntity<>(
-                bidService.updateBidsByLots(cpId, stage, country, pmd, data),
+                bidService.updateStatus(cpId, stage, country, pmd, data),
                 HttpStatus.OK);
     }
 

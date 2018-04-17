@@ -32,11 +32,11 @@ public interface BidService {
                                String country,
                                String pmd);
 
-    ResponseDto updateBidsByLots(String cpId,
-                                 String stage,
-                                 String country,
-                                 String pmd,
-                                 UnsuccessfulLotsDto unsuccessfulLots);
+    ResponseDto updateStatus(String cpId,
+                             String stage,
+                             String country,
+                             String pmd,
+                             UnsuccessfulLotsDto unsuccessfulLots);
 
     ResponseDto updateStatusDetails(String cpId,
                                     String stage,

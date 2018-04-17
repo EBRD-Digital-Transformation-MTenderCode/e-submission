@@ -107,11 +107,11 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public ResponseDto updateBidsByLots(final String cpId,
-                                        final String stage,
-                                        final String country,
-                                        final String pmd,
-                                        final UnsuccessfulLotsDto unsuccessfulLots) {
+    public ResponseDto updateStatus(final String cpId,
+                                    final String stage,
+                                    final String country,
+                                    final String pmd,
+                                    final UnsuccessfulLotsDto unsuccessfulLots) {
         /*get all bids entities from db*/
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
         if (bidEntities.isEmpty()) throw new ErrorException(ErrorType.BID_NOT_FOUND);
