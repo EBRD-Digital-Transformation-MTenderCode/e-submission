@@ -312,11 +312,12 @@ public class BidServiceImpl implements BidService {
         newBidEntity.setBidId(oldBidEntity.getBidId());
         newBidEntity.setToken(oldBidEntity.getToken());
         final Status newStatus = Status.INVITED;
+        final StatusDetails newStatusDetails = StatusDetails.EMPTY;
         newBidEntity.setStatus(newStatus.value());
         final LocalDateTime dateTimeNow = dateUtil.localNowUTC();
         newBidEntity.setCreatedDate(dateTimeNow);
         final Bid oldBid = entrySet.getValue();
-        final Bid newBid = new Bid(oldBid.getId(), dateTimeNow, newStatus, null, oldBid.getTenderers(),
+        final Bid newBid = new Bid(oldBid.getId(), dateTimeNow, newStatus, newStatusDetails, oldBid.getTenderers(),
                 null, null, oldBid.getRelatedLots());
         newBidEntity.setJsonData(jsonUtil.toJson(newBid));
         newBidEntity.setOwner(oldBidEntity.getOwner());
