@@ -1,8 +1,6 @@
 package com.procurement.submission;
 
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 /**
  * Created by Maxim Sambulat.
  */

@@ -3,11 +3,8 @@ package com.procurement.submission.model.ocds;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -21,12 +18,12 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "id",
-    "name",
-    "identifier",
-    "address",
-    "additionalIdentifiers",
-    "contactPoint"
+        "id",
+        "name",
+        "identifier",
+        "address",
+        "additionalIdentifiers",
+        "contactPoint"
 })
 public class OrganizationReference {
 
@@ -62,8 +59,7 @@ public class OrganizationReference {
                                  @JsonProperty("name") final String name,
                                  @JsonProperty("identifier") final Identifier identifier,
                                  @JsonProperty("address") final Address address,
-                                 @JsonProperty("additionalIdentifiers")
-                                     final HashSet<Identifier> additionalIdentifiers,
+                                 @JsonProperty("additionalIdentifiers") final HashSet<Identifier> additionalIdentifiers,
                                  @JsonProperty("contactPoint") final ContactPoint contactPoint) {
         this.id = id;
         this.name = name;
@@ -76,12 +72,12 @@ public class OrganizationReference {
     @Override
     public int hashCode() {
         return new HashCodeBuilder().append(id)
-                                    .append(name)
-                                    .append(identifier)
-                                    .append(address)
-                                    .append(additionalIdentifiers)
-                                    .append(contactPoint)
-                                    .toHashCode();
+                .append(name)
+                .append(identifier)
+                .append(address)
+                .append(additionalIdentifiers)
+                .append(contactPoint)
+                .toHashCode();
     }
 
     @Override
@@ -94,11 +90,11 @@ public class OrganizationReference {
         }
         final OrganizationReference rhs = (OrganizationReference) other;
         return new EqualsBuilder().append(id, rhs.id)
-                                  .append(name, rhs.name)
-                                  .append(identifier, rhs.identifier)
-                                  .append(address, rhs.address)
-                                  .append(additionalIdentifiers, rhs.additionalIdentifiers)
-                                  .append(contactPoint, rhs.contactPoint)
-                                  .isEquals();
+                .append(name, rhs.name)
+                .append(identifier, rhs.identifier)
+                .append(address, rhs.address)
+                .append(additionalIdentifiers, rhs.additionalIdentifiers)
+                .append(contactPoint, rhs.contactPoint)
+                .isEquals();
     }
 }

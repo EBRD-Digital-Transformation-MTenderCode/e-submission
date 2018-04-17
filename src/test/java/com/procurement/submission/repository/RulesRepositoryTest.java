@@ -1,13 +1,5 @@
 package com.procurement.submission.repository;
 
-import com.procurement.submission.model.entity.RulesEntity;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 class RulesRepositoryTest {
 
 //    private static RulesRepository rulesRepository;

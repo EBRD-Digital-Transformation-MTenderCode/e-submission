@@ -21,7 +21,7 @@ public class PeriodController {
         this.periodService = periodService;
     }
 
-   @PostMapping("/save")
+    @PostMapping("/save")
     public ResponseEntity<ResponseDto> savePeriod(@RequestParam("identifier") final String cpId,
                                                   @RequestParam("stage") final String stage,
                                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)

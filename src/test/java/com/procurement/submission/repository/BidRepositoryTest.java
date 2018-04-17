@@ -1,16 +1,5 @@
 package com.procurement.submission.repository;
 
-import com.datastax.driver.core.utils.UUIDs;
-import com.procurement.submission.JsonUtil;
-import com.procurement.submission.model.entity.BidEntity;
-import com.procurement.submission.model.ocds.Bid;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 class BidRepositoryTest {
 
 //    private static BidRepository bidRepository;

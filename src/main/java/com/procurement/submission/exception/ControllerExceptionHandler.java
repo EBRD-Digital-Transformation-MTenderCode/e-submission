@@ -3,7 +3,6 @@ package com.procurement.submission.exception;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.procurement.submission.model.dto.bpe.ResponseDetailsDto;
 import com.procurement.submission.model.dto.bpe.ResponseDto;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,6 +83,7 @@ public class ControllerExceptionHandler {
     private List<ResponseDetailsDto> getErrors(final String code, final String error) {
         return Collections.singletonList(new ResponseDetailsDto(ERROR_PREFIX + code, error));
     }
+
     private List<ResponseDetailsDto> getErrors(final BindingResult result) {
         return result.getFieldErrors()
                 .stream()

@@ -61,8 +61,8 @@ public class JsonUtil {
 
     private String getPathFile(final String fileName) {
         return Optional.ofNullable(getClass().getClassLoader().getResource(fileName))
-                       .map(URL::getPath)
-                       .orElseThrow(() -> new IllegalArgumentException(FILE + fileName + "' not found."));
+                .map(URL::getPath)
+                .orElseThrow(() -> new IllegalArgumentException(FILE + fileName + "' not found."));
     }
 
     private String read(final String pathToFile) {

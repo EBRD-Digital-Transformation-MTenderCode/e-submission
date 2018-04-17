@@ -136,16 +136,7 @@ public class BidServiceImpl implements BidService {
                     updatedBids.add(bid);
                 });
         /*get entities for update*/
-        final List<BidEntity> updatedBidEntities = new ArrayList<>();
-        updatedBids.forEach(bid ->
-                bidEntities.stream()
-                        .filter(entity -> entity.getBidId().toString().equals(bid.getId()))
-                        .forEach(entity -> {
-                            entity.setStatus(bid.getStatus().value());
-                            entity.setJsonData(jsonUtil.toJson(bid));
-                            updatedBidEntities.add(entity);
-                        })
-        );
+        final List<BidEntity> updatedBidEntities = getUpdatedBidEntities(bidEntities, updatedBids);
         /*save updated entities*/
         bidRepository.saveAll(updatedBidEntities);
         /*get tenderers from bids*/
@@ -201,9 +192,26 @@ public class BidServiceImpl implements BidService {
                 bid.setStatusDetails(StatusDetails.EMPTY);
             }
         }
-        bidRepository.save(bidEntity);
+        /*get entities for update*/
+        final List<BidEntity> updatedBidEntities = getUpdatedBidEntities(bidEntities, bids);
+        /*save updated entities*/
+        bidRepository.saveAll(updatedBidEntities);
         return new ResponseDto<>(true, null,
                 new BidsUpdateStatusResponseDto(null, null, bids));
+    }
+
+    private List<BidEntity> getUpdatedBidEntities(final List<BidEntity> bidEntities, final List<Bid> bids) {
+        final List<BidEntity> updatedBidEntities = new ArrayList<>();
+        bids.forEach(bid ->
+                bidEntities.stream()
+                        .filter(entity -> entity.getBidId().toString().equals(bid.getId()))
+                        .forEach(entity -> {
+                            entity.setStatus(bid.getStatus().value());
+                            entity.setJsonData(jsonUtil.toJson(bid));
+                            updatedBidEntities.add(entity);
+                        })
+        );
+        return updatedBidEntities;
     }
 
     private List<String> getRelatedLotsIdFromBids(final List<Bid> bids) {

@@ -1,8 +1,5 @@
 package com.procurement.submission.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-
 class RulesServiceImplTest {
 
 //    private static PeriodDataDto periodDataDto;

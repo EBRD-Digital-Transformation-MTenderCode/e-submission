@@ -1,6 +1,7 @@
 package com.procurement.submission.model.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.procurement.submission.model.ocds.Bid;
 import com.procurement.submission.model.ocds.OrganizationReference;
@@ -10,6 +11,7 @@ import java.util.Set;
 import lombok.Getter;
 
 @Getter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BidsUpdateStatusResponseDto {
 
     private Period tenderPeriod;

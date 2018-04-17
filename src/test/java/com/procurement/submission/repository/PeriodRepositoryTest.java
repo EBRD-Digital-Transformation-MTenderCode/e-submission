@@ -1,15 +1,5 @@
 package com.procurement.submission.repository;
 
-import com.procurement.submission.model.entity.PeriodEntity;
-
-import java.time.LocalDateTime;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 class PeriodRepositoryTest {
 
 //    private static PeriodRepository periodRepository;
