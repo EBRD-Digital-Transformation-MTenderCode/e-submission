@@ -201,6 +201,7 @@ public class BidServiceImpl implements BidService {
                 bid.setStatusDetails(StatusDetails.EMPTY);
             }
         }
+        bidRepository.save(bidEntity);
         return new ResponseDto<>(true, null,
                 new BidsUpdateStatusResponseDto(null, null, bids));
     }
