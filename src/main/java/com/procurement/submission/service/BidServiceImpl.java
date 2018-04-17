@@ -139,15 +139,14 @@ public class BidServiceImpl implements BidService {
         final List<BidEntity> updatedBidEntities = getUpdatedBidEntities(bidEntities, updatedBids);
         /*save updated entities*/
         bidRepository.saveAll(updatedBidEntities);
-        /*get tenderers from bids*/
-        final Set<OrganizationReference> tenderers = new HashSet<>();
-        bids.forEach(bid -> tenderers.addAll(bid.getTenderers()));
+//        /*get tenderers from bids*/
+//        final Set<OrganizationReference> tenderers = new HashSet<>();
+//        bids.forEach(bid -> tenderers.addAll(bid.getTenderers()));
         /*get tender period from db*/
         final PeriodEntity period = periodService.getPeriod(cpId, stage);
         final Period tenderPeriod = new Period(period.getStartDate(), period.getEndDate());
 
-        return new ResponseDto<>(true, null,
-                new BidsUpdateStatusResponseDto(tenderPeriod, tenderers, bids));
+        return new ResponseDto<>(true, null, new BidsUpdateStatusResponseDto(tenderPeriod, bids));
     }
 
     @Override

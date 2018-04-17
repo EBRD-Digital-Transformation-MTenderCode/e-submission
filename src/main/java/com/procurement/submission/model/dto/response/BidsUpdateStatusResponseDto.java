@@ -16,16 +16,12 @@ public class BidsUpdateStatusResponseDto {
 
     private Period tenderPeriod;
 
-    private Set<OrganizationReference> tenderers;
-
     private List<Bid> bids;
 
     @JsonCreator
     public BidsUpdateStatusResponseDto(@JsonProperty("tenderPeriod") final Period tenderPeriod,
-                                       @JsonProperty("tenderers") final Set<OrganizationReference> tenderers,
                                        @JsonProperty("bids") final List<Bid> bids) {
         this.tenderPeriod = tenderPeriod;
-        this.tenderers = tenderers;
         this.bids = bids;
     }
 }
