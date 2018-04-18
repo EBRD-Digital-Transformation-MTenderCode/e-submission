@@ -139,9 +139,6 @@ public class BidServiceImpl implements BidService {
         final List<BidEntity> updatedBidEntities = getUpdatedBidEntities(bidEntities, updatedBids);
         /*save updated entities*/
         bidRepository.saveAll(updatedBidEntities);
-//        /*get tenderers from bids*/
-//        final Set<OrganizationReference> tenderers = new HashSet<>();
-//        bids.forEach(bid -> tenderers.addAll(bid.getTenderers()));
         /*get tender period from db*/
         final PeriodEntity period = periodService.getPeriod(cpId, stage);
         final Period tenderPeriod = new Period(period.getStartDate(), period.getEndDate());
@@ -280,10 +277,9 @@ public class BidServiceImpl implements BidService {
                                  final String owner,
                                  final Bid bidDto) {
         if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException(ErrorType.INVALID_ID);
-        final BidEntity entity = Optional
-                .ofNullable(bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage,
-                        UUID.fromString(bidDto.getId()), UUID.fromString(token)))
-                .orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
+        final BidEntity entity = Optional.ofNullable(
+                bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage, UUID.fromString(bidDto.getId()), UUID.fromString(token))
+        ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
         if (!entity.getOwner().equals(owner)) throw new ErrorException(ErrorType.INVALID_OWNER);
         bidDto.setDate(dateUtil.localNowUTC());
         entity.setJsonData(jsonUtil.toJson(bidDto));
