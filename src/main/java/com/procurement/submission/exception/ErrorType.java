@@ -5,6 +5,7 @@ public enum ErrorType {
     BID_NOT_FOUND("00.01", "Bids not found."),
     INVALID_OWNER("00.02", "Invalid owner."),
     INVALID_ID("00.03", "Invalid bid id."),
+    INVALID_RELATED_LOT("00.04", "Invalid related lots in documents."),
     PERIOD_NOT_FOUND("01.01", "Period not found."),
     INVALID_PERIOD("01.02", "Invalid period."),
     INVALID_DATE("01.03", "Date does not match the period."),

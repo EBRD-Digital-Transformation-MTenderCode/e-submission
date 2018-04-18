@@ -68,7 +68,24 @@ public class BidServiceImpl implements BidService {
                                  final String owner,
                                  final Bid bidDto) {
         periodService.checkCurrentDateInPeriod(cpId, stage);
-        updateBidEntity(cpId, stage, token, owner, bidDto);
+        if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException(ErrorType.INVALID_ID);
+        final BidEntity entity = Optional.ofNullable(
+                bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage, UUID.fromString(bidDto.getId()), UUID.fromString(token))
+        ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
+        if (!entity.getOwner().equals(owner)) throw new ErrorException(ErrorType.INVALID_OWNER);
+        final Bid bid = jsonUtil.toObject(Bid.class, entity.getJsonData());
+        if (bidDto.getDocuments() != null) {
+            if (!bidDto.getDocuments().stream().allMatch(d -> bid.getRelatedLots().containsAll(d.getRelatedLots()))) {
+                throw new ErrorException(ErrorType.INVALID_RELATED_LOT);
+            }
+            bid.setDocuments(bidDto.getDocuments());
+        }
+        if (stage.equals("EV") && bidDto.getValue() != null) {
+            bid.setValue(bidDto.getValue());
+        }
+        bidDto.setDate(dateUtil.localNowUTC());
+        entity.setJsonData(jsonUtil.toJson(bid));
+        bidRepository.save(entity);
         return getResponseDto(token, bidDto);
     }
 
@@ -269,32 +286,6 @@ public class BidServiceImpl implements BidService {
         return (tenderersFromDb, tenderersFromRequest) ->
                 tenderersFromDb.size() == tenderersFromRequest.size()
                         && tenderersFromDb.containsAll(tenderersFromRequest);
-    }
-
-    private void updateBidEntity(final String cpId,
-                                 final String stage,
-                                 final String token,
-                                 final String owner,
-                                 final Bid bidDto) {
-        if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException(ErrorType.INVALID_ID);
-        final BidEntity entity = Optional.ofNullable(
-                bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage, UUID.fromString(bidDto.getId()), UUID.fromString(token))
-        ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
-        if (!entity.getOwner().equals(owner)) throw new ErrorException(ErrorType.INVALID_OWNER);
-        final Bid bid = jsonUtil.toObject(Bid.class, entity.getJsonData());
-        updateBidFromDto(bid, bidDto);
-        bidDto.setDate(dateUtil.localNowUTC());
-        entity.setJsonData(jsonUtil.toJson(bid));
-        bidRepository.save(entity);
-    }
-
-    private void updateBidFromDto(final Bid bid, final Bid bidDto) {
-        if (bidDto.getDocuments() != null){
-            bid.setDocuments(bidDto.getDocuments());
-        }
-        if (bidDto.getValue() != null){
-            bid.setValue(bidDto.getValue());
-        }
     }
 
     private ResponseDto<BidResponseDto> getResponseDto(final String token, final Bid bid) {
