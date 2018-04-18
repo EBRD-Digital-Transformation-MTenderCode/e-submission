@@ -281,9 +281,20 @@ public class BidServiceImpl implements BidService {
                 bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage, UUID.fromString(bidDto.getId()), UUID.fromString(token))
         ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
         if (!entity.getOwner().equals(owner)) throw new ErrorException(ErrorType.INVALID_OWNER);
+        final Bid bid = jsonUtil.toObject(Bid.class, entity.getJsonData());
+        updateBidFromDto(bid, bidDto);
         bidDto.setDate(dateUtil.localNowUTC());
-        entity.setJsonData(jsonUtil.toJson(bidDto));
+        entity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(entity);
+    }
+
+    private void updateBidFromDto(final Bid bid, final Bid bidDto) {
+        if (bidDto.getDocuments() != null){
+            bid.setDocuments(bidDto.getDocuments());
+        }
+        if (bidDto.getValue() != null){
+            bid.setValue(bidDto.getValue());
+        }
     }
 
     private ResponseDto<BidResponseDto> getResponseDto(final String token, final Bid bid) {

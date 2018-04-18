@@ -1,244 +1,54 @@
 {
-  "awardPeriod": {
-    "startDate": "2018-04-17T06:43:48Z",
-    "endDate": "2018-04-17T07:17:17Z"
-  },
-  "awards": [
-    {
-      "id": "b1060cb1-420a-11e8-a7a2-4bc93b1ec7b9",
-      "date": "2018-04-17T07:17:17Z",
-      "description": "Award description",
-      "status": "active",
-      "statusDetails": "empty",
-      "relatedLots": [
-        "42eaa421-420a-11e8-8fab-13cf59033386"
-      ],
-      "relatedBid": "43dd8fa0-420a-11e8-9499-f91299df50e2",
-      "suppliers": [
-        {
-          "id": "UA-EDR-741-47-0964",
-          "name": "Collins-Pena"
-        }
-      ]
-    },
-    {
-      "id": "b1060cb0-420a-11e8-a7a2-4bc93b1ec7b9",
-      "date": "2018-04-17T07:17:17Z",
-      "description": "Award description",
-      "status": "active",
-      "statusDetails": "empty",
-      "relatedLots": [
-        "42eaa421-420a-11e8-8fab-13cf59033386"
-      ],
-      "relatedBid": "43bdd2a0-420a-11e8-9499-f91299df50e2",
-      "suppliers": [
-        {
-          "id": "UA-EDR-294-41-4423",
-          "name": "Rivera, Benitez and Benson"
-        }
-      ]
-    },
-    {
-      "id": "b1060cb2-420a-11e8-a7a2-4bc93b1ec7b9",
-      "date": "2018-04-17T07:17:17Z",
-      "description": "Award description",
-      "status": "active",
-      "statusDetails": "empty",
-      "relatedLots": [
-        "42eaa421-420a-11e8-8fab-13cf59033386"
-      ],
-      "relatedBid": "440a9310-420a-11e8-9499-f91299df50e2",
-      "suppliers": [
-        {
-          "id": "UA-EDR-323-69-3322",
-          "name": "Rodriguez-Watkins"
-        }
-      ]
-    }
-  ],
-  "unsuccessfulLots": [],
-  "lots": [
-    {
-      "id": "42eaa421-420a-11e8-8fab-13cf59033386",
-      "title": "Hour side animal environmental home thousand bag.",
-      "description": "Series participant forget process. Wait possible building factor plant strong. Security scientist cover child explain. Degree voice within other quality can deep.",
-      "status": "active",
-      "statusDetails": "empty",
-      "value": {
-        "amount": 0.85,
-        "currency": "NLG"
-      },
-      "options": [
-        {
-          "hasOptions": false
-        }
-      ],
-      "recurrentProcurement": [
-        {
-          "isRecurrent": false
-        }
-      ],
-      "renewals": [
-        {
-          "hasRenewals": false
-        }
-      ],
-      "variants": [
-        {
-          "hasVariants": false
-        }
-      ],
-      "contractPeriod": {
-        "startDate": "2018-04-17T06:40:46Z",
-        "endDate": "2018-06-03T18:55:38Z"
-      },
-      "placeOfPerformance": {
-        "address": {
-          "streetAddress": "8358 Madeline Lock",
-          "locality": "Shawstad",
-          "region": "Tennessee",
-          "postalCode": "02767-1601",
-          "countryName": "Afghanistan"
+  "bid": {
+    "id": "e9bb0b70-4334-11e8-9a17-9924c92ed067",
+    "tenderers": [
+      {
+        "name": "TEST Provider 3",
+        "identifier": {
+          "scheme": "UA-EDR",
+          "id": "987654321",
+          "legalName": "TEST Provider 3 LEGAL",
+          "uri": "https://test1.ua"
         },
-        "description": "Enter near on quite sing system begin. His serious recognize begin do build fast control."
+        "additionalIdentifiers": [
+          {
+            "scheme": "UA-EDR",
+            "id": "987654377",
+            "legalName": "ADDITIONAL TEST Provider 3 LEGAL",
+            "uri": "https://add.test1.ua"
+          }
+        ],
+        "address": {
+          "streetAddress": "Street 45",
+          "locality": "Locality",
+          "region": "Region",
+          "postalCode": "123456",
+          "countryName": "Country"
+        },
+        "contactPoint": {
+          "name": "WHO ARE YOU",
+          "email": "test1@test.test",
+          "telephone": "+38022222222",
+          "faxNumber": "+38022222222",
+          "url": "https://cp.test1.ua"
+        }
       }
-    }
-  ],
-  "bids": [
-    {
-      "id": "43bdd2a0-420a-11e8-9499-f91299df50e2",
-      "date": "2018-04-17T07:17:17Z",
-      "status": "valid",
-      "statusDetails": "empty",
-      "tenderers": [
-        {
-          "id": "UA-EDR-294-41-4423",
-          "name": "Rivera, Benitez and Benson",
-          "identifier": {
-            "id": "294-41-4423",
-            "scheme": "UA-EDR",
-            "legalName": "Rivera, Benitez and Benson and Sons",
-            "uri": "http://gray.com/faq.html"
-          },
-          "address": {
-            "streetAddress": "203 Wagner Street Suite 382",
-            "locality": "Joeborough",
-            "region": "New Hampshire",
-            "postalCode": "97074",
-            "countryName": "Cuba"
-          },
-          "additionalIdentifiers": [
-            {
-              "id": "083-56-2969",
-              "scheme": "UA-EDR",
-              "legalName": "Rivera, Benitez and Benson Inc",
-              "uri": "http://thompson-berry.info/tag/privacy.jsp"
-            }
-          ],
-          "contactPoint": {
-            "name": "Nancy Rodriguez",
-            "email": "brettmedina@gmail.com",
-            "telephone": "(394)733-6681x711",
-            "faxNumber": "068-297-6844",
-            "url": "http://potter.org/tag/terms.php"
-          }
-        }
-      ],
-      "relatedLots": [
-        "42eaa421-420a-11e8-8fab-13cf59033386"
-      ]
-    },
-    {
-      "id": "43dd8fa0-420a-11e8-9499-f91299df50e2",
-      "date": "2018-04-17T07:17:17Z",
-      "status": "valid",
-      "statusDetails": "empty",
-      "tenderers": [
-        {
-          "id": "UA-EDR-741-47-0964",
-          "name": "Collins-Pena",
-          "identifier": {
-            "id": "741-47-0964",
-            "scheme": "UA-EDR",
-            "legalName": "Collins-Pena and Sons",
-            "uri": "http://www.adams.net/"
-          },
-          "address": {
-            "streetAddress": "11679 Romero Course Suite 321",
-            "locality": "Jessicachester",
-            "region": "Texas",
-            "postalCode": "79871",
-            "countryName": "Norway"
-          },
-          "additionalIdentifiers": [
-            {
-              "id": "391-04-1464",
-              "scheme": "UA-EDR",
-              "legalName": "Collins-Pena Ltd",
-              "uri": "https://rowe.org/"
-            }
-          ],
-          "contactPoint": {
-            "name": "Donald Green",
-            "email": "charlesharris@yahoo.com",
-            "telephone": "264.732.6660",
-            "faxNumber": "(094)903-0669",
-            "url": "https://juarez.com/list/categories/search/category/"
-          }
-        }
-      ],
-      "relatedLots": [
-        "42eaa421-420a-11e8-8fab-13cf59033386"
-      ]
-    },
-    {
-      "id": "440a9310-420a-11e8-9499-f91299df50e2",
-      "date": "2018-04-17T07:17:17Z",
-      "status": "valid",
-      "statusDetails": "empty",
-      "tenderers": [
-        {
-          "id": "UA-EDR-323-69-3322",
-          "name": "Rodriguez-Watkins",
-          "identifier": {
-            "id": "323-69-3322",
-            "scheme": "UA-EDR",
-            "legalName": "Rodriguez-Watkins Group",
-            "uri": "https://www.gill-calderon.com/terms.html"
-          },
-          "address": {
-            "streetAddress": "20359 Smith Manor Apt. 061",
-            "locality": "Lake Isaiah",
-            "region": "Tennessee",
-            "postalCode": "82162",
-            "countryName": "Sierra Leone"
-          },
-          "additionalIdentifiers": [
-            {
-              "id": "815-12-4674",
-              "scheme": "UA-EDR",
-              "legalName": "Rodriguez-Watkins LLC",
-              "uri": "https://www.blankenship.info/tag/main/index/"
-            }
-          ],
-          "contactPoint": {
-            "name": "Bradley Boyle",
-            "email": "sarahgardner@hotmail.com",
-            "telephone": "542-855-1025x6352",
-            "faxNumber": "889.024.0567",
-            "url": "http://www.wilkerson.com/register.htm"
-          }
-        }
-      ],
-      "relatedLots": [
-        "42eaa421-420a-11e8-8fab-13cf59033386"
-      ]
-    }
-  ],
-  "tender": {
-    "tenderPeriod": {
-      "startDate": null,
-      "endDate": null
-    }
+    ],
+    "documents": [
+      {
+        "documentType": "tenderNotice",
+        "id": "385104e0-2901-11e8-b1c7-dff3c5406c1d",
+        "url": "http://bpe.eprocurement.systems/api/v1/storage/get/385104e0-2901-11e8-b1c7-dff3c5406c1d",
+        "title": "Title Test CN document to tender",
+        "description": "Description Test CN document to tender",
+        "language": "ro",
+        "relatedLots": [
+          "237ba7e1-2902-11e8-85d0-87b982b16239"
+        ]
+      }
+    ],
+    "relatedLots": [
+      "237ba7e1-2902-11e8-85d0-87b982b16239"
+    ]
   }
 }
