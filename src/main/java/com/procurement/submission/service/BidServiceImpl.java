@@ -74,6 +74,8 @@ public class BidServiceImpl implements BidService {
         ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
         if (!entity.getOwner().equals(owner)) throw new ErrorException(ErrorType.INVALID_OWNER);
         final Bid bid = jsonUtil.toObject(Bid.class, entity.getJsonData());
+        bid.setStatus(Status.PENDING);
+        bid.setStatusDetails(StatusDetails.EMPTY);
         if (bidDto.getDocuments() != null) {
             if (!bidDto.getDocuments().stream().allMatch(d -> bid.getRelatedLots().containsAll(d.getRelatedLots()))) {
                 throw new ErrorException(ErrorType.INVALID_RELATED_LOT);
