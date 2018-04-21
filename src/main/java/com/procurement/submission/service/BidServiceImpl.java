@@ -47,10 +47,16 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public ResponseDto createBid(final String cpId, final String stage, final String owner, final Bid bidDto) {
+    public ResponseDto createBid(final String cpId,
+                                 final String stage,
+                                 final String owner,
+                                 final Bid bidDto) {
+        validateFields(bidDto);
         periodService.checkCurrentDateInPeriod(cpId, stage);
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
-        if (!bidEntities.isEmpty()) checkTenderers(bidEntities, bidDto);
+        if (!bidEntities.isEmpty()) {
+            checkTenderers(bidEntities, bidDto);
+        }
         processTenderers(bidDto);
         bidDto.setDate(dateUtil.localNowUTC());
         bidDto.setId(UUIDs.timeBased().toString());
@@ -67,6 +73,7 @@ public class BidServiceImpl implements BidService {
                                  final String token,
                                  final String owner,
                                  final Bid bidDto) {
+        validateFields(bidDto);
         periodService.checkCurrentDateInPeriod(cpId, stage);
         if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException(ErrorType.INVALID_ID);
         final BidEntity entity = Optional.ofNullable(
@@ -89,6 +96,10 @@ public class BidServiceImpl implements BidService {
         entity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(entity);
         return getResponseDto(token, bidDto);
+    }
+
+    private void validateFields(final Bid bidDto) {
+        if (Objects.nonNull(bidDto.getId())) throw new ErrorException(ErrorType.ID_NOT_NULL);
     }
 
     @Override
@@ -276,8 +287,7 @@ public class BidServiceImpl implements BidService {
 
     private boolean isExistTenderers(final List<Bid> bids, final Bid bidDto) {
         final List<String> bidRequestRelatedLots = bidDto.getRelatedLots();
-        final BiPredicate<List<OrganizationReference>, List<OrganizationReference>> isTenderersSame =
-                isTenderersSameBiPredicate();
+        final BiPredicate<List<OrganizationReference>, List<OrganizationReference>> isTenderersSame = isTenderersSameBiPredicate();
         final List<OrganizationReference> bidRequestTenderers = bidDto.getTenderers();
         return bids.stream()
                 .filter(b -> b.getRelatedLots().containsAll(bidRequestRelatedLots))
