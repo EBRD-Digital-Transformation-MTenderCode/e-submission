@@ -7,5 +7,7 @@ public interface RulesService {
 
     int getInterval(String country, String method);
 
+    int getUnsuspendInterval(String country, String method);
+
     int getRulesMinBids(String country, String method);
 }

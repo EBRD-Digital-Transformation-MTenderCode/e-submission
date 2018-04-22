@@ -52,8 +52,8 @@ public class PeriodServiceImpl implements PeriodService {
         period.setCpId(cpId);
         period.setStage(stage);
         period.setStartDate(dateUtil.localToDate(startDate));
-        final int interval = rulesService.getInterval(country, pmd);
-        period.setEndDate(dateUtil.localToDate(startDate.plusDays(interval)));
+        final int unsuspendInterval = rulesService.getUnsuspendInterval(country, pmd);
+        period.setEndDate(dateUtil.localToDate(startDate.plusDays(unsuspendInterval)));
         periodRepository.save(period);
         return new ResponseDto<>(true, null, new Period(period.getStartDate(), period.getEndDate()));
     }

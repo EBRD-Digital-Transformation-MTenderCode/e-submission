@@ -11,6 +11,7 @@ public class RulesServiceImpl implements RulesService {
 
     private static final String PARAMETER_MIN_BIDS = "minBids";
     private static final String PARAMETER_INTERVAL = "interval";
+    private static final String PARAMETER_UNSUSPEND_INTERVAL = "unsuspend_interval";
 
     private RulesRepository rulesRepository;
 
@@ -21,6 +22,13 @@ public class RulesServiceImpl implements RulesService {
     @Override
     public int getInterval(final String country, final String method) {
         return Optional.ofNullable(rulesRepository.getValue(country, method, PARAMETER_INTERVAL))
+                .map(Integer::parseInt)
+                .orElseThrow(() -> new ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND));
+    }
+
+    @Override
+    public int getUnsuspendInterval(final String country, final String method) {
+        return Optional.ofNullable(rulesRepository.getValue(country, method, PARAMETER_UNSUSPEND_INTERVAL))
                 .map(Integer::parseInt)
                 .orElseThrow(() -> new ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND));
     }
