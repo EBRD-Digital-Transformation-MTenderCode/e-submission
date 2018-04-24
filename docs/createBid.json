@@ -1,54 +1,52 @@
 {
   "bid": {
-    "id": "e9bb0b70-4334-11e8-9a17-9924c92ed067",
     "tenderers": [
       {
-        "name": "TEST Provider 3",
+        "name": "Murphy-Lopez",
         "identifier": {
           "scheme": "UA-EDR",
-          "id": "987654321",
-          "legalName": "TEST Provider 3 LEGAL",
-          "uri": "https://test1.ua"
+          "id": "541-93-1247",
+          "legalName": "Murphy-Lopez Group",
+          "uri": "https://www.webb.com/categories/blog/privacy.htm"
         },
         "additionalIdentifiers": [
           {
             "scheme": "UA-EDR",
-            "id": "987654377",
-            "legalName": "ADDITIONAL TEST Provider 3 LEGAL",
-            "uri": "https://add.test1.ua"
+            "id": "377-97-0261",
+            "legalName": "Murphy-Lopez Group",
+            "uri": "https://www.stewart.com/author/"
           }
         ],
         "address": {
-          "streetAddress": "Street 45",
-          "locality": "Locality",
-          "region": "Region",
-          "postalCode": "123456",
-          "countryName": "Country"
+          "streetAddress": "5193 Haney Creek",
+          "locality": "Wagnerberg",
+          "region": "Georgia",
+          "postalCode": "73827-3413",
+          "countryName": "Tokelau"
         },
         "contactPoint": {
-          "name": "WHO ARE YOU",
-          "email": "test1@test.test",
-          "telephone": "+38022222222",
-          "faxNumber": "+38022222222",
-          "url": "https://cp.test1.ua"
+          "name": "Mrs. Samantha Garcia",
+          "email": "williamsanne@hotmail.com",
+          "telephone": "629.716.9382x124",
+          "faxNumber": "00875737234",
+          "url": "https://www.rivas.com/"
         }
       }
     ],
     "documents": [
       {
-        "documentType": "tenderNotice",
-        "id": "385104e0-2901-11e8-b1c7-dff3c5406c1d",
-        "url": "http://bpe.eprocurement.systems/api/v1/storage/get/385104e0-2901-11e8-b1c7-dff3c5406c1d",
-        "title": "Title Test CN document to tender",
-        "description": "Description Test CN document to tender",
-        "language": "ro",
+        "documentType": "riskProvisions",
+        "id": "e9f4e0c0-47c1-11e8-bcee-fd2243130aae",
+        "title": "Store also story beyond meet.",
+        "description": "First science skill quality ground. Add relationship attack Mrs raise half.",
+        "language": "de",
         "relatedLots": [
-          "237ba7e1-2902-11e8-85d0-87b982b16239"
+          "7c475531-47c1-11e8-bade-4fd013781141"
         ]
       }
     ],
     "relatedLots": [
-      "237ba7e1-2902-11e8-85d0-87b982b16239"
+      "7c475531-47c1-11e8-bade-4fd013781141"
     ]
   }
 }

@@ -53,11 +53,9 @@ public class BidServiceImpl implements BidService {
                                  final Bid bidDto) {
         validateFields(bidDto);
         periodService.checkCurrentDateInPeriod(cpId, stage);
-        final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
-        if (!bidEntities.isEmpty()) {
-            checkTenderers(bidEntities, bidDto);
-        }
         processTenderers(bidDto);
+        final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
+        if (!bidEntities.isEmpty()) checkTenderers(bidEntities, bidDto);
         bidDto.setDate(dateUtil.localNowUTC());
         bidDto.setId(UUIDs.timeBased().toString());
         bidDto.setStatus(Status.PENDING);
@@ -96,10 +94,6 @@ public class BidServiceImpl implements BidService {
         entity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(entity);
         return getResponseDto(token, bidDto);
-    }
-
-    private void validateFields(final Bid bidDto) {
-        if (Objects.nonNull(bidDto.getId())) throw new ErrorException(ErrorType.ID_NOT_NULL);
     }
 
     @Override
@@ -225,6 +219,10 @@ public class BidServiceImpl implements BidService {
         return new ResponseDto<>(true, null, new BidsFinalStatusResponseDto(bids));
     }
 
+    private void validateFields(final Bid bidDto) {
+        if (Objects.nonNull(bidDto.getId())) throw new ErrorException(ErrorType.ID_NOT_NULL);
+    }
+
     private List<BidEntity> getUpdatedBidEntities(final List<BidEntity> bidEntities, final List<Bid> bids) {
         final List<BidEntity> updatedBidEntities = new ArrayList<>();
         bids.forEach(bid ->
@@ -274,7 +272,8 @@ public class BidServiceImpl implements BidService {
     }
 
     private void checkTenderers(final List<BidEntity> bidEntities, final Bid bidDto) {
-        if (isExistTenderers(getBidsFromEntities(bidEntities), bidDto)) {
+        final List<Bid> bids = getBidsFromEntities(bidEntities);
+        if (isExistTenderers(bids, bidDto)) {
             throw new ErrorException(ErrorType.BID_ALREADY_WITH_LOT);
         }
     }

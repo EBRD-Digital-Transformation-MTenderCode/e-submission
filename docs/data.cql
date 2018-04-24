@@ -26,6 +26,9 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_period (
 );
 SELECT * FROM ocds.submission_period;
 
+INSERT INTO ocds.submission_period (cp_id, stage, start_date, end_date)  VALUES ('ocds-t1s2t3-TEST-1524575697411',
+'TEST', '2018-04-23 13:18:01+0000', '2018-04-26 13:18:01+0000');
+
 CREATE TABLE IF NOT EXISTS  ocds.submission_bid (
     cp_id text,
     stage text,
