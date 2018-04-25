@@ -13,7 +13,8 @@ public enum ErrorType {
     INTERVAL_RULES_NOT_FOUND("02.01", "Interval rules not found."),
     BIDS_RULES_NOT_FOUND("02.02", "Bids rules not found."),
     BID_ALREADY_WITH_LOT("03.01", "We already have Bid with this Lots and Tenderers."),
-    ID_NOT_NULL("03.02", "Bid id must be empty.");
+    ID_NOT_NULL("03.02", "Bid id must be empty."),
+    STATUS_DETAIL_IS_NULL("03.03", "Status detail must not be empty.");
 
     private final String code;
     private final String message;

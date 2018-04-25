@@ -78,7 +78,7 @@ public class BidServiceImpl implements BidService {
         ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
         if (!entity.getOwner().equals(owner)) throw new ErrorException(ErrorType.INVALID_OWNER);
         final Bid bid = jsonUtil.toObject(Bid.class, entity.getJsonData());
-        bid.setStatus(Status.PENDING);
+        bid.setStatus(Status.fromValue(bidDto.getStatusDetails().value()));
         bid.setStatusDetails(StatusDetails.EMPTY);
         if (bidDto.getDocuments() != null) {
             if (!bidDto.getDocuments().stream().allMatch(d -> bid.getRelatedLots().containsAll(d.getRelatedLots()))) {
@@ -222,6 +222,7 @@ public class BidServiceImpl implements BidService {
 
     private void validateFields(final Bid bidDto) {
         if (Objects.nonNull(bidDto.getId())) throw new ErrorException(ErrorType.ID_NOT_NULL);
+        if (Objects.nonNull(bidDto.getStatusDetails())) throw new ErrorException(ErrorType.STATUS_DETAIL_IS_NULL);
     }
 
     private List<BidEntity> getUpdatedBidEntities(final List<BidEntity> bidEntities, final List<Bid> bids) {
