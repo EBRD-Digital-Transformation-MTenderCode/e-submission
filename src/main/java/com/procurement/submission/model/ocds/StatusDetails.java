@@ -8,8 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum StatusDetails {
-    DISQUALIFIED("disqualified"),
+    INVITED("invited"),
+    PENDING("pending"),
     VALID("valid"),
+    DISQUALIFIED("disqualified"),
+    WITHDRAWN("withdrawn"),
     EMPTY("empty");
 
     private static final Map<String, StatusDetails> CONSTANTS = new HashMap<String, StatusDetails>();
