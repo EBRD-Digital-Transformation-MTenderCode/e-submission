@@ -89,6 +89,7 @@ public class BidServiceImpl implements BidService {
         bid.setStatus(Status.fromValue(bidDto.getStatusDetails().value()));
         bid.setStatusDetails(StatusDetails.EMPTY);
         bidDto.setDate(dateUtil.localNowUTC());
+        entity.setStatus(bid.getStatus().value());
         entity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(entity);
         return getResponseDto(token, bidDto);
