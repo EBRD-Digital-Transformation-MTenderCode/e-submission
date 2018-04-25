@@ -18,7 +18,6 @@ import com.procurement.submission.utils.DateUtil;
 import com.procurement.submission.utils.JsonUtil;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -148,6 +147,7 @@ public class BidServiceImpl implements BidService {
                 .forEach(bid -> {
                     bid.setDate(dateUtil.localNowUTC());
                     bid.setStatus(Status.WITHDRAWN);
+                    bid.setStatusDetails(StatusDetails.EMPTY);
                     updatedBids.add(bid);
                 });
         /*set status WITHDRAWN for bids with unsuccessful lots*/
@@ -157,6 +157,7 @@ public class BidServiceImpl implements BidService {
                 .forEach(bid -> {
                     bid.setDate(dateUtil.localNowUTC());
                     bid.setStatus(Status.WITHDRAWN);
+                    bid.setStatusDetails(StatusDetails.EMPTY);
                     updatedBids.add(bid);
                 });
         /*get entities for update*/
