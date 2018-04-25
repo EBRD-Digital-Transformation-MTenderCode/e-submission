@@ -50,7 +50,7 @@ public class BidServiceImpl implements BidService {
                                  final String stage,
                                  final String owner,
                                  final Bid bidDto) {
-        validateFields(bidDto);
+        validateFieldsForCreate(bidDto);
         periodService.checkCurrentDateInPeriod(cpId, stage);
         processTenderers(bidDto);
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
@@ -70,7 +70,7 @@ public class BidServiceImpl implements BidService {
                                  final String token,
                                  final String owner,
                                  final Bid bidDto) {
-        validateFields(bidDto);
+        validateFieldsForUpdate(bidDto);
         periodService.checkCurrentDateInPeriod(cpId, stage);
         if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException(ErrorType.INVALID_ID);
         final BidEntity entity = Optional.ofNullable(
@@ -220,8 +220,11 @@ public class BidServiceImpl implements BidService {
         return new ResponseDto<>(true, null, new BidsFinalStatusResponseDto(bids));
     }
 
-    private void validateFields(final Bid bidDto) {
+    private void validateFieldsForCreate(final Bid bidDto) {
         if (Objects.nonNull(bidDto.getId())) throw new ErrorException(ErrorType.ID_NOT_NULL);
+    }
+
+    private void validateFieldsForUpdate(final Bid bidDto) {
         if (Objects.nonNull(bidDto.getStatusDetails())) throw new ErrorException(ErrorType.STATUS_DETAIL_IS_NULL);
     }
 
