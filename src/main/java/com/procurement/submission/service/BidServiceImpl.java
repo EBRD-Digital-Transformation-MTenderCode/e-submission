@@ -72,14 +72,11 @@ public class BidServiceImpl implements BidService {
                                  final Bid bidDto) {
         validateFieldsForUpdate(bidDto);
         periodService.checkCurrentDateInPeriod(cpId, stage);
-        if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException(ErrorType.INVALID_ID);
         final BidEntity entity = Optional.ofNullable(
                 bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage, UUID.fromString(bidDto.getId()), UUID.fromString(token))
         ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
         if (!entity.getOwner().equals(owner)) throw new ErrorException(ErrorType.INVALID_OWNER);
         final Bid bid = jsonUtil.toObject(Bid.class, entity.getJsonData());
-        bid.setStatus(Status.fromValue(bidDto.getStatusDetails().value()));
-        bid.setStatusDetails(StatusDetails.EMPTY);
         if (bidDto.getDocuments() != null) {
             if (!bidDto.getDocuments().stream().allMatch(d -> bid.getRelatedLots().containsAll(d.getRelatedLots()))) {
                 throw new ErrorException(ErrorType.INVALID_RELATED_LOT);
@@ -89,6 +86,8 @@ public class BidServiceImpl implements BidService {
         if (stage.equals("EV") && bidDto.getValue() != null) {
             bid.setValue(bidDto.getValue());
         }
+        bid.setStatus(Status.fromValue(bidDto.getStatusDetails().value()));
+        bid.setStatusDetails(StatusDetails.EMPTY);
         bidDto.setDate(dateUtil.localNowUTC());
         entity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(entity);
@@ -225,6 +224,7 @@ public class BidServiceImpl implements BidService {
     }
 
     private void validateFieldsForUpdate(final Bid bidDto) {
+        if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException(ErrorType.INVALID_ID);
         if (Objects.nonNull(bidDto.getStatusDetails())) throw new ErrorException(ErrorType.STATUS_DETAIL_IS_NULL);
     }
 
