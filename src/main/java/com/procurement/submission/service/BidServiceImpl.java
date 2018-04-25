@@ -225,7 +225,7 @@ public class BidServiceImpl implements BidService {
 
     private void validateFieldsForUpdate(final Bid bidDto) {
         if (Strings.isNullOrEmpty(bidDto.getId())) throw new ErrorException(ErrorType.INVALID_ID);
-        if (Objects.nonNull(bidDto.getStatusDetails())) throw new ErrorException(ErrorType.STATUS_DETAIL_IS_NULL);
+        if (Objects.isNull(bidDto.getStatusDetails())) throw new ErrorException(ErrorType.STATUS_DETAIL_IS_NULL);
     }
 
     private List<BidEntity> getUpdatedBidEntities(final List<BidEntity> bidEntities, final List<Bid> bids) {
