@@ -2,7 +2,7 @@
   "bid": {
     "tenderers": [
       {
-        "name": "Google",
+        "name": "Google2",
         "identifier": {
           "scheme": "CPV",
           "id": "48760000-3",
@@ -23,18 +23,6 @@
           "faxNumber": "777-777-777",
           "url": "random.org"
         }
-      }
-    ],
-    "documents": [
-      {
-        "documentType": "projectPlan",
-        "id": "6a214360-43d5-11e8-bd88-c70eb3dcb0fe",
-        "title": "test file",
-        "description": "File for test",
-        "language": "en",
-        "relatedLots": [
-          "187cb781-486a-11e8-bade-4fd013781141"
-        ]
       }
     ],
     "relatedLots": [

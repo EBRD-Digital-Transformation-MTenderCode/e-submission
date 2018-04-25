@@ -286,17 +286,16 @@ public class BidServiceImpl implements BidService {
 
     private boolean isExistTenderers(final List<Bid> bids, final Bid bidDto) {
         final List<String> bidRequestRelatedLots = bidDto.getRelatedLots();
-        final BiPredicate<List<OrganizationReference>, List<OrganizationReference>> isTenderersSame = isTenderersSameBiPredicate();
-        final List<OrganizationReference> bidRequestTenderers = bidDto.getTenderers();
-        return bids.stream()
-                .filter(b -> b.getRelatedLots().containsAll(bidRequestRelatedLots))
-                .anyMatch(b -> isTenderersSame.test(b.getTenderers(), bidRequestTenderers));
-    }
-
-    private BiPredicate<List<OrganizationReference>, List<OrganizationReference>> isTenderersSameBiPredicate() {
-        return (tenderersFromDb, tenderersFromRequest) ->
-                tenderersFromDb.size() == tenderersFromRequest.size()
-                        && tenderersFromDb.containsAll(tenderersFromRequest);
+        final Set<String> dtoTenderersIds = bidDto.getTenderers().stream().map(t -> t.getId()).collect(Collectors.toSet());
+        for (final Bid bid : bids) {
+            final Set<String> bidTenderersIds = bid.getTenderers().stream().map(t -> t.getId()).collect(Collectors.toSet());
+            if (bid.getRelatedLots().containsAll(bidRequestRelatedLots)) {
+                if (bidTenderersIds.size() == bidTenderersIds.size() && bidTenderersIds.containsAll(dtoTenderersIds)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private ResponseDto<BidResponseDto> getResponseDto(final String token, final Bid bid) {
