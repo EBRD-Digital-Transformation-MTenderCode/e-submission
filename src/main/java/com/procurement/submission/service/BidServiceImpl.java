@@ -71,7 +71,7 @@ public class BidServiceImpl implements BidService {
                                  final String owner,
                                  final Bid bidDto) {
         validateFieldsForUpdate(bidDto);
-        periodService.checkCurrentDateInPeriod(cpId, stage);
+        //periodService.checkCurrentDateInPeriod(cpId, stage);
         final BidEntity entity = Optional.ofNullable(
                 bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage, UUID.fromString(bidDto.getId()), UUID.fromString(token))
         ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
@@ -88,7 +88,7 @@ public class BidServiceImpl implements BidService {
         entity.setStatus(bid.getStatus().value());
         entity.setJsonData(jsonUtil.toJson(bid));
         bidRepository.save(entity);
-        return getResponseDto(token, bidDto);
+        return getResponseDto(token, bid);
     }
 
     @Override
