@@ -52,6 +52,7 @@ public class BidServiceImpl implements BidService {
                                  final Bid bidDto) {
         validateFieldsForCreate(bidDto);
         periodService.checkCurrentDateInPeriod(cpId, stage);
+        checkRelatedLotsInDocuments(bidDto);
         processTenderers(bidDto);
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
         if (!bidEntities.isEmpty()) checkTenderers(bidEntities, bidDto);
@@ -71,7 +72,7 @@ public class BidServiceImpl implements BidService {
                                  final String owner,
                                  final Bid bidDto) {
         validateFieldsForUpdate(bidDto);
-        //periodService.checkCurrentDateInPeriod(cpId, stage);
+        periodService.checkCurrentDateInPeriod(cpId, stage);
         final BidEntity entity = Optional.ofNullable(
                 bidRepository.findByCpIdAndStageAndBidIdAndToken(cpId, stage, UUID.fromString(bidDto.getId()), UUID.fromString(token))
         ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
@@ -214,6 +215,18 @@ public class BidServiceImpl implements BidService {
         /*save updated entities*/
         bidRepository.saveAll(updatedBidEntities);
         return new ResponseDto<>(true, null, new BidsFinalStatusResponseDto(bids));
+    }
+
+    private void checkRelatedLotsInDocuments(final Bid bidDto) {
+        if (bidDto.getDocuments() != null) {
+            for (final Document documentDto : bidDto.getDocuments()) {
+                if (documentDto.getRelatedLots() != null && bidDto.getRelatedLots() != null) {
+                    if (!bidDto.getRelatedLots().containsAll(documentDto.getRelatedLots())) {
+                        throw new ErrorException(ErrorType.INVALID_RELATED_LOT);
+                    }
+                }
+            }
+        }
     }
 
     private void checkRelatedLotsAndSetDocuments(final Bid bid, final Bid bidDto) {
