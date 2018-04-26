@@ -77,12 +77,7 @@ public class BidServiceImpl implements BidService {
         ).orElseThrow(() -> new ErrorException(ErrorType.BID_NOT_FOUND));
         if (!entity.getOwner().equals(owner)) throw new ErrorException(ErrorType.INVALID_OWNER);
         final Bid bid = jsonUtil.toObject(Bid.class, entity.getJsonData());
-        if (bidDto.getDocuments() != null) {
-            if (!bidDto.getDocuments().stream().allMatch(d -> bid.getRelatedLots().containsAll(d.getRelatedLots()))) {
-                throw new ErrorException(ErrorType.INVALID_RELATED_LOT);
-            }
-            bid.setDocuments(bidDto.getDocuments());
-        }
+        checkRelatedLotsAndSetDocuments(bid, bidDto);
         if (stage.equals("EV") && bidDto.getValue() != null) {
             if (Objects.isNull(bidDto.getValue())) throw new ErrorException(ErrorType.VALUE_IS_NULL);
             bid.setValue(bidDto.getValue());
@@ -219,6 +214,19 @@ public class BidServiceImpl implements BidService {
         /*save updated entities*/
         bidRepository.saveAll(updatedBidEntities);
         return new ResponseDto<>(true, null, new BidsFinalStatusResponseDto(bids));
+    }
+
+    private void checkRelatedLotsAndSetDocuments(final Bid bid, final Bid bidDto) {
+        if (bidDto.getDocuments() != null) {
+            for (final Document documentDto : bidDto.getDocuments()) {
+                if (documentDto.getRelatedLots() != null && bid.getRelatedLots() != null) {
+                    if (!bid.getRelatedLots().containsAll(documentDto.getRelatedLots())) {
+                        throw new ErrorException(ErrorType.INVALID_RELATED_LOT);
+                    }
+                }
+            }
+            bid.setDocuments(bidDto.getDocuments());
+        }
     }
 
     private void validateFieldsForCreate(final Bid bidDto) {
