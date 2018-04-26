@@ -84,6 +84,7 @@ public class BidServiceImpl implements BidService {
             bid.setDocuments(bidDto.getDocuments());
         }
         if (stage.equals("EV") && bidDto.getValue() != null) {
+            if (Objects.isNull(bidDto.getValue())) throw new ErrorException(ErrorType.VALUE_IS_NULL);
             bid.setValue(bidDto.getValue());
         }
         bid.setStatus(Status.fromValue(bidDto.getStatusDetails().value()));

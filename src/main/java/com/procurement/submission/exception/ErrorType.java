@@ -8,6 +8,7 @@ public enum ErrorType {
     INVALID_RELATED_LOT("00.04", "Invalid related lots in documents."),
     ID_NOT_NULL("00.05", "Bid id must be empty."),
     STATUS_DETAIL_IS_NULL("00.06", "Status detail must not be empty."),
+    VALUE_IS_NULL("00.07", "Value of bid must not be empty."),
 
     PERIOD_NOT_FOUND("01.01", "Period not found."),
     INVALID_PERIOD("01.02", "Invalid period."),
