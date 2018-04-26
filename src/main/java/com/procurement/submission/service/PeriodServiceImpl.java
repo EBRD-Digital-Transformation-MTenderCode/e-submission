@@ -53,7 +53,11 @@ public class PeriodServiceImpl implements PeriodService {
         period.setStage(stage);
         period.setStartDate(dateUtil.localToDate(startDate));
         final int unsuspendInterval = rulesService.getUnsuspendInterval(country, pmd);
-        period.setEndDate(dateUtil.localToDate(startDate.plusDays(unsuspendInterval)));
+        if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)) {
+            period.setEndDate(dateUtil.localToDate(startDate.plusMinutes(unsuspendInterval)));
+        } else {
+            period.setEndDate(dateUtil.localToDate(startDate.plusDays(unsuspendInterval)));
+        }
         periodRepository.save(period);
         return new ResponseDto<>(true, null, new Period(period.getStartDate(), period.getEndDate()));
     }
