@@ -12,7 +12,8 @@ public enum Status {
     PENDING("pending"),
     VALID("valid"),
     DISQUALIFIED("disqualified"),
-    WITHDRAWN("withdrawn");
+    WITHDRAWN("withdrawn"),
+    EMPTY("empty");
 
     private static final Map<String, Status> CONSTANTS = new HashMap<String, Status>();
     private final String value;
