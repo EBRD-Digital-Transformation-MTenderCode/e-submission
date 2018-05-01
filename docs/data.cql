@@ -10,10 +10,17 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_rules (
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'interval', '30');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'unsuspend_interval', '7');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'RT', 'minBids', '2');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'interval', '30');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'unsuspend_interval', '7');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'minBids', '2');
 
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST', 'interval', '1');
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST', 'unsuspend_interval', '10');
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST', 'minBids', '3');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST_RT', 'interval', '1');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST_RT', 'unsuspend_interval', '10');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST_RT', 'minBids', '3');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST_OT', 'interval', '1');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST_OT', 'unsuspend_interval', '10');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('TEST', 'TEST_OT', 'minBids', '3');
+
 
 SELECT * FROM ocds.submission_rules;
 

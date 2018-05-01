@@ -48,12 +48,9 @@ public class PeriodServiceImpl implements PeriodService {
                                      final String country,
                                      final String pmd,
                                      final LocalDateTime startDate) {
-        final PeriodEntity period = new PeriodEntity();
-        period.setCpId(cpId);
-        period.setStage(stage);
-        period.setStartDate(dateUtil.localToDate(startDate));
+        final PeriodEntity period = getPeriod(cpId, stage);
         final int unsuspendInterval = rulesService.getUnsuspendInterval(country, pmd);
-        if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)) {
+        if (TEST_PARAM.equals(country)) {
             period.setEndDate(dateUtil.localToDate(startDate.plusMinutes(unsuspendInterval)));
         } else {
             period.setEndDate(dateUtil.localToDate(startDate.plusDays(unsuspendInterval)));
@@ -129,7 +126,7 @@ public class PeriodServiceImpl implements PeriodService {
                                   final LocalDateTime startDate,
                                   final LocalDateTime endDate) {
         final int interval = rulesService.getInterval(country, pmd);
-        if (TEST_PARAM.equals(country) && TEST_PARAM.equals(pmd)) {
+        if (TEST_PARAM.equals(country)) {
             final long minutes = ChronoUnit.MINUTES.between(startDate, endDate);
             return minutes >= interval;
         }
