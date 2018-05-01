@@ -204,7 +204,7 @@ public class BidServiceImpl implements BidService {
         final List<Bid> bids = getBidsFromEntities(bidEntities);
         //set status from statusDetails
         for (final Bid bid : bids) {
-            if (bid.getStatus().equals(Status.PENDING) && !bid.getStatusDetails().equals(Status.EMPTY)) {
+            if (bid.getStatus().equals(Status.PENDING) && !bid.getStatusDetails().equals(StatusDetails.EMPTY)) {
                 bid.setDate(dateUtil.localNowUTC());
                 bid.setStatus(Status.fromValue(bid.getStatusDetails().value()));
                 bid.setStatusDetails(StatusDetails.EMPTY);
