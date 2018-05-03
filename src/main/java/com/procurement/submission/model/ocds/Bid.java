@@ -36,6 +36,7 @@ public class Bid {
 
     @JsonProperty("date")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     private LocalDateTime date;
 
     @JsonProperty("status")
@@ -62,7 +63,7 @@ public class Bid {
 
     @JsonCreator
     public Bid(@JsonProperty("id") final String id,
-               @JsonProperty("date") @JsonDeserialize(using = LocalDateTimeDeserializer.class) final LocalDateTime date,
+               @JsonProperty("date") final LocalDateTime date,
                @JsonProperty("status") final Status status,
                @JsonProperty("statusDetails") final StatusDetails statusDetails,
                @JsonProperty("tenderers") final List<OrganizationReference> tenderers,

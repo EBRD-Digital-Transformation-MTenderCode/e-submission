@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.procurement.submission.databinding.MoneyDeserializer;
+import java.math.BigDecimal;
 import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -19,14 +22,17 @@ public class Value {
 
     @NotNull
     @JsonProperty("amount")
-    private final Double amount;
+//    @JsonSerialize(using = NumberSerializers.DoubleSerializer.class)
+//    @JsonDeserialize(using = NumberDeserializers.BigDecimalDeserializer.class)
+    @JsonDeserialize(using = MoneyDeserializer.class)
+    private final BigDecimal amount;
 
     @NotNull
     @JsonProperty("currency")
     private final Currency currency;
 
     @JsonCreator
-    public Value(@JsonProperty("amount") final Double amount,
+    public Value(@JsonProperty("amount") final BigDecimal amount,
                  @JsonProperty("currency") final Currency currency) {
         this.amount = amount;
         this.currency = currency;
