@@ -198,15 +198,20 @@ public class BidServiceImpl implements BidService {
     }
 
     @Override
-    public ResponseDto setFinalStatuses(final String cpId, final String stage) {
+    public ResponseDto setFinalStatuses(final String cpId, final String stage, final LocalDateTime dateTime) {
         final List<BidEntity> bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage);
         if (bidEntities.isEmpty()) throw new ErrorException(ErrorType.BID_NOT_FOUND);
         final List<Bid> bids = getBidsFromEntities(bidEntities);
         //set status from statusDetails
         for (final Bid bid : bids) {
             if (bid.getStatus().equals(Status.PENDING) && !bid.getStatusDetails().equals(StatusDetails.EMPTY)) {
-                bid.setDate(dateUtil.localNowUTC());
+                bid.setDate(dateTime);
                 bid.setStatus(Status.fromValue(bid.getStatusDetails().value()));
+                bid.setStatusDetails(StatusDetails.EMPTY);
+            }
+            if (bid.getStatus().equals(Status.PENDING) && bid.getStatusDetails().equals(StatusDetails.EMPTY)) {
+                bid.setDate(dateTime);
+                bid.setStatus(Status.WITHDRAWN);
                 bid.setStatusDetails(StatusDetails.EMPTY);
             }
         }

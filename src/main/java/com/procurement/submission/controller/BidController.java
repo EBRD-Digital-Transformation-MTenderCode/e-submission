@@ -93,9 +93,11 @@ public class BidController {
 
     @PostMapping(value = "/setFinalStatuses")
     public ResponseEntity<ResponseDto> setFinalStatuses(@RequestParam("identifier") final String cpId,
-                                                        @RequestParam("stage") final String stage) {
+                                                        @RequestParam("stage") final String stage,
+                                                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                                                        @RequestParam("date") final LocalDateTime dateTime) {
         return new ResponseEntity<>(
-                bidService.setFinalStatuses(cpId, stage),
+                bidService.setFinalStatuses(cpId, stage, dateTime),
                 HttpStatus.OK);
     }
 }

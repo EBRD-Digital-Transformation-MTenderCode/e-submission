@@ -43,5 +43,5 @@ public interface BidService {
                                     String bidId,
                                     AwardStatusDetails awardStatusDetails);
 
-    ResponseDto setFinalStatuses(String cpId, String stage);
+    ResponseDto setFinalStatuses(String cpId, String stage, LocalDateTime dateTime);
 }
