@@ -22,8 +22,6 @@ public class Value {
 
     @NotNull
     @JsonProperty("amount")
-//    @JsonSerialize(using = NumberSerializers.DoubleSerializer.class)
-//    @JsonDeserialize(using = NumberDeserializers.BigDecimalDeserializer.class)
     @JsonDeserialize(using = MoneyDeserializer.class)
     private final BigDecimal amount;
 
