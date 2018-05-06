@@ -46,7 +46,6 @@ public class Bid {
     private StatusDetails statusDetails;
 
     @Valid
-    @NotEmpty
     @JsonProperty("tenderers")
     private List<OrganizationReference> tenderers;
 
