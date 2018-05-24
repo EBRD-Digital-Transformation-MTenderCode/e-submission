@@ -1,11 +1,8 @@
 package com.procurement.submission.controller;
 
-import com.procurement.submission.model.dto.bpe.ResponseDto;
-import com.procurement.submission.model.dto.request.AwardStatusDetails;
 import com.procurement.submission.model.dto.request.BidRequestDto;
 import com.procurement.submission.model.dto.request.LotsDto;
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto;
-import com.procurement.submission.service.BidService;
 import java.time.LocalDateTime;
 import javax.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
