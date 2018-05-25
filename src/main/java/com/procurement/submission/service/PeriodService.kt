@@ -5,7 +5,7 @@ import com.procurement.notice.exception.ErrorType
 import com.procurement.notice.model.bpe.ResponseDto
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto
 import com.procurement.submission.model.entity.PeriodEntity
-import com.procurement.submission.model.ocds.Period
+import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.repository.PeriodRepository
 import com.procurement.submission.utils.localNowUTC
 import com.procurement.submission.utils.toDate

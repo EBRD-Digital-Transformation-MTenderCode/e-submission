@@ -9,7 +9,7 @@ import com.procurement.submission.model.dto.request.LotsDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
 import com.procurement.submission.model.dto.response.*
 import com.procurement.submission.model.entity.BidEntity
-import com.procurement.submission.model.ocds.*
+import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.repository.BidRepository
 import com.procurement.submission.utils.*
 import org.springframework.stereotype.Service

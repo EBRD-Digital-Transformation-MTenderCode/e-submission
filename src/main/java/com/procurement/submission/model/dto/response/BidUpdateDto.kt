@@ -4,10 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer
-import com.procurement.submission.model.ocds.Document
-import com.procurement.submission.model.ocds.Status
-import com.procurement.submission.model.ocds.StatusDetails
-import com.procurement.submission.model.ocds.Value
+import com.procurement.submission.model.dto.ocds.Document
+import com.procurement.submission.model.dto.ocds.Status
+import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.model.dto.ocds.Value
 import java.time.LocalDateTime
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
