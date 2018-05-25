@@ -1,4 +1,4 @@
-package com.procurement.notice.exception
+package com.procurement.submission.exception
 
 
 data class ErrorException(private val error: ErrorType) : RuntimeException() {

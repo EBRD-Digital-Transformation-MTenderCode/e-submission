@@ -1,4 +1,4 @@
-package com.procurement.notice.exception
+package com.procurement.submission.exception
 
 enum class ErrorType constructor(val code: String, val message: String) {
     BID_NOT_FOUND("00.01", "Bids not found."),

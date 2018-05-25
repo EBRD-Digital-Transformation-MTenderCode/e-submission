@@ -1,9 +1,9 @@
 package com.procurement.submission.service
 
 import com.google.common.base.Strings
-import com.procurement.notice.exception.ErrorException
-import com.procurement.notice.exception.ErrorType
-import com.procurement.notice.model.bpe.ResponseDto
+import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.LotsDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto

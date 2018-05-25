@@ -1,6 +1,6 @@
 package com.procurement.submission.controller
 
-import com.procurement.notice.model.bpe.ResponseDto
+import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.service.PeriodService
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus

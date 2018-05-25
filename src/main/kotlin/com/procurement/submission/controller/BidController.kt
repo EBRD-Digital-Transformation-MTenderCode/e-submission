@@ -1,6 +1,6 @@
 package com.procurement.submission.controller
 
-import com.procurement.notice.model.bpe.ResponseDto
+import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.request.BidRequestDto
 import com.procurement.submission.model.dto.request.LotsDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto

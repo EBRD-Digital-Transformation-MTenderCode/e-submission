@@ -1,4 +1,4 @@
-package com.procurement.notice.databinding
+package com.procurement.submission.model.dto.databinding
 
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.DeserializationContext

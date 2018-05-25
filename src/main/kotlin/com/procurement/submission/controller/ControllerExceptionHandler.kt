@@ -1,10 +1,10 @@
 package com.procurement.submission.controller
 
 import com.fasterxml.jackson.databind.JsonMappingException
-import com.procurement.notice.exception.EnumException
-import com.procurement.notice.exception.ErrorException
-import com.procurement.notice.model.bpe.ResponseDetailsDto
-import com.procurement.notice.model.bpe.ResponseDto
+import com.procurement.submission.exception.EnumException
+import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.model.dto.bpe.ResponseDetailsDto
+import com.procurement.submission.model.dto.bpe.ResponseDto
 import org.springframework.http.HttpStatus.OK
 import org.springframework.validation.BindingResult
 import org.springframework.web.bind.MethodArgumentNotValidException
