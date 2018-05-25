@@ -30,7 +30,7 @@ data class Bid(
         val tenderers: List<OrganizationReference>?,
 
         @JsonProperty("value") @Valid
-        val value: Value?,
+        var value: Value?,
 
         @JsonProperty("documents") @Valid
         var documents: List<Document>?,

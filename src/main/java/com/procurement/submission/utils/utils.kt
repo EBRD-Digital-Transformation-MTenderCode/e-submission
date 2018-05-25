@@ -53,3 +53,13 @@ fun <T> toObject(clazz: Class<T>, json: String): T {
         throw IllegalArgumentException(e)
     }
 }
+
+/*Collection*/
+fun <T> Collection<T>.containsAny(dest: Collection<T>): Boolean {
+    for (value in dest) {
+        if (this.contains(value)) {
+            return true
+        }
+    }
+    return false
+}
