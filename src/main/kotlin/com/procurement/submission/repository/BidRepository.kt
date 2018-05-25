@@ -6,7 +6,8 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface BidRepository : CassandraRepository<BidEntity, String> {
+interface BidRepository
+    : CassandraRepository<BidEntity, String> {
 
     fun findAllByCpIdAndStage(cpId: String, stage: String): List<BidEntity>
 

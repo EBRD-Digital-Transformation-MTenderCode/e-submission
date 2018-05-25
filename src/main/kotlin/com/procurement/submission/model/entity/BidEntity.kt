@@ -6,30 +6,30 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn
 import org.springframework.data.cassandra.core.mapping.Table
 import java.util.*
 
-@Table("submission_bid")
+//@Table("submission_bid")
 data class BidEntity(
 
-        @PrimaryKeyColumn(name = "cp_id", type = PrimaryKeyType.PARTITIONED)
+//        @PrimaryKeyColumn(name = "cp_id", type = PrimaryKeyType.PARTITIONED)
         val cpId: String,
 
-        @PrimaryKeyColumn(name = "stage", type = PrimaryKeyType.CLUSTERED)
-        val stage: String,
-
-        @PrimaryKeyColumn(name = "bid_id", type = PrimaryKeyType.CLUSTERED)
+//        @PrimaryKeyColumn(name = "stage", type = PrimaryKeyType.CLUSTERED)
+//        @PrimaryKeyColumn(name = "bid_id", type = PrimaryKeyType.CLUSTERED)
         val bidId: UUID,
 
-        @PrimaryKeyColumn(name = "token_entity", type = PrimaryKeyType.CLUSTERED)
+//        @PrimaryKeyColumn(name = "token_entity", type = PrimaryKeyType.CLUSTERED)
         val token: UUID,
 
-        @Column("owner")
+        val stage: String,
+
+//        @Column("owner")
         val owner: String,
 
-        @Column("status")
+//        @Column("status")
         val status: String,
 
-        @Column("created_date")
+//        @Column("created_date")
         var createdDate: Date,
 
-        @Column("json_data")
+//        @Column("json_data")
         val jsonData: String
 )
