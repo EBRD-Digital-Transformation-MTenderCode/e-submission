@@ -19,11 +19,11 @@ import kotlin.collections.ArrayList
 
 interface BidService {
 
-    fun createBid(cpId: String, stage: String, owner: String, bidDto: Bid): ResponseDto<*>
+    fun createBid(cpId: String, stage: String, owner: String, bid: Bid): ResponseDto<*>
 
-    fun updateBid(cpId: String, stage: String, token: String, owner: String, bidDto: Bid): ResponseDto<*>
+    fun updateBid(cpId: String, stage: String, token: String, owner: String, bid: Bid): ResponseDto<*>
 
-    fun copyBids(cpId: String, newStage: String, previousStage: String, startDate: LocalDateTime, endDate: LocalDateTime, lotsDto: LotsDto): ResponseDto<*>
+    fun copyBids(cpId: String, newStage: String, previousStage: String, startDate: LocalDateTime, endDate: LocalDateTime, lots: LotsDto): ResponseDto<*>
 
     fun getPendingBids(cpId: String, stage: String, country: String, pmd: String): ResponseDto<*>
 

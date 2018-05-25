@@ -1,7 +1,6 @@
 package com.procurement.submission.repository
 
 import com.procurement.submission.model.entity.PeriodEntity
-import java.util.Optional
 import org.springframework.data.cassandra.repository.CassandraRepository
 import org.springframework.data.cassandra.repository.Query
 import org.springframework.stereotype.Repository

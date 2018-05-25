@@ -3,7 +3,6 @@ package com.procurement.submission.service
 import com.procurement.notice.exception.ErrorException
 import com.procurement.notice.exception.ErrorType
 import com.procurement.submission.repository.RulesRepository
-import java.util.Optional
 import org.springframework.stereotype.Service
 
 interface RulesService {
@@ -16,7 +15,7 @@ interface RulesService {
 }
 
 @Service
-class RulesServiceImpl(private val rulesRepository: RulesRepository): RulesService {
+class RulesServiceImpl(private val rulesRepository: RulesRepository) : RulesService {
 
     override fun getInterval(country: String, method: String): Int {
         return rulesRepository.getValue(country, method, PARAMETER_INTERVAL)?.toIntOrNull()

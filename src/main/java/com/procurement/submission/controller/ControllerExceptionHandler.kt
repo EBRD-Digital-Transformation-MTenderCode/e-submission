@@ -75,8 +75,10 @@ class ControllerExceptionHandler {
     private fun getErrors(result: BindingResult) =
             result.fieldErrors.asSequence()
                     .map {
-                        ResponseDetailsDto(code = ERROR_PREFIX + it.field, message = """${it.code} : ${it
-                                .defaultMessage}""")
+                        ResponseDetailsDto(
+                                code = ERROR_PREFIX + it.field,
+                                message = """${it.code} : ${it
+                                        .defaultMessage}""")
                     }
                     .toList()
 
@@ -91,7 +93,10 @@ class ControllerExceptionHandler {
 
 
     private fun getErrors(code: String, error: String?) =
-            listOf(ResponseDetailsDto(code = ERROR_PREFIX + code, message = error!!))
+            listOf(ResponseDetailsDto(
+                    code = ERROR_PREFIX + code,
+                    message = error!!)
+            )
 
     companion object {
         private val ERROR_PREFIX = "400.04."
