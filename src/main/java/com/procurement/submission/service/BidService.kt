@@ -19,9 +19,9 @@ import kotlin.collections.ArrayList
 
 interface BidService {
 
-    fun createBid(cpId: String, stage: String, owner: String, bid: Bid): ResponseDto<*>
+    fun createBid(cpId: String, stage: String, owner: String, bidDto: Bid): ResponseDto<*>
 
-    fun updateBid(cpId: String, stage: String, token: String, owner: String, bid: Bid): ResponseDto<*>
+    fun updateBid(cpId: String, stage: String, token: String, owner: String, bidDto: Bid): ResponseDto<*>
 
     fun copyBids(cpId: String, newStage: String, previousStage: String, startDate: LocalDateTime, endDate: LocalDateTime, lots: LotsDto): ResponseDto<*>
 
@@ -43,9 +43,9 @@ class BidServiceImpl(private val generationService: GenerationService,
     override fun createBid(cpId: String,
                            stage: String,
                            owner: String,
-                           bid: Bid): ResponseDto<*> {
+                           bidDto: Bid): ResponseDto<*> {
         periodService.checkCurrentDateInPeriod(cpId, stage)
-        bid.apply {
+        bidDto.apply {
             validateFieldsForCreate(this)
             checkRelatedLotsInDocuments(this)
             processTenderers(this)
@@ -55,24 +55,24 @@ class BidServiceImpl(private val generationService: GenerationService,
             statusDetails = StatusDetails.EMPTY
         }
         val bids = getBidsFromEntities(bidRepository.findAllByCpIdAndStage(cpId, stage))
-        if (!bids.isEmpty()) checkTenderers(bids, bid)
-        val entity = getEntity(bid = bid, cpId = cpId, stage = stage, owner = owner, token = generationService.generateRandomUUID())
+        if (!bids.isEmpty()) checkTenderers(bids, bidDto)
+        val entity = getEntity(bid = bidDto, cpId = cpId, stage = stage, owner = owner, token = generationService.generateRandomUUID())
         bidRepository.save(entity)
-        return getResponseDto(entity.token.toString(), bid)
+        return getResponseDto(entity.token.toString(), bidDto)
     }
 
     override fun updateBid(cpId: String,
                            stage: String,
                            token: String,
                            owner: String,
-                           bid: Bid): ResponseDto<*> {
-        validateFieldsForUpdate(bid)
+                           bidDto: Bid): ResponseDto<*> {
+        validateFieldsForUpdate(bidDto)
         periodService.checkCurrentDateInPeriod(cpId, stage)
-        val entity = bidRepository.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bid.id!!))
+        val entity = bidRepository.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidDto.id!!))
                 ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
-        val bid = toObject(Bid::class.java, entity.jsonData)
+        val bid: Bid = toObject(Bid::class.java, entity.jsonData)
         bid.apply {
             checkRelatedLotsAndSetDocuments(bidDto = bid, bid = this)
             updateValue(stage, bid, this)

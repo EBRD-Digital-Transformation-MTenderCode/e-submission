@@ -19,7 +19,7 @@ import javax.validation.Valid
 @RequestMapping(path = ["/submission"])
 class BidController(private val bidService: BidService) {
 
-    @PostMapping(value = "/bid")
+    @PostMapping("/bid")
     fun createBid(@RequestParam("identifier") cpId: String,
                   @RequestParam("stage") stage: String,
                   @RequestParam("owner") owner: String,
@@ -29,11 +29,11 @@ class BidController(private val bidService: BidService) {
                         cpId = cpId,
                         stage = stage,
                         owner = owner,
-                        bid = data.bid),
+                        bidDto = data.bid),
                 HttpStatus.CREATED)
     }
 
-    @PutMapping(value = "/bid")
+    @PutMapping("/bid")
     fun updateBid(@RequestParam("identifier") cpId: String,
                   @RequestParam("stage") stage: String,
                   @RequestParam("token") token: String,
@@ -45,11 +45,11 @@ class BidController(private val bidService: BidService) {
                         stage = stage,
                         token = token,
                         owner = owner,
-                        bid = data.bid),
+                        bidDto = data.bid),
                 HttpStatus.OK)
     }
 
-    @PostMapping(value = "/copyBids")
+    @PostMapping("/copyBids")
     fun copyBids(@RequestParam("identifier") cpId: String,
                  @RequestParam("stage") newStage: String,
                  @RequestParam("previousStage") previousStage: String,
@@ -69,7 +69,7 @@ class BidController(private val bidService: BidService) {
                 HttpStatus.OK)
     }
 
-    @GetMapping(value = "/bids")
+    @GetMapping("/bids")
     fun getPendingBids(@RequestParam("identifier") cpId: String,
                        @RequestParam("stage") stage: String,
                        @RequestParam("country") country: String,
@@ -83,7 +83,7 @@ class BidController(private val bidService: BidService) {
                 HttpStatus.OK)
     }
 
-    @PostMapping(value = "/updateStatus")
+    @PostMapping("/updateStatus")
     fun updateStatus(@RequestParam("identifier") cpId: String,
                      @RequestParam("stage") stage: String,
                      @RequestParam("country") country: String,
@@ -99,7 +99,7 @@ class BidController(private val bidService: BidService) {
                 HttpStatus.OK)
     }
 
-    @PostMapping(value = "/updateStatusDetails")
+    @PostMapping("/updateStatusDetails")
     fun updateStatusDetails(@RequestParam("identifier") cpId: String,
                             @RequestParam("stage") stage: String,
                             @RequestParam("bidId") bidId: String,
@@ -113,7 +113,7 @@ class BidController(private val bidService: BidService) {
                 HttpStatus.OK)
     }
 
-    @PostMapping(value = "/setFinalStatuses")
+    @PostMapping("/setFinalStatuses")
     fun setFinalStatuses(@RequestParam("identifier") cpId: String,
                          @RequestParam("stage") stage: String,
                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
