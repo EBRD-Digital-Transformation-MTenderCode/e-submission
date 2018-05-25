@@ -15,9 +15,9 @@ data class PeriodEntity(
         @PrimaryKeyColumn(name = "stage", type = PrimaryKeyType.CLUSTERED)
         val stage: String,
 
-        @Column(value = "start_date")
+        @Column("start_date")
         var startDate: Date,
 
-        @Column(value = "end_date")
+        @Column("end_date")
         var endDate: Date
 )

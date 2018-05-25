@@ -24,12 +24,12 @@ data class BidEntity(
         @Column("owner")
         val owner: String,
 
-        @Column(value = "status")
+        @Column("status")
         val status: String,
 
         @Column("created_date")
         var createdDate: Date,
 
-        @Column(value = "json_data")
+        @Column("json_data")
         val jsonData: String
 )
