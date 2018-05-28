@@ -343,11 +343,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <!--<repository>-->
-        <!--<id>spring-libs-snapshot</id>-->
-        <!--<name>Spring Snapshot Repository</name>-->
-        <!--<url>http://repo.spring.io/libs-snapshot</url>-->
-        <!--</repository>-->
     </repositories>
 
     <pluginRepositories>
