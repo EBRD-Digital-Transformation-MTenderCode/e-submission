@@ -4,6 +4,8 @@ import com.datastax.driver.core.Session
 import com.datastax.driver.core.querybuilder.Insert
 import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.*
+import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.entity.BidEntity
 import org.springframework.stereotype.Service
 import java.util.*
@@ -16,7 +18,7 @@ interface BidDao {
 
     fun findAllByCpIdAndStage(cpId: String, stage: String): List<BidEntity>
 
-    fun findByCpIdAndStageAndBidId(cpId: String, stage: String, bidId: UUID): BidEntity?
+    fun findByCpIdAndStageAndBidId(cpId: String, stage: String, bidId: UUID): BidEntity
 
 }
 
@@ -76,10 +78,11 @@ class BidDaoImpl(private val session: Session) : BidDao {
                             createdDate = row.getTimestamp(CREATED_DATE),
                             jsonData = row.getString(JSON_DATA)))
         }
+        if (entities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         return entities
     }
 
-    override fun findByCpIdAndStageAndBidId(cpId: String, stage: String, bidId: UUID): BidEntity? {
+    override fun findByCpIdAndStageAndBidId(cpId: String, stage: String, bidId: UUID): BidEntity {
         val query = select()
                 .all()
                 .from(BID_TABLE)
@@ -96,7 +99,7 @@ class BidDaoImpl(private val session: Session) : BidDao {
                     status = row.getString(STATUS),
                     createdDate = row.getTimestamp(CREATED_DATE),
                     jsonData = row.getString(JSON_DATA))
-        else null
+        else throw ErrorException(ErrorType.BID_NOT_FOUND)
     }
 
     companion object {

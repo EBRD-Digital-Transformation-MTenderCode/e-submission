@@ -69,7 +69,6 @@ class BidServiceImpl(private val generationService: GenerationService,
         validateFieldsForUpdate(bidDto)
         periodService.checkCurrentDateInPeriod(cpId, stage)
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidDto.id!!))
-                ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
@@ -91,7 +90,6 @@ class BidServiceImpl(private val generationService: GenerationService,
                           endDate: LocalDateTime,
                           lots: LotsDto): ResponseDto<*> {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, previousStage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         periodService.savePeriod(cpId, newStage, startDate, endDate)
         val mapValidEntityBid = getBidsForNewStageMap(bidEntities, lots)
         val mapCopyEntityBid = getBidsCopyMap(lots, mapValidEntityBid, newStage)
@@ -122,7 +120,6 @@ class BidServiceImpl(private val generationService: GenerationService,
                               pmd: String,
                               unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto<*> {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bids = getBidsFromEntities(bidEntities)
         val updatedBids = ArrayList<Bid>()
         bids.asSequence()
@@ -155,7 +152,6 @@ class BidServiceImpl(private val generationService: GenerationService,
                                      bidId: String,
                                      awardStatusDetails: AwardStatusDetails): ResponseDto<*> {
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
-                ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bid = toObject(Bid::class.java, entity.jsonData)
         when (awardStatusDetails) {
             AwardStatusDetails.EMPTY -> bid.statusDetails = StatusDetails.EMPTY
@@ -171,7 +167,6 @@ class BidServiceImpl(private val generationService: GenerationService,
                                   stage: String,
                                   dateTime: LocalDateTime): ResponseDto<*> {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bids = getBidsFromEntities(bidEntities)
         for (bid in bids) {
             bid.apply {

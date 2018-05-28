@@ -78,7 +78,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
     }
 
     override fun getPeriod(cpId: String, stage: String): PeriodEntity {
-        return periodDao.getByCpIdAndStage(cpId, stage) ?: throw ErrorException(ErrorType.PERIOD_NOT_FOUND)
+        return periodDao.getByCpIdAndStage(cpId, stage)
     }
 
     override fun checkPeriod(cpId: String,
