@@ -1,6 +1,7 @@
 package com.procurement.submission.service
 
 import com.google.common.base.Strings
+import com.procurement.access.dao.BidDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.ResponseDto
@@ -10,7 +11,6 @@ import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
 import com.procurement.submission.model.dto.response.*
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.model.dto.ocds.*
-import com.procurement.submission.repository.BidRepository
 import com.procurement.submission.utils.*
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -38,7 +38,7 @@ interface BidService {
 class BidServiceImpl(private val generationService: GenerationService,
                      private val rulesService: RulesService,
                      private val periodService: PeriodService,
-                     private val bidRepository: BidRepository) : BidService {
+                     private val bidDao: BidDao) : BidService {
 
     override fun createBid(cpId: String,
                            stage: String,
@@ -54,10 +54,10 @@ class BidServiceImpl(private val generationService: GenerationService,
             status = Status.PENDING
             statusDetails = StatusDetails.EMPTY
         }
-        val bids = getBidsFromEntities(bidRepository.findAllByCpIdAndStage(cpId, stage))
+        val bids = getBidsFromEntities(bidDao.findAllByCpIdAndStage(cpId, stage))
         if (!bids.isEmpty()) checkTenderers(bids, bidDto)
         val entity = getEntity(bid = bidDto, cpId = cpId, stage = stage, owner = owner, token = generationService.generateRandomUUID())
-        bidRepository.save(entity)
+        bidDao.save(entity)
         return getResponseDto(entity.token.toString(), bidDto)
     }
 
@@ -68,7 +68,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                            bidDto: Bid): ResponseDto<*> {
         validateFieldsForUpdate(bidDto)
         periodService.checkCurrentDateInPeriod(cpId, stage)
-        val entity = bidRepository.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidDto.id!!))
+        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidDto.id!!))
                 ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
@@ -80,7 +80,7 @@ class BidServiceImpl(private val generationService: GenerationService,
             status = Status.fromValue(bid.statusDetails!!.value())
             statusDetails = StatusDetails.EMPTY
         }
-        bidRepository.save(getEntity(bid = bid, cpId = cpId, stage = stage, owner = owner, token = entity.token))
+        bidDao.save(getEntity(bid = bid, cpId = cpId, stage = stage, owner = owner, token = entity.token))
         return getResponseDto(token, bid)
     }
 
@@ -90,12 +90,12 @@ class BidServiceImpl(private val generationService: GenerationService,
                           startDate: LocalDateTime,
                           endDate: LocalDateTime,
                           lots: LotsDto): ResponseDto<*> {
-        val bidEntities = bidRepository.findAllByCpIdAndStage(cpId, previousStage)
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, previousStage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         periodService.savePeriod(cpId, newStage, startDate, endDate)
         val mapValidEntityBid = getBidsForNewStageMap(bidEntities, lots)
         val mapCopyEntityBid = getBidsCopyMap(lots, mapValidEntityBid, newStage)
-        bidRepository.saveAll(mapCopyEntityBid.keys)
+        bidDao.saveAll(mapCopyEntityBid.keys.toList())
         val bids = ArrayList(mapCopyEntityBid.values)
         return ResponseDto(true, null,
                 BidsCopyResponseDto(Bids(bids), Period(startDate, endDate)))
@@ -106,7 +106,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                                 country: String,
                                 pmd: String): ResponseDto<*> {
         periodService.checkIsPeriodExpired(cpId, stage)
-        val bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage)
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         val pendingBids = getPendingBids(bidEntities)
         val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
         val relatedLotsFromBids = getRelatedLotsIdFromBids(pendingBids)
@@ -121,7 +121,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                               country: String,
                               pmd: String,
                               unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto<*> {
-        val bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage)
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bids = getBidsFromEntities(bidEntities)
         val updatedBids = ArrayList<Bid>()
@@ -144,7 +144,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                     updatedBids.add(bid)
                 }
         val updatedBidEntities = getUpdatedBidEntities(bidEntities, updatedBids)
-        bidRepository.saveAll(updatedBidEntities)
+        bidDao.saveAll(updatedBidEntities)
         val period = periodService.getPeriod(cpId, stage)
         return ResponseDto(true, null,
                 BidsUpdateStatusResponseDto(Period(period.startDate.toLocal(), period.endDate.toLocal()), bids))
@@ -154,7 +154,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                                      stage: String,
                                      bidId: String,
                                      awardStatusDetails: AwardStatusDetails): ResponseDto<*> {
-        val entity = bidRepository.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
+        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
                 ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bid = toObject(Bid::class.java, entity.jsonData)
         when (awardStatusDetails) {
@@ -163,14 +163,14 @@ class BidServiceImpl(private val generationService: GenerationService,
             AwardStatusDetails.UNSUCCESSFUL -> bid.statusDetails = StatusDetails.DISQUALIFIED
         }
         bid.date = localNowUTC()
-        bidRepository.save(getEntity(bid = bid, cpId = cpId, stage = entity.stage, owner = entity.owner, token = entity.token))
+        bidDao.save(getEntity(bid = bid, cpId = cpId, stage = entity.stage, owner = entity.owner, token = entity.token))
         return ResponseDto(true, null, BidsUpdateStatusDetailsResponseDto(getBidUpdate(bid)))
     }
 
     override fun setFinalStatuses(cpId: String,
                                   stage: String,
                                   dateTime: LocalDateTime): ResponseDto<*> {
-        val bidEntities = bidRepository.findAllByCpIdAndStage(cpId, stage)
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bids = getBidsFromEntities(bidEntities)
         for (bid in bids) {
@@ -187,7 +187,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                 }
             }
         }
-        bidRepository.saveAll(getUpdatedBidEntities(bidEntities, bids))
+        bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
         return ResponseDto(true, null, BidsFinalStatusResponseDto(bids))
     }
 

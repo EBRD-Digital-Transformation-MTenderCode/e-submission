@@ -60,15 +60,6 @@
         </dependency>
         <!--cassandra-->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-cassandra</artifactId>
-        </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.data</groupId>-->
-            <!--<artifactId>spring-data-commons</artifactId>-->
-            <!--<version>2.1.0.DATACMNS-1245-SNAPSHOT</version>-->
-        <!--</dependency>-->
-        <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
             <version>3.3.0</version>
@@ -353,9 +344,9 @@
             </snapshots>
         </repository>
         <!--<repository>-->
-            <!--<id>spring-libs-snapshot</id>-->
-            <!--<name>Spring Snapshot Repository</name>-->
-            <!--<url>http://repo.spring.io/libs-snapshot</url>-->
+        <!--<id>spring-libs-snapshot</id>-->
+        <!--<name>Spring Snapshot Repository</name>-->
+        <!--<url>http://repo.spring.io/libs-snapshot</url>-->
         <!--</repository>-->
     </repositories>
 

@@ -1,18 +1,19 @@
 package com.procurement.submission.service
 
+import com.procurement.access.dao.PeriodDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto
 import com.procurement.submission.model.entity.PeriodEntity
-import com.procurement.submission.model.dto.ocds.Period
-import com.procurement.submission.repository.PeriodRepository
 import com.procurement.submission.utils.localNowUTC
 import com.procurement.submission.utils.toDate
 import com.procurement.submission.utils.toLocal
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 interface PeriodService {
 
@@ -32,20 +33,19 @@ interface PeriodService {
 }
 
 @Service
-class PeriodServiceImpl(private val periodRepository: PeriodRepository,
+class PeriodServiceImpl(private val periodDao: PeriodDao,
                         private val rulesService: RulesService) : PeriodService {
 
     override fun savePeriod(cpId: String,
                             stage: String,
                             startDate: LocalDateTime,
                             endDate: LocalDateTime): ResponseDto<*> {
-        val period = PeriodEntity(
+        val period = getEntity(
                 cpId = cpId,
                 stage = stage,
                 startDate = startDate.toDate(),
-                endDate = endDate.toDate()
-        )
-        periodRepository.save(period)
+                endDate = endDate.toDate())
+        periodDao.save(period)
         return ResponseDto(true, null, Period(period.startDate.toLocal(), period.endDate.toLocal()))
     }
 
@@ -54,15 +54,19 @@ class PeriodServiceImpl(private val periodRepository: PeriodRepository,
                                country: String,
                                pmd: String,
                                startDate: LocalDateTime): ResponseDto<*> {
-        val period = getPeriod(cpId, stage)
+        val oldPeriod = getPeriod(cpId, stage)
         val unsuspendInterval = rulesService.getUnsuspendInterval(country, pmd)
-        if (TEST_PARAM == country) {
-            period.endDate = startDate.plusMinutes(unsuspendInterval.toLong()).toDate()
-        } else {
-            period.endDate = startDate.plusDays(unsuspendInterval.toLong()).toDate()
+        val endDate = when (country) {
+            TEST_PARAM -> startDate.plusMinutes(unsuspendInterval.toLong())
+            else -> startDate.plusDays(unsuspendInterval.toLong())
         }
-        periodRepository.save(period)
-        return ResponseDto(true, null, Period(period.startDate.toLocal(), period.endDate.toLocal()))
+        val newPeriod = getEntity(
+                cpId = cpId,
+                stage = stage,
+                startDate = oldPeriod.startDate,
+                endDate = endDate.toDate())
+        periodDao.save(newPeriod)
+        return ResponseDto(true, null, Period(newPeriod.startDate.toLocal(), newPeriod.endDate.toLocal()))
     }
 
     override fun checkCurrentDateInPeriod(cpId: String, stage: String) {
@@ -74,7 +78,7 @@ class PeriodServiceImpl(private val periodRepository: PeriodRepository,
     }
 
     override fun getPeriod(cpId: String, stage: String): PeriodEntity {
-        return periodRepository.getByCpIdAndStage(cpId, stage) ?: throw ErrorException(ErrorType.PERIOD_NOT_FOUND)
+        return periodDao.getByCpIdAndStage(cpId, stage) ?: throw ErrorException(ErrorType.PERIOD_NOT_FOUND)
     }
 
     override fun checkPeriod(cpId: String,
@@ -126,6 +130,18 @@ class PeriodServiceImpl(private val periodRepository: PeriodRepository,
         }
         val days = ChronoUnit.DAYS.between(startDate, endDate)
         return days >= interval
+    }
+
+    private fun getEntity(cpId: String,
+                          stage: String,
+                          startDate: Date,
+                          endDate: Date): PeriodEntity {
+        return PeriodEntity(
+                cpId = cpId,
+                stage = stage,
+                startDate = startDate,
+                endDate = endDate
+        )
     }
 
     companion object {

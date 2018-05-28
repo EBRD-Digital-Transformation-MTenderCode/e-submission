@@ -5,19 +5,19 @@ import org.springframework.data.cassandra.core.mapping.Column
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn
 import org.springframework.data.cassandra.core.mapping.Table
 
-@Table( "submission_rules")
+//@Table( "submission_rules")
 data class RulesEntity(
 
-        @PrimaryKeyColumn(name = "country", type = PrimaryKeyType.PARTITIONED)
+//        @PrimaryKeyColumn(name = "country", type = PrimaryKeyType.PARTITIONED)
         val country: String,
 
-        @PrimaryKeyColumn(name = "pmd", type = PrimaryKeyType.CLUSTERED)
+//        @PrimaryKeyColumn(name = "pmd", type = PrimaryKeyType.CLUSTERED)
         val method: String,
 
-        @PrimaryKeyColumn(name = "parameter", type = PrimaryKeyType.CLUSTERED)
+//        @PrimaryKeyColumn(name = "parameter", type = PrimaryKeyType.CLUSTERED)
         val parameter: String,
 
-        @Column("value")
+//        @Column("value")
         val value: String
 )
 

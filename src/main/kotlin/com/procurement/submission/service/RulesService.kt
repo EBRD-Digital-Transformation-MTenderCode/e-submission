@@ -1,8 +1,8 @@
 package com.procurement.submission.service
 
+import com.procurement.access.dao.RulesDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
-import com.procurement.submission.repository.RulesRepository
 import org.springframework.stereotype.Service
 
 interface RulesService {
@@ -15,20 +15,20 @@ interface RulesService {
 }
 
 @Service
-class RulesServiceImpl(private val rulesRepository: RulesRepository) : RulesService {
+class RulesServiceImpl(private val rulesDao: RulesDao) : RulesService {
 
     override fun getInterval(country: String, method: String): Int {
-        return rulesRepository.getValue(country, method, PARAMETER_INTERVAL)?.toIntOrNull()
+        return rulesDao.getValue(country, method, PARAMETER_INTERVAL)?.toIntOrNull()
                 ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
     }
 
     override fun getUnsuspendInterval(country: String, method: String): Int {
-        return rulesRepository.getValue(country, method, PARAMETER_UNSUSPEND_INTERVAL)?.toIntOrNull()
+        return rulesDao.getValue(country, method, PARAMETER_UNSUSPEND_INTERVAL)?.toIntOrNull()
                 ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
     }
 
     override fun getRulesMinBids(country: String, method: String): Int {
-        return rulesRepository.getValue(country, method, PARAMETER_MIN_BIDS)?.toIntOrNull()
+        return rulesDao.getValue(country, method, PARAMETER_MIN_BIDS)?.toIntOrNull()
                 ?: throw ErrorException(ErrorType.BIDS_RULES_NOT_FOUND)
     }
 
