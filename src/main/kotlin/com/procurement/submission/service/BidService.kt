@@ -1,7 +1,7 @@
 package com.procurement.submission.service
 
 import com.google.common.base.Strings
-import com.procurement.access.dao.BidDao
+import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.ResponseDto

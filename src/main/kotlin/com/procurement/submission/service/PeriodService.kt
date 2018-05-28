@@ -1,6 +1,6 @@
 package com.procurement.submission.service
 
-import com.procurement.access.dao.PeriodDao
+import com.procurement.submission.dao.PeriodDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.ResponseDto

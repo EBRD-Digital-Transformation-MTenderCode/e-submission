@@ -1,4 +1,4 @@
-package com.procurement.access.dao
+package com.procurement.submission.dao
 
 import com.datastax.driver.core.Session
 import com.datastax.driver.core.querybuilder.QueryBuilder.eq

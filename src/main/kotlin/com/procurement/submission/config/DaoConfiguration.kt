@@ -1,4 +1,4 @@
-package com.procurement.access.config
+package com.procurement.submission.config
 
 import com.datastax.driver.core.Cluster
 import com.datastax.driver.core.PlainTextAuthProvider
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration
 
 @Configuration
 @EnableConfigurationProperties(CassandraProperties::class)
-@ComponentScan(basePackages = ["com.procurement.access.dao"])
+@ComponentScan(basePackages = ["com.procurement.submission.dao"])
 class DaoConfiguration constructor(private val cassandraProperties: CassandraProperties) {
 
     internal val cluster: Cluster

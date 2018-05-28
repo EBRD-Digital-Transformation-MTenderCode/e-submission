@@ -4,5 +4,5 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-@ComponentScan(basePackages = arrayOf("com.procurement.submission.service"))
+@ComponentScan(basePackages = ["com.procurement.submission.service"])
 class ServiceConfig
