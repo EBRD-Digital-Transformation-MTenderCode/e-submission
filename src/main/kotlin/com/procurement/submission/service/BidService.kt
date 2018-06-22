@@ -54,9 +54,9 @@ class BidServiceImpl(private val generationService: GenerationService,
             status = Status.PENDING
             statusDetails = StatusDetails.EMPTY
         }
-        val entities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (entities.isNotEmpty()) {
-            checkTenderers(getBidsFromEntities(entities), bidDto)
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isNotEmpty()) {
+            checkTenderers(getBidsFromEntities(bidEntities), bidDto)
         }
         val entity = getEntity(bid = bidDto, cpId = cpId, stage = stage, owner = owner, token = generationService.generateRandomUUID())
         bidDao.save(entity)
@@ -92,6 +92,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                           endDate: LocalDateTime,
                           lots: LotsDto): ResponseDto<*> {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, previousStage)
+        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         periodService.savePeriod(cpId, newStage, startDate, endDate)
         val mapValidEntityBid = getBidsForNewStageMap(bidEntities, lots)
         val mapCopyEntityBid = getBidsCopyMap(lots, mapValidEntityBid, newStage)
@@ -107,6 +108,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                                 pmd: String): ResponseDto<*> {
         periodService.checkIsPeriodExpired(cpId, stage)
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val pendingBids = getPendingBids(bidEntities)
         val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
         val relatedLotsFromBids = getRelatedLotsIdFromBids(pendingBids)
@@ -122,6 +124,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                               pmd: String,
                               unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto<*> {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bids = getBidsFromEntities(bidEntities)
         val updatedBids = ArrayList<Bid>()
         bids.asSequence()
@@ -169,6 +172,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                                   stage: String,
                                   dateTime: LocalDateTime): ResponseDto<*> {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bids = getBidsFromEntities(bidEntities)
         for (bid in bids) {
             bid.apply {
