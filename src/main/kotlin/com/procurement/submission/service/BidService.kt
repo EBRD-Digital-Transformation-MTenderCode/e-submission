@@ -5,12 +5,12 @@ import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.LotsDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
 import com.procurement.submission.model.dto.response.*
 import com.procurement.submission.model.entity.BidEntity
-import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.utils.*
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -54,8 +54,10 @@ class BidServiceImpl(private val generationService: GenerationService,
             status = Status.PENDING
             statusDetails = StatusDetails.EMPTY
         }
-        val bids = getBidsFromEntities(bidDao.findAllByCpIdAndStage(cpId, stage))
-        if (!bids.isEmpty()) checkTenderers(bids, bidDto)
+        val entities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (entities.isNotEmpty()) {
+            checkTenderers(getBidsFromEntities(entities), bidDto)
+        }
         val entity = getEntity(bid = bidDto, cpId = cpId, stage = stage, owner = owner, token = generationService.generateRandomUUID())
         bidDao.save(entity)
         return getResponseDto(entity.token.toString(), bidDto)

@@ -78,7 +78,6 @@ class BidDaoImpl(private val session: Session) : BidDao {
                             createdDate = row.getTimestamp(CREATED_DATE),
                             jsonData = row.getString(JSON_DATA)))
         }
-        if (entities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         return entities
     }
 
