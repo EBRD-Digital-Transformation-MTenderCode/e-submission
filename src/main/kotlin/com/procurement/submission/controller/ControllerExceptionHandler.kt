@@ -16,8 +16,23 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import javax.servlet.ServletException
 import javax.validation.ConstraintViolationException
 
+
 @ControllerAdvice
 class ControllerExceptionHandler {
+
+    @ResponseBody
+    @ResponseStatus(OK)
+    @ExceptionHandler(Exception::class)
+    fun handle(ex: Exception) {
+        ResponseDto(false, getErrors("Exception", ex.message), null)
+    }
+
+    @ResponseBody
+    @ResponseStatus(OK)
+    @ExceptionHandler(NoSuchElementException::class)
+    fun handle(ex: NoSuchElementException) {
+        ResponseDto(false, getErrors("NoSuchElementException", ex.message), null)
+    }
 
     @ResponseBody
     @ResponseStatus(OK)
@@ -76,7 +91,7 @@ class ControllerExceptionHandler {
             result.fieldErrors.asSequence()
                     .map {
                         ResponseDetailsDto(
-                                code = ERROR_PREFIX + it.field,
+                                code = "400.04." + it.field,
                                 message = """${it.code} : ${it
                                         .defaultMessage}""")
                     }
@@ -86,17 +101,14 @@ class ControllerExceptionHandler {
             e.constraintViolations.asSequence()
                     .map {
                         ResponseDetailsDto(
-                                code = ERROR_PREFIX + it.propertyPath.toString(),
+                                code = "400.04." + it.propertyPath.toString(),
                                 message = """${it.message} ${it.messageTemplate}""")
                     }
                     .toList()
 
 
     private fun getErrors(code: String, error: String?) =
-            listOf(ResponseDetailsDto(
-                    code = ERROR_PREFIX + code,
-                    message = error!!)
-            )
+            listOf(ResponseDetailsDto(code = "400.04." + code, message = error!!))
 
     companion object {
         private val ERROR_PREFIX = "400.04."

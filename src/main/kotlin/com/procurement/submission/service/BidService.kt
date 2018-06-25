@@ -341,8 +341,8 @@ class BidServiceImpl(private val generationService: GenerationService,
         val entities = ArrayList<BidEntity>()
         bidEntities.asSequence().forEach { entity ->
             bids.asSequence()
-                    .first { it.id == entity.bidId.toString() }
-                    .let { bid ->
+                    .firstOrNull{ it.id == entity.bidId.toString() }
+                    ?.let { bid ->
                         entities.add(getEntity(
                                 bid = bid,
                                 cpId = entity.cpId,
