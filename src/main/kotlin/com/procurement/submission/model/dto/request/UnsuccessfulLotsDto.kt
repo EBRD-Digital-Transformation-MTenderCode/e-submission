@@ -1,10 +1,10 @@
 package com.procurement.submission.model.dto.request
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonCreator
 import javax.validation.constraints.NotEmpty
 
-data class UnsuccessfulLotsDto(
+data class UnsuccessfulLotsDto @JsonCreator constructor(
 
-        @JsonProperty("unsuccessfulLots") @NotEmpty
-        val lots: List<LotDto>?
+        @field:NotEmpty
+        val unsuccessfulLots: List<LotDto>?
 )

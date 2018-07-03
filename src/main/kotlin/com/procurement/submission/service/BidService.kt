@@ -19,19 +19,19 @@ import kotlin.collections.ArrayList
 
 interface BidService {
 
-    fun createBid(cpId: String, stage: String, owner: String, bidDto: Bid): ResponseDto<*>
+    fun createBid(cpId: String, stage: String, owner: String, bidDto: Bid): ResponseDto
 
-    fun updateBid(cpId: String, stage: String, token: String, owner: String, bidDto: Bid): ResponseDto<*>
+    fun updateBid(cpId: String, stage: String, token: String, owner: String, bidDto: Bid): ResponseDto
 
-    fun copyBids(cpId: String, newStage: String, previousStage: String, startDate: LocalDateTime, endDate: LocalDateTime, lots: LotsDto): ResponseDto<*>
+    fun copyBids(cpId: String, newStage: String, previousStage: String, startDate: LocalDateTime, endDate: LocalDateTime, lots: LotsDto): ResponseDto
 
-    fun getPendingBids(cpId: String, stage: String, country: String, pmd: String): ResponseDto<*>
+    fun getPendingBids(cpId: String, stage: String, country: String, pmd: String): ResponseDto
 
-    fun updateStatus(cpId: String, stage: String, country: String, pmd: String, unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto<*>
+    fun updateStatus(cpId: String, stage: String, country: String, pmd: String, unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto
 
-    fun updateStatusDetails(cpId: String, stage: String, bidId: String, awardStatusDetails: AwardStatusDetails): ResponseDto<*>
+    fun updateStatusDetails(cpId: String, stage: String, bidId: String, awardStatusDetails: AwardStatusDetails): ResponseDto
 
-    fun setFinalStatuses(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto<*>
+    fun setFinalStatuses(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
 }
 
 @Service
@@ -43,7 +43,7 @@ class BidServiceImpl(private val generationService: GenerationService,
     override fun createBid(cpId: String,
                            stage: String,
                            owner: String,
-                           bidDto: Bid): ResponseDto<*> {
+                           bidDto: Bid): ResponseDto {
         periodService.checkCurrentDateInPeriod(cpId, stage)
         bidDto.apply {
             validateFieldsForCreate(this)
@@ -67,7 +67,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                            stage: String,
                            token: String,
                            owner: String,
-                           bidDto: Bid): ResponseDto<*> {
+                           bidDto: Bid): ResponseDto {
         validateFieldsForUpdate(bidDto)
         periodService.checkCurrentDateInPeriod(cpId, stage)
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidDto.id!!))
@@ -90,7 +90,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                           previousStage: String,
                           startDate: LocalDateTime,
                           endDate: LocalDateTime,
-                          lots: LotsDto): ResponseDto<*> {
+                          lots: LotsDto): ResponseDto {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, previousStage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         periodService.savePeriod(cpId, newStage, startDate, endDate)
@@ -105,7 +105,7 @@ class BidServiceImpl(private val generationService: GenerationService,
     override fun getPendingBids(cpId: String,
                                 stage: String,
                                 country: String,
-                                pmd: String): ResponseDto<*> {
+                                pmd: String): ResponseDto {
         periodService.checkIsPeriodExpired(cpId, stage)
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
@@ -122,7 +122,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                               stage: String,
                               country: String,
                               pmd: String,
-                              unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto<*> {
+                              unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bids = getBidsFromEntities(bidEntities)
@@ -135,7 +135,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                     bid.statusDetails = StatusDetails.EMPTY
                     updatedBids.add(bid)
                 }
-        val lotsIds = collectLots(unsuccessfulLots.lots)
+        val lotsIds = collectLots(unsuccessfulLots.unsuccessfulLots)
         bids.asSequence()
                 .filter { it.relatedLots != null }
                 .filter { it.relatedLots!!.containsAny(lotsIds) }
@@ -155,7 +155,7 @@ class BidServiceImpl(private val generationService: GenerationService,
     override fun updateStatusDetails(cpId: String,
                                      stage: String,
                                      bidId: String,
-                                     awardStatusDetails: AwardStatusDetails): ResponseDto<*> {
+                                     awardStatusDetails: AwardStatusDetails): ResponseDto {
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         val bid = toObject(Bid::class.java, entity.jsonData)
         when (awardStatusDetails) {
@@ -170,7 +170,7 @@ class BidServiceImpl(private val generationService: GenerationService,
 
     override fun setFinalStatuses(cpId: String,
                                   stage: String,
-                                  dateTime: LocalDateTime): ResponseDto<*> {
+                                  dateTime: LocalDateTime): ResponseDto {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bids = getBidsFromEntities(bidEntities)
@@ -341,7 +341,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         val entities = ArrayList<BidEntity>()
         bidEntities.asSequence().forEach { entity ->
             bids.asSequence()
-                    .firstOrNull{ it.id == entity.bidId.toString() }
+                    .firstOrNull { it.id == entity.bidId.toString() }
                     ?.let { bid ->
                         entities.add(getEntity(
                                 bid = bid,
@@ -354,7 +354,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         return entities
     }
 
-    private fun getResponseDto(token: String, bid: Bid): ResponseDto<BidResponseDto> {
+    private fun getResponseDto(token: String, bid: Bid): ResponseDto {
         return ResponseDto(true, null, BidResponseDto(token, bid.id!!, bid))
     }
 

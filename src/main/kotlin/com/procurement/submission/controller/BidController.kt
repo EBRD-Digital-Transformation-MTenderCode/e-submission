@@ -1,10 +1,10 @@
 package com.procurement.submission.controller
 
 import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.ocds.AwardStatusDetails
 import com.procurement.submission.model.dto.request.BidRequestDto
 import com.procurement.submission.model.dto.request.LotsDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
-import com.procurement.submission.model.dto.ocds.AwardStatusDetails
 import com.procurement.submission.service.BidService
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
@@ -23,7 +23,7 @@ class BidController(private val bidService: BidService) {
     fun createBid(@RequestParam("identifier") cpId: String,
                   @RequestParam("stage") stage: String,
                   @RequestParam("owner") owner: String,
-                  @Valid @RequestBody data: BidRequestDto): ResponseEntity<ResponseDto<*>> {
+                  @Valid @RequestBody data: BidRequestDto): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 bidService.createBid(
                         cpId = cpId,
@@ -38,7 +38,7 @@ class BidController(private val bidService: BidService) {
                   @RequestParam("stage") stage: String,
                   @RequestParam("token") token: String,
                   @RequestParam("owner") owner: String,
-                  @Valid @RequestBody data: BidRequestDto): ResponseEntity<ResponseDto<*>> {
+                  @Valid @RequestBody data: BidRequestDto): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 bidService.updateBid(
                         cpId = cpId,
@@ -57,7 +57,7 @@ class BidController(private val bidService: BidService) {
                  @RequestParam("startDate") startDate: LocalDateTime,
                  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                  @RequestParam("endDate") endDate: LocalDateTime,
-                 @Valid @RequestBody data: LotsDto): ResponseEntity<ResponseDto<*>> {
+                 @Valid @RequestBody data: LotsDto): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 bidService.copyBids(
                         cpId = cpId,
@@ -73,7 +73,7 @@ class BidController(private val bidService: BidService) {
     fun getPendingBids(@RequestParam("identifier") cpId: String,
                        @RequestParam("stage") stage: String,
                        @RequestParam("country") country: String,
-                       @RequestParam("pmd") pmd: String): ResponseEntity<ResponseDto<*>> {
+                       @RequestParam("pmd") pmd: String): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 bidService.getPendingBids(
                         cpId = cpId,
@@ -88,7 +88,7 @@ class BidController(private val bidService: BidService) {
                      @RequestParam("stage") stage: String,
                      @RequestParam("country") country: String,
                      @RequestParam("pmd") pmd: String,
-                     @RequestBody data: UnsuccessfulLotsDto): ResponseEntity<ResponseDto<*>> {
+                     @RequestBody data: UnsuccessfulLotsDto): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 bidService.updateStatus(
                         cpId = cpId,
@@ -103,7 +103,7 @@ class BidController(private val bidService: BidService) {
     fun updateStatusDetails(@RequestParam("identifier") cpId: String,
                             @RequestParam("stage") stage: String,
                             @RequestParam("bidId") bidId: String,
-                            @RequestParam("awardStatusDetails") awardStatusDetails: String): ResponseEntity<ResponseDto<*>> {
+                            @RequestParam("awardStatusDetails") awardStatusDetails: String): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 bidService.updateStatusDetails(
                         cpId = cpId,
@@ -118,7 +118,7 @@ class BidController(private val bidService: BidService) {
                          @RequestParam("stage") stage: String,
                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                          @RequestParam("date")
-                         dateTime: LocalDateTime): ResponseEntity<ResponseDto<*>> {
+                         dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 bidService.setFinalStatuses(
                         cpId = cpId,

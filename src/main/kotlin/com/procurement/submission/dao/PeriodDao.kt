@@ -1,15 +1,11 @@
 package com.procurement.submission.dao
 
 import com.datastax.driver.core.Session
-import com.datastax.driver.core.querybuilder.Insert
-import com.datastax.driver.core.querybuilder.QueryBuilder
 import com.datastax.driver.core.querybuilder.QueryBuilder.*
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
-import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.model.entity.PeriodEntity
 import org.springframework.stereotype.Service
-import java.util.*
 
 interface PeriodDao {
 
@@ -32,7 +28,7 @@ class PeriodDaoImpl(private val session: Session) : PeriodDao {
         session.execute(insert)
     }
 
-    override fun getByCpIdAndStage(cpId: String, stage: String): PeriodEntity{
+    override fun getByCpIdAndStage(cpId: String, stage: String): PeriodEntity {
         val query = select()
                 .all()
                 .from(PERIOD_TABLE)

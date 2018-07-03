@@ -17,9 +17,9 @@ import java.util.*
 
 interface PeriodService {
 
-    fun savePeriod(cpId: String, stage: String, startDate: LocalDateTime, endDate: LocalDateTime): ResponseDto<*>
+    fun savePeriod(cpId: String, stage: String, startDate: LocalDateTime, endDate: LocalDateTime): ResponseDto
 
-    fun saveNewPeriod(cpId: String, stage: String, country: String, pmd: String, startDate: LocalDateTime): ResponseDto<*>
+    fun saveNewPeriod(cpId: String, stage: String, country: String, pmd: String, startDate: LocalDateTime): ResponseDto
 
     fun checkCurrentDateInPeriod(cpId: String, stage: String)
 
@@ -27,9 +27,9 @@ interface PeriodService {
 
     fun getPeriod(cpId: String, stage: String): PeriodEntity
 
-    fun checkPeriod(cpId: String, country: String, pmd: String, stage: String, startDate: LocalDateTime, endDate: LocalDateTime): ResponseDto<*>
+    fun checkPeriod(cpId: String, country: String, pmd: String, stage: String, startDate: LocalDateTime, endDate: LocalDateTime): ResponseDto
 
-    fun periodValidation(country: String, pmd: String, startDate: LocalDateTime, endDate: LocalDateTime): ResponseDto<*>
+    fun periodValidation(country: String, pmd: String, startDate: LocalDateTime, endDate: LocalDateTime): ResponseDto
 }
 
 @Service
@@ -39,7 +39,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
     override fun savePeriod(cpId: String,
                             stage: String,
                             startDate: LocalDateTime,
-                            endDate: LocalDateTime): ResponseDto<*> {
+                            endDate: LocalDateTime): ResponseDto {
         val period = getEntity(
                 cpId = cpId,
                 stage = stage,
@@ -53,7 +53,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                                stage: String,
                                country: String,
                                pmd: String,
-                               startDate: LocalDateTime): ResponseDto<*> {
+                               startDate: LocalDateTime): ResponseDto {
         val oldPeriod = getPeriod(cpId, stage)
         val unsuspendInterval = rulesService.getUnsuspendInterval(country, pmd)
         val endDate = when (country) {
@@ -86,7 +86,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                              pmd: String,
                              stage: String,
                              startDate: LocalDateTime,
-                             endDate: LocalDateTime): ResponseDto<*> {
+                             endDate: LocalDateTime): ResponseDto {
         return ResponseDto(true, null,
                 CheckPeriodResponseDto(
                         checkInterval(country, pmd, startDate, endDate),
@@ -96,7 +96,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
     override fun periodValidation(country: String,
                                   pmd: String,
                                   startDate: LocalDateTime,
-                                  endDate: LocalDateTime): ResponseDto<*> {
+                                  endDate: LocalDateTime): ResponseDto {
         if (!checkInterval(country, pmd, startDate, endDate)) throw ErrorException(ErrorType.INVALID_PERIOD)
         return ResponseDto(true, null, "Period is valid.")
     }

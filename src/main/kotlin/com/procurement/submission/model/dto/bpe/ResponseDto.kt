@@ -3,7 +3,7 @@ package com.procurement.submission.model.dto.bpe
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class ResponseDto<out T>(
+data class ResponseDto(
 
         @JsonProperty("success")
         @get:JsonProperty("success")
@@ -15,5 +15,5 @@ data class ResponseDto<out T>(
 
         @JsonProperty("data")
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        val data: T?
+        val data: Any?
 )

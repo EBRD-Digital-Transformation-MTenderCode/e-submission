@@ -21,7 +21,7 @@ class PeriodController(private val periodService: PeriodService) {
                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                    @RequestParam("startDate") startDate: LocalDateTime,
                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                   @RequestParam("endDate") endDate: LocalDateTime): ResponseEntity<ResponseDto<*>> {
+                   @RequestParam("endDate") endDate: LocalDateTime): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 periodService.savePeriod(
                         cpId = cpId,
@@ -37,7 +37,7 @@ class PeriodController(private val periodService: PeriodService) {
                       @RequestParam("country") country: String,
                       @RequestParam("pmd") pmd: String,
                       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                      @RequestParam("startDate") startDate: LocalDateTime): ResponseEntity<ResponseDto<*>> {
+                      @RequestParam("startDate") startDate: LocalDateTime): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 periodService.saveNewPeriod(
                         cpId = cpId,
@@ -54,7 +54,7 @@ class PeriodController(private val periodService: PeriodService) {
                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                          @RequestParam("startDate") startDate: LocalDateTime,
                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                         @RequestParam("endDate") endDate: LocalDateTime): ResponseEntity<ResponseDto<*>> {
+                         @RequestParam("endDate") endDate: LocalDateTime): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 periodService.periodValidation(
                         country = country,
@@ -74,7 +74,7 @@ class PeriodController(private val periodService: PeriodService) {
                     startDate: LocalDateTime,
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     @RequestParam("endDate")
-                    endDate: LocalDateTime): ResponseEntity<ResponseDto<*>> {
+                    endDate: LocalDateTime): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 periodService.checkPeriod(
                         cpId = cpId,

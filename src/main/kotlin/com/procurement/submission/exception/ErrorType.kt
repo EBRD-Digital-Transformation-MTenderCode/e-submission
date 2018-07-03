@@ -1,11 +1,12 @@
 package com.procurement.submission.exception
 
 enum class ErrorType constructor(val code: String, val message: String) {
+    INVALID_JSON_TYPE("00.00", "Invalid type: "),
     BID_NOT_FOUND("00.01", "Bids not found."),
     INVALID_OWNER("00.02", "Invalid owner."),
     INVALID_TOKEN("00.03", "Invalid token."),
     INVALID_ID("00.04", "Bid id must not be empty."),
-    INVALID_RELATED_LOT("00.05", "Invalid related lots in documents."),
+    INVALID_RELATED_LOT("00.05", "Invalid related unsuccessfulLots in documents."),
     ID_NOT_NULL("00.06", "Bid id must be empty."),
     STATUS_IS_NULL("00.07", "Status must not be empty."),
     STATUS_DETAIL_IS_NULL("00.08", "Status detail must not be empty."),

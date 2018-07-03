@@ -1,29 +1,27 @@
 package com.procurement.submission.model.dto.ocds
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Size
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class OrganizationReference(
+data class OrganizationReference @JsonCreator constructor(
 
-        @JsonProperty("id")
         var id: String?,
 
-        @JsonProperty("name") @Size(min = 1) @NotNull
+        @field:NotNull
         val name: String,
 
-        @JsonProperty("identifier") @Valid @NotNull
+        @field:Valid @field:NotNull
         val identifier: Identifier,
 
-        @JsonProperty("address") @Valid @NotNull
+        @field:Valid @field:NotNull
         val address: Address,
 
-        @JsonProperty("additionalIdentifiers") @Valid
+        @field:Valid
         val additionalIdentifiers: Set<Identifier>?,
 
-        @JsonProperty("contactPoint") @Valid @NotNull
+        @field:Valid @field:NotNull
         val contactPoint: ContactPoint
 )
