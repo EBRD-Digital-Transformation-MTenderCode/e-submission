@@ -1,9 +1,12 @@
 package com.procurement.submission.model.dto.response
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.dto.ocds.Period
 
-data class BidsUpdateStatusResponseDto(
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class BidsUpdateStatusResponseDto @JsonCreator constructor(
 
         val tenderPeriod: Period,
 

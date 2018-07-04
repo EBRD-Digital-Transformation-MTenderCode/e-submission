@@ -1,8 +1,11 @@
 package com.procurement.submission.model.dto.response
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.procurement.submission.model.dto.ocds.Bid
 
-data class BidResponseDto(
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class BidResponseDto @JsonCreator constructor(
 
         val token: String,
 
