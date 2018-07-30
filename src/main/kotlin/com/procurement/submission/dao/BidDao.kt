@@ -35,6 +35,7 @@ class BidDaoImpl(private val session: Session) : BidDao {
                         .value(OWNER, entity.owner)
                         .value(STATUS, entity.status)
                         .value(CREATED_DATE, entity.createdDate)
+                        .value(PENDING_DATE, entity.pendingDate)
                         .value(JSON_DATA, entity.jsonData)
         session.execute(insert)
     }
@@ -52,6 +53,7 @@ class BidDaoImpl(private val session: Session) : BidDao {
                             .value(OWNER, entity.owner)
                             .value(STATUS, entity.status)
                             .value(CREATED_DATE, entity.createdDate)
+                            .value(PENDING_DATE, entity.pendingDate)
                             .value(JSON_DATA, entity.jsonData))
         }
         val batch = QueryBuilder.batch(*operations.toTypedArray())
@@ -76,6 +78,7 @@ class BidDaoImpl(private val session: Session) : BidDao {
                             owner = row.getString(OWNER),
                             status = row.getString(STATUS),
                             createdDate = row.getTimestamp(CREATED_DATE),
+                            pendingDate = row.getTimestamp(PENDING_DATE),
                             jsonData = row.getString(JSON_DATA)))
         }
         return entities
@@ -97,19 +100,21 @@ class BidDaoImpl(private val session: Session) : BidDao {
                     owner = row.getString(OWNER),
                     status = row.getString(STATUS),
                     createdDate = row.getTimestamp(CREATED_DATE),
+                    pendingDate = row.getTimestamp(PENDING_DATE),
                     jsonData = row.getString(JSON_DATA))
         else throw ErrorException(ErrorType.BID_NOT_FOUND)
     }
 
     companion object {
-        private val BID_TABLE = "submission_bid"
-        private val CP_ID = "cp_id"
-        private val STAGE = "stage"
-        private val BID_ID = "bid_id"
-        private val TOKEN = "token_entity"
-        private val OWNER = "owner"
-        private val STATUS = "status"
-        private val CREATED_DATE = "created_date"
-        private val JSON_DATA = "json_data"
+        private const val BID_TABLE = "submission_bid"
+        private const val CP_ID = "cp_id"
+        private const val STAGE = "stage"
+        private const val BID_ID = "bid_id"
+        private const val TOKEN = "token_entity"
+        private const val OWNER = "owner"
+        private const val STATUS = "status"
+        private const val CREATED_DATE = "created_date"
+        private const val PENDING_DATE = "pending_date"
+        private const val JSON_DATA = "json_data"
     }
 }
