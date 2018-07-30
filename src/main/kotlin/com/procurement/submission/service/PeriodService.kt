@@ -136,8 +136,4 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                 endDate = endDate
         )
     }
-
-    companion object {
-        private val TEST_PARAM = "TEST"
-    }
 }
