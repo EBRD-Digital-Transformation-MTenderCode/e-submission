@@ -56,10 +56,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                                startDate: LocalDateTime): ResponseDto {
         val oldPeriod = getPeriod(cpId, stage)
         val unsuspendInterval = rulesService.getUnsuspendInterval(country, pmd)
-        val endDate = when (country) {
-            TEST_PARAM -> startDate.plusMinutes(unsuspendInterval.toLong())
-            else -> startDate.plusDays(unsuspendInterval.toLong())
-        }
+        val endDate = startDate.plusSeconds(unsuspendInterval)
         val newPeriod = getEntity(
                 cpId = cpId,
                 stage = stage,
@@ -124,12 +121,8 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                               startDate: LocalDateTime,
                               endDate: LocalDateTime): Boolean {
         val interval = rulesService.getInterval(country, pmd)
-        if (TEST_PARAM == country) {
-            val minutes = ChronoUnit.MINUTES.between(startDate, endDate)
-            return minutes >= interval
-        }
-        val days = ChronoUnit.DAYS.between(startDate, endDate)
-        return days >= interval
+        val sec = ChronoUnit.SECONDS.between(startDate, endDate)
+        return sec >= interval
     }
 
     private fun getEntity(cpId: String,

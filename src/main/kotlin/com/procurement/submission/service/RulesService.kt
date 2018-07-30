@@ -7,9 +7,9 @@ import org.springframework.stereotype.Service
 
 interface RulesService {
 
-    fun getInterval(country: String, method: String): Int
+    fun getInterval(country: String, method: String): Long
 
-    fun getUnsuspendInterval(country: String, method: String): Int
+    fun getUnsuspendInterval(country: String, method: String): Long
 
     fun getRulesMinBids(country: String, method: String): Int
 }
@@ -17,13 +17,13 @@ interface RulesService {
 @Service
 class RulesServiceImpl(private val rulesDao: RulesDao) : RulesService {
 
-    override fun getInterval(country: String, method: String): Int {
-        return rulesDao.getValue(country, method, PARAMETER_INTERVAL)?.toIntOrNull()
+    override fun getInterval(country: String, method: String): Long {
+        return rulesDao.getValue(country, method, PARAMETER_INTERVAL)?.toLongOrNull()
                 ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
     }
 
-    override fun getUnsuspendInterval(country: String, method: String): Int {
-        return rulesDao.getValue(country, method, PARAMETER_UNSUSPEND_INTERVAL)?.toIntOrNull()
+    override fun getUnsuspendInterval(country: String, method: String): Long {
+        return rulesDao.getValue(country, method, PARAMETER_UNSUSPEND_INTERVAL)?.toLongOrNull()
                 ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
     }
 
@@ -33,8 +33,8 @@ class RulesServiceImpl(private val rulesDao: RulesDao) : RulesService {
     }
 
     companion object {
-        private val PARAMETER_MIN_BIDS = "minBids"
-        private val PARAMETER_INTERVAL = "interval"
-        private val PARAMETER_UNSUSPEND_INTERVAL = "unsuspend_interval"
+        private const val PARAMETER_MIN_BIDS = "minBids"
+        private const val PARAMETER_INTERVAL = "interval"
+        private const val PARAMETER_UNSUSPEND_INTERVAL = "unsuspend_interval"
     }
 }
