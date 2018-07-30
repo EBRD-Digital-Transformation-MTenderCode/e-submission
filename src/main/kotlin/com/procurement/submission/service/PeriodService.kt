@@ -101,11 +101,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
     fun isPeriodValid(cpId: String, stage: String): Boolean {
         val localDateTime = localNowUTC()
         val periodEntity = getPeriod(cpId, stage)
-        val localDateTimeAfter = localDateTime.isAfter(periodEntity.startDate.toLocal())
-                || localDateTime.isEqual(periodEntity.startDate.toLocal())
-        val localDateTimeBefore = localDateTime.isBefore(periodEntity.endDate.toLocal())
-                || localDateTime.isEqual(periodEntity.endDate.toLocal())
-        return localDateTimeAfter && localDateTimeBefore
+        return localDateTime >= periodEntity.startDate.toLocal() && localDateTime <= periodEntity.endDate.toLocal()
     }
 
     fun isPeriodChange(cpId: String,

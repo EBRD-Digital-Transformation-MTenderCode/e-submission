@@ -8,16 +8,16 @@ import javax.validation.Valid
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class Bid @JsonCreator constructor(
 
-        var id: String?,
+        var id: String,
 
-        var date: LocalDateTime?,
+        var date: LocalDateTime,
 
-        var status: Status?,
+        var status: Status,
 
-        var statusDetails: StatusDetails?,
+        var statusDetails: StatusDetails,
 
         @field:Valid
-        val tenderers: List<OrganizationReference>?,
+        val tenderers: List<OrganizationReference>,
 
         @field:Valid
         var value: Value?,
@@ -25,5 +25,5 @@ data class Bid @JsonCreator constructor(
         @field:Valid
         var documents: List<Document>?,
 
-        val relatedLots: List<String>?
+        val relatedLots: List<String>
 )

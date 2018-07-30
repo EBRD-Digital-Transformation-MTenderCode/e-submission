@@ -18,5 +18,7 @@ data class BidEntity(
 
         val createdDate: Date,
 
-        val jsonData: String
+        var pendingDate: Date?,
+
+        var jsonData: String
 )

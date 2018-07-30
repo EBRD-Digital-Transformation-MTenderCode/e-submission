@@ -2,7 +2,8 @@ package com.procurement.submission.controller
 
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.AwardStatusDetails
-import com.procurement.submission.model.dto.request.BidRequestDto
+import com.procurement.submission.model.dto.request.BidCreateDto
+import com.procurement.submission.model.dto.request.BidUpdateDto
 import com.procurement.submission.model.dto.request.LotsDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
 import com.procurement.submission.service.BidService
@@ -20,37 +21,45 @@ import javax.validation.Valid
 class BidController(private val bidService: BidService) {
 
     @PostMapping("/bid")
-    fun createBid(@RequestParam("identifier") cpId: String,
+    fun createBid(@RequestParam("cpid") cpId: String,
                   @RequestParam("stage") stage: String,
                   @RequestParam("owner") owner: String,
-                  @Valid @RequestBody data: BidRequestDto): ResponseEntity<ResponseDto> {
+                  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                  @RequestParam("date") dateTime: LocalDateTime,
+                  @Valid @RequestBody data: BidCreateDto): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 bidService.createBid(
                         cpId = cpId,
                         stage = stage,
                         owner = owner,
+                        dateTime = dateTime,
                         bidDto = data.bid),
                 HttpStatus.CREATED)
     }
 
     @PutMapping("/bid")
-    fun updateBid(@RequestParam("identifier") cpId: String,
+    fun updateBid(@RequestParam("cpid") cpId: String,
                   @RequestParam("stage") stage: String,
-                  @RequestParam("token") token: String,
                   @RequestParam("owner") owner: String,
-                  @Valid @RequestBody data: BidRequestDto): ResponseEntity<ResponseDto> {
+                  @RequestParam("token") token: String,
+                  @RequestParam("bidId") bidId: String,
+                  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                  @RequestParam("date") dateTime: LocalDateTime,
+                  @Valid @RequestBody data: BidUpdateDto): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 bidService.updateBid(
                         cpId = cpId,
                         stage = stage,
-                        token = token,
                         owner = owner,
+                        token = token,
+                        bidId = bidId,
+                        dateTime = dateTime,
                         bidDto = data.bid),
                 HttpStatus.OK)
     }
 
     @PostMapping("/copyBids")
-    fun copyBids(@RequestParam("identifier") cpId: String,
+    fun copyBids(@RequestParam("cpid") cpId: String,
                  @RequestParam("stage") newStage: String,
                  @RequestParam("previousStage") previousStage: String,
                  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
@@ -70,7 +79,7 @@ class BidController(private val bidService: BidService) {
     }
 
     @GetMapping("/bids")
-    fun getPendingBids(@RequestParam("identifier") cpId: String,
+    fun getPendingBids(@RequestParam("cpid") cpId: String,
                        @RequestParam("stage") stage: String,
                        @RequestParam("country") country: String,
                        @RequestParam("pmd") pmd: String): ResponseEntity<ResponseDto> {
@@ -84,7 +93,7 @@ class BidController(private val bidService: BidService) {
     }
 
     @PostMapping("/updateStatus")
-    fun updateStatus(@RequestParam("identifier") cpId: String,
+    fun updateStatus(@RequestParam("cpid") cpId: String,
                      @RequestParam("stage") stage: String,
                      @RequestParam("country") country: String,
                      @RequestParam("pmd") pmd: String,
@@ -100,7 +109,7 @@ class BidController(private val bidService: BidService) {
     }
 
     @PostMapping("/updateStatusDetails")
-    fun updateStatusDetails(@RequestParam("identifier") cpId: String,
+    fun updateStatusDetails(@RequestParam("cpid") cpId: String,
                             @RequestParam("stage") stage: String,
                             @RequestParam("bidId") bidId: String,
                             @RequestParam("awardStatusDetails") awardStatusDetails: String): ResponseEntity<ResponseDto> {
@@ -114,7 +123,7 @@ class BidController(private val bidService: BidService) {
     }
 
     @PostMapping("/setFinalStatuses")
-    fun setFinalStatuses(@RequestParam("identifier") cpId: String,
+    fun setFinalStatuses(@RequestParam("cpid") cpId: String,
                          @RequestParam("stage") stage: String,
                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                          @RequestParam("date")
