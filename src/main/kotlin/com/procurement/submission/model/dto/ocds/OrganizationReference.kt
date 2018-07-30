@@ -2,6 +2,7 @@ package com.procurement.submission.model.dto.ocds
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.procurement.access.model.dto.ocds.Address
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
