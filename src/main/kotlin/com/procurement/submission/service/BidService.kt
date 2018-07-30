@@ -1,6 +1,5 @@
 package com.procurement.submission.service
 
-import com.google.common.base.Strings
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
@@ -49,6 +48,8 @@ class BidServiceImpl(private val generationService: GenerationService,
             validateFieldsForCreate(this)
             checkRelatedLotsInDocuments(this)
             processTenderers(this)
+            isOneRelatetLot(this)
+            checkTypeOfDocuments(this)
             date = localNowUTC()
             id = generationService.generateTimeBasedUUID().toString()
             status = Status.PENDING
@@ -77,8 +78,10 @@ class BidServiceImpl(private val generationService: GenerationService,
         bid.apply {
             checkRelatedLotsAndSetDocuments(bidDto = bid, bid = this)
             updateValue(stage, bid, this)
+            checkStatusesBidUpdate(this)
+            checkTypeOfDocuments(bidDto)
             date = localNowUTC()
-            status = Status.fromValue(bid.statusDetails!!.value())
+            status = Status.PENDING
             statusDetails = StatusDetails.EMPTY
         }
         bidDao.save(getEntity(bid = bid, cpId = cpId, stage = stage, owner = owner, token = entity.token))
@@ -99,7 +102,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         bidDao.saveAll(mapCopyEntityBid.keys.toList())
         val bids = ArrayList(mapCopyEntityBid.values)
         return ResponseDto(true, null,
-                BidsCopyResponseDto(Bids(bids), Period(startDate, endDate)))
+            BidsCopyResponseDto(Bids(bids), Period(startDate, endDate)))
     }
 
     override fun getPendingBids(cpId: String,
@@ -128,28 +131,28 @@ class BidServiceImpl(private val generationService: GenerationService,
         val bids = getBidsFromEntities(bidEntities)
         val updatedBids = ArrayList<Bid>()
         bids.asSequence()
-                .filter { it.status == Status.INVITED }
-                .forEach { bid ->
-                    bid.date = localNowUTC()
-                    bid.status = Status.WITHDRAWN
-                    bid.statusDetails = StatusDetails.EMPTY
-                    updatedBids.add(bid)
-                }
+            .filter { it.status == Status.INVITED }
+            .forEach { bid ->
+                bid.date = localNowUTC()
+                bid.status = Status.WITHDRAWN
+                bid.statusDetails = StatusDetails.EMPTY
+                updatedBids.add(bid)
+            }
         val lotsIds = collectLots(unsuccessfulLots.unsuccessfulLots)
         bids.asSequence()
-                .filter { it.relatedLots != null }
-                .filter { it.relatedLots!!.containsAny(lotsIds) }
-                .forEach { bid ->
-                    bid.date = localNowUTC()
-                    bid.status = Status.WITHDRAWN
-                    bid.statusDetails = StatusDetails.EMPTY
-                    updatedBids.add(bid)
-                }
+            .filter { it.relatedLots != null }
+            .filter { it.relatedLots!!.containsAny(lotsIds) }
+            .forEach { bid ->
+                bid.date = localNowUTC()
+                bid.status = Status.WITHDRAWN
+                bid.statusDetails = StatusDetails.EMPTY
+                updatedBids.add(bid)
+            }
         val updatedBidEntities = getUpdatedBidEntities(bidEntities, updatedBids)
         bidDao.saveAll(updatedBidEntities)
         val period = periodService.getPeriod(cpId, stage)
         return ResponseDto(true, null,
-                BidsUpdateStatusResponseDto(Period(period.startDate.toLocal(), period.endDate.toLocal()), bids))
+            BidsUpdateStatusResponseDto(Period(period.startDate.toLocal(), period.endDate.toLocal()), bids))
     }
 
     override fun updateStatusDetails(cpId: String,
@@ -192,8 +195,24 @@ class BidServiceImpl(private val generationService: GenerationService,
         return ResponseDto(true, null, BidsFinalStatusResponseDto(bids))
     }
 
+    private fun checkStatusesBidUpdate(bid: Bid) {
+        if (bid.statusDetails != StatusDetails.EMPTY &&
+            !checkBidStatuses(bid))
+            throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
+    }
+
+    private fun checkBidStatuses(bid: Bid): Boolean {
+        if (bid.status == Status.PENDING || bid.status == Status.INVITED) {
+            return true
+        }
+        return false
+
+    }
+
     private fun validateFieldsForCreate(bidDto: Bid) {
-        if (bidDto.id != null) throw ErrorException(ErrorType.ID_NOT_NULL)
+        requestDtoVerify(bidDto)
+        if (bidDto.tenderers!!.isEmpty()) throw ErrorException(ErrorType.INVALID_DTO)
+
     }
 
     private fun checkRelatedLotsInDocuments(bidDto: Bid) {
@@ -202,6 +221,30 @@ class BidServiceImpl(private val generationService: GenerationService,
                 if (!bidDto.relatedLots.containsAll(document.relatedLots)) throw ErrorException(ErrorType.INVALID_RELATED_LOT)
             }
         }
+    }
+
+    private fun requestDtoVerify(bidDto: Bid) {
+        if (bidDto.id != null || bidDto.status != null || bidDto.statusDetails != null || bidDto.date != null || bidDto.documents!!.isEmpty() || bidDto.relatedLots!!.isEmpty())
+            throw ErrorException(ErrorType.INVALID_DTO)
+    }
+
+    private fun checkTypeOfDocuments(bidDto: Bid) {
+        bidDto.documents?.forEach { document ->
+            if (document.documentType != DocumentType.SUBMISSION_DOCUMENTS)
+                throw ErrorException(ErrorType.CREATE_BID_DOCUMENTS_SUBMISSION)
+        }
+
+        bidDto.documents?.forEach { document ->
+            if (document.documentType != DocumentType.SUBMISSION_DOCUMENTS ||
+                document.documentType != DocumentType.ILLUSTRATION)
+                throw ErrorException(ErrorType.CREATE_BID_DOCUMENTS_TYPES)
+        }
+
+
+    }
+
+    private fun isOneRelatetLot(bidDto: Bid) {
+        if (bidDto.relatedLots != null && bidDto.relatedLots.size > 1) throw ErrorException(ErrorType.RELATED_LOTS_MUST_BE_ONE_UNIT)
     }
 
     private fun checkRelatedLotsAndSetDocuments(bidDto: Bid, bid: Bid) {
@@ -235,8 +278,7 @@ class BidServiceImpl(private val generationService: GenerationService,
     }
 
     private fun validateFieldsForUpdate(bidDto: Bid) {
-        if (Strings.isNullOrEmpty(bidDto.id)) throw ErrorException(ErrorType.INVALID_ID)
-        if (bidDto.statusDetails == null) throw ErrorException(ErrorType.STATUS_DETAIL_IS_NULL)
+        requestDtoVerify(bidDto)
     }
 
     fun updateValue(stage: String, bidDto: Bid, bid: Bid) {
@@ -268,17 +310,17 @@ class BidServiceImpl(private val generationService: GenerationService,
             val (entity, bid) = map
             if (bid.relatedLots != null && bid.relatedLots.containsAny(lotsIds)) {
                 val bidCopy = bid.copy(
-                        date = localNowUTC(),
-                        status = Status.INVITED,
-                        statusDetails = StatusDetails.EMPTY,
-                        value = null,
-                        documents = null)
+                    date = localNowUTC(),
+                    status = Status.INVITED,
+                    statusDetails = StatusDetails.EMPTY,
+                    value = null,
+                    documents = null)
                 val entityCopy = getEntity(
-                        bid = bidCopy,
-                        cpId = entity.cpId,
-                        stage = stage,
-                        owner = entity.owner,
-                        token = entity.token)
+                    bid = bidCopy,
+                    cpId = entity.cpId,
+                    stage = stage,
+                    owner = entity.owner,
+                    token = entity.token)
                 bidsCopy[entityCopy] = bidCopy
             }
         }
@@ -291,15 +333,15 @@ class BidServiceImpl(private val generationService: GenerationService,
 
     private fun getPendingBids(entities: List<BidEntity>): List<Bid> {
         return entities.asSequence()
-                .filter { it.status == Status.PENDING.value() }
-                .map { toObject(Bid::class.java, it.jsonData) }
-                .toList()
+            .filter { it.status == Status.PENDING.value() }
+            .map { toObject(Bid::class.java, it.jsonData) }
+            .toList()
     }
 
     private fun getRelatedLotsIdFromBids(bids: List<Bid>): List<String> {
         return bids.asSequence()
-                .filter { it.relatedLots != null }
-                .flatMap { it.relatedLots!!.asSequence() }.toList()
+            .filter { it.relatedLots != null }
+            .flatMap { it.relatedLots!!.asSequence() }.toList()
     }
 
     private fun getUniqueLots(lots: List<String>): Map<String, Int> {
@@ -312,44 +354,43 @@ class BidServiceImpl(private val generationService: GenerationService,
 
     private fun getSuccessfulBids(bids: List<Bid>, successfulLots: List<String>): List<Bid> {
         return bids.asSequence()
-                .filter { it.relatedLots != null }
-                .filter { successfulLots.containsAny(it.relatedLots!!) }
-                .toList()
+            .filter { it.relatedLots != null }
+            .filter { successfulLots.containsAny(it.relatedLots!!) }
+            .toList()
     }
 
     fun getBidUpdate(bid: Bid): BidUpdateDto {
         return BidUpdateDto(
-                id = bid.id,
-                date = bid.date,
-                status = bid.status,
-                statusDetails = bid.statusDetails,
-                tenderers = createTenderers(bid.tenderers),
-                value = bid.value,
-                documents = bid.documents,
-                relatedLots = bid.relatedLots)
+            id = bid.id,
+            date = bid.date,
+            status = bid.status,
+            statusDetails = bid.statusDetails,
+            tenderers = createTenderers(bid.tenderers),
+            value = bid.value,
+            documents = bid.documents,
+            relatedLots = bid.relatedLots)
     }
 
     private fun createTenderers(tenderers: List<OrganizationReference>?): List<OrganizationReferenceDto>? {
         return tenderers?.asSequence()
-                ?.filter { it.id != null }
-                ?.map { OrganizationReferenceDto(it.id!!, it.name) }
-                ?.toList()
+            ?.filter { it.id != null }
+            ?.map { OrganizationReferenceDto(it.id!!, it.name) }
+            ?.toList()
     }
-
 
     private fun getUpdatedBidEntities(bidEntities: List<BidEntity>, bids: List<Bid>): List<BidEntity> {
         val entities = ArrayList<BidEntity>()
         bidEntities.asSequence().forEach { entity ->
             bids.asSequence()
-                    .firstOrNull { it.id == entity.bidId.toString() }
-                    ?.let { bid ->
-                        entities.add(getEntity(
-                                bid = bid,
-                                cpId = entity.cpId,
-                                stage = entity.stage,
-                                owner = entity.owner,
-                                token = entity.token))
-                    }
+                .firstOrNull { it.id == entity.bidId.toString() }
+                ?.let { bid ->
+                    entities.add(getEntity(
+                        bid = bid,
+                        cpId = entity.cpId,
+                        stage = entity.stage,
+                        owner = entity.owner,
+                        token = entity.token))
+                }
         }
         return entities
     }
@@ -358,21 +399,20 @@ class BidServiceImpl(private val generationService: GenerationService,
         return ResponseDto(true, null, BidResponseDto(token, bid.id!!, bid))
     }
 
-
     private fun getEntity(bid: Bid,
                           cpId: String,
                           stage: String,
                           owner: String,
                           token: UUID): BidEntity {
         return BidEntity(
-                cpId = cpId,
-                stage = stage,
-                owner = owner,
-                status = bid.status!!.value(),
-                bidId = UUID.fromString(bid.id!!),
-                token = token,
-                createdDate = bid.date!!.toDate(),
-                jsonData = toJson(bid)
+            cpId = cpId,
+            stage = stage,
+            owner = owner,
+            status = bid.status!!.value(),
+            bidId = UUID.fromString(bid.id!!),
+            token = token,
+            createdDate = bid.date!!.toDate(),
+            jsonData = toJson(bid)
         )
     }
 }
