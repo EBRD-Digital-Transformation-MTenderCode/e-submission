@@ -20,7 +20,7 @@ enum class ErrorType constructor(val code: String, val message: String) {
     BIDS_RULES_NOT_FOUND("02.02", "Bids rules not found."),
     BID_ALREADY_WITH_LOT("03.01", "We already have Bid with this Lots and Tenderers."),
     RELATED_LOTS_MUST_BE_ONE_UNIT("03.02","Related lots must be one unit"),
-    CREATE_BID_DOCUMENTS_SUBMISSION("03.03","Documents must be contains one SubmissionDocument type"),
+    CREATE_BID_DOCUMENTS_SUBMISSION("03.03","Documents must be contains one 'submissionDocuments' type"),
     CREATE_BID_DOCUMENTS_TYPES("03.04","Invalid types of documents"),
     INVALID_STATUSES_FOR_UPDATE("03.05","Invalid status or status details");
 }
