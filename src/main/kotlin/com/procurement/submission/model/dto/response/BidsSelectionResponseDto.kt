@@ -7,5 +7,5 @@ import com.procurement.submission.model.dto.ocds.Bid
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class BidsSelectionResponseDto @JsonCreator constructor(
 
-        val bids: List<Bid>
+        val bids: Set<Bid>
 )

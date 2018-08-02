@@ -17,10 +17,10 @@ import javax.validation.Valid
 
 @Validated
 @RestController
-@RequestMapping(path = ["/submission"])
+@RequestMapping(path = ["/bid"])
 class BidController(private val bidService: BidService) {
 
-    @PostMapping("/bid")
+    @PostMapping
     fun createBid(@RequestParam("cpid") cpId: String,
                   @RequestParam("stage") stage: String,
                   @RequestParam("owner") owner: String,
@@ -37,7 +37,7 @@ class BidController(private val bidService: BidService) {
                 HttpStatus.CREATED)
     }
 
-    @PutMapping("/bid")
+    @PutMapping
     fun updateBid(@RequestParam("cpid") cpId: String,
                   @RequestParam("stage") stage: String,
                   @RequestParam("owner") owner: String,
@@ -58,7 +58,7 @@ class BidController(private val bidService: BidService) {
                 HttpStatus.OK)
     }
 
-    @PostMapping("/copyBids")
+    @PostMapping("/copy")
     fun copyBids(@RequestParam("cpid") cpId: String,
                  @RequestParam("stage") newStage: String,
                  @RequestParam("previousStage") previousStage: String,
@@ -75,64 +75,6 @@ class BidController(private val bidService: BidService) {
                         startDate = startDate,
                         endDate = endDate,
                         lots = data),
-                HttpStatus.OK)
-    }
-
-    @GetMapping("/bids")
-    fun getPendingBids(@RequestParam("cpid") cpId: String,
-                       @RequestParam("stage") stage: String,
-                       @RequestParam("country") country: String,
-                       @RequestParam("pmd") pmd: String): ResponseEntity<ResponseDto> {
-        return ResponseEntity(
-                bidService.getPendingBids(
-                        cpId = cpId,
-                        stage = stage,
-                        country = country,
-                        pmd = pmd),
-                HttpStatus.OK)
-    }
-
-    @PostMapping("/updateStatus")
-    fun updateStatus(@RequestParam("cpid") cpId: String,
-                     @RequestParam("stage") stage: String,
-                     @RequestParam("country") country: String,
-                     @RequestParam("pmd") pmd: String,
-                     @RequestBody data: UnsuccessfulLotsDto): ResponseEntity<ResponseDto> {
-        return ResponseEntity(
-                bidService.updateStatus(
-                        cpId = cpId,
-                        stage = stage,
-                        country = country,
-                        pmd = pmd,
-                        unsuccessfulLots = data),
-                HttpStatus.OK)
-    }
-
-    @PostMapping("/updateStatusDetails")
-    fun updateStatusDetails(@RequestParam("cpid") cpId: String,
-                            @RequestParam("stage") stage: String,
-                            @RequestParam("bidId") bidId: String,
-                            @RequestParam("awardStatusDetails") awardStatusDetails: String): ResponseEntity<ResponseDto> {
-        return ResponseEntity(
-                bidService.updateStatusDetails(
-                        cpId = cpId,
-                        stage = stage,
-                        bidId = bidId,
-                        awardStatusDetails = AwardStatusDetails.fromValue(awardStatusDetails)),
-                HttpStatus.OK)
-    }
-
-    @PostMapping("/setFinalStatuses")
-    fun setFinalStatuses(@RequestParam("cpid") cpId: String,
-                         @RequestParam("stage") stage: String,
-                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                         @RequestParam("date")
-                         dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
-        return ResponseEntity(
-                bidService.setFinalStatuses(
-                        cpId = cpId,
-                        stage = stage,
-                        dateTime = dateTime),
                 HttpStatus.OK)
     }
 }

@@ -10,5 +10,5 @@ data class BidsUpdateStatusResponseDto @JsonCreator constructor(
 
         val tenderPeriod: Period,
 
-        val bids: List<Bid>
+        val bids: Set<Bid>
 )
