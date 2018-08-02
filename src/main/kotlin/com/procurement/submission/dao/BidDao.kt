@@ -89,7 +89,9 @@ class BidDaoImpl(private val session: Session) : BidDao {
                 .all()
                 .from(BID_TABLE)
                 .where(eq(CP_ID, cpId))
-                .and(eq(BID_ID, bidId)).limit(1)
+                .and(eq(STAGE, stage))
+                .and(eq(BID_ID, bidId))
+                .limit(1)
         val row = session.execute(query).one()
         return if (row != null)
             BidEntity(
