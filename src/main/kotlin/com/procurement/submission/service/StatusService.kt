@@ -24,6 +24,8 @@ interface StatusService {
     fun updateStatusDetails(cpId: String, stage: String, bidId: String, awardStatusDetails: AwardStatusDetails): ResponseDto
 
     fun setFinalStatuses(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
+
+    fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
 }
 
 @Service
@@ -33,9 +35,9 @@ class StatusServiceImpl(private val rulesService: RulesService,
 
 
     override fun getSuccessfulBids(cpId: String,
-                          stage: String,
-                          country: String,
-                          pmd: String): ResponseDto {
+                                   stage: String,
+                                   country: String,
+                                   pmd: String): ResponseDto {
         periodService.checkIsPeriodExpired(cpId, stage)
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
@@ -134,6 +136,22 @@ class StatusServiceImpl(private val rulesService: RulesService,
         return ResponseDto(true, null, BidsFinalStatusResponseDto(bids))
     }
 
+    override fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto {
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
+        val bids = getBidsFromEntities(bidEntities)
+        for (bid in bids) {
+            bid.apply {
+                if (status == Status.PENDING && statusDetails != StatusDetails.EMPTY) {
+                    date = dateTime
+                    status = Status.WITHDRAWN
+                    statusDetails = StatusDetails.EMPTY
+                }
+            }
+        }
+        bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
+        return ResponseDto(true, null, BidsFinalStatusResponseDto(bids))
+    }
 
     private fun getBidsFromEntities(bidEntities: List<BidEntity>): List<Bid> {
         return bidEntities.asSequence().map { toObject(Bid::class.java, it.jsonData) }.toList()

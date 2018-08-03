@@ -60,6 +60,19 @@ class StatusController(private val statusService: StatusService) {
                 HttpStatus.OK)
     }
 
+    @GetMapping("/bidsWithdrawn")
+    fun bidsWithdrawn(@RequestParam("cpid") cpId: String,
+                      @RequestParam("stage") stage: String,
+                      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                      @RequestParam("date") dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
+        return ResponseEntity(
+                statusService.bidsWithdrawn(
+                        cpId = cpId,
+                        stage = stage,
+                        dateTime = dateTime),
+                HttpStatus.OK)
+    }
+
     @PostMapping("/setFinalStatuses")
     fun setFinalStatuses(@RequestParam("cpid") cpId: String,
                          @RequestParam("stage") stage: String,
