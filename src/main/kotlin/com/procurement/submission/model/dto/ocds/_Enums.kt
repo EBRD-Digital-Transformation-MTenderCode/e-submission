@@ -108,8 +108,10 @@ enum class StatusDetails constructor(private val value: String) {
 
 
 enum class AwardStatusDetails constructor(private val value: String) {
+    PENDING("pending"),
     ACTIVE("active"),
     UNSUCCESSFUL("unsuccessful"),
+    CONSIDERATION("consideration"),
     EMPTY("empty");
 
     override fun toString(): String {
