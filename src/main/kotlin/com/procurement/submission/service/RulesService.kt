@@ -11,6 +11,8 @@ interface RulesService {
 
     fun getUnsuspendInterval(country: String, method: String): Long
 
+    fun getIntervalBefore(country: String, method: String): Long
+
     fun getRulesMinBids(country: String, method: String): Int
 }
 
@@ -27,6 +29,12 @@ class RulesServiceImpl(private val rulesDao: RulesDao) : RulesService {
                 ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
     }
 
+    override fun getIntervalBefore(country: String, method: String): Long {
+        return rulesDao.getValue(country, method, PARAMETER_INTERVAL_BEFORE)?.toLongOrNull()
+                ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
+    }
+
+
     override fun getRulesMinBids(country: String, method: String): Int {
         return rulesDao.getValue(country, method, PARAMETER_MIN_BIDS)?.toIntOrNull()
                 ?: throw ErrorException(ErrorType.BIDS_RULES_NOT_FOUND)
@@ -36,5 +44,6 @@ class RulesServiceImpl(private val rulesDao: RulesDao) : RulesService {
         private const val PARAMETER_MIN_BIDS = "minBids"
         private const val PARAMETER_INTERVAL = "interval"
         private const val PARAMETER_UNSUSPEND_INTERVAL = "unsuspend_interval"
+        private const val PARAMETER_INTERVAL_BEFORE = "interval_before"
     }
 }

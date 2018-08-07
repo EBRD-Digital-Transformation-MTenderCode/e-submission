@@ -82,13 +82,37 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                              country: String,
                              pmd: String,
                              stage: String,
-                             startDate: LocalDateTime,
-                             endDate: LocalDateTime): ResponseDto {
-        val checkInterval = checkInterval(country, pmd, startDate, endDate)
-        if (!checkInterval) throw ErrorException(ErrorType.INVALID_PERIOD)
-        val isPeriodChange = isPeriodChange(cpId, stage, startDate, endDate)
-        return ResponseDto(true, null, CheckPeriodResponseDto(checkInterval, isPeriodChange))
+                             dateRequest: LocalDateTime,
+                             endDateRequest: LocalDateTime): ResponseDto {
+
+        val periodEntity = getPeriod(cpId, stage)
+        val intervalBefore = rulesService.getIntervalBefore(country, pmd)
+        val secBefore = ChronoUnit.SECONDS.between(dateRequest, periodEntity.endDate.toLocal())
+        val needExtension = secBefore < intervalBefore
+        //updateCN
+        if ((pmd == "OT" && stage == "EV") || (pmd == "RT" && stage == "PS")) {
+            if (endDateRequest < periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
+        }
+        //updateTenderPeriod
+        if (pmd == "RT" && (stage == "PQ" || stage == "EV")) {
+            if (endDateRequest <= periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
+        }
+        return if (needExtension) {
+            val newStartDate = periodEntity.startDate.toLocal()
+            val newEndDate = dateRequest.plusSeconds(intervalBefore)
+            if (endDateRequest < newEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
+            val isPeriodChange = periodEntity.endDate.toLocal() != newEndDate
+            savePeriod(cpId, stage, newStartDate, newEndDate)
+            ResponseDto(true, null, CheckPeriodResponseDto(isPeriodChange))
+        } else {
+            val newStartDate = periodEntity.startDate.toLocal()
+            if (!checkInterval(country, pmd, newStartDate, endDateRequest)) throw ErrorException(ErrorType.INVALID_PERIOD)
+            val isPeriodChange = periodEntity.endDate.toLocal() != endDateRequest
+            savePeriod(cpId, stage, newStartDate, endDateRequest)
+            ResponseDto(true, null, CheckPeriodResponseDto(isPeriodChange))
+        }
     }
+
 
     override fun periodValidation(country: String,
                                   pmd: String,
