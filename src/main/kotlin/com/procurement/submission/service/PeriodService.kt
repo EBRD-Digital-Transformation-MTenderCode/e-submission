@@ -84,6 +84,9 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                              stage: String,
                              startDate: LocalDateTime,
                              endDate: LocalDateTime): ResponseDto {
+
+
+
         val checkInterval = checkInterval(country, pmd, startDate, endDate)
         if (!checkInterval) throw ErrorException(ErrorType.INVALID_PERIOD)
         val isPeriodChange = isPeriodChange(cpId, stage, startDate, endDate)
