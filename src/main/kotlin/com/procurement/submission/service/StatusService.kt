@@ -138,7 +138,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
 
     override fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
+        if (bidEntities.isEmpty()) return  ResponseDto(true, null, BidsFinalStatusResponseDto(listOf()))
         val bids = getBidsFromEntities(bidEntities)
         for (bid in bids) {
             bid.apply {
