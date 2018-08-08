@@ -7,9 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class CheckPeriodResponseDto @JsonCreator constructor(
 
-        @get:JsonProperty("isPeriodValid")
-        val isPeriodValid: Boolean?,
-
         @get:JsonProperty("isPeriodChanged")
         val isPeriodChanged: Boolean?
 )
