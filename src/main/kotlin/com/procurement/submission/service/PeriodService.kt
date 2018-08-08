@@ -90,11 +90,11 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         val secBefore = ChronoUnit.SECONDS.between(dateRequest, periodEntity.endDate.toLocal())
         val needExtension = secBefore < intervalBefore
         //updateCN
-        if ((pmd == "OT" && stage == "EV") || (pmd == "RT" && stage == "PS")) {
+        if ((pmd == "OT" && stage == "EV") || (pmd == "RT" && stage == "PS") || (pmd == "TEST_OT" && stage == "EV") || (pmd == "TEST_RT" && stage == "PS")) {
             if (endDateRequest < periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
         }
         //updateTenderPeriod
-        if (pmd == "RT" && (stage == "PQ" || stage == "EV")) {
+        if ((pmd == "RT" && (stage == "PQ" || stage == "EV")) || (pmd == "TEST_RT" && (stage == "PQ" || stage == "EV"))) {
             if (endDateRequest <= periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
         }
         return if (needExtension) {
