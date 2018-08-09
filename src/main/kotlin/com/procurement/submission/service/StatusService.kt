@@ -9,7 +9,10 @@ import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
 import com.procurement.submission.model.dto.response.*
 import com.procurement.submission.model.entity.BidEntity
-import com.procurement.submission.utils.*
+import com.procurement.submission.utils.containsAny
+import com.procurement.submission.utils.localNowUTC
+import com.procurement.submission.utils.toJson
+import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.*
@@ -40,14 +43,16 @@ class StatusServiceImpl(private val rulesService: RulesService,
                                    pmd: String): ResponseDto {
         periodService.checkIsPeriodExpired(cpId, stage)
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
-        val pendingBids = getPendingBids(bidEntities)
-        val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
-        val relatedLotsFromBids = getRelatedLotsIdFromBids(pendingBids)
-        val uniqueLots = getUniqueLots(relatedLotsFromBids)
-        val successfulLots = getSuccessfulLotsByRule(uniqueLots, minNumberOfBids)
-        val successfulBids = getBidsByRelatedLots(pendingBids, successfulLots)
-        return ResponseDto(true, null, BidsSelectionResponseDto(successfulBids))
+        if (bidEntities.isNotEmpty()) {
+            val pendingBids = getPendingBids(bidEntities)
+            val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
+            val relatedLotsFromBids = getRelatedLotsIdFromBids(pendingBids)
+            val uniqueLots = getUniqueLots(relatedLotsFromBids)
+            val successfulLots = getSuccessfulLotsByRule(uniqueLots, minNumberOfBids)
+            val successfulBids = getBidsByRelatedLots(pendingBids, successfulLots)
+            return ResponseDto(true, null, BidsSelectionResponseDto(successfulBids))
+        }
+        return ResponseDto(true, null, BidsSelectionResponseDto(setOf()))
     }
 
     override fun updateStatus(cpId: String,
@@ -138,7 +143,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
 
     override fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) return  ResponseDto(true, null, BidsFinalStatusResponseDto(listOf()))
+        if (bidEntities.isEmpty()) return ResponseDto(true, null, BidsFinalStatusResponseDto(listOf()))
         val bids = getBidsFromEntities(bidEntities)
         for (bid in bids) {
             bid.apply {
