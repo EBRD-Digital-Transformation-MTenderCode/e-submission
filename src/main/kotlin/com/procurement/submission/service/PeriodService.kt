@@ -100,7 +100,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
             if (endDate < periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
         }
         if (operationType == "updateTenderPeriod") { //(pmd == "RT" && (stage == "PQ" || stage == "EV"))
-                if (endDate <= periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
+            if (endDate <= periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
         }
         return if (needExtension) {
             val newStartDate = periodEntity.startDate.toLocal()
