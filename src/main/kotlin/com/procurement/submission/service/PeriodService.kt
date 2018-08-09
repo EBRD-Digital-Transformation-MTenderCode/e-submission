@@ -5,6 +5,7 @@ import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Period
+import com.procurement.submission.model.dto.response.CheckPeriod
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto
 import com.procurement.submission.model.entity.PeriodEntity
 import com.procurement.submission.utils.localNowUTC
@@ -103,18 +104,16 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
             if (endDate <= periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
         }
         return if (needExtension) {
-            val newStartDate = periodEntity.startDate.toLocal()
             val newEndDate = startDate.plusSeconds(intervalBefore)
             if (endDate > periodEntity.endDate.toLocal()) {
                 if (endDate < newEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
             }
             val isPeriodChange = periodEntity.endDate.toLocal() != newEndDate
-            ResponseDto(true, null, CheckPeriodResponseDto(isPeriodChange, Period(newStartDate, newEndDate)))
+            ResponseDto(true, null, CheckPeriodResponseDto(isPeriodChange, CheckPeriod(newEndDate)))
         } else {
-            val newStartDate = periodEntity.startDate.toLocal()
-            if (!checkInterval(country, pmd, newStartDate, endDate)) throw ErrorException(ErrorType.INVALID_PERIOD)
+            if (!checkInterval(country, pmd, periodEntity.startDate.toLocal(), endDate)) throw ErrorException(ErrorType.INVALID_PERIOD)
             val isPeriodChange = periodEntity.endDate.toLocal() != endDate
-            ResponseDto(true, null, CheckPeriodResponseDto(isPeriodChange, Period(newStartDate, endDate)))
+            ResponseDto(true, null, CheckPeriodResponseDto(isPeriodChange, CheckPeriod(endDate)))
         }
     }
 
