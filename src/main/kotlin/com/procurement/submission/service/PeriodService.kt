@@ -96,15 +96,11 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         val intervalBefore = rulesService.getIntervalBefore(country, pmd)
         val secBefore = ChronoUnit.SECONDS.between(startDate, periodEntity.endDate.toLocal())
         val needExtension = secBefore < intervalBefore
-        //updateCN
-//        if ((pmd == "OT" && stage == "EV") || (pmd == "RT" && stage == "PS") || (pmd == "TEST_OT" && stage == "EV") || (pmd == "TEST_RT" && stage == "PS")) {
-        if (operationType == "updateCN") {
+        if (operationType == "updateCN") { //((pmd == "OT" && stage == "EV") || (pmd == "RT" && stage == "PS"))
             if (endDate < periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
         }
-        //updateTenderPeriod
-//        if ((pmd == "RT" && (stage == "PQ" || stage == "EV")) || (pmd == "TEST_RT" && (stage == "PQ" || stage == "EV"))) {
-        if (operationType == "updateTenderPeriod") {
-            if (endDate <= periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
+        if (operationType == "updateTenderPeriod") { //(pmd == "RT" && (stage == "PQ" || stage == "EV"))
+                if (endDate <= periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
         }
         return if (needExtension) {
             val newStartDate = periodEntity.startDate.toLocal()
