@@ -58,7 +58,10 @@ class StatusServiceImpl(private val rulesService: RulesService,
                               pmd: String,
                               unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
+        if (bidEntities.isEmpty()) {
+            val period = periodService.getPeriod(cpId, stage)
+            return ResponseDto(true, null, BidsUpdateStatusResponseDto(Period(period.startDate.toLocal(), period.endDate.toLocal()), setOf()))
+        }
         val pendingBids = getPendingBids(bidEntities)
         val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
         val relatedLotsFromBidsList = getRelatedLotsIdFromBids(pendingBids)
