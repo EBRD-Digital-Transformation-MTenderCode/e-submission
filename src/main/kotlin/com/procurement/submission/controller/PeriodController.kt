@@ -69,6 +69,7 @@ class PeriodController(private val periodService: PeriodService) {
                     @RequestParam("stage") stage: String,
                     @RequestParam("country") country: String,
                     @RequestParam("pmd") pmd: String,
+                    @RequestParam("operationType") operationType: String,
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
                     @RequestParam("startDate")
                     startDate: LocalDateTime,
@@ -80,6 +81,7 @@ class PeriodController(private val periodService: PeriodService) {
                         cpId = cpId,
                         country = country,
                         pmd = pmd,
+                        operationType = operationType,
                         stage = stage,
                         startDate = startDate,
                         endDate = endDate),
