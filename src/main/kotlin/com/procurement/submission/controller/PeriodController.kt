@@ -71,11 +71,9 @@ class PeriodController(private val periodService: PeriodService) {
                     @RequestParam("pmd") pmd: String,
                     @RequestParam("operationType") operationType: String,
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    @RequestParam("startDate")
-                    startDate: LocalDateTime,
+                    @RequestParam("startDate") startDate: LocalDateTime,
                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    @RequestParam("endDate")
-                    endDate: LocalDateTime): ResponseEntity<ResponseDto> {
+                    @RequestParam("endDate") endDate: LocalDateTime): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 periodService.checkPeriod(
                         cpId = cpId,
