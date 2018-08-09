@@ -100,7 +100,9 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         return if (needExtension) {
             val newStartDate = periodEntity.startDate.toLocal()
             val newEndDate = startDate.plusSeconds(intervalBefore)
-            if (endDate < newEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
+            if (endDate > periodEntity.endDate.toLocal()) {
+                if (endDate < newEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
+            }
             val isPeriodChange = periodEntity.endDate.toLocal() != newEndDate
             savePeriod(cpId, stage, newStartDate, newEndDate)
             ResponseDto(true, null, CheckPeriodResponseDto(isPeriodChange))
