@@ -5,15 +5,20 @@ import com.procurement.submission.service.PeriodService
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 
 @RestController
 @RequestMapping(path = ["/period"])
 class PeriodController(private val periodService: PeriodService) {
+
+
+    @GetMapping
+    fun getPeriod(@RequestParam("cpid") cpId: String,
+                  @RequestParam("stage") stage: String): ResponseEntity<ResponseDto> {
+        return ResponseEntity(ResponseDto(true, null, periodService.getPeriod(cpId = cpId, stage = stage)),
+                HttpStatus.CREATED)
+    }
 
     @PostMapping("/save")
     fun savePeriod(@RequestParam("cpid") cpId: String,
