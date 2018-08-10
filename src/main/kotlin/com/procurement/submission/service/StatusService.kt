@@ -144,7 +144,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
         val bids = getBidsFromEntities(bidEntities)
         for (bid in bids) {
             bid.apply {
-                if (status == Status.PENDING && statusDetails != StatusDetails.EMPTY) {
+                if (status == Status.PENDING && statusDetails == StatusDetails.EMPTY) {
                     date = dateTime
                     status = Status.WITHDRAWN
                     statusDetails = StatusDetails.EMPTY
