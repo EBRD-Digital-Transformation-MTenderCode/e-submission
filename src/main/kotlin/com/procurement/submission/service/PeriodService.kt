@@ -5,7 +5,6 @@ import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Period
-import com.procurement.submission.model.dto.response.CheckPeriod
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto
 import com.procurement.submission.model.entity.PeriodEntity
 import com.procurement.submission.utils.localNowUTC
@@ -134,7 +133,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
     }
 
     fun getResponse(setExtendedPeriod: Boolean, isPeriodChange: Boolean, newEndDate: LocalDateTime): ResponseDto {
-        return ResponseDto(true, null, CheckPeriodResponseDto(setExtendedPeriod, isPeriodChange, CheckPeriod(newEndDate)))
+        return ResponseDto(true, null, CheckPeriodResponseDto(setExtendedPeriod, isPeriodChange, newEndDate))
     }
 
     override fun periodValidation(country: String,

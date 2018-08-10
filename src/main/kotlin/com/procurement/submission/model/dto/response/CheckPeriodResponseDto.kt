@@ -14,10 +14,5 @@ data class CheckPeriodResponseDto @JsonCreator constructor(
         @get:JsonProperty("isPeriodChanged")
         val isPeriodChanged: Boolean,
 
-        val tenderPeriod: CheckPeriod
-)
-
-data class CheckPeriod @JsonCreator constructor(
-
-        val endDate: LocalDateTime
+        val tenderPeriodEndDate: LocalDateTime
 )
