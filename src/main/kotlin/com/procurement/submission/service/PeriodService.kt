@@ -35,7 +35,7 @@ interface PeriodService {
                     pmd: String,
                     operationType: String,
                     stage: String,
-                    startDate: LocalDateTime,
+                    requestDate: LocalDateTime,
                     endDate: LocalDateTime): ResponseDto
 
     fun periodValidation(country: String, pmd: String, startDate: LocalDateTime, endDate: LocalDateTime): ResponseDto
@@ -76,7 +76,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
     }
 
     override fun getPeriod(cpId: String, stage: String): ResponseDto {
-        val entity  = getPeriodEntity(cpId, stage)
+        val entity = getPeriodEntity(cpId, stage)
         return ResponseDto(true, null, Period(entity.startDate.toLocal(), entity.endDate.toLocal()))
     }
 
@@ -97,33 +97,45 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                              pmd: String,
                              operationType: String,
                              stage: String,
-                             startDate: LocalDateTime,
-                             endDate: LocalDateTime): ResponseDto {
+                             requestDate: LocalDateTime,
+                             endDateReq: LocalDateTime): ResponseDto {
 
-        val periodEntity = getPeriodEntity(cpId, stage)
         val intervalBefore = rulesService.getIntervalBefore(country, pmd)
-        val secBefore = ChronoUnit.SECONDS.between(startDate, periodEntity.endDate.toLocal())
-        val needExtension = secBefore < intervalBefore
+        val endDateDb = getPeriodEntity(cpId, stage).endDate.toLocal()
+        val checkPoint = endDateDb.minusSeconds(intervalBefore)
         if (operationType == "updateCN") { //((pmd == "OT" && stage == "EV") || (pmd == "RT" && stage == "PS"))
-            if (endDate < periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
+            if (endDateReq < endDateDb) throw ErrorException(ErrorType.INVALID_PERIOD)
         }
         if (operationType == "updateTenderPeriod") { //(pmd == "RT" && (stage == "PQ" || stage == "EV"))
-            if (endDate <= periodEntity.endDate.toLocal()) throw ErrorException(ErrorType.INVALID_PERIOD)
+            if (endDateReq <= endDateDb) throw ErrorException(ErrorType.INVALID_PERIOD)
         }
-        return if (needExtension) {
-            val newEndDate = startDate.plusSeconds(intervalBefore)
-            if (endDate > periodEntity.endDate.toLocal()) {
-                if (endDate < newEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
+        //1)
+        if (requestDate < checkPoint) {
+            if (endDateReq == endDateDb) {
+                return getResponse(setExtendedPeriod = false, isPeriodChange = false, newEndDate = endDateDb)
             }
-            val isPeriodChange = periodEntity.endDate.toLocal() != newEndDate
-            ResponseDto(true, null, CheckPeriodResponseDto(isPeriodChange, CheckPeriod(newEndDate)))
-        } else {
-            if (!checkInterval(country, pmd, periodEntity.startDate.toLocal(), endDate)) throw ErrorException(ErrorType.INVALID_PERIOD)
-            val isPeriodChange = periodEntity.endDate.toLocal() != endDate
-            ResponseDto(true, null, CheckPeriodResponseDto(isPeriodChange, CheckPeriod(endDate)))
+            if (endDateReq > endDateDb) {
+                return getResponse(setExtendedPeriod = false, isPeriodChange = true, newEndDate = endDateReq)
+            }
         }
+        //2)
+        if (requestDate >= checkPoint) {
+            if (endDateReq == endDateDb) {
+                val newEndDate = requestDate.plusSeconds(intervalBefore)
+                return getResponse(setExtendedPeriod = true, isPeriodChange = true, newEndDate = newEndDate)
+            }
+            if (endDateReq > endDateDb) {
+                val newEndDate = requestDate.plusSeconds(intervalBefore)
+                if (endDateReq <= newEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
+                return getResponse(setExtendedPeriod = false, isPeriodChange = true, newEndDate = endDateReq)
+            }
+        }
+        return getResponse(setExtendedPeriod = false, isPeriodChange = false, newEndDate = endDateDb)
     }
 
+    fun getResponse(setExtendedPeriod: Boolean, isPeriodChange: Boolean, newEndDate: LocalDateTime): ResponseDto {
+        return ResponseDto(true, null, CheckPeriodResponseDto(setExtendedPeriod, isPeriodChange, CheckPeriod(newEndDate)))
+    }
 
     override fun periodValidation(country: String,
                                   pmd: String,

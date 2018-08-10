@@ -87,7 +87,7 @@ class PeriodController(private val periodService: PeriodService) {
                         pmd = pmd,
                         operationType = operationType,
                         stage = stage,
-                        startDate = startDate,
+                        requestDate = startDate,
                         endDate = endDate),
                 HttpStatus.OK)
     }

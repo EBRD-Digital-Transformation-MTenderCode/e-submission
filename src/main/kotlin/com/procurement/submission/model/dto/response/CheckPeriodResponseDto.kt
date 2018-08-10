@@ -8,8 +8,11 @@ import java.time.LocalDateTime
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class CheckPeriodResponseDto @JsonCreator constructor(
 
+        @get:JsonProperty("setExtendedPeriod")
+        val setExtendedPeriod: Boolean?,
+
         @get:JsonProperty("isPeriodChanged")
-        val isPeriodChanged: Boolean?,
+        val isPeriodChanged: Boolean,
 
         val tenderPeriod: CheckPeriod
 )
