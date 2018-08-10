@@ -16,7 +16,8 @@ class PeriodController(private val periodService: PeriodService) {
     @GetMapping
     fun getPeriod(@RequestParam("cpid") cpId: String,
                   @RequestParam("stage") stage: String): ResponseEntity<ResponseDto> {
-        return ResponseEntity(ResponseDto(true, null, periodService.getPeriod(cpId = cpId, stage = stage)),
+        return ResponseEntity(
+                periodService.getPeriod(cpId = cpId, stage = stage),
                 HttpStatus.CREATED)
     }
 
