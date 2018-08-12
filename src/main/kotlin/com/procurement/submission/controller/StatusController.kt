@@ -16,17 +16,20 @@ import java.time.LocalDateTime
 @RequestMapping(path = ["/submission"])
 class StatusController(private val statusService: StatusService) {
 
-    @GetMapping("/successfulBids")
-    fun getSuccessfulBids(@RequestParam("cpid") cpId: String,
+    @GetMapping("/bidsSelection")
+    fun bidsSelection(@RequestParam("cpid") cpId: String,
                           @RequestParam("stage") stage: String,
                           @RequestParam("country") country: String,
-                          @RequestParam("pmd") pmd: String): ResponseEntity<ResponseDto> {
+                          @RequestParam("pmd") pmd: String,
+                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                          @RequestParam("date") dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
         return ResponseEntity(
-                statusService.getSuccessfulBids(
+                statusService.bidsSelection(
                         cpId = cpId,
                         stage = stage,
                         country = country,
-                        pmd = pmd),
+                        pmd = pmd,
+                        dateTime = dateTime),
                 HttpStatus.OK)
     }
 
@@ -64,8 +67,7 @@ class StatusController(private val statusService: StatusService) {
     fun setFinalStatuses(@RequestParam("cpid") cpId: String,
                          @RequestParam("stage") stage: String,
                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                         @RequestParam("date")
-                         dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
+                         @RequestParam("date") dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 statusService.setFinalStatuses(
                         cpId = cpId,

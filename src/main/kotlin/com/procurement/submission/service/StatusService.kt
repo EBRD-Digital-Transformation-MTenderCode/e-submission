@@ -17,7 +17,7 @@ import kotlin.collections.ArrayList
 
 interface StatusService {
 
-    fun getSuccessfulBids(cpId: String, stage: String, country: String, pmd: String): ResponseDto
+    fun bidsSelection(cpId: String, stage: String, country: String, pmd: String, dateTime: LocalDateTime): ResponseDto
 
     fun updateStatus(cpId: String, stage: String, country: String, pmd: String, unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto
 
@@ -34,11 +34,12 @@ class StatusServiceImpl(private val rulesService: RulesService,
                         private val bidDao: BidDao) : StatusService {
 
 
-    override fun getSuccessfulBids(cpId: String,
-                                   stage: String,
-                                   country: String,
-                                   pmd: String): ResponseDto {
-        periodService.checkIsPeriodExpired(cpId, stage)
+    override fun bidsSelection(cpId: String,
+                               stage: String,
+                               country: String,
+                               pmd: String,
+                               dateTime: LocalDateTime): ResponseDto {
+        val responseDto = periodService.getPeriodData(cpId, stage, dateTime)
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isNotEmpty()) {
             val pendingBids = getPendingBids(bidEntities)
@@ -47,9 +48,9 @@ class StatusServiceImpl(private val rulesService: RulesService,
             val uniqueLots = getUniqueLots(relatedLotsFromBids)
             val successfulLots = getSuccessfulLotsByRule(uniqueLots, minNumberOfBids)
             val successfulBids = getBidsByRelatedLots(pendingBids, successfulLots)
-            return ResponseDto(true, null, BidsSelectionResponseDto(successfulBids))
+            responseDto.bids = successfulBids
         }
-        return ResponseDto(true, null, BidsSelectionResponseDto(setOf()))
+        return ResponseDto(true, null, responseDto)
     }
 
     override fun updateStatus(cpId: String,

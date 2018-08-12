@@ -5,6 +5,7 @@ import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Period
+import com.procurement.submission.model.dto.response.BidsSelectionResponseDto
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto
 import com.procurement.submission.model.entity.PeriodEntity
 import com.procurement.submission.utils.localNowUTC
@@ -25,7 +26,7 @@ interface PeriodService {
 
     fun checkCurrentDateInPeriod(cpId: String, stage: String)
 
-    fun checkIsPeriodExpired(cpId: String, stage: String)
+    fun getPeriodData(cpId: String, stage: String, dateTime: LocalDateTime): BidsSelectionResponseDto
 
     fun getPeriodEntity(cpId: String, stage: String): PeriodEntity
 
@@ -35,7 +36,7 @@ interface PeriodService {
                     operationType: String,
                     stage: String,
                     requestDate: LocalDateTime,
-                    endDate: LocalDateTime): ResponseDto
+                    endDateReq: LocalDateTime): ResponseDto
 
     fun periodValidation(country: String, pmd: String, startDate: LocalDateTime, endDate: LocalDateTime): ResponseDto
 }
@@ -83,8 +84,10 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         if (!isPeriodValid(cpId, stage)) throw ErrorException(ErrorType.INVALID_DATE)
     }
 
-    override fun checkIsPeriodExpired(cpId: String, stage: String) {
-        if (isPeriodValid(cpId, stage)) throw ErrorException(ErrorType.PERIOD_NOT_EXPIRED)
+    override fun getPeriodData(cpId: String, stage: String, dateTime: LocalDateTime): BidsSelectionResponseDto {
+        val tenderPeriodEndDate = getPeriodEntity(cpId, stage).endDate.toLocal()
+        val isPeriodExpired = dateTime > tenderPeriodEndDate
+        return BidsSelectionResponseDto(isPeriodExpired = isPeriodExpired, tenderPeriodEndDate = tenderPeriodEndDate)
     }
 
     override fun getPeriodEntity(cpId: String, stage: String): PeriodEntity {
