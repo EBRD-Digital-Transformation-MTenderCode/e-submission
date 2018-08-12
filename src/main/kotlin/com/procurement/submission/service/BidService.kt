@@ -86,9 +86,7 @@ class BidServiceImpl(private val generationService: GenerationService,
             date = dateTime
             status = Status.PENDING
             documents = bidDto.documents
-            if (bidDto.value != null) {
-                value = bidDto.value
-            }
+            bidDto.value?.let { value = it }
         }
         entity.jsonData = toJson(bid)
         entity.pendingDate = dateTime.toDate()
