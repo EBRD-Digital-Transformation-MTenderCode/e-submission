@@ -5,9 +5,12 @@ import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.*
-import com.procurement.submission.model.dto.request.*
-import com.procurement.submission.model.dto.response.*
-import com.procurement.submission.model.dto.response.BidUpdateDto
+import com.procurement.submission.model.dto.request.BidCreate
+import com.procurement.submission.model.dto.request.BidUpdate
+import com.procurement.submission.model.dto.request.LotDto
+import com.procurement.submission.model.dto.request.LotsDto
+import com.procurement.submission.model.dto.response.BidResponseDto
+import com.procurement.submission.model.dto.response.BidsCopyResponseDto
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.*
 import org.springframework.stereotype.Service
@@ -155,10 +158,10 @@ class BidServiceImpl(private val generationService: GenerationService,
             val bids = getBidsFromEntities(bidEntities)
             val dtoRelatedLots = bidDto.relatedLots
             val dtoTenderers = bidDto.tenderers.asSequence().map { it.id }.toSet()
-            bids.forEach { bid ->
+            bids.filter { it.status != Status.WITHDRAWN }.forEach { bid ->
                 val bidRelatedLots = bid.relatedLots
                 val bidTenderers = bid.tenderers.asSequence().map { it.id }.toSet()
-                if (bidTenderers.size == bidTenderers.size &&
+                if (bidTenderers.size == dtoTenderers.size &&
                         bidTenderers.containsAll(dtoTenderers) &&
                         bidRelatedLots.containsAll(dtoRelatedLots))
                     throw ErrorException(ErrorType.BID_ALREADY_WITH_LOT)
