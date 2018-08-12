@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class BidsSelectionResponseDto @JsonCreator constructor(
 
-        @get:JsonProperty("getPeriodData")
+        @get:JsonProperty("isPeriodExpired")
         val isPeriodExpired: Boolean,
 
         val tenderPeriodEndDate: LocalDateTime,
