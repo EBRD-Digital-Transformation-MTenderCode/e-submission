@@ -90,7 +90,7 @@ class StatusController(private val statusService: StatusService) {
     }
 
     @PostMapping("/bidWithdrawn")
-    fun bidWithdraw(@RequestParam("cpid") cpId: String,
+    fun bidWithdrawn(@RequestParam("cpid") cpId: String,
                     @RequestParam("stage") stage: String,
                     @RequestParam("token") token: String,
                     @RequestParam("owner") owner: String,
@@ -98,7 +98,7 @@ class StatusController(private val statusService: StatusService) {
                     @RequestParam("date") dateTime: LocalDateTime,
                     @RequestParam("bidId") bidId: String): ResponseEntity<ResponseDto> {
         return ResponseEntity(
-                statusService.bidWithdraw(
+                statusService.bidWithdrawn(
                         cpId = cpId,
                         stage = stage,
                         owner = owner,

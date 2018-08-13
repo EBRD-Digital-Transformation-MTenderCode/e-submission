@@ -25,7 +25,7 @@ interface StatusService {
 
     fun setFinalStatuses(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
 
-    fun bidWithdraw(cpId: String, stage: String, owner: String, token: String, bidId: String, dateTime: LocalDateTime): ResponseDto
+    fun bidWithdrawn(cpId: String, stage: String, owner: String, token: String, bidId: String, dateTime: LocalDateTime): ResponseDto
 
     fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
 }
@@ -144,12 +144,12 @@ class StatusServiceImpl(private val rulesService: RulesService,
         return ResponseDto(true, null, BidsFinalStatusResponseDto(bids))
     }
 
-    override fun bidWithdraw(cpId: String,
-                             stage: String,
-                             owner: String,
-                             token: String,
-                             bidId: String,
-                             dateTime: LocalDateTime): ResponseDto {
+    override fun bidWithdrawn(cpId: String,
+                              stage: String,
+                              owner: String,
+                              token: String,
+                              bidId: String,
+                              dateTime: LocalDateTime): ResponseDto {
         periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
