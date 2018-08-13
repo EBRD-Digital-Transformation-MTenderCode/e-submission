@@ -24,7 +24,7 @@ interface PeriodService {
 
     fun getPeriod(cpId: String, stage: String): ResponseDto
 
-    fun checkCurrentDateInPeriod(cpId: String, stage: String)
+    fun checkCurrentDateInPeriod(cpId: String, stage: String, dateTime: LocalDateTime)
 
     fun getPeriodData(cpId: String, stage: String, dateTime: LocalDateTime): BidsSelectionResponseDto
 
@@ -80,8 +80,10 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         return ResponseDto(true, null, Period(entity.startDate.toLocal(), entity.endDate.toLocal()))
     }
 
-    override fun checkCurrentDateInPeriod(cpId: String, stage: String) {
-        if (!isPeriodValid(cpId, stage)) throw ErrorException(ErrorType.INVALID_DATE)
+    override fun checkCurrentDateInPeriod(cpId: String, stage: String, dateTime: LocalDateTime) {
+        val periodEntity = getPeriodEntity(cpId, stage)
+        val isPeriodValid = (dateTime >= periodEntity.startDate.toLocal() && dateTime <= periodEntity.endDate.toLocal())
+        if (!isPeriodValid) throw ErrorException(ErrorType.INVALID_DATE)
     }
 
     override fun getPeriodData(cpId: String, stage: String, dateTime: LocalDateTime): BidsSelectionResponseDto {
@@ -145,12 +147,6 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                                   endDate: LocalDateTime): ResponseDto {
         if (!checkInterval(country, pmd, startDate, endDate)) throw ErrorException(ErrorType.INVALID_PERIOD)
         return ResponseDto(true, null, "Period is valid.")
-    }
-
-    fun isPeriodValid(cpId: String, stage: String): Boolean {
-        val localDateTime = localNowUTC()
-        val periodEntity = getPeriodEntity(cpId, stage)
-        return localDateTime >= periodEntity.startDate.toLocal() && localDateTime <= periodEntity.endDate.toLocal()
     }
 
     private fun checkInterval(country: String,

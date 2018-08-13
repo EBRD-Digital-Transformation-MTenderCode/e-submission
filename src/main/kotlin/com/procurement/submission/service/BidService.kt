@@ -37,7 +37,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                            owner: String,
                            dateTime: LocalDateTime,
                            bidDto: BidCreate): ResponseDto {
-        periodService.checkCurrentDateInPeriod(cpId, stage)
+        periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         checkRelatedLotsInDocuments(bidDto)
         processTenderers(bidDto)
         isOneRelatedLot(bidDto)
@@ -63,7 +63,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                 pendingDate = dateTime.toDate()
         )
         bidDao.save(entity)
-        return getResponseDto(entity.token.toString(), bid)
+        return ResponseDto(true, null, BidResponseDto(entity.token.toString(), bid.id, bid))
     }
 
     override fun updateBid(cpId: String,
@@ -73,7 +73,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                            bidId: String,
                            dateTime: LocalDateTime,
                            bidDto: BidUpdate): ResponseDto {
-        periodService.checkCurrentDateInPeriod(cpId, stage)
+        periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
@@ -91,7 +91,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         entity.jsonData = toJson(bid)
         entity.pendingDate = dateTime.toDate()
         bidDao.save(entity)
-        return getResponseDto(token, bid)
+        return ResponseDto(true, null, BidResponseDto(null, bid.id, bid))
     }
 
     override fun copyBids(cpId: String,
@@ -215,10 +215,6 @@ class BidServiceImpl(private val generationService: GenerationService,
 
     private fun collectLotIds(lots: List<LotDto>?): Set<String> {
         return lots?.asSequence()?.map { it.id }?.toSet() ?: setOf()
-    }
-
-    private fun getResponseDto(token: String, bid: Bid): ResponseDto {
-        return ResponseDto(true, null, BidResponseDto(token, bid.id, bid))
     }
 
     private fun getEntity(bid: Bid,

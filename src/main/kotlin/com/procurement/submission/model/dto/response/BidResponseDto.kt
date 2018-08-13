@@ -7,9 +7,9 @@ import com.procurement.submission.model.dto.ocds.Bid
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class BidResponseDto @JsonCreator constructor(
 
-        val token: String,
+        val token: String?,
 
-        val bidId: String,
+        val bidId: String?,
 
         val bid: Bid
 )

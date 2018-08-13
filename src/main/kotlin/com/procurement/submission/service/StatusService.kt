@@ -25,6 +25,8 @@ interface StatusService {
 
     fun setFinalStatuses(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
 
+    fun bidWithdraw(cpId: String, stage: String, owner: String, token: String, bidId: String, dateTime: LocalDateTime): ResponseDto
+
     fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
 }
 
@@ -40,7 +42,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
                                pmd: String,
                                dateTime: LocalDateTime): ResponseDto {
 //        val responseDto = periodService.getPeriodData(cpId, stage, dateTime)
-        val responseDto =  BidsSelectionResponseDto(isPeriodExpired = null, tenderPeriodEndDate = null, bids = setOf())
+        val responseDto = BidsSelectionResponseDto(isPeriodExpired = null, tenderPeriodEndDate = null, bids = setOf())
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isNotEmpty()) {
             val pendingBids = getPendingBids(bidEntities)
@@ -104,6 +106,8 @@ class StatusServiceImpl(private val rulesService: RulesService,
             AwardStatusDetails.EMPTY -> bid.statusDetails = StatusDetails.EMPTY
             AwardStatusDetails.ACTIVE -> bid.statusDetails = StatusDetails.VALID
             AwardStatusDetails.UNSUCCESSFUL -> bid.statusDetails = StatusDetails.DISQUALIFIED
+            AwardStatusDetails.PENDING -> TODO()
+            AwardStatusDetails.CONSIDERATION -> TODO()
         }
         bid.date = localNowUTC()
         bidDao.save(getEntity(
@@ -113,7 +117,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
                 owner = entity.owner,
                 token = entity.token,
                 createdDate = entity.createdDate))
-        return ResponseDto(true, null, BidsUpdateStatusDetailsResponseDto(getBidUpdate(bid)))
+        return ResponseDto(true, null, BidResponseDto(null, null, bid))
     }
 
     override fun setFinalStatuses(cpId: String,
@@ -140,6 +144,28 @@ class StatusServiceImpl(private val rulesService: RulesService,
         return ResponseDto(true, null, BidsFinalStatusResponseDto(bids))
     }
 
+    override fun bidWithdraw(cpId: String,
+                             stage: String,
+                             owner: String,
+                             token: String,
+                             bidId: String,
+                             dateTime: LocalDateTime): ResponseDto {
+        periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
+        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
+        if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
+        if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
+        val bid: Bid = toObject(Bid::class.java, entity.jsonData)
+        checkStatusesBidUpdate(bid)
+        bid.apply {
+            date = dateTime
+            status = Status.WITHDRAWN
+        }
+        entity.jsonData = toJson(bid)
+        bidDao.save(entity)
+        return ResponseDto(true, null, BidResponseDto(null, null, bid))
+
+    }
+
     override fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) return ResponseDto(true, null, BidsFinalStatusResponseDto(listOf()))
@@ -155,6 +181,11 @@ class StatusServiceImpl(private val rulesService: RulesService,
         }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
         return ResponseDto(true, null, BidsFinalStatusResponseDto(bids))
+    }
+
+    private fun checkStatusesBidUpdate(bid: Bid) {
+        if (bid.status != Status.PENDING && bid.status != Status.INVITED) throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
+        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
     }
 
     private fun getBidsFromEntities(bidEntities: List<BidEntity>): List<Bid> {
@@ -191,25 +222,6 @@ class StatusServiceImpl(private val rulesService: RulesService,
         return bids.asSequence()
                 .filter { lots.containsAny(it.relatedLots) }
                 .toSet()
-    }
-
-    fun getBidUpdate(bid: Bid): BidUpdateDto {
-        return BidUpdateDto(
-                id = bid.id,
-                date = bid.date,
-                status = bid.status,
-                statusDetails = bid.statusDetails,
-                tenderers = createTenderers(bid.tenderers),
-                value = bid.value,
-                documents = bid.documents,
-                relatedLots = bid.relatedLots)
-    }
-
-    private fun createTenderers(tenderers: List<OrganizationReference>?): List<OrganizationReferenceDto>? {
-        return tenderers?.asSequence()
-                ?.filter { it.id != null }
-                ?.map { OrganizationReferenceDto(it.id!!, it.name) }
-                ?.toList()
     }
 
     private fun getUpdatedBidEntities(bidEntities: List<BidEntity>, bids: List<Bid>): List<BidEntity> {

@@ -18,11 +18,11 @@ class StatusController(private val statusService: StatusService) {
 
     @GetMapping("/bidsSelection")
     fun bidsSelection(@RequestParam("cpid") cpId: String,
-                          @RequestParam("stage") stage: String,
-                          @RequestParam("country") country: String,
-                          @RequestParam("pmd") pmd: String,
-                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                          @RequestParam("date") dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
+                      @RequestParam("stage") stage: String,
+                      @RequestParam("country") country: String,
+                      @RequestParam("pmd") pmd: String,
+                      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                      @RequestParam("date") dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 statusService.bidsSelection(
                         cpId = cpId,
@@ -87,5 +87,25 @@ class StatusController(private val statusService: StatusService) {
                         stage = stage,
                         dateTime = dateTime),
                 HttpStatus.OK)
+    }
+
+    @PostMapping("/bidWithdrawn")
+    fun bidWithdraw(@RequestParam("cpid") cpId: String,
+                    @RequestParam("stage") stage: String,
+                    @RequestParam("token") token: String,
+                    @RequestParam("owner") owner: String,
+                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                    @RequestParam("date") dateTime: LocalDateTime,
+                    @RequestParam("bidId") bidId: String): ResponseEntity<ResponseDto> {
+        return ResponseEntity(
+                statusService.bidWithdraw(
+                        cpId = cpId,
+                        stage = stage,
+                        owner = owner,
+                        token = token,
+                        bidId = bidId,
+                        dateTime = dateTime),
+                HttpStatus.OK)
+
     }
 }
