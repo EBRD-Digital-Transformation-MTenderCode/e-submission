@@ -39,7 +39,8 @@ class StatusServiceImpl(private val rulesService: RulesService,
                                country: String,
                                pmd: String,
                                dateTime: LocalDateTime): ResponseDto {
-        val responseDto = periodService.getPeriodData(cpId, stage, dateTime)
+//        val responseDto = periodService.getPeriodData(cpId, stage, dateTime)
+        val responseDto =  BidsSelectionResponseDto(isPeriodExpired = null, tenderPeriodEndDate = null, bids = setOf())
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isNotEmpty()) {
             val pendingBids = getPendingBids(bidEntities)

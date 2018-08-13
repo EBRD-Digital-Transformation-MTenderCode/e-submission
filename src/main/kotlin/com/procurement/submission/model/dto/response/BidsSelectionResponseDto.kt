@@ -10,9 +10,9 @@ import java.time.LocalDateTime
 data class BidsSelectionResponseDto @JsonCreator constructor(
 
         @get:JsonProperty("isPeriodExpired")
-        val isPeriodExpired: Boolean,
+        val isPeriodExpired: Boolean?,
 
-        val tenderPeriodEndDate: LocalDateTime,
+        val tenderPeriodEndDate: LocalDateTime?,
 
         var bids: Set<Bid> = setOf()
 )
