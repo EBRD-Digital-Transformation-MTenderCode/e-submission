@@ -1,64 +1,138 @@
 {
-  "bid": {
-    "tenderers": [
-      {
-        "name": "Googlehfhhfghg12",
-        "address": {
-          "streetAddress": "",
-          "postalCode": "",
-          "addressDetails": {
-            "country": {
-              "scheme": "iso-alpha2",
-              "id": "MD",
-              "description": "MOLDOVA",
-              "uri": "http://reference.iatistandard.org/202/codelists/Country/#id1"
-            },
-            "region": {
-              "scheme": "CUATM",
-              "id": "8700000",
-              "description": "Taraclia",
-              "uri": "www.statistica.md/public/files/Clasificatoare/CUATM_rom.zip"
-            },
-            "locality": {
-              "scheme": "gfgf",
-              "id": "gfg",
-              "description": "gfg"
+  "bids": [
+    {
+      "id": "f6ede480-9fdb-11e8-b62b-634f7ea87717",
+      "date": "2018-08-14T16:06:12Z",
+      "status": "pending",
+      "statusDetails": "empty",
+      "tenderers": [
+        {
+          "id": "MD-IDNO-1-2",
+          "name": "Googleh555fhfgh55g12",
+          "identifier": {
+            "id": "1-2",
+            "scheme": "MD-IDNO",
+            "legalName": "Google Big Brother",
+            "uri": "hhtps://google.com"
+          },
+          "address": {
+            "streetAddress": "",
+            "postalCode": "",
+            "addressDetails": {
+              "country": {
+                "scheme": "iso-alpha2",
+                "id": "MD",
+                "description": "MOLDOVA",
+                "uri": "http://reference.iatistandard.org/202/codelists/Country/#id1"
+              },
+              "region": {
+                "scheme": "CUATM",
+                "id": "1000000",
+                "description": "Anenii Noi",
+                "uri": "www.statistica.md/public/files/Clasificatoare/CUATM_rom.zip"
+              },
+              "locality": {
+                "scheme": "CUATM",
+                "id": "1001000",
+                "description": "or.Anenii Noi"
+              }
             }
+          },
+          "contactPoint": {
+            "name": "111",
+            "email": "222",
+            "telephone": "333",
+            "url": "444"
+          },
+          "details": {
+            "scale": "sme"
           }
-        },
-        "identifier": {
-          "id": "3010000fhfgf55hgg0-0",
-          "scheme": "MD-IDNO",
-          "legalName": "Google Big Brother",
-          "uri": "hhtps://google.com"
-        },
-        "contactPoint": {
-          "name": "111",
-          "email": "222",
-          "telephone": "333",
-          "url": "444"
-        },
-        "details": {
-          "scale": "sme"
         }
-      }
-    ],
-    "value": {
-      "amount": 500,
-      "currency": "MDL"
+      ],
+      "value": {
+        "amount": 150.00,
+        "currency": "MDL"
+      },
+      "documents": [
+        {
+          "id": "f7178f90-9fba-11e8-9318-61ca1098e80e",
+          "documentType": "submissionDocuments",
+          "title": "doc1",
+          "relatedLots": [
+            "de22b1b4-9fdb-11e8-9aea-9597d3103de2"
+          ]
+        }
+      ],
+      "relatedLots": [
+        "de22b1b4-9fdb-11e8-9aea-9597d3103de2"
+      ]
     },
-    "documents": [
-      {
-        "documentType": "submissionDocuments",
-        "id": "0e3ba160-949f-11e8-9318-61ca1098e80e",
-        "title": "doc1",
-        "relatedLots": [
-          "fd5cbaa3-9499-11e8-bbd3-5d171722b12b"
-        ]
-      }
-    ],
-    "relatedLots": [
-      "fd5cbaa3-9499-11e8-bbd3-5d171722b12b"
-    ]
-  }
+    {
+      "id": "fe764c60-9fdb-11e8-b62b-634f7ea87717",
+      "date": "2018-08-14T16:07:32Z",
+      "status": "withdrawn",
+      "statusDetails": "empty",
+      "tenderers": [
+        {
+          "id": "MD-IDNO-1-1",
+          "name": "Googleh555fhfgh55g12",
+          "identifier": {
+            "id": "1-1",
+            "scheme": "MD-IDNO",
+            "legalName": "Google Big Brother",
+            "uri": "hhtps://google.com"
+          },
+          "address": {
+            "streetAddress": "",
+            "postalCode": "",
+            "addressDetails": {
+              "country": {
+                "scheme": "iso-alpha2",
+                "id": "MD",
+                "description": "MOLDOVA",
+                "uri": "http://reference.iatistandard.org/202/codelists/Country/#id1"
+              },
+              "region": {
+                "scheme": "CUATM",
+                "id": "1000000",
+                "description": "Anenii Noi",
+                "uri": "www.statistica.md/public/files/Clasificatoare/CUATM_rom.zip"
+              },
+              "locality": {
+                "scheme": "CUATM",
+                "id": "1001000",
+                "description": "or.Anenii Noi"
+              }
+            }
+          },
+          "contactPoint": {
+            "name": "111",
+            "email": "222",
+            "telephone": "333",
+            "url": "444"
+          },
+          "details": {
+            "scale": "sme"
+          }
+        }
+      ],
+      "value": {
+        "amount": 150.00,
+        "currency": "MDL"
+      },
+      "documents": [
+        {
+          "id": "f7178f90-9fba-11e8-9318-61ca1098e80e",
+          "documentType": "submissionDocuments",
+          "title": "doc1",
+          "relatedLots": [
+            "de22b1b4-9fdb-11e8-9aea-9597d3103de2"
+          ]
+        }
+      ],
+      "relatedLots": [
+        "de22b1b4-9fdb-11e8-9aea-9597d3103de2"
+      ]
+    }
+  ]
 }
