@@ -14,5 +14,5 @@ data class BidsSelectionResponseDto @JsonCreator constructor(
 
         val tenderPeriodEndDate: LocalDateTime?,
 
-        var bids: Set<Bid> = setOf()
+        var bids: Set<Bid>
 )
