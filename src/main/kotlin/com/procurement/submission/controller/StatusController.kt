@@ -53,12 +53,15 @@ class StatusController(private val statusService: StatusService) {
     fun updateStatusDetails(@RequestParam("cpid") cpId: String,
                             @RequestParam("stage") stage: String,
                             @RequestParam("bidId") bidId: String,
+                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                            @RequestParam("date") dateTime: LocalDateTime,
                             @RequestParam("awardStatusDetails") awardStatusDetails: String): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 statusService.updateStatusDetails(
                         cpId = cpId,
                         stage = stage,
                         bidId = bidId,
+                        dateTime = dateTime,
                         awardStatusDetails = AwardStatusDetails.fromValue(awardStatusDetails)),
                 HttpStatus.OK)
     }

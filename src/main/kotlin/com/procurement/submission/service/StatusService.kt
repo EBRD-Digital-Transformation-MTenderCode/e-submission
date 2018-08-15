@@ -7,7 +7,10 @@ import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
-import com.procurement.submission.model.dto.response.*
+import com.procurement.submission.model.dto.response.BidResponseDto
+import com.procurement.submission.model.dto.response.BidsFinalStatusResponseDto
+import com.procurement.submission.model.dto.response.BidsSelectionResponseDto
+import com.procurement.submission.model.dto.response.BidsUpdateStatusResponseDto
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.*
 import org.springframework.stereotype.Service
@@ -21,7 +24,7 @@ interface StatusService {
 
     fun updateStatus(cpId: String, stage: String, country: String, pmd: String, unsuccessfulLots: UnsuccessfulLotsDto): ResponseDto
 
-    fun updateStatusDetails(cpId: String, stage: String, bidId: String, awardStatusDetails: AwardStatusDetails): ResponseDto
+    fun updateStatusDetails(cpId: String, stage: String, bidId: String, dateTime: LocalDateTime, awardStatusDetails: AwardStatusDetails): ResponseDto
 
     fun setFinalStatuses(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
 
@@ -41,7 +44,6 @@ class StatusServiceImpl(private val rulesService: RulesService,
                                country: String,
                                pmd: String,
                                dateTime: LocalDateTime): ResponseDto {
-//        val responseDto = periodService.getPeriodData(cpId, stage, dateTime)
         val responseDto = BidsSelectionResponseDto(isPeriodExpired = null, tenderPeriodEndDate = null, bids = setOf())
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isNotEmpty()) {
@@ -99,6 +101,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
     override fun updateStatusDetails(cpId: String,
                                      stage: String,
                                      bidId: String,
+                                     dateTime: LocalDateTime,
                                      awardStatusDetails: AwardStatusDetails): ResponseDto {
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         val bid = toObject(Bid::class.java, entity.jsonData)
@@ -109,7 +112,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
             AwardStatusDetails.PENDING -> TODO()
             AwardStatusDetails.CONSIDERATION -> TODO()
         }
-        bid.date = localNowUTC()
+        bid.date = dateTime
         bidDao.save(getEntity(
                 bid = bid,
                 cpId = cpId,
