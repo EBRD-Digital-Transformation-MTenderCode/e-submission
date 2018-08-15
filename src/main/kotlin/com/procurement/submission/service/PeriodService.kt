@@ -89,7 +89,10 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
     override fun getPeriodData(cpId: String, stage: String, dateTime: LocalDateTime): BidsSelectionResponseDto {
         val tenderPeriodEndDate = getPeriodEntity(cpId, stage).endDate.toLocal()
         val isPeriodExpired = (dateTime >= tenderPeriodEndDate)
-        return BidsSelectionResponseDto(isPeriodExpired = isPeriodExpired, tenderPeriodEndDate = tenderPeriodEndDate)
+        return BidsSelectionResponseDto(
+                isPeriodExpired = isPeriodExpired,
+                tenderPeriodEndDate = tenderPeriodEndDate,
+                bids = setOf())
     }
 
     override fun getPeriodEntity(cpId: String, stage: String): PeriodEntity {

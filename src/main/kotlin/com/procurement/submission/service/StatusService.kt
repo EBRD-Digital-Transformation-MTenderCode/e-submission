@@ -45,16 +45,16 @@ class StatusServiceImpl(private val rulesService: RulesService,
                                pmd: String,
                                dateTime: LocalDateTime): ResponseDto {
         val responseDto = BidsSelectionResponseDto(isPeriodExpired = null, tenderPeriodEndDate = null, bids = setOf())
-//        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-//        if (bidEntities.isNotEmpty()) {
-//            val pendingBids = getPendingBids(bidEntities)
-//            val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
-//            val relatedLotsFromBids = getRelatedLotsIdFromBids(pendingBids)
-//            val uniqueLots = getUniqueLots(relatedLotsFromBids)
-//            val successfulLots = getSuccessfulLotsByRule(uniqueLots, minNumberOfBids)
-//            val successfulBids = getBidsByRelatedLots(pendingBids, successfulLots)
-//            responseDto.bids = successfulBids
-//        }
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isNotEmpty()) {
+            val pendingBids = getPendingBids(bidEntities)
+            val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
+            val relatedLotsFromBids = getRelatedLotsIdFromBids(pendingBids)
+            val uniqueLots = getUniqueLots(relatedLotsFromBids)
+            val successfulLots = getSuccessfulLotsByRule(uniqueLots, minNumberOfBids)
+            val successfulBids = getBidsByRelatedLots(pendingBids, successfulLots)
+            responseDto.bids = successfulBids
+        }
         return ResponseDto(true, null, responseDto)
     }
 
@@ -164,6 +164,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
             status = Status.WITHDRAWN
         }
         entity.jsonData = toJson(bid)
+        entity.status = bid.status.value()
         bidDao.save(entity)
         return ResponseDto(true, null, BidResponseDto(null, null, bid))
 

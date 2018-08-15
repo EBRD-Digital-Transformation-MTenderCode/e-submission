@@ -14,7 +14,7 @@ data class BidEntity(
 
         val owner: String,
 
-        val status: String,
+        var status: String,
 
         val createdDate: Date,
 
