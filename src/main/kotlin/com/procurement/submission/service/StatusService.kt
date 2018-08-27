@@ -7,10 +7,7 @@ import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
-import com.procurement.submission.model.dto.response.BidResponseDto
-import com.procurement.submission.model.dto.response.BidsSelectionResponseDto
-import com.procurement.submission.model.dto.response.BidsStatusResponseDto
-import com.procurement.submission.model.dto.response.BidsUpdateStatusResponseDto
+import com.procurement.submission.model.dto.response.*
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.*
 import org.springframework.stereotype.Service
@@ -201,14 +198,16 @@ class StatusServiceImpl(private val rulesService: RulesService,
         if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
         val bids = getBidsFromEntities(bidEntities)
         val bidStatusPredicate = getBidStatusPredicateForPrepareCancellation(stage, pmd, phase)
+        val bidsResponseDto = mutableListOf<BidCancellation>()
         bids.asSequence()
                 .filter(bidStatusPredicate)
                 .forEach { bid ->
                     bid.date = dateTime
                     bid.statusDetails = StatusDetails.WITHDRAWN
+                    addBidToResponseDto(bidsResponseDto, bid)
                 }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = BidsStatusResponseDto(bids))
+        return ResponseDto(data = CancellationResponseDto(bidsResponseDto))
     }
 
     override fun bidsCancellation(cpId: String, stage: String, pmd: String, phase: String, dateTime: LocalDateTime): ResponseDto {
@@ -216,15 +215,25 @@ class StatusServiceImpl(private val rulesService: RulesService,
         if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
         val bids = getBidsFromEntities(bidEntities)
         val bidStatusPredicate = getBidStatusPredicateForCancellation(stage, pmd, phase)
+        val bidsResponseDto = mutableListOf<BidCancellation>()
         bids.asSequence()
                 .filter(bidStatusPredicate)
                 .forEach { bid ->
                     bid.date = dateTime
                     bid.status = Status.WITHDRAWN
                     bid.statusDetails = StatusDetails.EMPTY
+                    addBidToResponseDto(bidsResponseDto, bid)
                 }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = BidsStatusResponseDto(bids))
+        return ResponseDto(data = CancellationResponseDto(bidsResponseDto))
+    }
+
+    private fun addBidToResponseDto(bidsResponseDto: MutableList<BidCancellation>, bid: Bid) {
+        bidsResponseDto.add(BidCancellation(
+                id = bid.id,
+                date = bid.date,
+                status = bid.status,
+                statusDetails = bid.statusDetails))
     }
 
     private fun checkStatusesBidUpdate(bid: Bid) {
