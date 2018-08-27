@@ -1,79 +1,88 @@
 {
-  "token":"",
-  "bid":
-  {
-    "id":"",
-    "date":"",
-    "status":"pending",
-    "statusDetails":"",
-    "tenderers":
-    [{
-      "id":"",
-      "name":"",
-      "identifier":
+  "token": "",
+  "bid": {
+    "id": "",
+    "date": "",
+    "status": "pending",
+    "statusDetails": "",
+    "tenderers": [
       {
-        "scheme": "",
         "id": "",
-        "legalName": "",
-        "uri": ""
-      },
-      --"additionalIdentifiers":
-      [{
-        "scheme": "",
-        "id": "",
-        "legalName": "",
-        "uri": ""
-      }],
-      "address": {
-        "streetAddress": "",
-        --"postalCode": "",
-        "addressDetails": {
-          "country": {
-            "scheme": "",
-            "id": "",
-            "description": "",
-            "uri": ""
-          },
-          "region": {
-            "scheme": "",
-            "id": "",
-            "description": "",
-            "uri": ""
-          },
-          "locality": {
-            "scheme": "",
-            "id": "",
-            "description": "",
-            --"uri": ""
-          }
-        }
-      },
-      "contactPoint":
-      {
         "name": "",
-        "email": "",
-        "telephone": "",
-        --"faxNumber": "",
-        "url": ""
-      },
-      "details":
-      {
-        "scale": ""
+        "identifier": {
+          "scheme": "",
+          "id": "",
+          "legalName": "",
+          "uri": ""
+        },
+        --
+        "additionalIdentifiers": [
+          {
+            "scheme": "",
+            "id": "",
+            "legalName": "",
+            "uri": ""
+          }
+        ],
+        "address": {
+          "streetAddress": "",
+          --
+          "postalCode": "",
+          "addressDetails": {
+            "country": {
+              "scheme": "",
+              "id": "",
+              "description": "",
+              "uri": ""
+            },
+            "region": {
+              "scheme": "",
+              "id": "",
+              "description": "",
+              "uri": ""
+            },
+            "locality": {
+              "scheme": "",
+              "id": "",
+              "description": "",
+              --
+              "uri": ""
+            }
+          }
+        },
+        "contactPoint": {
+          "name": "",
+          "email": "",
+          "telephone": "",
+          --
+          "faxNumber": "",
+          "url": ""
+        },
+        "details": {
+          "scale": ""
+        }
       }
-    }],
-    --"value":
-  {
-    "amount":"",
-    "currency":""
-  },
-    "documents":
-    [{
-      "documentType": "",
-      "id": "",
-      --"title": "",
-      --"description": "",
-      "relatedLots": [""]
-    }],
-    "relatedLots":[""]
+    ],
+    --
+    "value": {
+      "amount": "",
+      "currency": ""
+    },
+    "documents": [
+      {
+        "documentType": "",
+        "id": "",
+        --
+        "title": "",
+        --
+        "description": "",
+        "relatedLots": [
+          ""
+        ]
+      }
+    ],
+    "relatedLots": [
+      ""
+    ]
   }
 }
