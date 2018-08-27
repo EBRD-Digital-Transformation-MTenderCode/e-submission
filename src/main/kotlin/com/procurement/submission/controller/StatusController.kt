@@ -94,12 +94,12 @@ class StatusController(private val statusService: StatusService) {
 
     @PostMapping("/bidWithdrawn")
     fun bidWithdrawn(@RequestParam("cpid") cpId: String,
-                    @RequestParam("stage") stage: String,
-                    @RequestParam("token") token: String,
-                    @RequestParam("owner") owner: String,
-                    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-                    @RequestParam("date") dateTime: LocalDateTime,
-                    @RequestParam("bidId") bidId: String): ResponseEntity<ResponseDto> {
+                     @RequestParam("stage") stage: String,
+                     @RequestParam("token") token: String,
+                     @RequestParam("owner") owner: String,
+                     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                     @RequestParam("date") dateTime: LocalDateTime,
+                     @RequestParam("bidId") bidId: String): ResponseEntity<ResponseDto> {
         return ResponseEntity(
                 statusService.bidWithdrawn(
                         cpId = cpId,
@@ -109,6 +109,39 @@ class StatusController(private val statusService: StatusService) {
                         bidId = bidId,
                         dateTime = dateTime),
                 HttpStatus.OK)
+    }
 
+    @PostMapping("/prepareCancellation")
+    fun prepareCancellation(@RequestParam("cpid") cpId: String,
+                            @RequestParam("stage") stage: String,
+                            @RequestParam("pmd") pmd: String,
+                            @RequestParam("phase") phase: String,
+                            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                            @RequestParam("date") dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
+        return ResponseEntity(
+                statusService.prepareCancellation(
+                        cpId = cpId,
+                        stage = stage,
+                        pmd = pmd,
+                        phase = phase,
+                        dateTime = dateTime),
+                HttpStatus.OK)
+    }
+
+    @PostMapping("/bidsCancellation")
+    fun bidsCancellation(@RequestParam("cpid") cpId: String,
+                         @RequestParam("stage") stage: String,
+                         @RequestParam("pmd") pmd: String,
+                         @RequestParam("phase") phase: String,
+                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+                         @RequestParam("date") dateTime: LocalDateTime): ResponseEntity<ResponseDto> {
+        return ResponseEntity(
+                statusService.bidsCancellation(
+                        cpId = cpId,
+                        stage = stage,
+                        pmd = pmd,
+                        phase = phase,
+                        dateTime = dateTime),
+                HttpStatus.OK)
     }
 }

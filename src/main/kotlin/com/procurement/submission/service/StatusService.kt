@@ -8,8 +8,8 @@ import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
 import com.procurement.submission.model.dto.response.BidResponseDto
-import com.procurement.submission.model.dto.response.BidsFinalStatusResponseDto
 import com.procurement.submission.model.dto.response.BidsSelectionResponseDto
+import com.procurement.submission.model.dto.response.BidsStatusResponseDto
 import com.procurement.submission.model.dto.response.BidsUpdateStatusResponseDto
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.*
@@ -31,6 +31,11 @@ interface StatusService {
     fun bidWithdrawn(cpId: String, stage: String, owner: String, token: String, bidId: String, dateTime: LocalDateTime): ResponseDto
 
     fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
+
+    fun prepareCancellation(cpId: String, stage: String, pmd: String, phase: String, dateTime: LocalDateTime): ResponseDto
+
+    fun bidsCancellation(cpId: String, stage: String, pmd: String, phase: String, dateTime: LocalDateTime): ResponseDto
+
 }
 
 @Service
@@ -55,7 +60,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
             val successfulBids = getBidsByRelatedLots(pendingBids, successfulLots)
             responseDto.bids = successfulBids
         }
-        return ResponseDto(true, null, responseDto)
+        return ResponseDto(data = responseDto)
     }
 
     override fun updateStatus(cpId: String,
@@ -94,8 +99,11 @@ class StatusServiceImpl(private val rulesService: RulesService,
         val updatedBidEntities = getUpdatedBidEntities(bidEntities, updatedBids)
         bidDao.saveAll(updatedBidEntities)
         val period = periodService.getPeriodEntity(cpId, stage)
-        return ResponseDto(true, null,
-                BidsUpdateStatusResponseDto(Period(period.startDate.toLocal(), period.endDate.toLocal()), bids))
+        return ResponseDto(
+                data = BidsUpdateStatusResponseDto(
+                        tenderPeriod = Period(period.startDate.toLocal(), period.endDate.toLocal()),
+                        bids = bids)
+        )
     }
 
     override fun updateStatusDetails(cpId: String,
@@ -120,7 +128,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
                 owner = entity.owner,
                 token = entity.token,
                 createdDate = entity.createdDate))
-        return ResponseDto(true, null, BidResponseDto(null, null, bid))
+        return ResponseDto(data = BidResponseDto(null, null, bid))
     }
 
     override fun setFinalStatuses(cpId: String,
@@ -144,7 +152,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
             }
         }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(true, null, BidsFinalStatusResponseDto(bids))
+        return ResponseDto(data = BidsStatusResponseDto(bids))
     }
 
     override fun bidWithdrawn(cpId: String,
@@ -166,13 +174,13 @@ class StatusServiceImpl(private val rulesService: RulesService,
         entity.jsonData = toJson(bid)
         entity.status = bid.status.value()
         bidDao.save(entity)
-        return ResponseDto(true, null, BidResponseDto(null, null, bid))
+        return ResponseDto(data = BidResponseDto(null, null, bid))
 
     }
 
     override fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) return ResponseDto(true, null, BidsFinalStatusResponseDto(listOf()))
+        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
         val bids = getBidsFromEntities(bidEntities)
         for (bid in bids) {
             bid.apply {
@@ -184,7 +192,39 @@ class StatusServiceImpl(private val rulesService: RulesService,
             }
         }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(true, null, BidsFinalStatusResponseDto(bids))
+        return ResponseDto(data = BidsStatusResponseDto(bids))
+    }
+
+
+    override fun prepareCancellation(cpId: String, stage: String, pmd: String, phase: String, dateTime: LocalDateTime): ResponseDto {
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
+        val bids = getBidsFromEntities(bidEntities)
+        val bidStatusPredicate = getBidStatusPredicateForPrepareCancellation(stage, pmd, phase)
+        bids.asSequence()
+                .filter(bidStatusPredicate)
+                .forEach { bid ->
+                    bid.date = dateTime
+                    bid.statusDetails = StatusDetails.WITHDRAWN
+                }
+        bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
+        return ResponseDto(data = BidsStatusResponseDto(bids))
+    }
+
+    override fun bidsCancellation(cpId: String, stage: String, pmd: String, phase: String, dateTime: LocalDateTime): ResponseDto {
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
+        val bids = getBidsFromEntities(bidEntities)
+        val bidStatusPredicate = getBidStatusPredicateForCancellation(stage, pmd, phase)
+        bids.asSequence()
+                .filter(bidStatusPredicate)
+                .forEach { bid ->
+                    bid.date = dateTime
+                    bid.status = Status.WITHDRAWN
+                    bid.statusDetails = StatusDetails.EMPTY
+                }
+        bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
+        return ResponseDto(data = BidsStatusResponseDto(bids))
     }
 
     private fun checkStatusesBidUpdate(bid: Bid) {
@@ -226,6 +266,66 @@ class StatusServiceImpl(private val rulesService: RulesService,
         return bids.asSequence()
                 .filter { lots.containsAny(it.relatedLots) }
                 .toSet()
+    }
+
+    private fun getBidStatusPredicateForPrepareCancellation(stage: String, pmd: String, phase: String): (Bid) -> Boolean {
+        if (
+                (pmd == "OT" && stage == "EV" && phase == "AWARDING")
+                || (pmd == "RT" && (stage == "PS" || stage == "PQ" || stage == "EV") && phase == "AWARDING")
+        ) {
+            return { bid: Bid ->
+                (bid.status == Status.PENDING)
+                        && (bid.statusDetails == StatusDetails.EMPTY
+                        || bid.statusDetails == StatusDetails.VALID
+                        || bid.statusDetails == StatusDetails.DISQUALIFIED)
+            }
+        } else if (
+                (pmd == "OT" && stage == "EV" && phase == "TENDERING")
+                || (pmd == "RT" && stage == "PS" && phase == "TENDERING")
+        ) {
+            return { bid: Bid ->
+                (bid.status == Status.PENDING)
+                        && (bid.statusDetails == StatusDetails.EMPTY)
+            }
+        } else if (
+                (pmd == "RT" && (stage == "PQ" || stage == "EV") && phase == "TENDERING")
+        ) {
+            return { bid: Bid ->
+                (bid.status == Status.PENDING || bid.status == Status.INVITED)
+                        && (bid.statusDetails == StatusDetails.EMPTY)
+            }
+        } else {
+            throw ErrorException(ErrorType.CONTEXT_PARAM_NOT_FOUND)
+        }
+    }
+
+    private fun getBidStatusPredicateForCancellation(stage: String, pmd: String, phase: String): (Bid) -> Boolean {
+        if (
+                (pmd == "OT" && stage == "EV" && phase == "AWARDING")
+                || (pmd == "RT" && (stage == "PS" || stage == "PQ" || stage == "EV") && phase == "AWARDING")
+        ) {
+            return { bid: Bid ->
+                (bid.status == Status.PENDING)
+                        && (bid.statusDetails == StatusDetails.WITHDRAWN)
+            }
+        } else if (
+                (pmd == "OT" && stage == "EV" && phase == "TENDERING")
+                || (pmd == "RT" && stage == "PS" && phase == "TENDERING")
+        ) {
+            return { bid: Bid ->
+                (bid.status == Status.PENDING)
+                        && (bid.statusDetails == StatusDetails.WITHDRAWN)
+            }
+        } else if (
+                (pmd == "RT" && (stage == "PQ" || stage == "EV") && phase == "TENDERING")
+        ) {
+            return { bid: Bid ->
+                (bid.status == Status.PENDING || bid.status == Status.INVITED)
+                        && (bid.statusDetails == StatusDetails.WITHDRAWN)
+            }
+        } else {
+            throw ErrorException(ErrorType.CONTEXT_PARAM_NOT_FOUND)
+        }
     }
 
     private fun getUpdatedBidEntities(bidEntities: List<BidEntity>, bids: List<Bid>): List<BidEntity> {

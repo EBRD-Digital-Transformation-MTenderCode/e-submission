@@ -8,7 +8,6 @@ import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.response.BidsSelectionResponseDto
 import com.procurement.submission.model.dto.response.CheckPeriodResponseDto
 import com.procurement.submission.model.entity.PeriodEntity
-import com.procurement.submission.utils.localNowUTC
 import com.procurement.submission.utils.toDate
 import com.procurement.submission.utils.toLocal
 import org.springframework.stereotype.Service
@@ -55,7 +54,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                 startDate = startDate.toDate(),
                 endDate = endDate.toDate())
         periodDao.save(period)
-        return ResponseDto(true, null, Period(period.startDate.toLocal(), period.endDate.toLocal()))
+        return ResponseDto(data = Period(period.startDate.toLocal(), period.endDate.toLocal()))
     }
 
     override fun saveNewPeriod(cpId: String,
@@ -72,12 +71,12 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                 startDate = oldPeriod.startDate,
                 endDate = endDate.toDate())
         periodDao.save(newPeriod)
-        return ResponseDto(true, null, Period(newPeriod.startDate.toLocal(), newPeriod.endDate.toLocal()))
+        return ResponseDto(data = Period(newPeriod.startDate.toLocal(), newPeriod.endDate.toLocal()))
     }
 
     override fun getPeriod(cpId: String, stage: String): ResponseDto {
         val entity = getPeriodEntity(cpId, stage)
-        return ResponseDto(true, null, Period(entity.startDate.toLocal(), entity.endDate.toLocal()))
+        return ResponseDto(data = Period(entity.startDate.toLocal(), entity.endDate.toLocal()))
     }
 
     override fun checkCurrentDateInPeriod(cpId: String, stage: String, dateTime: LocalDateTime) {
@@ -141,7 +140,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
     }
 
     fun getResponse(setExtendedPeriod: Boolean, isPeriodChange: Boolean, newEndDate: LocalDateTime): ResponseDto {
-        return ResponseDto(true, null, CheckPeriodResponseDto(setExtendedPeriod, isPeriodChange, newEndDate))
+        return ResponseDto(data = CheckPeriodResponseDto(setExtendedPeriod, isPeriodChange, newEndDate))
     }
 
     override fun periodValidation(country: String,
@@ -149,7 +148,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                                   startDate: LocalDateTime,
                                   endDate: LocalDateTime): ResponseDto {
         if (!checkInterval(country, pmd, startDate, endDate)) throw ErrorException(ErrorType.INVALID_PERIOD)
-        return ResponseDto(true, null, "Period is valid.")
+        return ResponseDto(data = "Period is valid.")
     }
 
     private fun checkInterval(country: String,

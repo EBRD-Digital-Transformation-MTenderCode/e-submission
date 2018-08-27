@@ -1,10 +1,9 @@
 package com.procurement.submission.model.dto.request
 
 import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonInclude
-import com.procurement.submission.model.dto.ocds.*
-import com.procurement.submission.model.dto.ocds.Bid
-import java.time.LocalDateTime
+import com.procurement.submission.model.dto.ocds.Document
+import com.procurement.submission.model.dto.ocds.OrganizationReference
+import com.procurement.submission.model.dto.ocds.Value
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull

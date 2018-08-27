@@ -44,7 +44,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         checkTypeOfDocuments(bidDto.documents)
         checkTenderers(cpId, stage, bidDto)
         val bid = Bid(
-                id = generationService.generateTimeBasedUUID().toString(),
+                id = generationService.getTimeBasedUUID(),
                 date = dateTime,
                 status = Status.PENDING,
                 statusDetails = StatusDetails.EMPTY,
@@ -63,7 +63,7 @@ class BidServiceImpl(private val generationService: GenerationService,
                 pendingDate = dateTime.toDate()
         )
         bidDao.save(entity)
-        return ResponseDto(true, null, BidResponseDto(entity.token.toString(), bid.id, bid))
+        return ResponseDto(data = BidResponseDto(entity.token.toString(), bid.id, bid))
     }
 
     override fun updateBid(cpId: String,
@@ -91,7 +91,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         entity.jsonData = toJson(bid)
         entity.pendingDate = dateTime.toDate()
         bidDao.save(entity)
-        return ResponseDto(true, null, BidResponseDto(null, bid.id, bid))
+        return ResponseDto(data = BidResponseDto(null, bid.id, bid))
     }
 
     override fun copyBids(cpId: String,
@@ -107,8 +107,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         val mapCopyEntityBid = getBidsCopyMap(lots, mapValidEntityBid, newStage)
         bidDao.saveAll(mapCopyEntityBid.keys.toList())
         val bids = ArrayList(mapCopyEntityBid.values)
-        return ResponseDto(true, null,
-                BidsCopyResponseDto(Bids(bids), Period(startDate, endDate)))
+        return ResponseDto(data = BidsCopyResponseDto(Bids(bids), Period(startDate, endDate)))
     }
 
     private fun checkStatusesBidUpdate(bid: Bid) {

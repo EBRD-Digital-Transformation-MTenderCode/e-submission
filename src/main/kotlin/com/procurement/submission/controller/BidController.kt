@@ -1,11 +1,9 @@
 package com.procurement.submission.controller
 
 import com.procurement.submission.model.dto.bpe.ResponseDto
-import com.procurement.submission.model.dto.ocds.AwardStatusDetails
 import com.procurement.submission.model.dto.request.BidCreateDto
 import com.procurement.submission.model.dto.request.BidUpdateDto
 import com.procurement.submission.model.dto.request.LotsDto
-import com.procurement.submission.model.dto.request.UnsuccessfulLotsDto
 import com.procurement.submission.service.BidService
 import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.http.HttpStatus
