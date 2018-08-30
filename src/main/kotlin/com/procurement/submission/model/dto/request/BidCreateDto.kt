@@ -22,7 +22,7 @@ data class BidCreate @JsonCreator constructor(
         @field:Valid
         var value: Value?,
 
-        @field:Valid @field:NotEmpty
+        @field:Valid
         var documents: List<Document>?,
 
         @field:NotEmpty

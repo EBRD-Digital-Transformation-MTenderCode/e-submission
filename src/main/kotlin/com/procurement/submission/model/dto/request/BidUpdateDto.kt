@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull
 
 data class BidUpdateDto @JsonCreator constructor(
 
-        @field:Valid @field:NotNull
+        @field:Valid
         val bid: BidUpdate
 )
 
@@ -18,6 +18,6 @@ data class BidUpdate @JsonCreator constructor(
         @field:Valid
         var value: Value?,
 
-        @field:Valid @field:NotEmpty
+        @field:Valid
         var documents: List<Document>?
 )
