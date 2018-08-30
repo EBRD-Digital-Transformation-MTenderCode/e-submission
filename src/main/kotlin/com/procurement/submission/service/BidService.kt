@@ -85,7 +85,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         bid.apply {
             date = dateTime
             status = Status.PENDING
-            documents = bidDto.documents
+            documents = updateDocuments(bid.documents, bidDto.documents)
             bidDto.value?.let { value = it }
         }
         entity.jsonData = toJson(bid)
@@ -110,23 +110,56 @@ class BidServiceImpl(private val generationService: GenerationService,
         return ResponseDto(data = BidsCopyResponseDto(Bids(bids), Period(startDate, endDate)))
     }
 
+    private fun updateDocuments(documentsDb: List<Document>?, documentsDto: List<Document>?): List<Document>? {
+        return if (documentsDb != null && documentsDb.isNotEmpty()) {
+            if (documentsDto != null) {
+                //validation
+                val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
+                val documentsDbId = documentsDb.asSequence().map { it.id }.toSet()
+                val newDocumentsId = documentsDtoId - documentsDbId
+                if (!documentsDtoId.containsAll(documentsDbId)) throw ErrorException(ErrorType.INVALID_DOCS_ID)
+                //update
+                documentsDb.forEach { document ->
+                    val documentDto = documentsDto.asSequence().first { it.id == document.id }
+                    document.updateDocument(documentDto)
+                }
+                val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
+                documentsDb + newDocuments
+            } else {
+                documentsDb
+            }
+
+        } else {
+            documentsDto
+        }
+    }
+
+    private fun Document.updateDocument(documentDto: Document) {
+        this.title = documentDto.title
+        this.description = documentDto.description
+        this.relatedLots = documentDto.relatedLots
+    }
+
+
     private fun checkStatusesBidUpdate(bid: Bid) {
         if (bid.status != Status.PENDING && bid.status != Status.INVITED) throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
         if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
     }
 
     private fun checkRelatedLotsInDocuments(bidDto: BidCreate) {
-        bidDto.documents.forEach { document ->
+        bidDto.documents?.forEach { document ->
             if (document.relatedLots != null) {
-                if (!bidDto.relatedLots.containsAll(document.relatedLots))
+                if (!bidDto.relatedLots.containsAll(document.relatedLots!!))
                     throw ErrorException(ErrorType.INVALID_RELATED_LOT)
             }
         }
     }
 
-    private fun checkTypeOfDocuments(documents: List<Document>) {
-        documents.asSequence().firstOrNull { it.documentType == DocumentType.SUBMISSION_DOCUMENTS }
-                ?: throw ErrorException(ErrorType.CREATE_BID_DOCUMENTS_SUBMISSION)
+    private fun checkTypeOfDocuments(documents: List<Document>?) {
+        if (documents != null) {
+            documents.asSequence().firstOrNull { it.documentType == DocumentType.SUBMISSION_DOCUMENTS }
+                    ?: throw ErrorException(ErrorType.CREATE_BID_DOCUMENTS_SUBMISSION)
+        }
     }
 
     private fun isOneRelatedLot(bidDto: BidCreate) {
@@ -134,9 +167,9 @@ class BidServiceImpl(private val generationService: GenerationService,
     }
 
     private fun validateRelatedLotsOfDocuments(bidDto: BidUpdate, bid: Bid) {
-        bidDto.documents.forEach { document ->
+        bidDto.documents?.forEach { document ->
             if (document.relatedLots != null) {
-                if (!bid.relatedLots.containsAll(document.relatedLots)) throw ErrorException(ErrorType.INVALID_RELATED_LOT)
+                if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(ErrorType.INVALID_RELATED_LOT)
             }
         }
     }

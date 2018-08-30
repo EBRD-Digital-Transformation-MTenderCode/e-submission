@@ -15,10 +15,10 @@ data class Document @JsonCreator constructor(
         @field:NotNull
         val documentType: DocumentType,
 
-        val title: String?,
+        var title: String?,
 
-        val description: String?,
+        var description: String?,
 
         @field:NotEmpty
-        val relatedLots: HashSet<String>?
+        var relatedLots: HashSet<String>?
 )

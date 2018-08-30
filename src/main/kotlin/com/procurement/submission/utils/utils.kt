@@ -34,6 +34,18 @@ private object JsonMapper {
     }
 }
 
+fun Any?.notNull(func: ()-> Unit){
+    if (this != null){
+        func()
+    }
+}
+
+fun Any?.isNull(func: ()-> Unit){
+    if (this != null){
+        func()
+    }
+}
+
 /*Date utils*/
 fun LocalDateTime.toDate(): Date {
     return Date.from(this.toInstant(ZoneOffset.UTC))

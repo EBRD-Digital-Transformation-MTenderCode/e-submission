@@ -23,7 +23,7 @@ data class BidCreate @JsonCreator constructor(
         var value: Value?,
 
         @field:Valid @field:NotEmpty
-        var documents: List<Document>,
+        var documents: List<Document>?,
 
         @field:NotEmpty
         val relatedLots: List<String>

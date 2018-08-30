@@ -19,5 +19,5 @@ data class BidUpdate @JsonCreator constructor(
         var value: Value?,
 
         @field:Valid @field:NotEmpty
-        var documents: List<Document>
+        var documents: List<Document>?
 )

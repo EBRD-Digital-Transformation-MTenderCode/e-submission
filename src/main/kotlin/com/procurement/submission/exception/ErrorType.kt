@@ -23,5 +23,6 @@ enum class ErrorType constructor(val code: String, val message: String) {
     CREATE_BID_DOCUMENTS_SUBMISSION("03.03", "Documents must be contains one 'submissionDocuments' type"),
     CREATE_BID_DOCUMENTS_TYPES("03.04", "Invalid types of documents"),
     INVALID_STATUSES_FOR_UPDATE("03.05", "Invalid status or status details"),
+    INVALID_DOCS_ID("03.06", "Invalid documents ids."),
     CONTEXT_PARAM_NOT_FOUND("20.01", "Context parameter not found.");
 }
