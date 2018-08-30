@@ -117,7 +117,6 @@ class BidServiceImpl(private val generationService: GenerationService,
                 val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
                 val documentsDbId = documentsDb.asSequence().map { it.id }.toSet()
                 val newDocumentsId = documentsDtoId - documentsDbId
-                if (!documentsDtoId.containsAll(documentsDbId)) throw ErrorException(ErrorType.INVALID_DOCS_ID)
                 //update
                 documentsDb.forEach { document ->
                     val documentDto = documentsDto.asSequence().first { it.id == document.id }
