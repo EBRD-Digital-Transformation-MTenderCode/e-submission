@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull
 
 data class BidCreateDto @JsonCreator constructor(
 
-        @field:Valid @field:NotNull
+        @field:Valid
         val bid: BidCreate
 )
 
