@@ -118,11 +118,12 @@ class BidServiceImpl(private val generationService: GenerationService,
                 val newDocumentsId = documentsDtoId - documentsDbId
                 //update
                 documentsDb.forEach { document ->
-                    val documentDto = documentsDto.asSequence().first { it.id == document.id }
-                    document.updateDocument(documentDto)
+                    documentsDto.firstOrNull { it.id == document.id }
+                            ?.let { document.updateDocument(it) }
                 }
                 //new
-                val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
+                val newDocuments = documentsDto.asSequence()
+                        .filter { it.id in newDocumentsId }.toList()
                 documentsDb + newDocuments
             } else {
                 documentsDb
