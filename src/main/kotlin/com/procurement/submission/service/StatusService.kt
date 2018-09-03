@@ -197,7 +197,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
         val bids = getBidsFromEntities(bidEntities)
-        val bidStatusPredicate = getBidStatusPredicateForPrepareCancellation(stage, pmd, phase)
+        val bidStatusPredicate = getBidStatusPredicateForPrepareCancellation(phase)
         val bidsResponseDto = mutableListOf<BidCancellation>()
         bids.asSequence()
                 .filter(bidStatusPredicate)
@@ -214,7 +214,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
         val bids = getBidsFromEntities(bidEntities)
-        val bidStatusPredicate = getBidStatusPredicateForCancellation(stage, pmd, phase)
+        val bidStatusPredicate = getBidStatusPredicateForCancellation(phase = phase)
         val bidsResponseDto = mutableListOf<BidCancellation>()
         bids.asSequence()
                 .filter(bidStatusPredicate)
@@ -277,63 +277,33 @@ class StatusServiceImpl(private val rulesService: RulesService,
                 .toSet()
     }
 
-    private fun getBidStatusPredicateForPrepareCancellation(stage: String, pmd: String, phase: String): (Bid) -> Boolean {
-        if (
-                (pmd == "OT" && stage == "EV" && phase == "AWARDING")
-                || (pmd == "RT" && (stage == "PS" || stage == "PQ" || stage == "EV") && phase == "AWARDING")
-        ) {
-            return { bid: Bid ->
+    private fun getBidStatusPredicateForPrepareCancellation(phase: String): (Bid) -> Boolean {
+        when (phase) {
+            "AWARDING" -> return { bid: Bid ->
                 (bid.status == Status.PENDING)
                         && (bid.statusDetails == StatusDetails.EMPTY
                         || bid.statusDetails == StatusDetails.VALID
                         || bid.statusDetails == StatusDetails.DISQUALIFIED)
             }
-        } else if (
-                (pmd == "OT" && stage == "EV" && phase == "TENDERING")
-                || (pmd == "RT" && stage == "PS" && phase == "TENDERING")
-        ) {
-            return { bid: Bid ->
-                (bid.status == Status.PENDING)
-                        && (bid.statusDetails == StatusDetails.EMPTY)
-            }
-        } else if (
-                (pmd == "RT" && (stage == "PQ" || stage == "EV") && phase == "TENDERING")
-        ) {
-            return { bid: Bid ->
+            "TENDERING" -> return { bid: Bid ->
                 (bid.status == Status.PENDING || bid.status == Status.INVITED)
                         && (bid.statusDetails == StatusDetails.EMPTY)
             }
-        } else {
-            throw ErrorException(ErrorType.CONTEXT_PARAM_NOT_FOUND)
+            else -> throw ErrorException(ErrorType.CONTEXT_PARAM_NOT_FOUND)
         }
     }
 
-    private fun getBidStatusPredicateForCancellation(stage: String, pmd: String, phase: String): (Bid) -> Boolean {
-        if (
-                (pmd == "OT" && stage == "EV" && phase == "AWARDING")
-                || (pmd == "RT" && (stage == "PS" || stage == "PQ" || stage == "EV") && phase == "AWARDING")
-        ) {
-            return { bid: Bid ->
+    private fun getBidStatusPredicateForCancellation(phase: String): (Bid) -> Boolean {
+        when (phase) {
+            "AWARDING" -> return { bid: Bid ->
                 (bid.status == Status.PENDING)
                         && (bid.statusDetails == StatusDetails.WITHDRAWN)
             }
-        } else if (
-                (pmd == "OT" && stage == "EV" && phase == "TENDERING")
-                || (pmd == "RT" && stage == "PS" && phase == "TENDERING")
-        ) {
-            return { bid: Bid ->
-                (bid.status == Status.PENDING)
-                        && (bid.statusDetails == StatusDetails.WITHDRAWN)
-            }
-        } else if (
-                (pmd == "RT" && (stage == "PQ" || stage == "EV") && phase == "TENDERING")
-        ) {
-            return { bid: Bid ->
+            "TENDERING" -> return { bid: Bid ->
                 (bid.status == Status.PENDING || bid.status == Status.INVITED)
                         && (bid.statusDetails == StatusDetails.WITHDRAWN)
             }
-        } else {
-            throw ErrorException(ErrorType.CONTEXT_PARAM_NOT_FOUND)
+            else -> throw ErrorException(ErrorType.CONTEXT_PARAM_NOT_FOUND)
         }
     }
 
