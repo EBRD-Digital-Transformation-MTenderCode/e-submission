@@ -1,17 +1,8 @@
 package com.procurement.submission.controller
 
-import com.procurement.submission.model.dto.bpe.ResponseDto
-import com.procurement.submission.model.dto.request.BidCreateDto
-import com.procurement.submission.model.dto.request.BidUpdateDto
-import com.procurement.submission.model.dto.request.LotsDto
 import com.procurement.submission.service.BidService
-import org.springframework.format.annotation.DateTimeFormat
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
-import java.time.LocalDateTime
-import javax.validation.Valid
 
 @Validated
 @RestController
@@ -24,7 +15,7 @@ class BidController(private val bidService: BidService) {
 //                  @RequestParam("owner") owner: String,
 //                  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
 //                  @RequestParam("date") dateTime: LocalDateTime,
-//                  @Valid @RequestBody data: BidCreateDto): ResponseEntity<ResponseDto> {
+//                  @Valid @RequestBody data: BidCreateRq): ResponseEntity<ResponseDto> {
 //        return ResponseEntity(
 //                bidService.createBid(
 //                        cpId = cpId,
@@ -43,7 +34,7 @@ class BidController(private val bidService: BidService) {
 //                  @RequestParam("bidId") bidId: String,
 //                  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
 //                  @RequestParam("date") dateTime: LocalDateTime,
-//                  @Valid @RequestBody data: BidUpdateDto): ResponseEntity<ResponseDto> {
+//                  @Valid @RequestBody data: BidUpdateRq): ResponseEntity<ResponseDto> {
 //        return ResponseEntity(
 //                bidService.updateBid(
 //                        cpId = cpId,
