@@ -27,9 +27,10 @@ class CommandController(private val bidService: BidService,
         return when (cm.command) {
             CommandType.CREATE_BID -> bidService.createBid(cm)
             CommandType.UPDATE_BID -> bidService.updateBid(cm)
+            CommandType.COPY_BIDS -> bidService.copyBids(cm)
             CommandType.GET_PERIOD -> periodService.getPeriod(cm)
             CommandType.SAVE_PERIOD -> periodService.savePeriod(cm)
-            CommandType.SAVE__NEW_PERIOD -> periodService.saveNewPeriod(cm)
+            CommandType.SAVE_NEW_PERIOD -> periodService.saveNewPeriod(cm)
             CommandType.PERIOD_VALIDATION -> periodService.periodValidation(cm)
             CommandType.CHECK_PERIOD -> periodService.checkPeriod(cm)
             CommandType.BIDS_SELECTION -> statusService.bidsSelection(cm)

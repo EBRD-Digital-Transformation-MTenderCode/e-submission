@@ -40,9 +40,10 @@ data class Context @JsonCreator constructor(
 enum class CommandType(private val value: String) {
     CREATE_BID("createBid"),
     UPDATE_BID("updateBid"),
+    COPY_BIDS("copyBids"),
     GET_PERIOD("getPeriod"),
     SAVE_PERIOD("savePeriod"),
-    SAVE__NEW_PERIOD("saveNewPeriod"),
+    SAVE_NEW_PERIOD("saveNewPeriod"),
     PERIOD_VALIDATION("periodValidation"),
     CHECK_PERIOD("checkPeriod"),
     BIDS_SELECTION("bidsSelection"),
