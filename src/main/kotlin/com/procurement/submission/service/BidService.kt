@@ -75,7 +75,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(CONTEXT)
         val dto = toObject(BidUpdateRq::class.java, cm.data)
         val bidDto = dto.bid
-        
+
         periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         if (entity.token.toString() != token) throw ErrorException(INVALID_TOKEN)

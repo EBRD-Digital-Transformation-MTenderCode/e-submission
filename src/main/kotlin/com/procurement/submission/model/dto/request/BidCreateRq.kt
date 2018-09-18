@@ -6,7 +6,6 @@ import com.procurement.submission.model.dto.ocds.OrganizationReference
 import com.procurement.submission.model.dto.ocds.Value
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.NotNull
 
 data class BidCreateRq @JsonCreator constructor(
 
