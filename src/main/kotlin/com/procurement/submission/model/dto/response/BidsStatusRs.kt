@@ -5,11 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.procurement.submission.model.dto.ocds.Bid
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class BidResponseDto @JsonCreator constructor(
+data class BidsStatusRs @JsonCreator constructor(
 
-        val token: String?,
-
-        val bidId: String?,
-
-        val bid: Bid
+        val bids: List<Bid>
 )

@@ -2,17 +2,16 @@ package com.procurement.submission.service
 
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.exception.ErrorType.CONTEXT
+import com.procurement.submission.exception.ErrorType.*
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.*
-import com.procurement.submission.model.dto.response.BidResponseDto
-import com.procurement.submission.model.dto.response.BidsCopyResponseDto
+import com.procurement.submission.model.dto.response.BidRs
+import com.procurement.submission.model.dto.response.BidsCopyRs
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.*
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -20,9 +19,9 @@ interface BidService {
 
     fun createBid(cm: CommandMessage): ResponseDto
 
-    fun updateBid(cpId: String, stage: String, owner: String, token: String, bidId: String, dateTime: LocalDateTime, bidDto: BidUpdate): ResponseDto
+    fun updateBid(cm: CommandMessage): ResponseDto
 
-    fun copyBids(cpId: String, newStage: String, previousStage: String, startDate: LocalDateTime, endDate: LocalDateTime, lots: LotsDto): ResponseDto
+    fun copyBids(cm: CommandMessage): ResponseDto
 }
 
 @Service
@@ -35,7 +34,8 @@ class BidServiceImpl(private val generationService: GenerationService,
         val owner = cm.context.owner ?: throw ErrorException(CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
         val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(CONTEXT)
-        val bidDto = toObject(BidCreateRq::class.java, cm.data)
+        val dto = toObject(BidCreateRq::class.java, cm.data)
+        val bidDto = dto.bid
 
         periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         checkRelatedLotsInDocuments(bidDto)
@@ -63,20 +63,23 @@ class BidServiceImpl(private val generationService: GenerationService,
                 pendingDate = dateTime.toDate()
         )
         bidDao.save(entity)
-        return ResponseDto(data = BidResponseDto(entity.token.toString(), bid.id, bid))
+        return ResponseDto(data = BidRs(entity.token.toString(), bid.id, bid))
     }
 
-    override fun updateBid(cpId: String,
-                           stage: String,
-                           owner: String,
-                           token: String,
-                           bidId: String,
-                           dateTime: LocalDateTime,
-                           bidDto: BidUpdate): ResponseDto {
+    override fun updateBid(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
+        val owner = cm.context.owner ?: throw ErrorException(CONTEXT)
+        val token = cm.context.token ?: throw ErrorException(CONTEXT)
+        val bidId = cm.context.id ?: throw ErrorException(CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(CONTEXT)
+        val dto = toObject(BidUpdateRq::class.java, cm.data)
+        val bidDto = dto.bid
+        
         periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
-        if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
-        if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
+        if (entity.token.toString() != token) throw ErrorException(INVALID_TOKEN)
+        if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
         checkStatusesBidUpdate(bid)
         checkTypeOfDocuments(bidDto.documents)
@@ -91,23 +94,25 @@ class BidServiceImpl(private val generationService: GenerationService,
         entity.jsonData = toJson(bid)
         entity.pendingDate = dateTime.toDate()
         bidDao.save(entity)
-        return ResponseDto(data = BidResponseDto(null, bid.id, bid))
+        return ResponseDto(data = BidRs(null, bid.id, bid))
     }
 
-    override fun copyBids(cpId: String,
-                          newStage: String,
-                          previousStage: String,
-                          startDate: LocalDateTime,
-                          endDate: LocalDateTime,
-                          lots: LotsDto): ResponseDto {
+    override fun copyBids(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
+        val previousStage = cm.context.prevStage ?: throw ErrorException(CONTEXT)
+        val startDate = cm.context.startDate?.toLocal() ?: throw ErrorException(CONTEXT)
+        val endDate = cm.context.endDate?.toLocal() ?: throw ErrorException(CONTEXT)
+        val lots = toObject(LotsDto::class.java, cm.data)
+
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, previousStage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
-        periodService.savePeriod(cpId, newStage, startDate, endDate)
+        if (bidEntities.isEmpty()) throw ErrorException(BID_NOT_FOUND)
+        periodService.save(cpId, stage, startDate, endDate)
         val mapValidEntityBid = getBidsForNewStageMap(bidEntities, lots)
-        val mapCopyEntityBid = getBidsCopyMap(lots, mapValidEntityBid, newStage)
+        val mapCopyEntityBid = getBidsCopyMap(lots, mapValidEntityBid, stage)
         bidDao.saveAll(mapCopyEntityBid.keys.toList())
         val bids = ArrayList(mapCopyEntityBid.values)
-        return ResponseDto(data = BidsCopyResponseDto(Bids(bids), Period(startDate, endDate)))
+        return ResponseDto(data = BidsCopyRs(Bids(bids), Period(startDate, endDate)))
     }
 
     private fun updateDocuments(documentsDb: List<Document>?, documentsDto: List<Document>?): List<Document>? {
@@ -142,15 +147,15 @@ class BidServiceImpl(private val generationService: GenerationService,
 
 
     private fun checkStatusesBidUpdate(bid: Bid) {
-        if (bid.status != Status.PENDING && bid.status != Status.INVITED) throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
-        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
+        if (bid.status != Status.PENDING && bid.status != Status.INVITED) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
     }
 
     private fun checkRelatedLotsInDocuments(bidDto: BidCreate) {
         bidDto.documents?.forEach { document ->
             if (document.relatedLots != null) {
                 if (!bidDto.relatedLots.containsAll(document.relatedLots!!))
-                    throw ErrorException(ErrorType.INVALID_RELATED_LOT)
+                    throw ErrorException(INVALID_RELATED_LOT)
             }
         }
     }
@@ -158,18 +163,18 @@ class BidServiceImpl(private val generationService: GenerationService,
     private fun checkTypeOfDocuments(documents: List<Document>?) {
         if (documents != null) {
             documents.asSequence().firstOrNull { it.documentType == DocumentType.SUBMISSION_DOCUMENTS }
-                    ?: throw ErrorException(ErrorType.CREATE_BID_DOCUMENTS_SUBMISSION)
+                    ?: throw ErrorException(CREATE_BID_DOCUMENTS_SUBMISSION)
         }
     }
 
     private fun isOneRelatedLot(bidDto: BidCreate) {
-        if (bidDto.relatedLots.size > 1) throw ErrorException(ErrorType.RELATED_LOTS_MUST_BE_ONE_UNIT)
+        if (bidDto.relatedLots.size > 1) throw ErrorException(RELATED_LOTS_MUST_BE_ONE_UNIT)
     }
 
     private fun validateRelatedLotsOfDocuments(bidDto: BidUpdate, bid: Bid) {
         bidDto.documents?.forEach { document ->
             if (document.relatedLots != null) {
-                if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(ErrorType.INVALID_RELATED_LOT)
+                if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(INVALID_RELATED_LOT)
             }
         }
     }
@@ -194,14 +199,14 @@ class BidServiceImpl(private val generationService: GenerationService,
                 if (bidTenderers.size == dtoTenderers.size &&
                         bidTenderers.containsAll(dtoTenderers) &&
                         bidRelatedLots.containsAll(dtoRelatedLots))
-                    throw ErrorException(ErrorType.BID_ALREADY_WITH_LOT)
+                    throw ErrorException(BID_ALREADY_WITH_LOT)
             }
         }
     }
 
     fun validateValue(stage: String, bidDto: BidUpdate) {
         if (stage == "EV") {
-            if (bidDto.value == null) throw ErrorException(ErrorType.VALUE_IS_NULL)
+            if (bidDto.value == null) throw ErrorException(VALUE_IS_NULL)
         }
     }
 

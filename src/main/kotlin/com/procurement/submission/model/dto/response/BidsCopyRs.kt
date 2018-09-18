@@ -6,7 +6,7 @@ import com.procurement.submission.model.dto.ocds.Bids
 import com.procurement.submission.model.dto.ocds.Period
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class BidsCopyResponseDto @JsonCreator constructor(
+data class BidsCopyRs @JsonCreator constructor(
 
         val bids: Bids,
 

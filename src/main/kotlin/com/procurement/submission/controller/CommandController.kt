@@ -1,10 +1,5 @@
 package com.procurement.submission.controller
 
-import com.procurement.access.exception.EnumException
-import com.procurement.access.exception.ErrorException
-import com.procurement.access.model.bpe.*
-import com.procurement.access.model.bpe.CommandType.*
-import com.procurement.access.service.*
 import com.procurement.submission.exception.EnumException
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.model.dto.bpe.*
@@ -41,10 +36,10 @@ class CommandController(private val bidService: BidService,
             CommandType.UPDATE_BIDS_BY_LOTS -> statusService.updateBidsByLots(cm)
             CommandType.UPDATE_BID_BY_AWARD_STATUS -> statusService.updateBidsByAwardStatus(cm)
             CommandType.SET_BIDS_FINAL_STATUSES -> statusService.setFinalStatuses(cm)
-            CommandType.BID_WITHDRAWN -> statusService.bidWithdrawn()
+            CommandType.BID_WITHDRAWN -> statusService.bidWithdrawn(cm)
             CommandType.BIDS_WITHDRAWN -> statusService.bidsWithdrawn(cm)
             CommandType.PREPARE_BIDS_CANCELLATION -> statusService.prepareBidsCancellation(cm)
-            CommandType.BIDS_CANCELLATION -> statusService.bidsSelection()
+            CommandType.BIDS_CANCELLATION -> statusService.bidsSelection(cm)
         }
     }
 

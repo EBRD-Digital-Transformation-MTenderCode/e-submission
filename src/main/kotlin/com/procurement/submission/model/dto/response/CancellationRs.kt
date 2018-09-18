@@ -7,7 +7,7 @@ import com.procurement.submission.model.dto.ocds.StatusDetails
 import java.time.LocalDateTime
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class CancellationResponseDto @JsonCreator constructor(
+data class CancellationRs @JsonCreator constructor(
 
         val bids: List<BidCancellation>
 )

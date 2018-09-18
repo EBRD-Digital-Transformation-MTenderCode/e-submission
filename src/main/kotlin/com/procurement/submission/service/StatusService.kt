@@ -3,9 +3,11 @@ package com.procurement.submission.service
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.LotDto
+import com.procurement.submission.model.dto.request.UpdateBidsByAwardStatusRq
 import com.procurement.submission.model.dto.request.UpdateBidsByLotsRq
 import com.procurement.submission.model.dto.response.*
 import com.procurement.submission.model.entity.BidEntity
@@ -17,21 +19,21 @@ import kotlin.collections.ArrayList
 
 interface StatusService {
 
-    fun bidsSelection(cpId: String, stage: String, country: String, pmd: String, dateTime: LocalDateTime): ResponseDto
+    fun bidsSelection(cm: CommandMessage): ResponseDto
 
-    fun updateBidsByLots(cpId: String, stage: String, country: String, pmd: String, unsuccessfulLots: UpdateBidsByLotsRq): ResponseDto
+    fun updateBidsByLots(cm: CommandMessage): ResponseDto
 
-    fun updateBidsByAwardStatus(cpId: String, stage: String, bidId: String, dateTime: LocalDateTime, awardStatusDetails: AwardStatusDetails): ResponseDto
+    fun updateBidsByAwardStatus(cm: CommandMessage): ResponseDto
 
-    fun setFinalStatuses(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
+    fun setFinalStatuses(cm: CommandMessage): ResponseDto
 
-    fun bidWithdrawn(cpId: String, stage: String, owner: String, token: String, bidId: String, dateTime: LocalDateTime): ResponseDto
+    fun bidWithdrawn(cm: CommandMessage): ResponseDto
 
-    fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto
+    fun bidsWithdrawn(cm: CommandMessage): ResponseDto
 
-    fun prepareBidsCancellation(cpId: String, stage: String, pmd: String, phase: String, dateTime: LocalDateTime): ResponseDto
+    fun prepareBidsCancellation(cm: CommandMessage): ResponseDto
 
-    fun bidsCancellation(cpId: String, stage: String, pmd: String, phase: String, dateTime: LocalDateTime): ResponseDto
+    fun bidsCancellation(cm: CommandMessage): ResponseDto
 
 }
 
@@ -41,73 +43,79 @@ class StatusServiceImpl(private val rulesService: RulesService,
                         private val bidDao: BidDao) : StatusService {
 
 
-    override fun bidsSelection(cpId: String,
-                               stage: String,
-                               country: String,
-                               pmd: String,
-                               dateTime: LocalDateTime): ResponseDto {
-        val responseDto = BidsSelectionResponseDto(isPeriodExpired = null, tenderPeriodEndDate = null, bids = setOf())
+    override fun bidsSelection(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
+        val pmd = cm.context.pmd ?: throw ErrorException(ErrorType.CONTEXT)
+
+        val responseDto = BidsSelectionRs(isPeriodExpired = null, tenderPeriodEndDate = null, bids = setOf())
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isNotEmpty()) {
-            val pendingBids = getPendingBids(bidEntities)
+            val pendingBidsSet = getPendingBids(bidEntities)
             val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
-            val relatedLotsFromBids = getRelatedLotsIdFromBids(pendingBids)
-            val uniqueLots = getUniqueLots(relatedLotsFromBids)
-            val successfulLots = getSuccessfulLotsByRule(uniqueLots, minNumberOfBids)
-            val successfulBids = getBidsByRelatedLots(pendingBids, successfulLots)
-            responseDto.bids = successfulBids
+            val relatedLotsFromBidsSet = getRelatedLotsIdFromBids(pendingBidsSet)
+            val uniqueLotsMap = getUniqueLots(relatedLotsFromBidsSet)
+            val successfulLotsSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
+            val successfulBidsSet = getBidsByRelatedLots(pendingBidsSet, successfulLotsSet)
+            responseDto.bids = successfulBidsSet
         }
         return ResponseDto(data = responseDto)
     }
 
-    override fun updateBidsByLots(cpId: String,
-                                  stage: String,
-                                  country: String,
-                                  pmd: String,
-                                  unsuccessfulLots: UpdateBidsByLotsRq): ResponseDto {
+    override fun updateBidsByLots(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
+        val pmd = cm.context.pmd ?: throw ErrorException(ErrorType.CONTEXT)
+        val dto = toObject(UpdateBidsByLotsRq::class.java, cm.data)
+
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
-        val pendingBids = getPendingBids(bidEntities)
+        val pendingBidsSet = getPendingBids(bidEntities)
         val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
-        val relatedLotsFromBidsList = getRelatedLotsIdFromBids(pendingBids)
-        val uniqueLotsMap = getUniqueLots(relatedLotsFromBidsList)
+        val relatedLotsFromBidsSet = getRelatedLotsIdFromBids(pendingBidsSet)
+        val uniqueLotsMap = getUniqueLots(relatedLotsFromBidsSet)
         val successfulLotsByRuleSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
-        val unsuccessfulLotsByReq = collectLotIds(unsuccessfulLots.unsuccessfulLots)
-        val successfulLotsSet = successfulLotsByRuleSet.minus(unsuccessfulLotsByReq)
-        val successfulBids = getBidsByRelatedLots(pendingBids, successfulLotsSet)
-        val updatedBids = ArrayList<Bid>()
-        successfulBids.asSequence()
+        val unsuccessfulLotsByReqSet = collectLotIds(dto.unsuccessfulLots)
+        val successfulLotsSet = successfulLotsByRuleSet.minus(unsuccessfulLotsByReqSet)
+        val successfulBidsSet = getBidsByRelatedLots(pendingBidsSet, successfulLotsSet)
+        val updatedBidsList = ArrayList<Bid>()
+        successfulBidsSet.asSequence()
                 .forEach { bid ->
                     bid.date = localNowUTC()
-                    updatedBids.add(bid)
+                    updatedBidsList.add(bid)
                 }
-        val unsuccessfulBids = getBidsByRelatedLots(pendingBids, unsuccessfulLotsByReq)
-        unsuccessfulBids.asSequence()
+        val unsuccessfulBidsSet = getBidsByRelatedLots(pendingBidsSet, unsuccessfulLotsByReqSet)
+        unsuccessfulBidsSet.asSequence()
                 .forEach { bid ->
                     bid.date = localNowUTC()
                     bid.status = Status.WITHDRAWN
                     bid.statusDetails = StatusDetails.EMPTY
-                    updatedBids.add(bid)
+                    updatedBidsList.add(bid)
                 }
-        val unsuccessfulLotsByRuleSet = relatedLotsFromBidsList.toSet().minus(successfulLotsByRuleSet)
-        val unsuccessfulLotsSetForResp = unsuccessfulLotsByReq.minus(unsuccessfulLotsByRuleSet)
-        val unsuccessfulBidsForResp = getBidsByRelatedLots(unsuccessfulBids, unsuccessfulLotsSetForResp)
-        val bids = successfulBids.plus(unsuccessfulBidsForResp)
-        val updatedBidEntities = getUpdatedBidEntities(bidEntities, updatedBids)
+        val unsuccessfulLotsByRuleSet = relatedLotsFromBidsSet.minus(successfulLotsByRuleSet)
+        val unsuccessfulLotsSetForRespSet = unsuccessfulLotsByReqSet.minus(unsuccessfulLotsByRuleSet)
+        val unsuccessfulBidsForRespSet = getBidsByRelatedLots(unsuccessfulBidsSet, unsuccessfulLotsSetForRespSet)
+        val bids = successfulBidsSet.plus(unsuccessfulBidsForRespSet)
+        val updatedBidEntities = getUpdatedBidEntities(bidEntities, updatedBidsList)
         bidDao.saveAll(updatedBidEntities)
         val period = periodService.getPeriodEntity(cpId, stage)
         return ResponseDto(
-                data = BidsUpdateStatusResponseDto(
+                data = BidsUpdateStatusRs(
                         tenderPeriod = Period(period.startDate.toLocal(), period.endDate.toLocal()),
                         bids = bids)
         )
     }
 
-    override fun updateBidsByAwardStatus(cpId: String,
-                                         stage: String,
-                                         bidId: String,
-                                         dateTime: LocalDateTime,
-                                         awardStatusDetails: AwardStatusDetails): ResponseDto {
+    override fun updateBidsByAwardStatus(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
+        val dto = toObject(UpdateBidsByAwardStatusRq::class.java, cm.data)
+        val bidId = dto.bidId
+        val awardStatusDetails = AwardStatusDetails.fromValue(dto.awardStatusDetails)
+
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         val bid = toObject(Bid::class.java, entity.jsonData)
         when (awardStatusDetails) {
@@ -125,12 +133,14 @@ class StatusServiceImpl(private val rulesService: RulesService,
                 owner = entity.owner,
                 token = entity.token,
                 createdDate = entity.createdDate))
-        return ResponseDto(data = BidResponseDto(null, null, bid))
+        return ResponseDto(data = BidRs(null, null, bid))
     }
 
-    override fun setFinalStatuses(cpId: String,
-                                  stage: String,
-                                  dateTime: LocalDateTime): ResponseDto {
+    override fun setFinalStatuses(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
+
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bids = getBidsFromEntities(bidEntities)
@@ -149,15 +159,17 @@ class StatusServiceImpl(private val rulesService: RulesService,
             }
         }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = BidsStatusResponseDto(bids))
+        return ResponseDto(data = BidsStatusRs(bids))
     }
 
-    override fun bidWithdrawn(cpId: String,
-                              stage: String,
-                              owner: String,
-                              token: String,
-                              bidId: String,
-                              dateTime: LocalDateTime): ResponseDto {
+    override fun bidWithdrawn(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val owner = cm.context.owner ?: throw ErrorException(ErrorType.CONTEXT)
+        val token = cm.context.token ?: throw ErrorException(ErrorType.CONTEXT)
+        val bidId = cm.context.id ?: throw ErrorException(ErrorType.CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
+
         periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
@@ -171,13 +183,17 @@ class StatusServiceImpl(private val rulesService: RulesService,
         entity.jsonData = toJson(bid)
         entity.status = bid.status.value()
         bidDao.save(entity)
-        return ResponseDto(data = BidResponseDto(null, null, bid))
+        return ResponseDto(data = BidRs(null, null, bid))
 
     }
 
-    override fun bidsWithdrawn(cpId: String, stage: String, dateTime: LocalDateTime): ResponseDto {
+    override fun bidsWithdrawn(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
+
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
+        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
         val bids = getBidsFromEntities(bidEntities)
         for (bid in bids) {
             bid.apply {
@@ -189,13 +205,18 @@ class StatusServiceImpl(private val rulesService: RulesService,
             }
         }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = BidsStatusResponseDto(bids))
+        return ResponseDto(data = BidsStatusRs(bids))
     }
 
 
-    override fun prepareBidsCancellation(cpId: String, stage: String, pmd: String, phase: String, dateTime: LocalDateTime): ResponseDto {
+    override fun prepareBidsCancellation(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val phase = cm.context.phase ?: throw ErrorException(ErrorType.CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
+
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
+        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
         val bids = getBidsFromEntities(bidEntities)
         val bidStatusPredicate = getBidStatusPredicateForPrepareCancellation(phase)
         val bidsResponseDto = mutableListOf<BidCancellation>()
@@ -207,12 +228,17 @@ class StatusServiceImpl(private val rulesService: RulesService,
                     addBidToResponseDto(bidsResponseDto, bid)
                 }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = CancellationResponseDto(bidsResponseDto))
+        return ResponseDto(data = CancellationRs(bidsResponseDto))
     }
 
-    override fun bidsCancellation(cpId: String, stage: String, pmd: String, phase: String, dateTime: LocalDateTime): ResponseDto {
+    override fun bidsCancellation(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val phase = cm.context.phase ?: throw ErrorException(ErrorType.CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
+
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusResponseDto(listOf()))
+        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
         val bids = getBidsFromEntities(bidEntities)
         val bidStatusPredicate = getBidStatusPredicateForCancellation(phase = phase)
         val bidsResponseDto = mutableListOf<BidCancellation>()
@@ -225,7 +251,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
                     addBidToResponseDto(bidsResponseDto, bid)
                 }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = CancellationResponseDto(bidsResponseDto))
+        return ResponseDto(data = CancellationRs(bidsResponseDto))
     }
 
     private fun addBidToResponseDto(bidsResponseDto: MutableList<BidCancellation>, bid: Bid) {
@@ -257,13 +283,13 @@ class StatusServiceImpl(private val rulesService: RulesService,
                 .toSet()
     }
 
-    private fun getRelatedLotsIdFromBids(bids: Set<Bid>): List<String> {
+    private fun getRelatedLotsIdFromBids(bids: Set<Bid>): Set<String> {
         return bids.asSequence()
                 .flatMap { it.relatedLots.asSequence() }
-                .toList()
+                .toSet()
     }
 
-    private fun getUniqueLots(lots: List<String>): Map<String, Int> {
+    private fun getUniqueLots(lots: Set<String>): Map<String, Int> {
         return lots.asSequence().groupBy { it }.mapValues { it.value.size }
     }
 

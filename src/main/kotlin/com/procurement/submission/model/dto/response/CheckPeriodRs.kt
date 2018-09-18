@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import java.time.LocalDateTime
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-data class CheckPeriodResponseDto @JsonCreator constructor(
+data class CheckPeriodRs @JsonCreator constructor(
 
         @get:JsonProperty("setExtendedPeriod")
         val setExtendedPeriod: Boolean?,
