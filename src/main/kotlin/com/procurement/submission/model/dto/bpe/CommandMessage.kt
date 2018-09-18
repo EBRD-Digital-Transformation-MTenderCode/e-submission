@@ -10,13 +10,9 @@ import com.procurement.submission.exception.ErrorException
 data class CommandMessage @JsonCreator constructor(
 
         val id: String,
-
         val command: CommandType,
-
         val context: Context,
-
         val data: JsonNode,
-
         val version: ApiVersion
 )
 
@@ -38,13 +34,25 @@ data class Context @JsonCreator constructor(
         val access: String?,
         val startDate: String?,
         val endDate: String?,
-        val bidId: String?
+        val id: String?
 )
 
 enum class CommandType(private val value: String) {
-    CHECK_BID("checkBid"),
-    CHECK_ITEMS("checkItems"),
-    CHECK_TOKEN("checkToken");
+    CREATE_BID("createBid"),
+    UPDATE_BID("updateBid"),
+    GET_PERIOD("getPeriod"),
+    SAVE_PERIOD("savePeriod"),
+    SAVE__NEW_PERIOD("saveNewPeriod"),
+    PERIOD_VALIDATION("periodValidation"),
+    CHECK_PERIOD("checkPeriod"),
+    BIDS_SELECTION("bidsSelection"),
+    UPDATE_BIDS_BY_LOTS("updateBidsByLots"),
+    UPDATE_BID_BY_AWARD_STATUS("updateBidBAwardStatus"),
+    SET_BIDS_FINAL_STATUSES("setBidsFinalStatuses"),
+    BID_WITHDRAWN("bidWithdrawn"),
+    BIDS_WITHDRAWN("bidsWithdrawn"),
+    PREPARE_BIDS_CANCELLATION("prepareBidsCancellation"),
+    BIDS_CANCELLATION("bidsCancellation");
 
     @JsonValue
     fun value(): String {

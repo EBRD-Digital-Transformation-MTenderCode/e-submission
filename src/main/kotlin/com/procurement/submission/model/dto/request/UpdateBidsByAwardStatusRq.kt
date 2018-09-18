@@ -5,8 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import javax.validation.constraints.NotEmpty
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class UnsuccessfulLotsDto @JsonCreator constructor(
+data class UpdateBidsByAwardStatusRq @JsonCreator constructor(
 
-        @field:NotEmpty
-        val unsuccessfulLots: List<LotDto>?
+        val bidId: String,
+
+        val awardStatusDetails: String
 )

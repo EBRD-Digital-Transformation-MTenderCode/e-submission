@@ -2,7 +2,8 @@ package com.procurement.submission.service
 
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.exception.ErrorType.*
+import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.BidCreate
@@ -20,7 +21,7 @@ import kotlin.collections.ArrayList
 
 interface BidService {
 
-    fun createBid(cpId: String, stage: String, owner: String, dateTime: LocalDateTime, bidDto: BidCreate): ResponseDto
+    fun createBid(cm: CommandMessage): ResponseDto
 
     fun updateBid(cpId: String, stage: String, owner: String, token: String, bidId: String, dateTime: LocalDateTime, bidDto: BidUpdate): ResponseDto
 
@@ -32,11 +33,13 @@ class BidServiceImpl(private val generationService: GenerationService,
                      private val periodService: PeriodService,
                      private val bidDao: BidDao) : BidService {
 
-    override fun createBid(cpId: String,
-                           stage: String,
-                           owner: String,
-                           dateTime: LocalDateTime,
-                           bidDto: BidCreate): ResponseDto {
+    override fun createBid(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
+        val owner = cm.context.owner ?: throw ErrorException(CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(CONTEXT)
+        val bidDto = toObject(BidCreate::class.java, cm.data)
+
         periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         checkRelatedLotsInDocuments(bidDto)
         processTenderers(bidDto)
