@@ -3,7 +3,7 @@ package com.procurement.submission.dao
 import com.datastax.driver.core.Session
 import com.datastax.driver.core.querybuilder.QueryBuilder.*
 import com.procurement.submission.model.dto.bpe.ResponseDto
-import com.procurement.submission.service.HistoryEntity
+import com.procurement.submission.model.entity.HistoryEntity
 import com.procurement.submission.utils.localNowUTC
 import com.procurement.submission.utils.toDate
 import com.procurement.submission.utils.toJson

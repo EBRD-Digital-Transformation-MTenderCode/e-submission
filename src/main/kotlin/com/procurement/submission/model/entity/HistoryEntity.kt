@@ -1,4 +1,4 @@
-package com.procurement.submission.service
+package com.procurement.submission.model.entity
 
 import java.util.*
 
