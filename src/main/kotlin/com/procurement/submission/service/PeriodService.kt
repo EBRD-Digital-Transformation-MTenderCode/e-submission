@@ -7,7 +7,6 @@ import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.request.PeriodRq
-import com.procurement.submission.model.dto.response.BidsSelectionRs
 import com.procurement.submission.model.dto.response.CheckPeriodRs
 import com.procurement.submission.model.entity.PeriodEntity
 import com.procurement.submission.utils.toDate
@@ -26,13 +25,13 @@ interface PeriodService {
 
     fun saveNewPeriod(cm: CommandMessage): ResponseDto
 
+    fun checkEndDate(cm: CommandMessage): ResponseDto
+
     fun getPeriod(cm: CommandMessage): ResponseDto
 
     fun checkPeriod(cm: CommandMessage): ResponseDto
 
     fun checkCurrentDateInPeriod(cpId: String, stage: String, dateTime: LocalDateTime)
-
-    fun getPeriodData(cpId: String, stage: String, dateTime: LocalDateTime): BidsSelectionRs
 
     fun getPeriodEntity(cpId: String, stage: String): PeriodEntity
 
@@ -139,6 +138,15 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         return getResponse(setExtendedPeriod = false, isPeriodChange = false, newEndDate = endDateDb)
     }
 
+    override fun checkEndDate(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
+        val tenderPeriodEndDate = getPeriodEntity(cpId, stage).endDate.toLocal()
+        val isTenderPeriodExpired = (dateTime >= tenderPeriodEndDate)
+        return getResponse(isPeriodExpired = isTenderPeriodExpired)
+    }
+
     override fun save(cpId: String, stage: String, startDate: LocalDateTime, endDate: LocalDateTime) {
         val period = getEntity(
                 cpId = cpId,
@@ -154,21 +162,15 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         if (!isPeriodValid) throw ErrorException(ErrorType.INVALID_DATE)
     }
 
-    override fun getPeriodData(cpId: String, stage: String, dateTime: LocalDateTime): BidsSelectionRs {
-        val tenderPeriodEndDate = getPeriodEntity(cpId, stage).endDate.toLocal()
-        val isPeriodExpired = (dateTime >= tenderPeriodEndDate)
-        return BidsSelectionRs(
-                isPeriodExpired = isPeriodExpired,
-                tenderPeriodEndDate = tenderPeriodEndDate,
-                bids = setOf())
-    }
-
     override fun getPeriodEntity(cpId: String, stage: String): PeriodEntity {
         return periodDao.getByCpIdAndStage(cpId, stage)
     }
 
-    fun getResponse(setExtendedPeriod: Boolean, isPeriodChange: Boolean, newEndDate: LocalDateTime): ResponseDto {
-        return ResponseDto(data = CheckPeriodRs(setExtendedPeriod, isPeriodChange, newEndDate))
+    fun getResponse(isPeriodExpired: Boolean? = null,
+                    setExtendedPeriod: Boolean? = null,
+                    isPeriodChange: Boolean? = null,
+                    newEndDate: LocalDateTime? = null): ResponseDto {
+        return ResponseDto(data = CheckPeriodRs(isPeriodExpired, setExtendedPeriod, isPeriodChange, newEndDate))
     }
 
     private fun checkInterval(country: String,

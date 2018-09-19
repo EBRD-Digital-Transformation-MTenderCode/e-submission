@@ -33,6 +33,7 @@ class CommandServiceImpl(private val historyDao: HistoryDao,
             CommandType.SAVE_PERIOD -> periodService.savePeriod(cm)
             CommandType.SAVE_NEW_PERIOD -> periodService.saveNewPeriod(cm)
             CommandType.VALIDATE_PERIOD -> periodService.periodValidation(cm)
+            CommandType.CHECK_PERIOD_END_DATE -> periodService.checkEndDate(cm)
             CommandType.CHECK_PERIOD -> periodService.checkPeriod(cm)
             CommandType.BIDS_SELECTION -> statusService.bidsSelection(cm)
             CommandType.UPDATE_BIDS_BY_LOTS -> statusService.updateBidsByLots(cm)
