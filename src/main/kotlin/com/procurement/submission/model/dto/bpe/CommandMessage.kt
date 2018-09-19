@@ -44,7 +44,7 @@ enum class CommandType(private val value: String) {
     GET_PERIOD("getPeriod"),
     SAVE_PERIOD("savePeriod"),
     SAVE_NEW_PERIOD("saveNewPeriod"),
-    PERIOD_VALIDATION("periodValidation"),
+    VALIDATE_PERIOD("validatePeriod"),
     CHECK_PERIOD("checkPeriod"),
     BIDS_SELECTION("bidsSelection"),
     UPDATE_BIDS_BY_LOTS("updateBidsByLots"),
