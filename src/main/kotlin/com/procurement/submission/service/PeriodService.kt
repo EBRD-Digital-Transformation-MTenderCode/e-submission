@@ -6,9 +6,12 @@ import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Period
+import com.procurement.submission.model.dto.request.CheckPeriodOTRq
+import com.procurement.submission.model.dto.request.CheckPeriodOTRs
 import com.procurement.submission.model.dto.request.PeriodRq
 import com.procurement.submission.model.dto.response.CheckPeriodRs
 import com.procurement.submission.model.entity.PeriodEntity
+import com.procurement.submission.utils.localNowUTC
 import com.procurement.submission.utils.toDate
 import com.procurement.submission.utils.toLocal
 import com.procurement.submission.utils.toObject
@@ -30,6 +33,8 @@ interface PeriodService {
     fun getPeriod(cm: CommandMessage): ResponseDto
 
     fun checkPeriod(cm: CommandMessage): ResponseDto
+
+    fun checkPeriodOT(cm: CommandMessage): ResponseDto
 
     fun checkCurrentDateInPeriod(cpId: String, stage: String, dateTime: LocalDateTime)
 
@@ -138,6 +143,46 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         return getResponse(setExtendedPeriod = false, isPeriodChange = false, newEndDate = endDateDb)
     }
 
+    override fun checkPeriodOT(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val dto = toObject(CheckPeriodOTRq::class.java, cm.data)
+        val setExtendedPeriodRq = dto.setExtendedPeriod ?: throw ErrorException(ErrorType.CONTEXT)
+        val isEnquiryPeriodChanged = dto.isEnquiryPeriodChanged ?: throw ErrorException(ErrorType.CONTEXT)
+        val enquiryEndDate = dto.enquiryPeriod.endDate
+        val tenderEndDateRq = dto.tenderPeriod.endDate
+
+        val periodEntity = getPeriodEntity(cpId, stage)
+        val startDateDb = periodEntity.startDate.toLocal()
+        val endDateDb = periodEntity.endDate.toLocal()
+        if (tenderEndDateRq < endDateDb) throw ErrorException(ErrorType.INVALID_PERIOD)
+        //a)
+        if (!setExtendedPeriodRq) {
+            if (isEnquiryPeriodChanged) {
+                val eligibleTenderEndDate = endDateDb.plusSeconds((enquiryEndDate.second - startDateDb.second).toLong())
+                if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
+                return getResponseOT(isTenderPeriodChanged = true, startDate = enquiryEndDate, endDate = tenderEndDateRq)
+            } else {
+                if (tenderEndDateRq > endDateDb) {
+                    return getResponseOT(isTenderPeriodChanged = true, startDate = startDateDb, endDate = tenderEndDateRq)
+                } else if (tenderEndDateRq == endDateDb) {
+                    return getResponseOT(isTenderPeriodChanged = false, startDate = startDateDb, endDate = endDateDb)
+                }
+            }
+        } else {
+            if (tenderEndDateRq > endDateDb) {
+                val eligibleTenderEndDate = endDateDb.plusSeconds((enquiryEndDate.second - startDateDb.second).toLong())
+                if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
+                return getResponseOT(isTenderPeriodChanged = true, startDate = enquiryEndDate, endDate = tenderEndDateRq)
+            } else if (tenderEndDateRq == endDateDb) {
+                val eligibleTenderEndDate = endDateDb.plusSeconds((enquiryEndDate.second - startDateDb.second).toLong())
+                return getResponseOT(isTenderPeriodChanged = true, startDate = enquiryEndDate, endDate = eligibleTenderEndDate)
+            }
+        }
+        return getResponseOT(isTenderPeriodChanged = true, startDate = localNowUTC(), endDate = localNowUTC())
+    }
+
+
     override fun checkEndDate(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
@@ -171,6 +216,12 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
                     isPeriodChange: Boolean? = null,
                     newEndDate: LocalDateTime? = null): ResponseDto {
         return ResponseDto(data = CheckPeriodRs(isPeriodExpired, setExtendedPeriod, isPeriodChange, newEndDate))
+    }
+
+    fun getResponseOT(isTenderPeriodChanged: Boolean,
+                      startDate: LocalDateTime,
+                      endDate: LocalDateTime): ResponseDto {
+        return ResponseDto(data = CheckPeriodOTRs(isTenderPeriodChanged, Period(startDate, endDate)))
     }
 
     private fun checkInterval(country: String,
