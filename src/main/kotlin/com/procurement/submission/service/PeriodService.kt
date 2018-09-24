@@ -9,7 +9,9 @@ import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.request.CheckPeriodOTRq
 import com.procurement.submission.model.dto.request.CheckPeriodOTRs
 import com.procurement.submission.model.dto.request.PeriodRq
+import com.procurement.submission.model.dto.response.CheckPeriodEndDateRs
 import com.procurement.submission.model.dto.response.CheckPeriodRs
+import com.procurement.submission.model.dto.response.Tender
 import com.procurement.submission.model.entity.PeriodEntity
 import com.procurement.submission.utils.localNowUTC
 import com.procurement.submission.utils.toDate
@@ -187,9 +189,12 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
-        val tenderPeriodEndDate = getPeriodEntity(cpId, stage).endDate.toLocal()
-        val isTenderPeriodExpired = (dateTime >= tenderPeriodEndDate)
-        return getResponse(isPeriodExpired = isTenderPeriodExpired)
+
+        val tenderPeriod = getPeriodEntity(cpId, stage)
+        val startDate = tenderPeriod.startDate.toLocal()
+        val endDate = tenderPeriod.endDate.toLocal()
+        val isTenderPeriodExpired = (dateTime >= endDate)
+        return ResponseDto(data = CheckPeriodEndDateRs(isTenderPeriodExpired, Tender(Period(startDate, endDate))))
     }
 
     override fun save(cpId: String, stage: String, startDate: LocalDateTime, endDate: LocalDateTime) {
