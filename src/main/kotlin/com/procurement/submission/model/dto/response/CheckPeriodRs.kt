@@ -21,11 +21,3 @@ data class CheckPeriodRs @JsonCreator constructor(
 
         val tenderPeriodEndDate: LocalDateTime?
 )
-
-data class CheckPeriodOTRs @JsonCreator constructor(
-
-        @get:JsonProperty("isTenderPeriodChanged")
-        val isTenderPeriodChanged: Boolean?,
-
-        val tenderPeriod: Period?
-)
