@@ -3,9 +3,10 @@ package com.procurement.submission.model.dto.request
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.procurement.submission.model.dto.ocds.Period
+import java.time.LocalDateTime
 import javax.validation.Valid
 
-data class CheckPeriodOTRq @JsonCreator constructor(
+data class CheckPeriodRq @JsonCreator constructor(
 
         @get:JsonProperty("setExtendedPeriod")
         val setExtendedPeriod: Boolean?,
@@ -20,10 +21,12 @@ data class CheckPeriodOTRq @JsonCreator constructor(
         val tenderPeriod: Period
 )
 
-data class CheckPeriodOTRs @JsonCreator constructor(
+data class CheckPeriodRs @JsonCreator constructor(
 
         @get:JsonProperty("isTenderPeriodChanged")
         val isTenderPeriodChanged: Boolean?,
 
-        val tenderPeriod: Period?
+        val startDate: LocalDateTime,
+
+        val endDate: LocalDateTime
 )
