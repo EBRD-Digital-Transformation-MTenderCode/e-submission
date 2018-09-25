@@ -7,36 +7,36 @@ import org.springframework.stereotype.Service
 
 interface RulesService {
 
-    fun getInterval(country: String, method: String): Long
+    fun getInterval(country: String, pmd: String): Long
 
-    fun getUnsuspendInterval(country: String, method: String): Long
+    fun getUnsuspendInterval(country: String, pmd: String): Long
 
-    fun getIntervalBefore(country: String, method: String): Long
+    fun getIntervalBefore(country: String, pmd: String): Long
 
-    fun getRulesMinBids(country: String, method: String): Int
+    fun getRulesMinBids(country: String, pmd: String): Int
 }
 
 @Service
 class RulesServiceImpl(private val rulesDao: RulesDao) : RulesService {
 
-    override fun getInterval(country: String, method: String): Long {
-        return rulesDao.getValue(country, method, PARAMETER_INTERVAL)?.toLongOrNull()
+    override fun getInterval(country: String, pmd: String): Long {
+        return rulesDao.getValue(country, pmd, PARAMETER_INTERVAL)?.toLongOrNull()
                 ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
     }
 
-    override fun getUnsuspendInterval(country: String, method: String): Long {
-        return rulesDao.getValue(country, method, PARAMETER_UNSUSPEND_INTERVAL)?.toLongOrNull()
+    override fun getUnsuspendInterval(country: String, pmd: String): Long {
+        return rulesDao.getValue(country, pmd, PARAMETER_UNSUSPEND_INTERVAL)?.toLongOrNull()
                 ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
     }
 
-    override fun getIntervalBefore(country: String, method: String): Long {
-        return rulesDao.getValue(country, method, PARAMETER_INTERVAL_BEFORE)?.toLongOrNull()
+    override fun getIntervalBefore(country: String, pmd: String): Long {
+        return rulesDao.getValue(country, pmd, PARAMETER_INTERVAL_BEFORE)?.toLongOrNull()
                 ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
     }
 
 
-    override fun getRulesMinBids(country: String, method: String): Int {
-        return rulesDao.getValue(country, method, PARAMETER_MIN_BIDS)?.toIntOrNull()
+    override fun getRulesMinBids(country: String, pmd: String): Int {
+        return rulesDao.getValue(country, pmd, PARAMETER_MIN_BIDS)?.toIntOrNull()
                 ?: throw ErrorException(ErrorType.BIDS_RULES_NOT_FOUND)
     }
 
