@@ -21,7 +21,7 @@ class CommandServiceImpl(private val historyDao: HistoryDao,
 
 
     override fun execute(cm: CommandMessage): ResponseDto {
-        var historyEntity = historyDao.getHistory(cm.context.operationId, cm.command.value())
+        var historyEntity = historyDao.getHistory(cm.id, cm.command.value())
         if (historyEntity != null) {
             return toObject(ResponseDto::class.java, historyEntity.jsonData)
         }
@@ -44,7 +44,7 @@ class CommandServiceImpl(private val historyDao: HistoryDao,
             CommandType.PREPARE_BIDS_CANCELLATION -> statusService.prepareBidsCancellation(cm)
             CommandType.BIDS_CANCELLATION -> statusService.bidsSelection(cm)
         }
-        historyEntity = historyDao.saveHistory(cm.context.operationId, cm.command.value(), response)
+        historyEntity = historyDao.saveHistory(cm.id, cm.command.value(), response)
         return toObject(ResponseDto::class.java, historyEntity.jsonData)
     }
 }

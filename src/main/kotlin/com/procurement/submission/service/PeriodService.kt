@@ -6,7 +6,10 @@ import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Period
-import com.procurement.submission.model.dto.request.*
+import com.procurement.submission.model.dto.request.CheckPeriodRq
+import com.procurement.submission.model.dto.request.CheckPeriodRs
+import com.procurement.submission.model.dto.request.PeriodRq
+import com.procurement.submission.model.dto.request.SaveNewPeriodRq
 import com.procurement.submission.model.dto.response.CheckPeriodEndDateRs
 import com.procurement.submission.model.entity.PeriodEntity
 import com.procurement.submission.utils.toDate
@@ -74,7 +77,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val dto = toObject(SaveNewPeriodRq::class.java, cm.data)
         val oldPeriod = getPeriodEntity(cpId, stage)
-        val tenderInterval = (oldPeriod.endDate.toLocal().second - oldPeriod.startDate.toLocal().second).toLong()
+        val tenderInterval = ChronoUnit.SECONDS.between(oldPeriod.endDate.toLocal(), oldPeriod.startDate.toLocal())
         val startDate = dto.enquiryPeriod.endDate
         val endDate = startDate.plusSeconds(tenderInterval)
         val newPeriod = getEntity(
@@ -100,19 +103,20 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         val dto = toObject(CheckPeriodRq::class.java, cm.data)
         val setExtendedPeriodRq = dto.setExtendedPeriod ?: throw ErrorException(ErrorType.CONTEXT)
         val isEnquiryPeriodChanged = dto.isEnquiryPeriodChanged ?: throw ErrorException(ErrorType.CONTEXT)
-        val enquiryEndDate = dto.enquiryPeriod.endDate
+        val enquiryEndDateRq = dto.enquiryPeriod.endDate
         val tenderEndDateRq = dto.tenderPeriod.endDate
 
         val periodEntity = getPeriodEntity(cpId, stage)
         val startDateDb = periodEntity.startDate.toLocal()
         val endDateDb = periodEntity.endDate.toLocal()
         if (tenderEndDateRq < endDateDb) throw ErrorException(ErrorType.INVALID_PERIOD)
+        val secBetween = ChronoUnit.SECONDS.between(enquiryEndDateRq, startDateDb)
+        val eligibleTenderEndDate = endDateDb.plusSeconds(secBetween)
         //a)
         if (!setExtendedPeriodRq) {
             if (isEnquiryPeriodChanged) {
-                val eligibleTenderEndDate = endDateDb.plusSeconds((enquiryEndDate.second - startDateDb.second).toLong())
                 if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
-                return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDate, endDate = tenderEndDateRq))
+                return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDateRq, endDate = tenderEndDateRq))
             } else {
                 if (tenderEndDateRq > endDateDb) {
                     return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = startDateDb, endDate = tenderEndDateRq))
@@ -122,12 +126,10 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
             }
         } else {
             if (tenderEndDateRq > endDateDb) {
-                val eligibleTenderEndDate = endDateDb.plusSeconds((enquiryEndDate.second - startDateDb.second).toLong())
                 if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
-                return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDate, endDate = tenderEndDateRq))
+                return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDateRq, endDate = tenderEndDateRq))
             } else if (tenderEndDateRq == endDateDb) {
-                val eligibleTenderEndDate = endDateDb.plusSeconds((enquiryEndDate.second - startDateDb.second).toLong())
-                return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDate, endDate = eligibleTenderEndDate))
+                return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDateRq, endDate = eligibleTenderEndDate))
             }
         }
         return ResponseDto(null)
