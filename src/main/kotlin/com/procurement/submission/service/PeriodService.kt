@@ -77,7 +77,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val dto = toObject(SaveNewPeriodRq::class.java, cm.data)
         val oldPeriod = getPeriodEntity(cpId, stage)
-        val tenderInterval = ChronoUnit.SECONDS.between(oldPeriod.endDate.toLocal(), oldPeriod.startDate.toLocal())
+        val tenderInterval = ChronoUnit.SECONDS.between(oldPeriod.startDate.toLocal(), oldPeriod.endDate.toLocal())
         val startDate = dto.enquiryPeriod.endDate
         val endDate = startDate.plusSeconds(tenderInterval)
         val newPeriod = getEntity(
@@ -110,7 +110,7 @@ class PeriodServiceImpl(private val periodDao: PeriodDao,
         val startDateDb = periodEntity.startDate.toLocal()
         val endDateDb = periodEntity.endDate.toLocal()
         if (tenderEndDateRq < endDateDb) throw ErrorException(ErrorType.INVALID_PERIOD)
-        val secBetween = ChronoUnit.SECONDS.between(enquiryEndDateRq, startDateDb)
+        val secBetween = ChronoUnit.SECONDS.between(startDateDb, enquiryEndDateRq)
         val eligibleTenderEndDate = endDateDb.plusSeconds(secBetween)
         //a)
         if (!setExtendedPeriodRq) {
