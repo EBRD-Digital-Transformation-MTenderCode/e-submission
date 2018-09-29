@@ -53,8 +53,8 @@ class StatusServiceImpl(private val rulesService: RulesService,
         if (bidEntities.isNotEmpty()) {
             val pendingBidsSet = getPendingBids(bidEntities)
             val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
-            val relatedLotsFromBidsSet = getRelatedLotsIdFromBids(pendingBidsSet)
-            val uniqueLotsMap = getUniqueLots(relatedLotsFromBidsSet)
+            val relatedLotsFromBidsList = getRelatedLotsListFromBids(pendingBidsSet)
+            val uniqueLotsMap = getUniqueLotsMap(relatedLotsFromBidsList)
             val successfulLotsSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
             val successfulBidsSet = getBidsByRelatedLots(pendingBidsSet, successfulLotsSet)
             responseDto.bids = successfulBidsSet
@@ -73,8 +73,8 @@ class StatusServiceImpl(private val rulesService: RulesService,
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val pendingBidsSet = getPendingBids(bidEntities)
         val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
-        val relatedLotsFromBidsSet = getRelatedLotsIdFromBids(pendingBidsSet)
-        val uniqueLotsMap = getUniqueLots(relatedLotsFromBidsSet)
+        val relatedLotsFromBidsList = getRelatedLotsListFromBids(pendingBidsSet)
+        val uniqueLotsMap = getUniqueLotsMap(relatedLotsFromBidsList)
         val successfulLotsByRuleSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
         val unsuccessfulLotsByReqSet = collectLotIds(dto.unsuccessfulLots)
         val successfulLotsSet = successfulLotsByRuleSet.minus(unsuccessfulLotsByReqSet)
@@ -93,7 +93,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
                     bid.statusDetails = StatusDetails.EMPTY
                     updatedBidsList.add(bid)
                 }
-        val unsuccessfulLotsByRuleSet = relatedLotsFromBidsSet.minus(successfulLotsByRuleSet)
+        val unsuccessfulLotsByRuleSet = relatedLotsFromBidsList.minus(successfulLotsByRuleSet)
         val unsuccessfulLotsSetForRespSet = unsuccessfulLotsByReqSet.minus(unsuccessfulLotsByRuleSet)
         val unsuccessfulBidsForRespSet = getBidsByRelatedLots(unsuccessfulBidsSet, unsuccessfulLotsSetForRespSet)
         val bids = successfulBidsSet.plus(unsuccessfulBidsForRespSet)
@@ -282,13 +282,13 @@ class StatusServiceImpl(private val rulesService: RulesService,
                 .toSet()
     }
 
-    private fun getRelatedLotsIdFromBids(bids: Set<Bid>): Set<String> {
+    private fun getRelatedLotsListFromBids(bids: Set<Bid>): List<String> {
         return bids.asSequence()
                 .flatMap { it.relatedLots.asSequence() }
-                .toSet()
+                .toList()
     }
 
-    private fun getUniqueLots(lots: Set<String>): Map<String, Int> {
+    private fun getUniqueLotsMap(lots: List<String>): Map<String, Int> {
         return lots.asSequence().groupBy { it }.mapValues { it.value.size }
     }
 
