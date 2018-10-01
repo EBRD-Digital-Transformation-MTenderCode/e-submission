@@ -19,14 +19,6 @@ test 20 sec
 offset: 2 days = 172800
 test 20 sec
 
-//86400 sec(day) * 30 = 2592000 sec
-//86400 sec(day) * 7 = 604800 sec
-//86400 sec(day) * 6 = 518400 sec
-
-//60 sec (min)
-//60 sec (min) * 10 = 600 sec
-
-
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'interval', '2592000');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'interval', '300');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'interval_before', '518400');
