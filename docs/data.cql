@@ -8,6 +8,17 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_rules (
     primary key(country, pmd, parameter)
 );
 
+86400sec(day)
+
+interval: 25 days = 2160000
+test  = 60 sec
+
+interval_before: 2 days = 172800
+test 20 sec
+
+offset: 2 days = 172800
+test 20 sec
+
 //86400 sec(day) * 30 = 2592000 sec
 //86400 sec(day) * 7 = 604800 sec
 //86400 sec(day) * 6 = 518400 sec
@@ -18,15 +29,13 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_rules (
 
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'interval', '2592000');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'interval', '300');
-
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'unsuspend_interval', '604800');
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'unsuspend_interval', '70');
-
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'minBids', '2');
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'minBids', '3');
-
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'interval_before', '518400');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'interval_before', '60');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'unsuspend_interval', '604800');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'unsuspend_interval', '70');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'minBids', '2');
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'minBids', '2');
+
 
 SELECT * FROM ocds.submission_rules;
 
