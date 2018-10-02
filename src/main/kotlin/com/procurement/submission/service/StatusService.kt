@@ -303,13 +303,13 @@ class StatusServiceImpl(private val rulesService: RulesService,
 
     private fun getBidStatusPredicateForPrepareCancellation(phase: String): (Bid) -> Boolean {
         when (phase) {
-            "AWARDING" -> return { bid: Bid ->
+            "awarding" -> return { bid: Bid ->
                 (bid.status == Status.PENDING)
                         && (bid.statusDetails == StatusDetails.EMPTY
                         || bid.statusDetails == StatusDetails.VALID
                         || bid.statusDetails == StatusDetails.DISQUALIFIED)
             }
-            "TENDERING" -> return { bid: Bid ->
+            "tendering" -> return { bid: Bid ->
                 (bid.status == Status.PENDING || bid.status == Status.INVITED)
                         && (bid.statusDetails == StatusDetails.EMPTY)
             }
@@ -319,11 +319,11 @@ class StatusServiceImpl(private val rulesService: RulesService,
 
     private fun getBidStatusPredicateForCancellation(phase: String): (Bid) -> Boolean {
         when (phase) {
-            "AWARDING" -> return { bid: Bid ->
+            "awarding" -> return { bid: Bid ->
                 (bid.status == Status.PENDING)
                         && (bid.statusDetails == StatusDetails.WITHDRAWN)
             }
-            "TENDERING" -> return { bid: Bid ->
+            "tendering" -> return { bid: Bid ->
                 (bid.status == Status.PENDING || bid.status == Status.INVITED)
                         && (bid.statusDetails == StatusDetails.WITHDRAWN)
             }
