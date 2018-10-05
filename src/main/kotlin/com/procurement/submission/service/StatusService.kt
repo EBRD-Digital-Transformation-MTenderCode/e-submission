@@ -101,8 +101,8 @@ class StatusServiceImpl(private val rulesService: RulesService,
         bidDao.saveAll(updatedBidEntities)
         val period = periodService.getPeriodEntity(cpId, stage)
         return ResponseDto(data = BidsUpdateStatusRs(
-                        tenderPeriod = Period(period.startDate.toLocal(), period.endDate.toLocal()),
-                        bids = bids)
+                tenderPeriod = Period(period.startDate.toLocal(), period.endDate.toLocal()),
+                bids = bids)
         )
     }
 
