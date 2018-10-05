@@ -40,13 +40,10 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_history (
 
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'interval', '2160000');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'interval', '250');
-
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'unsuspend_interval', '604800');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'unsuspend_interval', '70');
-
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'minBids', '2');
-INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'minBids', '3');
-
+INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'minBids', '2');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'interval_before', '518400');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'TEST_OT', 'interval_before', '60');
 
@@ -60,13 +57,6 @@ SELECT * FROM ocds.submission_rules;
 
 //60 sec (min)
 //60 sec (min) * 10 = 600 sec
-
-
-SELECT * FROM ocds.submission_period;
-
-INSERT INTO ocds.submission_period (cp_id, stage, start_date, end_date)  VALUES ('ocds-t1s2t3-TEST-1524575697411',
-'TEST', '2018-04-23 13:18:01+0000', '2018-04-26 13:18:01+0000');
-
 
 
 
