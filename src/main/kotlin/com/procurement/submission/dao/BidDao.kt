@@ -10,22 +10,10 @@ import com.procurement.submission.model.entity.BidEntity
 import org.springframework.stereotype.Service
 import java.util.*
 
-interface BidDao {
-
-    fun save(entity: BidEntity)
-
-    fun saveAll(entities: List<BidEntity>)
-
-    fun findAllByCpIdAndStage(cpId: String, stage: String): List<BidEntity>
-
-    fun findByCpIdAndStageAndBidId(cpId: String, stage: String, bidId: UUID): BidEntity
-
-}
-
 @Service
-class BidDaoImpl(private val session: Session) : BidDao {
+class BidDao(private val session: Session) {
 
-    override fun save(entity: BidEntity) {
+    fun save(entity: BidEntity) {
         val insert =
                 insertInto(BID_TABLE)
                         .value(CP_ID, entity.cpId)
@@ -41,7 +29,7 @@ class BidDaoImpl(private val session: Session) : BidDao {
     }
 
 
-    override fun saveAll(entities: List<BidEntity>) {
+    fun saveAll(entities: List<BidEntity>) {
         val operations = ArrayList<Insert>()
         entities.forEach { entity ->
             operations.add(
@@ -60,7 +48,7 @@ class BidDaoImpl(private val session: Session) : BidDao {
         session.execute(batch)
     }
 
-    override fun findAllByCpIdAndStage(cpId: String, stage: String): List<BidEntity> {
+    fun findAllByCpIdAndStage(cpId: String, stage: String): List<BidEntity> {
         val query = select()
                 .all()
                 .from(BID_TABLE)
@@ -84,7 +72,7 @@ class BidDaoImpl(private val session: Session) : BidDao {
         return entities
     }
 
-    override fun findByCpIdAndStageAndBidId(cpId: String, stage: String, bidId: UUID): BidEntity {
+    fun findByCpIdAndStageAndBidId(cpId: String, stage: String, bidId: UUID): BidEntity {
         val query = select()
                 .all()
                 .from(BID_TABLE)
