@@ -16,13 +16,10 @@ data class Bid @JsonCreator constructor(
 
         var statusDetails: StatusDetails,
 
-        @field:Valid
         val tenderers: List<OrganizationReference>,
 
-        @field:Valid
         var value: Value?,
 
-        @field:Valid
         var documents: List<Document>?,
 
         val relatedLots: List<String>

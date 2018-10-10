@@ -9,21 +9,16 @@ import javax.validation.constraints.NotEmpty
 
 data class BidCreateRq @JsonCreator constructor(
 
-        @field:Valid
         val bid: BidCreate
 )
 
 data class BidCreate @JsonCreator constructor(
 
-        @field:Valid @field:NotEmpty
         val tenderers: List<OrganizationReference>,
 
-        @field:Valid
-        var value: Value?,
+        var value: Value,
 
-        @field:Valid
         var documents: List<Document>?,
 
-        @field:NotEmpty
         val relatedLots: List<String>
 )

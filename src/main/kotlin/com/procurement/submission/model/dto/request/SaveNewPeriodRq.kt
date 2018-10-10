@@ -6,6 +6,5 @@ import javax.validation.Valid
 
 data class SaveNewPeriodRq @JsonCreator constructor(
 
-        @field:Valid
         val enquiryPeriod: Period
 )

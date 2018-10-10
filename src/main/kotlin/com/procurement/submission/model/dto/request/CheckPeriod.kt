@@ -14,10 +14,8 @@ data class CheckPeriodRq @JsonCreator constructor(
         @get:JsonProperty("isEnquiryPeriodChanged")
         val isEnquiryPeriodChanged: Boolean?,
 
-        @field:Valid
         val enquiryPeriod: Period,
 
-        @field:Valid
         val tenderPeriod: Period
 )
 

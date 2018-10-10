@@ -7,15 +7,12 @@ import javax.validation.Valid
 
 data class BidUpdateRq @JsonCreator constructor(
 
-        @field:Valid
         val bid: BidUpdate
 )
 
 data class BidUpdate @JsonCreator constructor(
 
-        @field:Valid
         var value: Value?,
 
-        @field:Valid
         var documents: List<Document>?
 )

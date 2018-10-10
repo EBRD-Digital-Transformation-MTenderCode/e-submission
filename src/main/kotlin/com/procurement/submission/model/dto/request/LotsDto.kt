@@ -7,6 +7,5 @@ import javax.validation.constraints.NotEmpty
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class LotsDto @JsonCreator constructor(
 
-        @field:NotEmpty
         val lots: List<LotDto>?
 )
