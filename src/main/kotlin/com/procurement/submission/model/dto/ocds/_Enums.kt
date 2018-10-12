@@ -9,8 +9,9 @@ enum class DocumentType constructor(private val value: String) {
 
     SUBMISSION_DOCUMENTS("submissionDocuments"),
     ILLUSTRATION("illustration"),
-    A("a"),
-    B("b");
+    COMMERCIAL_OFFER("x_commercialOffer"),
+    QUALIFICATION_DOCUMENTS("x_qualificationDocuments"),
+    ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments");
 
 
     override fun toString(): String {
