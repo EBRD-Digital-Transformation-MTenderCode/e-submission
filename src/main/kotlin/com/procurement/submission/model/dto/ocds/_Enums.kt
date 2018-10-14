@@ -8,7 +8,11 @@ import java.util.*
 enum class DocumentType constructor(private val value: String) {
 
     SUBMISSION_DOCUMENTS("submissionDocuments"),
-    ILLUSTRATION("illustration");
+    ILLUSTRATION("illustration"),
+    COMMERCIAL_OFFER("x_commercialOffer"),
+    QUALIFICATION_DOCUMENTS("x_qualificationDocuments"),
+    ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments");
+
 
     override fun toString(): String {
         return this.value

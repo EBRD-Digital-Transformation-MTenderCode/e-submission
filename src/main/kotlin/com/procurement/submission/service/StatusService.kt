@@ -16,33 +16,14 @@ import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.collections.ArrayList
 
-interface StatusService {
-
-    fun bidsSelection(cm: CommandMessage): ResponseDto
-
-    fun updateBidsByLots(cm: CommandMessage): ResponseDto
-
-    fun updateBidsByAwardStatus(cm: CommandMessage): ResponseDto
-
-    fun setFinalStatuses(cm: CommandMessage): ResponseDto
-
-    fun bidWithdrawn(cm: CommandMessage): ResponseDto
-
-    fun bidsWithdrawn(cm: CommandMessage): ResponseDto
-
-    fun prepareBidsCancellation(cm: CommandMessage): ResponseDto
-
-    fun bidsCancellation(cm: CommandMessage): ResponseDto
-
-}
 
 @Service
-class StatusServiceImpl(private val rulesService: RulesService,
-                        private val periodService: PeriodService,
-                        private val bidDao: BidDao) : StatusService {
+class StatusService(private val rulesService: RulesService,
+                    private val periodService: PeriodService,
+                    private val bidDao: BidDao) {
 
 
-    override fun bidsSelection(cm: CommandMessage): ResponseDto {
+    fun bidsSelection(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
@@ -62,7 +43,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
         return ResponseDto(data = responseDto)
     }
 
-    override fun updateBidsByLots(cm: CommandMessage): ResponseDto {
+    fun updateBidsByLots(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
@@ -106,7 +87,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
         )
     }
 
-    override fun updateBidsByAwardStatus(cm: CommandMessage): ResponseDto {
+    fun updateBidsByAwardStatus(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
@@ -134,7 +115,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
         return ResponseDto(data = BidRs(null, null, bid))
     }
 
-    override fun setFinalStatuses(cm: CommandMessage): ResponseDto {
+    fun setFinalStatuses(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
@@ -160,7 +141,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
         return ResponseDto(data = BidsStatusRs(bids))
     }
 
-    override fun bidWithdrawn(cm: CommandMessage): ResponseDto {
+    fun bidWithdrawn(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val owner = cm.context.owner ?: throw ErrorException(ErrorType.CONTEXT)
@@ -185,7 +166,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
 
     }
 
-    override fun bidsWithdrawn(cm: CommandMessage): ResponseDto {
+    fun bidsWithdrawn(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
@@ -207,7 +188,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
     }
 
 
-    override fun prepareBidsCancellation(cm: CommandMessage): ResponseDto {
+    fun prepareBidsCancellation(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val phase = cm.context.phase ?: throw ErrorException(ErrorType.CONTEXT)
@@ -229,7 +210,7 @@ class StatusServiceImpl(private val rulesService: RulesService,
         return ResponseDto(data = CancellationRs(bidsResponseDto))
     }
 
-    override fun bidsCancellation(cm: CommandMessage): ResponseDto {
+    fun bidsCancellation(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val phase = cm.context.phase ?: throw ErrorException(ErrorType.CONTEXT)

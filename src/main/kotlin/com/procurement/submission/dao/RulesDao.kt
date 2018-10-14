@@ -5,16 +5,10 @@ import com.datastax.driver.core.querybuilder.QueryBuilder.eq
 import com.datastax.driver.core.querybuilder.QueryBuilder.select
 import org.springframework.stereotype.Service
 
-interface RulesDao {
-
-    fun getValue(country: String, pmd: String, parameter: String): String?
-
-}
-
 @Service
-class RulesDaoImpl(private val session: Session) : RulesDao {
+class RulesDao(private val session: Session) {
 
-    override fun getValue(country: String, pmd: String, parameter: String): String? {
+    fun getValue(country: String, pmd: String, parameter: String): String? {
         val query = select()
                 .column(VALUE)
                 .from(RULES_TABLE)
@@ -28,10 +22,10 @@ class RulesDaoImpl(private val session: Session) : RulesDao {
     }
 
     companion object {
-        private val RULES_TABLE = "submission_rules"
-        private val CONTRY = "country"
-        private val PMD = "pmd"
-        private val PARAMETER = "parameter"
-        private val VALUE = "value"
+        private const val RULES_TABLE = "submission_rules"
+        private const val CONTRY = "country"
+        private const val PMD = "pmd"
+        private const val PARAMETER = "parameter"
+        private const val VALUE = "value"
     }
 }

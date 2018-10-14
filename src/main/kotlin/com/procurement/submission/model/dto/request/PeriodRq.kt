@@ -6,6 +6,5 @@ import javax.validation.Valid
 
 data class PeriodRq @JsonCreator constructor(
 
-        @field:Valid
         val tenderPeriod: Period
 )

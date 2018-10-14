@@ -15,21 +15,12 @@ import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.collections.ArrayList
 
-interface BidService {
-
-    fun createBid(cm: CommandMessage): ResponseDto
-
-    fun updateBid(cm: CommandMessage): ResponseDto
-
-    fun copyBids(cm: CommandMessage): ResponseDto
-}
-
 @Service
-class BidServiceImpl(private val generationService: GenerationService,
+class BidService(private val generationService: GenerationService,
                      private val periodService: PeriodService,
-                     private val bidDao: BidDao) : BidService {
+                     private val bidDao: BidDao) {
 
-    override fun createBid(cm: CommandMessage): ResponseDto {
+    fun createBid(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
         val owner = cm.context.owner ?: throw ErrorException(CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
@@ -66,7 +57,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         return ResponseDto(data = BidRs(entity.token.toString(), bid.id, bid))
     }
 
-    override fun updateBid(cm: CommandMessage): ResponseDto {
+    fun updateBid(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
         val owner = cm.context.owner ?: throw ErrorException(CONTEXT)
@@ -97,7 +88,7 @@ class BidServiceImpl(private val generationService: GenerationService,
         return ResponseDto(data = BidRs(null, bid.id, bid))
     }
 
-    override fun copyBids(cm: CommandMessage): ResponseDto {
+    fun copyBids(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
         val previousStage = cm.context.prevStage ?: throw ErrorException(CONTEXT)
