@@ -1,191 +1,23 @@
 {
-  "ocid": "ocds-t1s2t3-MD-1535622116434",
-  "planning": {
-    "budget": {
-      "description": "description_update",
-      "amount": {
-        "amount": 1700.00,
-        "currency": "MDL"
-      },
-      "isEuropeanUnionFunded": false,
-      "budgetBreakdown": [
+  "bids": [
+    {
+      "id": "41fb30b0-cfc8-11e8-b49f-275aa15d5b19",
+      "date": "2018-10-14T15:46:04Z",
+      "status": "pending",
+      "statusDetails": "empty",
+      "tenderers": [
         {
-          "id": "ocds-t1s2t3-MD-1535448844826-FS-1535448860117",
-          "description": "Hello world!",
-          "amount": {
-            "amount": 900.00,
-            "currency": "MDL"
+          "id": "MD-IDNO-1-2",
+          "name": "Googleh555fhfgh55g12",
+          "identifier": {
+            "id": "1-2",
+            "scheme": "MD-IDNO",
+            "legalName": "Google Big Brother",
+            "uri": "hhtps://google.com"
           },
-          "period": {
-            "startDate": "2018-05-25T22:00:00Z",
-            "endDate": "2018-12-27T21:00:00Z"
-          },
-          "sourceParty": {
-            "id": "MD-IDNO-Enotis",
-            "name": "Edward-Company2"
-          }
-        },
-        {
-          "id": "ocds-t1s2t3-MD-1535448844826-FS-1535448884837",
-          "description": "Hello world!",
-          "amount": {
-            "amount": 800.00,
-            "currency": "MDL"
-          },
-          "period": {
-            "startDate": "2018-05-25T22:00:00Z",
-            "endDate": "2018-12-27T21:00:00Z"
-          },
-          "sourceParty": {
-            "id": "MD-IDNO-Enotis",
-            "name": "Edward-Company2"
-          }
-        }
-      ]
-    },
-    "rationale": "rationale_update"
-  },
-  "tender": {
-    "id": "ocds-t1s2t3-MD-1535622116434",
-    "title": "gav",
-    "description": "gav gav",
-    "status": "planning",
-    "statusDetails": "empty",
-    "classification": {
-      "scheme": "CPV",
-      "id": "30199220-8",
-      "description": "Cărţi poştale neilustrate"
-    },
-    "mainProcurementCategory": "goods",
-    "procurementMethod": "open",
-    "procurementMethodDetails": "test",
-    "procurementMethodRationale": "pmr_update",
-    "procurementMethodAdditionalInfo": "pmai_update",
-    "submissionMethod": [
-      "electronicSubmission"
-    ],
-    "submissionMethodDetails": "submissionMethodDetails",
-    "submissionMethodRationale": [
-      "submissionMethodRationale"
-    ],
-    "eligibilityCriteria": "eligibilityCriteria",
-    "acceleratedProcedure": {
-      "isAcceleratedProcedure": false
-    },
-    "designContest": {
-      "serviceContractAward": false
-    },
-    "electronicWorkflows": {
-      "useOrdering": false,
-      "usePayment": false,
-      "acceptInvoicing": false
-    },
-    "jointProcurement": {
-      "isJointProcurement": false
-    },
-    "procedureOutsourcing": {
-      "procedureOutsourced": false
-    },
-    "framework": {
-      "isAFramework": false
-    },
-    "dynamicPurchasingSystem": {
-      "hasDynamicPurchasingSystem": false
-    },
-    "legalBasis": "DIRECTIVE_2014_24_EU",
-    "procuringEntity": {
-      "id": "MD-IDNO-gggg",
-      "name": "Edward-Compan",
-      "identifier": {
-        "id": "gggg",
-        "scheme": "MD-IDNO",
-        "legalName": "fff",
-        "uri": "hhh"
-      },
-      "address": {
-        "streetAddress": "",
-        "addressDetails": {
-          "country": {
-            "scheme": "iso-alpha2",
-            "id": "MD",
-            "description": "MOLDOVA",
-            "uri": "http://reference.iatistandard.org"
-          },
-          "region": {
-            "scheme": "CUATM",
-            "id": "1000000",
-            "description": "Anenii Noi",
-            "uri": "http://statistica.md"
-          },
-          "locality": {
-            "scheme": "CUATM",
-            "id": "1001000",
-            "description": "or.Anenii Noi",
-            "uri": "http://statistica.md"
-          }
-        }
-      },
-      "contactPoint": {
-        "name": "hgfh",
-        "email": "hfgh",
-        "telephone": "hgfhfh",
-        "faxNumber": "hgfh",
-        "url": "hgfhgf"
-      }
-    },
-    "awardCriteria": "priceOnly",
-    "requiresElectronicCatalogue": false,
-    "tenderPeriod": {
-      "startDate": "2018-04-01T00:00:01Z"
-    },
-    "value": {
-      "amount": 1700.00,
-      "currency": "MDL"
-    },
-    "lotGroups": [
-      {
-        "optionToCombine": false
-      }
-    ],
-    "lots": [
-      {
-        "id": "25b8c6e0-ac39-11e8-80ab-37e0925f92f4",
-        "title": "lot1",
-        "description": "looot",
-        "status": "planning",
-        "statusDetails": "empty",
-        "value": {
-          "amount": 100.00,
-          "currency": "MDL"
-        },
-        "options": [
-          {
-            "hasOptions": false
-          }
-        ],
-        "recurrentProcurement": [
-          {
-            "isRecurrent": false
-          }
-        ],
-        "renewals": [
-          {
-            "hasRenewals": false
-          }
-        ],
-        "variants": [
-          {
-            "hasVariants": false
-          }
-        ],
-        "contractPeriod": {
-          "startDate": "2018-11-19T14:45:00Z",
-          "endDate": "2018-12-25T14:45:00Z"
-        },
-        "placeOfPerformance": {
           "address": {
-            "streetAddress": "444",
-            "postalCode": "555",
+            "streetAddress": "",
+            "postalCode": "",
             "addressDetails": {
               "country": {
                 "scheme": "iso-alpha2",
@@ -200,75 +32,53 @@
                 "uri": "http://statistica.md"
               },
               "locality": {
-                "scheme": "gfgf",
-                "id": "gfg",
-                "description": "gfg"
+                "scheme": "CUATM",
+                "id": "1001000",
+                "description": "or.Anenii Noi",
+                "uri": "http://statistica.md"
               }
             }
+          },
+          "contactPoint": {
+            "name": "111",
+            "email": "222",
+            "telephone": "333",
+            "url": "444"
+          },
+          "details": {
+            "scale": "sme"
           }
         }
-      }
-    ],
-    "items": [
-      {
-        "id": "25b8edf0-ac39-11e8-80ab-37e0925f92f4",
-        "description": "111",
-        "classification": {
-          "scheme": "CPV",
-          "id": "30199220-8",
-          "description": "Cărţi poştale neilustrate"
-        },
-        "additionalClassifications": [
-          {
-            "scheme": "CPVS",
-            "id": "AB06-7",
-            "description": "Plastic"
-          }
-        ],
-        "quantity": 100.00,
-        "unit": {
-          "id": "86",
-          "name": " Milion metri patrati spatiu locativ "
-        },
-        "relatedLot": "25b8c6e0-ac39-11e8-80ab-37e0925f92f4"
+      ],
+      "value": {
+        "amount": 20.00,
+        "currency": "MDL"
       },
-      {
-        "id": "25b8edf1-ac39-11e8-80ab-37e0925f92f4",
-        "description": "111",
-        "classification": {
-          "scheme": "CPV",
-          "id": "30199220-8",
-          "description": "Cărţi poştale neilustrate"
-        },
-        "additionalClassifications": [
-          {
-            "scheme": "CPVS",
-            "id": "AB06-7",
-            "description": "Plastic"
-          }
-        ],
-        "quantity": 100.00,
-        "unit": {
-          "id": "86",
-          "name": " Milion metri patrati spatiu locativ "
-        },
-        "relatedLot": "25b8c6e0-ac39-11e8-80ab-37e0925f92f4"
-      }
-    ],
-    "documents": [
-      {
-        "id": "f7178f90-9fba-11e8-9318-61ca1098e80e",
-        "documentType": "tenderNotice",
-        "title": "doc1"
-      },
-      {
-        "id": "0a326080-a058-11e8-9318-61ca1098e80e",
-        "documentType": "illustration",
-        "title": "doc1",
-        "relatedLots": [
-          "25b8c6e0-ac39-11e8-80ab-37e0925f92f4"
-        ]
-      }
-    ]
-  }
+      "documents": [
+        {
+          "id": "f33eeb0e-eb12-476c-a62c-b35cec612b9c-1539342926027",
+          "documentType": "submissionDocuments",
+          "title": "doc1",
+          "relatedLots": [
+            "e7af74f4-cfc6-11e8-b838-6fc3187f5144"
+          ]
+        }
+      ],
+      "relatedLots": [
+        "e7af74f4-cfc6-11e8-b838-6fc3187f5144"
+      ]
+    }
+  ],
+  "lots": [
+    {
+      "id": "e7af74f3-cfc6-11e8-b838-6fc3187f5144"
+    },
+    {
+      "id": "e7af74f4-cfc6-11e8-b838-6fc3187f5144"
+    },
+    {
+      "id": "e7af74f5-cfc6-11e8-b838-6fc3187f5144"
+    }
+  ],
+  "awardCriteria": "priceOnly"
 }
