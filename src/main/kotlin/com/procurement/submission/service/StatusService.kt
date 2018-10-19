@@ -83,11 +83,12 @@ class StatusService(private val rulesService: RulesService,
         val bid = toObject(Bid::class.java, entity.jsonData)
         return BidDto(
                 id = bid.id,
-                relatedLots = bid.relatedLots,
+                date = bid.date,
                 createDate = entity.createdDate.toLocal(),
                 pendingDate = entity.pendingDate?.toLocal(),
                 value = bid.value,
-                tenderers = bid.tenderers)
+                tenderers = bid.tenderers,
+                relatedLots = bid.relatedLots)
     }
 
 
