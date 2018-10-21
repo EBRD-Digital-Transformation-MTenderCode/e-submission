@@ -84,9 +84,9 @@ class StatusService(private val rulesService: RulesService,
         return BidDto(
                 id = bid.id,
                 date = bid.date,
-                createDate = entity.createdDate.toLocal(),
+                createdDate = entity.createdDate.toLocal(),
                 pendingDate = entity.pendingDate?.toLocal(),
-                value = bid.value,
+                value = bid.value!!,
                 tenderers = bid.tenderers,
                 relatedLots = bid.relatedLots)
     }

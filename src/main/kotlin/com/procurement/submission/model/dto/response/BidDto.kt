@@ -13,11 +13,11 @@ data class BidDto @JsonCreator constructor(
 
         val date: LocalDateTime?,
 
-        var createDate: LocalDateTime,
+        var createdDate: LocalDateTime,
 
         var pendingDate: LocalDateTime?,
 
-        var value: Value?,
+        var value: Value,
 
         val tenderers: List<OrganizationReference>,
 
