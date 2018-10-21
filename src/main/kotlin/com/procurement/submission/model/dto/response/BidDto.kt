@@ -2,7 +2,6 @@ package com.procurement.submission.model.dto.response
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.procurement.submission.model.dto.ocds.OrganizationReference
 import com.procurement.submission.model.dto.ocds.Value
 import java.time.LocalDateTime
 
@@ -19,7 +18,14 @@ data class BidDto @JsonCreator constructor(
 
         var value: Value,
 
-        val tenderers: List<OrganizationReference>,
+        val tenderers: List<TendererDto>,
 
         val relatedLots: List<String>
+)
+
+data class TendererDto @JsonCreator constructor(
+
+        var id: String,
+
+        val name: String?
 )

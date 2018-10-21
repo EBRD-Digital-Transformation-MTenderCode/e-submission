@@ -87,8 +87,12 @@ class StatusService(private val rulesService: RulesService,
                 createdDate = entity.createdDate.toLocal(),
                 pendingDate = entity.pendingDate?.toLocal(),
                 value = bid.value!!,
-                tenderers = bid.tenderers,
+                tenderers = convertToTendererDto(bid.tenderers),
                 relatedLots = bid.relatedLots)
+    }
+
+    private fun convertToTendererDto(tenderers: List<OrganizationReference>): List<TendererDto> {
+        return tenderers.asSequence().map { TendererDto(it.id!!, it.name) }.toList()
     }
 
 
