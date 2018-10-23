@@ -23,14 +23,14 @@ class StatusService(private val rulesService: RulesService,
                     private val bidDao: BidDao) {
 
 
-    fun bidsSelection(cm: CommandMessage): ResponseDto {
+    fun getBids(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
         val pmd = cm.context.pmd ?: throw ErrorException(ErrorType.CONTEXT)
 
-        val responseDto = BidsSelectionRs(isPeriodExpired = null, tenderPeriodEndDate = null, bids = setOf())
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        val bids = HashSet<BidDto>()
         if (bidEntities.isNotEmpty()) {
             val pendingBidsSet = getPendingBids(bidEntities)
             val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
@@ -38,10 +38,63 @@ class StatusService(private val rulesService: RulesService,
             val uniqueLotsMap = getUniqueLotsMap(relatedLotsFromBidsList)
             val successfulLotsSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
             val successfulBidsSet = getBidsByRelatedLots(pendingBidsSet, successfulLotsSet)
-            responseDto.bids = successfulBidsSet
+            val successfulBidsIdSet = successfulBidsSet.asSequence().map { it.id }.toSet()
+            for (entity in bidEntities) {
+                if (entity.bidId.toString() in successfulBidsIdSet) {
+                    bids.add(convertBidEntityToBidData(entity))
+                }
+            }
         }
-        return ResponseDto(data = responseDto)
+        return ResponseDto(data = GetBidsRs(bids = bids))
     }
+
+    fun getBidsAuction(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
+        val pmd = cm.context.pmd ?: throw ErrorException(ErrorType.CONTEXT)
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        val ownerToBidsDataMap = HashMap<String, Set<BidDto>>()
+        if (bidEntities.isNotEmpty()) {
+            val pendingBidsSet = getPendingBids(bidEntities)
+            val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
+            val relatedLotsFromBidsList = getRelatedLotsListFromBids(pendingBidsSet)
+            val uniqueLotsMap = getUniqueLotsMap(relatedLotsFromBidsList)
+            val successfulLotsSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
+            val successfulBidsSet = getBidsByRelatedLots(pendingBidsSet, successfulLotsSet)
+            val successfulBidsIdSet = successfulBidsSet.asSequence().map { it.id }.toSet()
+            for (entity in bidEntities) {
+                if (entity.bidId.toString() in successfulBidsIdSet) {
+                    val bids = ownerToBidsDataMap[entity.owner]?.toMutableSet() ?: mutableSetOf()
+                    bids.add(convertBidEntityToBidData(entity))
+                    ownerToBidsDataMap[entity.owner] = bids
+                }
+            }
+        }
+        val bidsData = HashSet<BidsData>()
+        for (owner in ownerToBidsDataMap.keys) {
+            val bids = ownerToBidsDataMap[owner] ?: setOf()
+            bidsData.add(BidsData(owner, bids))
+        }
+        return ResponseDto(data = GetBidsAuctionRs(bidsData))
+    }
+
+    private fun convertBidEntityToBidData(entity: BidEntity): BidDto {
+        val bid = toObject(Bid::class.java, entity.jsonData)
+        return BidDto(
+                id = bid.id,
+                date = bid.date,
+                createdDate = entity.createdDate.toLocal(),
+                pendingDate = entity.pendingDate?.toLocal(),
+                value = bid.value!!,
+                tenderers = convertToTendererDto(bid.tenderers),
+                relatedLots = bid.relatedLots)
+    }
+
+    private fun convertToTendererDto(tenderers: List<OrganizationReference>): List<TendererDto> {
+        return tenderers.asSequence().map { TendererDto(it.id!!, it.name) }.toList()
+    }
+
 
     fun updateBidsByLots(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
