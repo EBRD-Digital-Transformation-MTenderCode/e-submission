@@ -183,11 +183,6 @@ class StatusService(private val rulesService: RulesService,
                     status = Status.fromValue(bid.statusDetails.value())
                     statusDetails = StatusDetails.EMPTY
                 }
-                if (bid.status == Status.PENDING && bid.statusDetails == StatusDetails.EMPTY) {
-                    date = dateTime
-                    status = Status.WITHDRAWN
-                    statusDetails = StatusDetails.EMPTY
-                }
             }
         }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
