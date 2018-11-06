@@ -87,14 +87,9 @@ class StatusService(private val rulesService: RulesService,
                 createdDate = entity.createdDate.toLocal(),
                 pendingDate = entity.pendingDate?.toLocal(),
                 value = bid.value!!,
-                tenderers = convertToTendererDto(bid.tenderers),
+                tenderers = bid.tenderers,
                 relatedLots = bid.relatedLots)
     }
-
-    private fun convertToTendererDto(tenderers: List<OrganizationReference>): List<TendererDto> {
-        return tenderers.asSequence().map { TendererDto(it.id!!, it.name) }.toList()
-    }
-
 
     fun updateBidsByLots(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
