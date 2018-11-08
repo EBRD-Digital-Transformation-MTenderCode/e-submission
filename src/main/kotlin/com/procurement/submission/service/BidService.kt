@@ -136,7 +136,6 @@ class BidService(private val generationService: GenerationService,
         this.relatedLots = documentDto.relatedLots
     }
 
-
     private fun checkStatusesBidUpdate(bid: Bid) {
         if (bid.status != Status.PENDING && bid.status != Status.INVITED) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
         if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
