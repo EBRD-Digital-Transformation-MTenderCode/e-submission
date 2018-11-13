@@ -206,7 +206,6 @@ class StatusService(private val rulesService: RulesService,
         entity.status = bid.status.value()
         bidDao.save(entity)
         return ResponseDto(data = BidRs(null, null, bid))
-
     }
 
     fun bidsWithdrawn(cm: CommandMessage): ResponseDto {

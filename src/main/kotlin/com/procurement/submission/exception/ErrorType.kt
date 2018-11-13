@@ -6,7 +6,7 @@ enum class ErrorType constructor(val code: String, val message: String) {
     INVALID_OWNER("00.02", "Invalid owner."),
     INVALID_TOKEN("00.03", "Invalid token."),
     INVALID_ID("00.04", "Bid id must not be empty."),
-    INVALID_RELATED_LOT("00.05", "Invalid related unsuccessfulLots in documents."),
+    INVALID_RELATED_LOT("00.05", "Invalid related lots in documents."),
     ID_NOT_NULL("00.06", "Bid id must be empty."),
     STATUS_IS_NULL("00.07", "Status must not be empty."),
     STATUS_DETAIL_IS_NULL("00.08", "Status detail must not be empty."),
@@ -24,5 +24,6 @@ enum class ErrorType constructor(val code: String, val message: String) {
     CREATE_BID_DOCUMENTS_TYPES("03.04", "Invalid types of documents"),
     INVALID_STATUSES_FOR_UPDATE("03.05", "Invalid status or status details"),
     INVALID_DOCS_ID("03.06", "Invalid documents ids."),
+    INVALID_DOCS_FOR_UPDATE("03.07", "Invalid documents for update."),
     CONTEXT("20.01", "Context parameter not found.");
 }

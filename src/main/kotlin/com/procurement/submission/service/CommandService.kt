@@ -33,6 +33,7 @@ class CommandService(private val historyDao: HistoryDao,
             CommandType.GET_BIDS_AUCTION -> statusService.getBidsAuction(cm)
             CommandType.UPDATE_BIDS_BY_LOTS -> statusService.updateBidsByLots(cm)
             CommandType.UPDATE_BID_BY_AWARD_STATUS -> statusService.updateBidsByAwardStatus(cm)
+            CommandType.UPDATE_BID_DOCS-> bidService.updateBidDocs(cm)
             CommandType.SET_BIDS_FINAL_STATUSES -> statusService.setFinalStatuses(cm)
             CommandType.BID_WITHDRAWN -> statusService.bidWithdrawn(cm)
             CommandType.BIDS_WITHDRAWN -> statusService.bidsWithdrawn(cm)
