@@ -171,7 +171,6 @@ class BidService(private val generationService: GenerationService,
             } else {
                 documentsDb
             }
-
         } else {
             documentsDto
         }
