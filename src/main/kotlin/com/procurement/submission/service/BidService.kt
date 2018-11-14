@@ -147,9 +147,9 @@ class BidService(private val generationService: GenerationService,
         val documentsDbId = bid.documents?.asSequence()?.map { it.id }?.toSet() ?: setOf()
         val newDocumentsId = documentsDtoId - documentsDbId
         if (newDocumentsId.isEmpty()) throw ErrorException(INVALID_DOCS_FOR_UPDATE)
-        bid.apply {
-            documents = updateDocuments(bid.documents, documentsDto)
-        }
+        val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
+        val documentsDb = bid.documents ?: listOf()
+        bid.documents =  documentsDb + newDocuments
         entity.jsonData = toJson(bid)
         bidDao.save(entity)
         return ResponseDto(data = BidRs(null, null, bid))
@@ -166,8 +166,7 @@ class BidService(private val generationService: GenerationService,
                     document.updateDocument(documentsDto.first { it.id == document.id })
                 }
                 //new
-                val newDocuments = documentsDto.asSequence()
-                        .filter { it.id in newDocumentsId }.toList()
+                val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
                 documentsDb + newDocuments
             } else {
                 documentsDb
