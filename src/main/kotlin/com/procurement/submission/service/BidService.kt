@@ -17,8 +17,8 @@ import kotlin.collections.ArrayList
 
 @Service
 class BidService(private val generationService: GenerationService,
-                     private val periodService: PeriodService,
-                     private val bidDao: BidDao) {
+                 private val periodService: PeriodService,
+                 private val bidDao: BidDao) {
 
     fun createBid(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
@@ -106,6 +106,53 @@ class BidService(private val generationService: GenerationService,
         return ResponseDto(data = BidsCopyRs(Bids(bids), Period(startDate, endDate)))
     }
 
+    fun updateBidDocs(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
+        val token = cm.context.token ?: throw ErrorException(CONTEXT)
+        val owner = cm.context.owner ?: throw ErrorException(CONTEXT)
+        var stage = cm.context.stage ?: throw ErrorException(CONTEXT)
+        val bidId = cm.context.id ?: throw ErrorException(CONTEXT)
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(CONTEXT)
+        val dto = toObject(BidUpdateDocsRq::class.java, cm.data)
+        val documentsDto = dto.bid.documents
+        //VR-4.8.1
+        val period = periodService.getPeriodEntity(cpId, stage)
+        if (dateTime <= period.endDate.toLocal()) throw ErrorException(PERIOD_NOT_EXPIRED)
+
+        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, "EV", UUID.fromString(bidId))
+        if (entity.token.toString() != token) throw ErrorException(INVALID_TOKEN)
+        if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
+        val bid: Bid = toObject(Bid::class.java, entity.jsonData)
+//        when (stage) {
+//            "EV" -> {//VR-4.8.4
+//                if (bid.status != Status.PENDING) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+//                if (bid.statusDetails != StatusDetails.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+//            }
+//            "AC" -> {//VR-4.8.7
+//                if (bid.status != Status.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+//                if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+//            }
+//        }
+        if (bid.status != Status.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+
+        //VR-4.8.5
+        documentsDto.forEach { document ->
+           if (!bid.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
+        }
+        //BR-4.8.2
+        val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
+        val documentsDbId = bid.documents?.asSequence()?.map { it.id }?.toSet() ?: setOf()
+        val newDocumentsId = documentsDtoId - documentsDbId
+        if (newDocumentsId.isEmpty()) throw ErrorException(INVALID_DOCS_FOR_UPDATE)
+        val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
+        val documentsDb = bid.documents ?: listOf()
+        bid.documents =  documentsDb + newDocuments
+        entity.jsonData = toJson(bid)
+        bidDao.save(entity)
+        return ResponseDto(data = BidRs(null, null, bid))
+    }
+
     private fun updateDocuments(documentsDb: List<Document>?, documentsDto: List<Document>?): List<Document>? {
         return if (documentsDb != null && documentsDb.isNotEmpty()) {
             if (documentsDto != null) {
@@ -114,17 +161,14 @@ class BidService(private val generationService: GenerationService,
                 val newDocumentsId = documentsDtoId - documentsDbId
                 //update
                 documentsDb.forEach { document ->
-                    documentsDto.firstOrNull { it.id == document.id }
-                            ?.let { document.updateDocument(it) }
+                    document.updateDocument(documentsDto.first { it.id == document.id })
                 }
                 //new
-                val newDocuments = documentsDto.asSequence()
-                        .filter { it.id in newDocumentsId }.toList()
+                val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
                 documentsDb + newDocuments
             } else {
                 documentsDb
             }
-
         } else {
             documentsDto
         }
@@ -143,10 +187,8 @@ class BidService(private val generationService: GenerationService,
 
     private fun checkRelatedLotsInDocuments(bidDto: BidCreate) {
         bidDto.documents?.forEach { document ->
-            if (document.relatedLots != null) {
-                if (!bidDto.relatedLots.containsAll(document.relatedLots!!))
+                if (!bidDto.relatedLots.containsAll(document.relatedLots))
                     throw ErrorException(INVALID_RELATED_LOT)
-            }
         }
     }
 
@@ -163,9 +205,7 @@ class BidService(private val generationService: GenerationService,
 
     private fun validateRelatedLotsOfDocuments(bidDto: BidUpdate, bid: Bid) {
         bidDto.documents?.forEach { document ->
-            if (document.relatedLots != null) {
-                if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(INVALID_RELATED_LOT)
-            }
+           if (!bid.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
         }
     }
 
@@ -263,4 +303,5 @@ class BidService(private val generationService: GenerationService,
                 jsonData = toJson(bid)
         )
     }
+
 }
