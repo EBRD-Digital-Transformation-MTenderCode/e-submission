@@ -155,7 +155,7 @@ class BidService(private val generationService: GenerationService,
                 val newDocumentsId = documentsDtoId - documentsDbId
                 //update
                 documentsDb.forEach { document ->
-                    document.updateDocument(documentsDto.first { it.id == document.id })
+                    document.updateDocument(documentsDto.firstOrNull { it.id == document.id })
                 }
                 //new
                 val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
@@ -168,10 +168,12 @@ class BidService(private val generationService: GenerationService,
         }
     }
 
-    private fun Document.updateDocument(documentDto: Document) {
-        this.title = documentDto.title
-        this.description = documentDto.description
-        this.relatedLots = documentDto.relatedLots
+    private fun Document.updateDocument(documentDto: Document?) {
+        if (documentDto != null) {
+            this.title = documentDto.title
+            this.description = documentDto.description
+            this.relatedLots = documentDto.relatedLots
+        }
     }
 
     private fun checkStatusesBidUpdate(bid: Bid) {
