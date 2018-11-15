@@ -1,162 +1,76 @@
 {
-  "awards": [
-    {
-      "token": "37701de1-8be4-4edb-a547-c38a368b958b",
-      "id": "170103c1-dc35-11e8-b77a-3de1601e7c11",
-      "date": "2018-10-30T11:19:19Z",
-      "description": "",
-      "status": "unsuccessful",
-      "statusDetails": "empty",
-      "value": {
-        "amount": 155.00,
-        "currency": "USD"
-      },
-      "relatedLots": [
-        "3a97e9f1-dc32-11e8-b90f-5986bfe2f966"
-      ],
-      "relatedBid": "7fe67560-dc34-11e8-ad26-e5c1eb0d4905",
-      "suppliers": [
-        {
-          "id": "MD-IDNO-654-546-1",
-          "name": "name"
-        }
-      ]
-    },
-    {
-      "token": "e01258a9-65be-410c-8984-4cef88e21b01",
-      "id": "170103c0-dc35-11e8-b77a-3de1601e7c11",
-      "date": "2018-10-30T11:19:19Z",
-      "status": "active",
-      "statusDetails": "empty",
-      "value": {
-        "amount": 155.00,
-        "currency": "USD"
-      },
-      "relatedLots": [
-        "3a97e9f1-dc32-11e8-b90f-5986bfe2f966"
-      ],
-      "relatedBid": "695469b0-dc34-11e8-ad26-e5c1eb0d4905",
-      "suppliers": [
-        {
-          "id": "MD-IDNO-654-546-1asde",
-          "name": "name"
-        }
-      ]
-    }
-  ],
-  "awardPeriod": {
-    "startDate": "2018-10-30T11:15:21Z",
-    "endDate": "2018-10-30T11:19:19Z"
+  "id": "2565b390-e8ef-11e8-8423-153ee2f90172",
+  "command": "updateBid",
+  "context": {
+    "operationId": "a2bcd000-b00d-4644-b0e6-4b75020b7403",
+    "requestId": "2565b390-e8ef-11e8-8423-153ee2f90172",
+    "cpid": "ocds-t1s2t3-MD-1542296984680",
+    "ocid": "ocds-t1s2t3-MD-1542296984680-EV-1542296984759",
+    "stage": "EV",
+    "prevStage": "EV",
+    "processType": "submitTheBid",
+    "operationType": "updateBid",
+    "phase": "tendering",
+    "owner": "445f6851-c908-407d-9b45-14b92f3e964b",
+    "country": "MD",
+    "language": "ro",
+    "pmd": "TEST_SV",
+    "token": "21fc158f-05cf-4e9e-9fef-0edf4318df46",
+    "startDate": "2018-11-15T15:57:25Z",
+    "id": "b3ae86a0-e8ee-11e8-b21f-4bf96fbbe441",
+    "timeStamp": 1542297445705,
+    "isAuction": false
   },
-  "unsuccessfulLots": [],
-  "bids": [
-    {
-      "id": "695469b0-dc34-11e8-ad26-e5c1eb0d4905",
-      "date": "2018-10-30T11:19:13Z",
-      "status": "valid",
-      "statusDetails": "empty",
+  "data": {
+    "bid": {
       "tenderers": [
         {
-          "id": "MD-IDNO-654-546-1asde",
           "name": "name",
           "identifier": {
-            "id": "654-546-1asde",
             "scheme": "MD-IDNO",
-            "legalName": "LEGALNAME"
+            "id": "f1o4j",
+            "legalName": "jj"
           },
           "address": {
-            "streetAddress": "gagarina",
+            "streetAddress": "hjk",
             "addressDetails": {
               "country": {
-                "scheme": "iso-alpha2",
-                "id": "MD",
-                "description": "MOLDOVA",
-                "uri": "http://reference.iatistandard.org"
+                "id": "MD"
               },
               "region": {
-                "scheme": "CUATM",
-                "id": "0101000",
-                "description": "mun.Chişinău",
-                "uri": "http://statistica.md"
+                "id": "0101000"
               },
               "locality": {
-                "scheme": "ddd",
-                "id": "dv01010000101000",
-                "description": "0101000"
+                "scheme": "uu",
+                "id": "321",
+                "description": "u"
               }
             }
           },
           "contactPoint": {
-            "name": "dd",
-            "email": "dd",
-            "telephone": "759"
+            "name": "u",
+            "email": "u",
+            "telephone": "u"
           },
           "details": {
-            "scale": "large"
+            "scale": "sme"
           }
         }
       ],
       "value": {
-        "amount": 155.00,
-        "currency": "USD"
+        "amount": 102,
+        "currency": "MDL"
       },
       "relatedLots": [
-        "3a97e9f1-dc32-11e8-b90f-5986bfe2f966"
-      ]
-    },
-    {
-      "id": "7fe67560-dc34-11e8-ad26-e5c1eb0d4905",
-      "date": "2018-10-30T11:19:13Z",
-      "status": "withdrawn",
-      "statusDetails": "empty",
-      "tenderers": [
+        "129ade84-e8ee-11e8-9363-3fbb2bac86b6"
+      ],
+      "documents": [
         {
-          "id": "MD-IDNO-654-546-1",
-          "name": "name",
-          "identifier": {
-            "id": "654-546-1",
-            "scheme": "MD-IDNO",
-            "legalName": "LEGALNAME"
-          },
-          "address": {
-            "streetAddress": "gagarina",
-            "addressDetails": {
-              "country": {
-                "scheme": "iso-alpha2",
-                "id": "MD",
-                "description": "MOLDOVA",
-                "uri": "http://reference.iatistandard.org"
-              },
-              "region": {
-                "scheme": "CUATM",
-                "id": "0101000",
-                "description": "mun.Chişinău",
-                "uri": "http://statistica.md"
-              },
-              "locality": {
-                "scheme": "ddd",
-                "id": "dv01010000101000",
-                "description": "0101000"
-              }
-            }
-          },
-          "contactPoint": {
-            "name": "dd",
-            "email": "dd",
-            "telephone": "759"
-          },
-          "details": {
-            "scale": "large"
-          }
+          "id": "86bfe8d0-8734-4568-bc06-6dbc04c85d57-1542297431014",
+          "documentType": "x_commercialOffer"
         }
-      ],
-      "value": {
-        "amount": 155.00,
-        "currency": "USD"
-      },
-      "relatedLots": [
-        "3a97e9f1-dc32-11e8-b90f-5986bfe2f966"
       ]
     }
-  ]
+  },
+  "version": "0.0.1"
 }
