@@ -32,7 +32,7 @@ class BidService(private val generationService: GenerationService,
         checkRelatedLotsInDocuments(bidDto)
         processTenderers(bidDto)
         isOneRelatedLot(bidDto)
-        checkTypeOfDocuments(bidDto.documents)
+//        checkTypeOfDocuments(bidDto.documents)
         checkTenderers(cpId, stage, bidDto)
         val bid = Bid(
                 id = generationService.getTimeBasedUUID(),
@@ -73,7 +73,7 @@ class BidService(private val generationService: GenerationService,
         if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
         checkStatusesBidUpdate(bid)
-        checkTypeOfDocuments(bidDto.documents)
+//        checkTypeOfDocuments(bidDto.documents)
         validateRelatedLotsOfDocuments(bidDto = bidDto, bid = bid)
         validateValue(stage = stage, bidDto = bidDto)
         bid.apply {
@@ -123,22 +123,16 @@ class BidService(private val generationService: GenerationService,
         if (entity.token.toString() != token) throw ErrorException(INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
-//        when (stage) {
-//            "EV" -> {//VR-4.8.4
-//                if (bid.status != Status.PENDING) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-//                if (bid.statusDetails != StatusDetails.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-//            }
-//            "AC" -> {//VR-4.8.7
-//                if (bid.status != Status.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-//                if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-//            }
-//        }
+
+        //VR-4.8.4
+        //if (bid.status != Status.PENDING) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+        //if (bid.statusDetails != StatusDetails.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
         if (bid.status != Status.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
         if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
 
         //VR-4.8.5
         documentsDto.forEach { document ->
-           if (!bid.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
+            if (!bid.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
         }
         //BR-4.8.2
         val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
@@ -147,7 +141,7 @@ class BidService(private val generationService: GenerationService,
         if (newDocumentsId.isEmpty()) throw ErrorException(INVALID_DOCS_FOR_UPDATE)
         val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
         val documentsDb = bid.documents ?: listOf()
-        bid.documents =  documentsDb + newDocuments
+        bid.documents = documentsDb + newDocuments
         entity.jsonData = toJson(bid)
         bidDao.save(entity)
         return ResponseDto(data = BidRs(null, null, bid))
@@ -161,7 +155,7 @@ class BidService(private val generationService: GenerationService,
                 val newDocumentsId = documentsDtoId - documentsDbId
                 //update
                 documentsDb.forEach { document ->
-                    document.updateDocument(documentsDto.first { it.id == document.id })
+                    document.updateDocument(documentsDto.firstOrNull { it.id == document.id })
                 }
                 //new
                 val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
@@ -174,10 +168,12 @@ class BidService(private val generationService: GenerationService,
         }
     }
 
-    private fun Document.updateDocument(documentDto: Document) {
-        this.title = documentDto.title
-        this.description = documentDto.description
-        this.relatedLots = documentDto.relatedLots
+    private fun Document.updateDocument(documentDto: Document?) {
+        if (documentDto != null) {
+            this.title = documentDto.title
+            this.description = documentDto.description
+            this.relatedLots = documentDto.relatedLots
+        }
     }
 
     private fun checkStatusesBidUpdate(bid: Bid) {
@@ -187,8 +183,8 @@ class BidService(private val generationService: GenerationService,
 
     private fun checkRelatedLotsInDocuments(bidDto: BidCreate) {
         bidDto.documents?.forEach { document ->
-                if (!bidDto.relatedLots.containsAll(document.relatedLots))
-                    throw ErrorException(INVALID_RELATED_LOT)
+            if (!bidDto.relatedLots.containsAll(document.relatedLots))
+                throw ErrorException(INVALID_RELATED_LOT)
         }
     }
 
@@ -205,7 +201,7 @@ class BidService(private val generationService: GenerationService,
 
     private fun validateRelatedLotsOfDocuments(bidDto: BidUpdate, bid: Bid) {
         bidDto.documents?.forEach { document ->
-           if (!bid.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
+            if (!bid.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
         }
     }
 
