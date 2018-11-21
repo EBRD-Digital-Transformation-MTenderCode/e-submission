@@ -296,7 +296,7 @@ class StatusService(private val rulesService: RulesService,
         return if (awardCriteria == AwardCriteria.PRICE_ONLY) {
             val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(dto.consideredBidId))
             val bid = toObject(Bid::class.java, entity.jsonData)
-            ResponseDto(data = GetDocsOfConsideredBidRs(bid))
+            ResponseDto(data = GetDocsOfConsideredBidRs(ConsideredBid(bid.id, bid.documents)))
         } else ResponseDto(data = "")
     }
 

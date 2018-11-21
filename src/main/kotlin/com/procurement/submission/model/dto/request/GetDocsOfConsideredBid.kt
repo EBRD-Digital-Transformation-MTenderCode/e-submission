@@ -2,7 +2,9 @@ package com.procurement.submission.model.dto.request
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.ocds.Bid
+import java.time.LocalDateTime
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class GetDocsOfConsideredBidRq @JsonCreator constructor(
@@ -14,5 +16,15 @@ data class GetDocsOfConsideredBidRq @JsonCreator constructor(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class GetDocsOfConsideredBidRs @JsonCreator constructor(
 
-        val consideredBid: Bid?
+        val consideredBid: ConsideredBid?
 )
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class ConsideredBid @JsonCreator constructor(
+
+        var id: String,
+
+        var documents: List<Document>?
+
+)
+

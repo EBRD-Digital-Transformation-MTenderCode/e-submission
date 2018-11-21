@@ -9,7 +9,7 @@ cassandra:
   keyspace-name: ocds
   port: 9042
   username: caclient
-  password: F9xrzFJhWY
+  password: 6AH7vbrkMWnfK
 
 eureka:
   client:
