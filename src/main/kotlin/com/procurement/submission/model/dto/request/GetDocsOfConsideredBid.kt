@@ -14,5 +14,5 @@ data class GetDocsOfConsideredBidRq @JsonCreator constructor(
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class GetDocsOfConsideredBidRs @JsonCreator constructor(
 
-        val consideredBid: Bid
+        val consideredBid: Bid?
 )

@@ -294,10 +294,11 @@ class StatusService(private val rulesService: RulesService,
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val awardCriteria = AwardCriteria.fromValue(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
         val dto = toObject(GetDocsOfConsideredBidRq::class.java, cm.data)
-        if (awardCriteria != AwardCriteria.PRICE_ONLY) throw ErrorException(ErrorType.AWARD_CRITERIA)
-        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(dto.consideredBidId))
-        val bid = toObject(Bid::class.java, entity.jsonData)
-        return ResponseDto(data = GetDocsOfConsideredBidRs(bid))
+        return if (awardCriteria == AwardCriteria.PRICE_ONLY) {
+            val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(dto.consideredBidId))
+            val bid = toObject(Bid::class.java, entity.jsonData)
+            ResponseDto(data = GetDocsOfConsideredBidRs(bid))
+        } else ResponseDto(data = "")
     }
 
     private fun addBidToResponseDto(bidsResponseDto: MutableList<BidCancellation>, bid: Bid) {
