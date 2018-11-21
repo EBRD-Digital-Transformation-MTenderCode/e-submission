@@ -136,7 +136,8 @@ class StatusService(private val rulesService: RulesService,
                     bid.documents = bid.documents?.asSequence()
                             ?.filter {
                                 it.documentType == DocumentType.SUBMISSION_DOCUMENTS || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
-                            }?.toList()
+                            }
+                            ?.toList()
                 }
             }
         }
