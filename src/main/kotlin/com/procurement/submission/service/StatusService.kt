@@ -129,15 +129,13 @@ class StatusService(private val rulesService: RulesService,
         bidDao.saveAll(updatedBidEntities)
         val period = periodService.getPeriodEntity(cpId, stage)
 
-        if (awardCriteria == AwardCriteria.PRICE_ONLY) {
-            val firstBidsIds = dto.firstBids?.asSequence()?.map { it.id }?.toSet() ?: setOf()
+        if (awardCriteria == AwardCriteria.PRICE_ONLY && dto.firstBids != null && dto.firstBids.isNotEmpty()) {
+            val firstBidsIds = dto.firstBids.asSequence().map { it.id }.toSet()
             for (bid in bids) {
-                if (bid.status == Status.PENDING && !firstBidsIds.contains(bid.id)) {
-                    bid.documents = bid.documents?.asSequence()
-                            ?.filter {
-                                it.documentType == DocumentType.SUBMISSION_DOCUMENTS || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
-                            }
-                            ?.toList()
+                if (bid.status == Status.PENDING && !firstBidsIds.contains(bid.id) && bid.documents != null) {
+                    bid.documents = bid.documents!!.asSequence().filter {
+                        it.documentType == DocumentType.SUBMISSION_DOCUMENTS || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
+                    }.toList()
                 }
             }
         }
