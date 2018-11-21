@@ -151,6 +151,7 @@ class BidService(private val generationService: GenerationService,
         return if (documentsDb != null && documentsDb.isNotEmpty()) {
             if (documentsDto != null) {
                 val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
+                if (documentsDtoId.size != documentsDto.size) throw ErrorException(INVALID_DOCS_ID)
                 val documentsDbId = documentsDb.asSequence().map { it.id }.toSet()
                 val newDocumentsId = documentsDtoId - documentsDbId
                 //update
