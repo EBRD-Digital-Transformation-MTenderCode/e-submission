@@ -39,6 +39,7 @@ class CommandService(private val historyDao: HistoryDao,
             CommandType.BIDS_WITHDRAWN -> statusService.bidsWithdrawn(cm)
             CommandType.PREPARE_BIDS_CANCELLATION -> statusService.prepareBidsCancellation(cm)
             CommandType.BIDS_CANCELLATION -> statusService.bidsCancellation(cm)
+            CommandType.GET_DOCS_OF_CONSIDERED_BID -> statusService.getDocsOfConsideredBid(cm)
         }
         historyEntity = historyDao.saveHistory(cm.id, cm.command.value(), response)
         return toObject(ResponseDto::class.java, historyEntity.jsonData)

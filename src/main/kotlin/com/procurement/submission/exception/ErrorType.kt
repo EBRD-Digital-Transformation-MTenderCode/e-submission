@@ -25,5 +25,7 @@ enum class ErrorType constructor(val code: String, val message: String) {
     INVALID_STATUSES_FOR_UPDATE("03.05", "Invalid status or status details"),
     INVALID_DOCS_ID("03.06", "Invalid documents ids."),
     INVALID_DOCS_FOR_UPDATE("03.07", "Invalid documents for update."),
+    AWARD_CRITERIA("03.08", "Award Criteria can't be recognized"),
     CONTEXT("20.01", "Context parameter not found.");
+
 }
