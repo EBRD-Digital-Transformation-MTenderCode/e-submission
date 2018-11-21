@@ -135,8 +135,7 @@ class StatusService(private val rulesService: RulesService,
                 if (bid.status == Status.PENDING && !firstBidsIds.contains(bid.id)) {
                     bid.documents = bid.documents?.asSequence()
                             ?.filter {
-                                it.documentType == DocumentType.SUBMISSION_DOCUMENTS
-                                        || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
+                                it.documentType == DocumentType.SUBMISSION_DOCUMENTS || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
                             }?.toList()
                 }
             }
@@ -151,7 +150,6 @@ class StatusService(private val rulesService: RulesService,
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
-        val awardCriteria = AwardCriteria.fromValue(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
         val dto = toObject(UpdateBidsByAwardStatusRq::class.java, cm.data)
 
         val bidId = dto.bidId
