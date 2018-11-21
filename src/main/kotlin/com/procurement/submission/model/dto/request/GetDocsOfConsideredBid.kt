@@ -2,9 +2,7 @@ package com.procurement.submission.model.dto.request
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.procurement.submission.model.dto.ocds.*
-import com.procurement.submission.model.dto.ocds.Bid
-import java.time.LocalDateTime
+import com.procurement.submission.model.dto.ocds.Document
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class GetDocsOfConsideredBidRq @JsonCreator constructor(
