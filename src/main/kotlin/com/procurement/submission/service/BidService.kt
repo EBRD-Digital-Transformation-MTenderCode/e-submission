@@ -132,7 +132,9 @@ class BidService(private val generationService: GenerationService,
 
         //VR-4.8.5
         documentsDto.forEach { document ->
-            if (!bid.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
+            if (document.relatedLots != null) {
+                if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(INVALID_RELATED_LOT)
+            }
         }
         //BR-4.8.2
         val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
@@ -184,8 +186,9 @@ class BidService(private val generationService: GenerationService,
 
     private fun checkRelatedLotsInDocuments(bidDto: BidCreate) {
         bidDto.documents?.forEach { document ->
-            if (!bidDto.relatedLots.containsAll(document.relatedLots))
-                throw ErrorException(INVALID_RELATED_LOT)
+            if (document.relatedLots != null) {
+                if (!bidDto.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(INVALID_RELATED_LOT)
+            }
         }
     }
 
@@ -202,7 +205,9 @@ class BidService(private val generationService: GenerationService,
 
     private fun validateRelatedLotsOfDocuments(bidDto: BidUpdate, bid: Bid) {
         bidDto.documents?.forEach { document ->
-            if (!bid.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
+            if (document.relatedLots != null) {
+                if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(INVALID_RELATED_LOT)
+            }
         }
     }
 
