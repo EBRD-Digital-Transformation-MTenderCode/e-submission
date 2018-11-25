@@ -35,10 +35,10 @@ enum class AwardCriteria(@JsonValue val value: String) {
 enum class DocumentType constructor(private val value: String) {
 
     SUBMISSION_DOCUMENTS("submissionDocuments"),
+    ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments"),
     ILLUSTRATION("illustration"),
     COMMERCIAL_OFFER("x_commercialOffer"),
     QUALIFICATION_DOCUMENTS("x_qualificationDocuments"),
-    ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments"),
     TECHNICAL_PROPOSAL("technicalProposal"),
     SELECTION_DOCUMENTS("selectionDocuments"),
     TECHNICAL_DOCUMENTS("x_technicalDocuments");
