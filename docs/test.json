@@ -1,50 +1,26 @@
 {
-  "id": "ce875c60-e8f1-11e8-8423-153ee2f90172",
-  "command": "publish",
+  "id": "608348b0-d914-11e8-9578-e3566d9e113a",
+  "command": "getBids",
   "context": {
-    "operationId": "a2bcd000-b00d-4644-b0e6-4b75020b7411",
-    "requestId": "ce875c60-e8f1-11e8-8423-153ee2f90172",
-    "cpid": "ocds-t1s2t3-MD-1542296984680",
-    "ocid": "ocds-t1s2t3-MD-1542296984680-EV-1542296984759",
+    "operationId": "608348b0-d914-11e8-9578-e3566d9e113a",
+    "requestId": "608348b0-d914-11e8-9578-e3566d9e113a",
+    "cpid": "ocds-b3wdp1-MD-1540553354085",
+    "ocid": "ocds-b3wdp1-MD-1540553354085-EV-1540554217772",
     "stage": "EV",
-    "prevStage": "EV",
-    "processType": "awardPeriodEnd",
-    "operationType": "awardPeriodEndEv",
-    "phase": "awardedStandstill",
-    "owner": "445f6851-c908-407d-9b45-14b92f3e964b",
+    "processType": "tenderPeriodEnd",
+    "operationType": "tenderPeriodEndEv",
+    "phase": "awarding",
+    "owner": "434aef14-9d52-4ea0-a9f7-8737a95686c9",
     "country": "MD",
     "language": "ro",
-    "pmd": "TEST_SV",
-    "token": "bc0f9310-57fd-4d26-a8f1-202177f04163",
-    "outcomes": [
-      {
-        "id": "ocds-t1s2t3-MD-1542296984680-AC-1541824209874",
-        "token": "99004616-e5a8-436e-a004-a531161e71fb",
-        "type": "ac"
-      },
-      {
-        "id": "ocds-t1s2t3-MD-1542296984680-AC-1543931296522",
-        "token": "9937a800-1bce-4d61-868a-e14ff6ead3e4",
-        "type": "ac"
-      }
-    ],
-    "startDate": "2018-11-15T16:16:28Z",
-    "endDate": "2018-11-15T16:16:33Z",
-    "timeStamp": 1542298588313,
-    "isAuction": false,
-    "mainProcurementCategory": "works"
+    "pmd": "OT",
+    "startDate": "2018-11-09T12:00:00Z",
+    "timeStamp": 1541764800645,
+    "isAuction": false
   },
-  "data": {
-    "documents": [
-      {
-        "id": "86bfe8d0-8734-4568-bc06-6dbc04c85d57-1542297431014",
-        "documentType": "contractDraft"
-      },
-      {
-        "id": "86bfe8d0-8734-4568-bc06-6dbc04c85d57-1542297431014",
-        "documentType": "contractDraft"
-      }
-    ]
-  },
+  "data": {},
   "version": "0.0.1"
 }
+
+
+//10.73.10.7

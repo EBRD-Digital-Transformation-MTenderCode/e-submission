@@ -5,13 +5,40 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.procurement.submission.exception.EnumException
 import java.util.*
 
+enum class AwardCriteria(@JsonValue val value: String) {
+    PRICE_ONLY("priceOnly"),
+    COST_ONLY("costOnly"),
+    QUALITY_ONLY("qualityOnly"),
+    RATED_CRITERIA("ratedCriteria"),
+    LOWEST_COST("lowestCost"),
+    BEST_PROPOSAL("bestProposal"),
+    BEST_VALUE_TO_GOVERNMENT("bestValueToGovernment"),
+    SINGLE_BID_ONLY("singleBidOnly");
+
+    override fun toString(): String {
+        return this.value
+    }
+
+    companion object {
+        private val CONSTANTS = HashMap<String, AwardCriteria>()
+
+        init {
+            values().forEach { CONSTANTS[it.value] = it }
+        }
+
+        fun fromValue(v: String): AwardCriteria {
+            return CONSTANTS[v] ?: throw EnumException(AwardCriteria::class.java.name, v, values().toString())
+        }
+    }
+}
+
 enum class DocumentType constructor(private val value: String) {
 
     SUBMISSION_DOCUMENTS("submissionDocuments"),
+    ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments"),
     ILLUSTRATION("illustration"),
     COMMERCIAL_OFFER("x_commercialOffer"),
     QUALIFICATION_DOCUMENTS("x_qualificationDocuments"),
-    ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments"),
     TECHNICAL_PROPOSAL("technicalProposal"),
     SELECTION_DOCUMENTS("selectionDocuments"),
     TECHNICAL_DOCUMENTS("x_technicalDocuments");
