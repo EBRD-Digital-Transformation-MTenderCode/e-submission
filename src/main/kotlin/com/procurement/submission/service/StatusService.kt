@@ -298,6 +298,19 @@ class StatusService(private val rulesService: RulesService,
         } else ResponseDto(data = "")
     }
 
+    fun checkTokenOwner(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val owner = cm.context.owner ?: throw ErrorException(ErrorType.CONTEXT)
+        val token = cm.context.token ?: throw ErrorException(ErrorType.CONTEXT)
+        val dto = toObject(RelatedBidRq::class.java, cm.data)
+        val bidId = dto.relatedBid
+        val stage = "EV"
+        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
+        if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
+        if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
+        return ResponseDto(data = "ok")
+    }
+
     private fun addBidToResponseDto(bidsResponseDto: MutableList<BidCancellation>, bid: Bid) {
         bidsResponseDto.add(BidCancellation(
                 id = bid.id,
@@ -414,5 +427,4 @@ class StatusService(private val rulesService: RulesService,
                 jsonData = toJson(bid)
         )
     }
-
 }

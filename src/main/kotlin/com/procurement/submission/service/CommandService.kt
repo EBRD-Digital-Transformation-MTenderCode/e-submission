@@ -29,6 +29,7 @@ class CommandService(private val historyDao: HistoryDao,
             CommandType.VALIDATE_PERIOD -> periodService.periodValidation(cm)
             CommandType.CHECK_PERIOD_END_DATE -> periodService.checkEndDate(cm)
             CommandType.CHECK_PERIOD -> periodService.checkPeriod(cm)
+            CommandType.CHECK_TOKEN_OWNER -> statusService.checkTokenOwner(cm)
             CommandType.GET_BIDS -> statusService.getBids(cm)
             CommandType.GET_BIDS_AUCTION -> statusService.getBidsAuction(cm)
             CommandType.UPDATE_BIDS_BY_LOTS -> statusService.updateBidsByLots(cm)
