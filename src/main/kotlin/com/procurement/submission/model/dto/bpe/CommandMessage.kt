@@ -57,7 +57,6 @@ enum class CommandType(private val value: String) {
     UPDATE_BID_BY_AWARD_STATUS("updateBidBAwardStatus"),
     SET_BIDS_FINAL_STATUSES("setBidsFinalStatuses"),
     BID_WITHDRAWN("bidWithdrawn"),
-    BIDS_WITHDRAWN("bidsWithdrawn"),
     PREPARE_BIDS_CANCELLATION("prepareBidsCancellation"),
     BIDS_CANCELLATION("bidsCancellation"),
     GET_DOCS_OF_CONSIDERED_BID("getDocsOfConsideredBid");

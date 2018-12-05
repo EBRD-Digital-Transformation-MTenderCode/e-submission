@@ -108,15 +108,9 @@ class StatusService(private val rulesService: RulesService,
         val successfulLotsSet = successfulLotsByRuleSet.minus(unsuccessfulLotsByReqSet)
         val successfulBidsSet = getBidsByRelatedLots(pendingBidsSet, successfulLotsSet)
         val updatedBidsList = ArrayList<Bid>()
-        successfulBidsSet.asSequence()
-                .forEach { bid ->
-                    bid.date = localNowUTC()
-                    updatedBidsList.add(bid)
-                }
         val unsuccessfulBidsSet = getBidsByRelatedLots(pendingBidsSet, unsuccessfulLotsByReqSet)
         unsuccessfulBidsSet.asSequence()
                 .forEach { bid ->
-                    bid.date = localNowUTC()
                     bid.status = Status.WITHDRAWN
                     bid.statusDetails = StatusDetails.EMPTY
                     updatedBidsList.add(bid)
@@ -148,7 +142,6 @@ class StatusService(private val rulesService: RulesService,
     fun updateBidsByAwardStatus(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
         val dto = toObject(UpdateBidsByAwardStatusRq::class.java, cm.data)
 
         val bidId = dto.bidId
@@ -163,7 +156,6 @@ class StatusService(private val rulesService: RulesService,
             AwardStatusDetails.PENDING -> TODO()
             AwardStatusDetails.CONSIDERATION -> TODO()
         }
-        bid.date = dateTime
         bidDao.save(getEntity(
                 bid = bid,
                 cpId = cpId,
@@ -185,7 +177,6 @@ class StatusService(private val rulesService: RulesService,
         for (bid in bids) {
             bid.apply {
                 if (status == Status.PENDING && statusDetails != StatusDetails.EMPTY) {
-                    date = dateTime
                     status = Status.fromValue(bid.statusDetails.value())
                     statusDetails = StatusDetails.EMPTY
                 }
@@ -219,28 +210,6 @@ class StatusService(private val rulesService: RulesService,
         return ResponseDto(data = BidRs(null, null, bid))
     }
 
-    fun bidsWithdrawn(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
-
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
-        val bids = getBidsFromEntities(bidEntities)
-        for (bid in bids) {
-            bid.apply {
-                if (status == Status.PENDING && statusDetails == StatusDetails.EMPTY) {
-                    date = dateTime
-                    status = Status.WITHDRAWN
-                    statusDetails = StatusDetails.EMPTY
-                }
-            }
-        }
-        bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = BidsStatusRs(bids))
-    }
-
-
     fun prepareBidsCancellation(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
@@ -255,7 +224,6 @@ class StatusService(private val rulesService: RulesService,
         bids.asSequence()
                 .filter(bidStatusPredicate)
                 .forEach { bid ->
-                    bid.date = dateTime
                     bid.statusDetails = StatusDetails.WITHDRAWN
                     addBidToResponseDto(bidsResponseDto, bid)
                 }
@@ -277,7 +245,6 @@ class StatusService(private val rulesService: RulesService,
         bids.asSequence()
                 .filter(bidStatusPredicate)
                 .forEach { bid ->
-                    bid.date = dateTime
                     bid.status = Status.WITHDRAWN
                     bid.statusDetails = StatusDetails.EMPTY
                     addBidToResponseDto(bidsResponseDto, bid)
