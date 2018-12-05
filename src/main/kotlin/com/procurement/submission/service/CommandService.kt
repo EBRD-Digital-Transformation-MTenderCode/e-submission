@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service
 
 @Service
 class CommandService(private val historyDao: HistoryDao,
-                         private val bidService: BidService,
-                         private val periodService: PeriodService,
-                         private val statusService: StatusService) {
+                     private val bidService: BidService,
+                     private val periodService: PeriodService,
+                     private val statusService: StatusService) {
 
 
     fun execute(cm: CommandMessage): ResponseDto {
@@ -34,7 +34,7 @@ class CommandService(private val historyDao: HistoryDao,
             CommandType.GET_BIDS_AUCTION -> statusService.getBidsAuction(cm)
             CommandType.UPDATE_BIDS_BY_LOTS -> statusService.updateBidsByLots(cm)
             CommandType.UPDATE_BID_BY_AWARD_STATUS -> statusService.updateBidsByAwardStatus(cm)
-            CommandType.UPDATE_BID_DOCS-> bidService.updateBidDocs(cm)
+            CommandType.UPDATE_BID_DOCS -> bidService.updateBidDocs(cm)
             CommandType.SET_BIDS_FINAL_STATUSES -> statusService.setFinalStatuses(cm)
             CommandType.BID_WITHDRAWN -> statusService.bidWithdrawn(cm)
             CommandType.PREPARE_BIDS_CANCELLATION -> statusService.prepareBidsCancellation(cm)
