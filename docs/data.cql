@@ -37,8 +37,6 @@ CREATE TABLE IF NOT EXISTS  ocds.submission_history (
     primary key(operation_id, command)
 );
 
-
-
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'minBids', '1');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'interval', '604800');
 INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD', 'OT', 'interval_before', '172800');

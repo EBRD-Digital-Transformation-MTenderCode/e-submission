@@ -9,7 +9,10 @@ import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.*
 import com.procurement.submission.model.dto.response.*
 import com.procurement.submission.model.entity.BidEntity
-import com.procurement.submission.utils.*
+import com.procurement.submission.utils.containsAny
+import com.procurement.submission.utils.toJson
+import com.procurement.submission.utils.toLocal
+import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.collections.ArrayList
@@ -162,14 +165,14 @@ class StatusService(private val rulesService: RulesService,
                 stage = entity.stage,
                 owner = entity.owner,
                 token = entity.token,
-                createdDate = entity.createdDate))
+                createdDate = entity.createdDate,
+                pendingDate = entity.pendingDate))
         return ResponseDto(data = BidRs(null, null, bid))
     }
 
     fun setFinalStatuses(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
@@ -214,7 +217,6 @@ class StatusService(private val rulesService: RulesService,
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val phase = cm.context.phase ?: throw ErrorException(ErrorType.CONTEXT)
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
@@ -235,7 +237,6 @@ class StatusService(private val rulesService: RulesService,
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val phase = cm.context.phase ?: throw ErrorException(ErrorType.CONTEXT)
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
@@ -369,7 +370,9 @@ class StatusService(private val rulesService: RulesService,
                                 stage = entity.stage,
                                 owner = entity.owner,
                                 token = entity.token,
-                                createdDate = entity.createdDate))
+                                createdDate = entity.createdDate,
+                                pendingDate = entity.pendingDate
+                        ))
                     }
         }
         return entities
@@ -381,7 +384,7 @@ class StatusService(private val rulesService: RulesService,
                           owner: String,
                           token: UUID,
                           createdDate: Date,
-                          pendingDate: Date? = null): BidEntity {
+                          pendingDate: Date?): BidEntity {
         return BidEntity(
                 cpId = cpId,
                 stage = stage,
