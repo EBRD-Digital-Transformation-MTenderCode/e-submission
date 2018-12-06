@@ -1,26 +1,152 @@
 {
-  "id": "608348b0-d914-11e8-9578-e3566d9e113a",
-  "command": "getBids",
-  "context": {
-    "operationId": "608348b0-d914-11e8-9578-e3566d9e113a",
-    "requestId": "608348b0-d914-11e8-9578-e3566d9e113a",
-    "cpid": "ocds-b3wdp1-MD-1540553354085",
-    "ocid": "ocds-b3wdp1-MD-1540553354085-EV-1540554217772",
-    "stage": "EV",
-    "processType": "tenderPeriodEnd",
-    "operationType": "tenderPeriodEndEv",
-    "phase": "awarding",
-    "owner": "434aef14-9d52-4ea0-a9f7-8737a95686c9",
-    "country": "MD",
-    "language": "ro",
-    "pmd": "OT",
-    "startDate": "2018-11-09T12:00:00Z",
-    "timeStamp": 1541764800645,
-    "isAuction": false
-  },
-  "data": {},
-  "version": "0.0.1"
+  "data": {
+    "bids": [
+      {
+        "id": "fda001e0-f7c5-11e8-95fc-65ac86dadd25",
+        "date": "2018-12-04T13:10:36Z",
+        "createdDate": "2018-12-04T13:10:36Z",
+        "pendingDate": "2018-12-04T13:10:36Z",
+        "value": {
+          "amount": 1718545113.53,
+          "currency": "MDL"
+        },
+        "tenderers": [
+          {
+            "id": "MD-IDNO-271-78-8167",
+            "name": "Jordan-Lopez",
+            "identifier": {
+              "id": "271-78-8167",
+              "scheme": "MD-IDNO",
+              "legalName": "Mendez-Daniels Inc",
+              "uri": "http://www.kennedy.net/app/categories/home.asp"
+            },
+            "address": {
+              "streetAddress": "2260 Moreno Shoals Apt. 105",
+              "postalCode": "30578",
+              "addressDetails": {
+                "country": {
+                  "scheme": "iso-alpha2",
+                  "id": "MD",
+                  "description": "MOLDOVA",
+                  "uri": "http://reference.iatistandard.org"
+                },
+                "region": {
+                  "scheme": "CUATM",
+                  "id": "8300000",
+                  "description": "Şoldăneşti",
+                  "uri": "http://statistica.md"
+                },
+                "locality": {
+                  "scheme": "CUATM",
+                  "id": "8330000",
+                  "description": "s.Şipca (r-l Şoldăneşti)",
+                  "uri": "http://statistica.md"
+                }
+              }
+            },
+            "additionalIdentifiers": [
+              {
+                "id": "451-65-7488",
+                "scheme": "MD-IDNO",
+                "legalName": "Mendez-Daniels LLC",
+                "uri": "http://www.sanders-kirby.com/wp-content/main.php"
+              },
+              {
+                "id": "159-69-3990",
+                "scheme": "MD-IDNO",
+                "legalName": "Mendez-Daniels and Sons",
+                "uri": "http://liu.com/"
+              }
+            ],
+            "contactPoint": {
+              "name": "Kyle Cox MD",
+              "email": "milesjustin@gmail.com",
+              "telephone": "(020)384-8592",
+              "faxNumber": "(507)325-9465x894",
+              "url": "https://simon.com/privacy/"
+            },
+            "details": {
+              "scale": ""
+            }
+          }
+        ],
+        "relatedLots": [
+          "b1b160d1-f7c5-11e8-924d-09fdb0fd6a88"
+        ]
+      },
+      {
+        "id": "fc756490-f7c5-11e8-95fc-65ac86dadd25",
+        "date": "2018-12-04T13:10:35Z",
+        "createdDate": "2018-12-04T13:10:35Z",
+        "pendingDate": "2018-12-04T13:10:35Z",
+        "value": {
+          "amount": 810.43,
+          "currency": "MDL"
+        },
+        "tenderers": [
+          {
+            "id": "MD-IDNO-403-44-3465",
+            "name": "Pace, Cruz and Gonzalez",
+            "identifier": {
+              "id": "403-44-3465",
+              "scheme": "MD-IDNO",
+              "legalName": "Wright, Jones and Jacobson Group",
+              "uri": "http://www.white-barry.com/category/about/"
+            },
+            "address": {
+              "streetAddress": "746 Timothy Track",
+              "postalCode": "30358",
+              "addressDetails": {
+                "country": {
+                  "scheme": "iso-alpha2",
+                  "id": "MD",
+                  "description": "MOLDOVA",
+                  "uri": "http://reference.iatistandard.org"
+                },
+                "region": {
+                  "scheme": "CUATM",
+                  "id": "3600000",
+                  "description": "Drochia",
+                  "uri": "http://statistica.md"
+                },
+                "locality": {
+                  "scheme": "CUATM",
+                  "id": "3617001",
+                  "description": "Ghizdita, loc.st.c.f.",
+                  "uri": "http://statistica.md"
+                }
+              }
+            },
+            "additionalIdentifiers": [
+              {
+                "id": "772-41-2559",
+                "scheme": "MD-IDNO",
+                "legalName": "Wright, Jones and Jacobson LLC",
+                "uri": "http://www.hardy.com/"
+              },
+              {
+                "id": "030-14-8759",
+                "scheme": "MD-IDNO",
+                "legalName": "Wright, Jones and Jacobson Inc",
+                "uri": "https://www.coleman.org/categories/categories/author/"
+              }
+            ],
+            "contactPoint": {
+              "name": "Blake Green",
+              "email": "patricia46@yahoo.com",
+              "telephone": "1-490-500-6845x82452",
+              "faxNumber": "276-914-6653x02694",
+              "url": "https://www.stuart-miller.net/wp-content/tag/search/terms/"
+            },
+            "details": {
+              "scale": ""
+            }
+          }
+        ],
+        "relatedLots": [
+          "b1b160d1-f7c5-11e8-924d-09fdb0fd6a88"
+        ]
+      }
+    ]
+  }
 }
-
-
-//10.73.10.7

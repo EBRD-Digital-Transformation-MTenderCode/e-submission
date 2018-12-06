@@ -275,7 +275,8 @@ class BidService(private val generationService: GenerationService,
                         stage = stage,
                         owner = entity.owner,
                         token = entity.token,
-                        createdDate = localNowUTC().toDate())
+                        createdDate = localNowUTC().toDate(),
+                        pendingDate = null)
                 bidsCopy[entityCopy] = bidCopy
             }
         }
@@ -292,7 +293,7 @@ class BidService(private val generationService: GenerationService,
                           owner: String,
                           token: UUID,
                           createdDate: Date,
-                          pendingDate: Date? = null): BidEntity {
+                          pendingDate: Date?): BidEntity {
         return BidEntity(
                 cpId = cpId,
                 stage = stage,
