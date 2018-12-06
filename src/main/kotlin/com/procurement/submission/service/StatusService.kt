@@ -9,10 +9,7 @@ import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.*
 import com.procurement.submission.model.dto.response.*
 import com.procurement.submission.model.entity.BidEntity
-import com.procurement.submission.utils.containsAny
-import com.procurement.submission.utils.toJson
-import com.procurement.submission.utils.toLocal
-import com.procurement.submission.utils.toObject
+import com.procurement.submission.utils.*
 import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.collections.ArrayList
@@ -207,6 +204,7 @@ class StatusService(private val rulesService: RulesService,
             date = dateTime
             status = Status.WITHDRAWN
         }
+        entity.pendingDate = dateTime.toDate()
         entity.jsonData = toJson(bid)
         entity.status = bid.status.value()
         bidDao.save(entity)
