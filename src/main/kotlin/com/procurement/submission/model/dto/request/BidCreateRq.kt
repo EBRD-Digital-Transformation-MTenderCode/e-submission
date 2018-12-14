@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.procurement.submission.model.dto.ocds.Document
 import com.procurement.submission.model.dto.ocds.OrganizationReference
 import com.procurement.submission.model.dto.ocds.Value
-import javax.validation.Valid
-import javax.validation.constraints.NotEmpty
 
 data class BidCreateRq @JsonCreator constructor(
 
