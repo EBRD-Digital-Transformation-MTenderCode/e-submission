@@ -2,7 +2,12 @@ package com.procurement.submission.service
 
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.exception.ErrorType.*
+import com.procurement.submission.model.dto.BidDetails
+import com.procurement.submission.model.dto.SetInitialBidRs
+import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
+import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.*
@@ -35,23 +40,23 @@ class BidService(private val generationService: GenerationService,
 //        checkTypeOfDocuments(bidDto.documents)
         checkTenderers(cpId, stage, bidDto)
         val bid = Bid(
-                id = generationService.getTimeBasedUUID(),
-                date = dateTime,
-                status = Status.PENDING,
-                statusDetails = StatusDetails.EMPTY,
-                value = bidDto.value,
-                documents = bidDto.documents,
-                relatedLots = bidDto.relatedLots,
-                tenderers = bidDto.tenderers
+            id = generationService.getTimeBasedUUID(),
+            date = dateTime,
+            status = Status.PENDING,
+            statusDetails = StatusDetails.EMPTY,
+            value = bidDto.value,
+            documents = bidDto.documents,
+            relatedLots = bidDto.relatedLots,
+            tenderers = bidDto.tenderers
         )
         val entity = getEntity(
-                bid = bid,
-                cpId = cpId,
-                stage = stage,
-                owner = owner,
-                token = generationService.generateRandomUUID(),
-                createdDate = dateTime.toDate(),
-                pendingDate = dateTime.toDate()
+            bid = bid,
+            cpId = cpId,
+            stage = stage,
+            owner = owner,
+            token = generationService.generateRandomUUID(),
+            createdDate = dateTime.toDate(),
+            pendingDate = dateTime.toDate()
         )
         bidDao.save(entity)
         return ResponseDto(data = BidRs(entity.token.toString(), bid.id, bid))
@@ -149,6 +154,75 @@ class BidService(private val generationService: GenerationService,
         return ResponseDto(data = BidRs(null, null, bid))
     }
 
+    fun setInitialBidsStatus(cm: CommandMessage): ResponseDto {
+        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val awardCriteria = AwardCriteria.fromValue(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
+        val dto = toObject(SetInitialBidsStatusDtoRq::class.java, cm.data)
+
+        when (awardCriteria) {
+            AwardCriteria.PRICE_ONLY -> {
+                dto.awards.forEach {
+                    val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(it.id))
+                    val bid: Bid = toObject(Bid::class.java, entity.jsonData)
+                    bid.apply {
+                        status = Status.PENDING
+                        statusDetails = StatusDetails.EMPTY
+                    }
+                    entity.apply {
+                        status = Status.PENDING.value()
+                        jsonData = toJson(bid)
+                    }
+                    bidDao.save(entity)
+                }
+                val details = arrayListOf<BidDetails>()
+
+                val firsBidEntities = bidDao.findAllByCpIdAndStage(dto.firstBids.id, stage)
+                firsBidEntities.forEach {
+                    val firstBidDto = toObject(Bid::class.java, it.jsonData)
+                    details.add(BidDetails(
+                        id = firstBidDto.id,
+                        date = firstBidDto.date,
+                        status = firstBidDto.status,
+                        statusDetails = firstBidDto.statusDetails,
+                        tenderers = firstBidDto.tenderers,
+                        value = firstBidDto.value!!,
+                        documents = firstBidDto.documents!!,
+                        relatedLots = firstBidDto.relatedLots
+                    ))
+                }
+                dto.awards.forEach {
+                    if (it.id != dto.firstBids.id) {
+                        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(it.id))
+                        val relatetBidDto = toObject(Bid::class.java, entity.jsonData)
+                        details.add(BidDetails(
+                            id = relatetBidDto.id,
+                            date = relatetBidDto.date,
+                            status = relatetBidDto.status,
+                            statusDetails = relatetBidDto.statusDetails,
+                            tenderers = relatetBidDto.tenderers,
+                            value = relatetBidDto.value!!,
+                            documents = relatetBidDto.documents!!.asSequence().filter {
+                                it.documentType == DocumentType.SUBMISSION_DOCUMENTS
+                                    || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
+                            }
+                                .toList(),
+                            relatedLots = relatetBidDto.relatedLots
+                        ))
+                    }
+                }
+
+                return ResponseDto(data = SetInitialBidsStatusDtoRs(
+                    bids = SetInitialBidRs(
+                        details = details
+                    )
+                ))
+            }
+
+        }
+        return ResponseDto(null)
+    }
+
     private fun updateDocuments(documentsDb: List<Document>?, documentsDto: List<Document>?): List<Document>? {
         return if (documentsDb != null && documentsDb.isNotEmpty()) {
             if (documentsDto != null) {
@@ -195,7 +269,7 @@ class BidService(private val generationService: GenerationService,
     private fun checkTypeOfDocuments(documents: List<Document>?) {
         if (documents != null) {
             documents.asSequence().firstOrNull { it.documentType == DocumentType.SUBMISSION_DOCUMENTS }
-                    ?: throw ErrorException(CREATE_BID_DOCUMENTS_SUBMISSION)
+                ?: throw ErrorException(CREATE_BID_DOCUMENTS_SUBMISSION)
         }
     }
 
@@ -229,8 +303,8 @@ class BidService(private val generationService: GenerationService,
                 val bidRelatedLots = bid.relatedLots
                 val bidTenderers = bid.tenderers.asSequence().map { it.id }.toSet()
                 if (bidTenderers.size == dtoTenderers.size &&
-                        bidTenderers.containsAll(dtoTenderers) &&
-                        bidRelatedLots.containsAll(dtoRelatedLots))
+                    bidTenderers.containsAll(dtoTenderers) &&
+                    bidRelatedLots.containsAll(dtoRelatedLots))
                     throw ErrorException(BID_ALREADY_WITH_LOT)
             }
         }
@@ -264,19 +338,19 @@ class BidService(private val generationService: GenerationService,
             val (entity, bid) = map
             if (bid.relatedLots.containsAny(lotsIds)) {
                 val bidCopy = bid.copy(
-                        date = localNowUTC(),
-                        status = Status.INVITED,
-                        statusDetails = StatusDetails.EMPTY,
-                        value = null,
-                        documents = null)
+                    date = localNowUTC(),
+                    status = Status.INVITED,
+                    statusDetails = StatusDetails.EMPTY,
+                    value = null,
+                    documents = null)
                 val entityCopy = getEntity(
-                        bid = bidCopy,
-                        cpId = entity.cpId,
-                        stage = stage,
-                        owner = entity.owner,
-                        token = entity.token,
-                        createdDate = localNowUTC().toDate(),
-                        pendingDate = null)
+                    bid = bidCopy,
+                    cpId = entity.cpId,
+                    stage = stage,
+                    owner = entity.owner,
+                    token = entity.token,
+                    createdDate = localNowUTC().toDate(),
+                    pendingDate = null)
                 bidsCopy[entityCopy] = bidCopy
             }
         }
@@ -295,15 +369,15 @@ class BidService(private val generationService: GenerationService,
                           createdDate: Date,
                           pendingDate: Date?): BidEntity {
         return BidEntity(
-                cpId = cpId,
-                stage = stage,
-                owner = owner,
-                status = bid.status.value(),
-                bidId = UUID.fromString(bid.id),
-                token = token,
-                createdDate = createdDate,
-                pendingDate = pendingDate,
-                jsonData = toJson(bid)
+            cpId = cpId,
+            stage = stage,
+            owner = owner,
+            status = bid.status.value(),
+            bidId = UUID.fromString(bid.id),
+            token = token,
+            createdDate = createdDate,
+            pendingDate = pendingDate,
+            jsonData = toJson(bid)
         )
     }
 
