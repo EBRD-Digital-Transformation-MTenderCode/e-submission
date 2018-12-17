@@ -4,7 +4,10 @@ import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.exception.ErrorType.*
+import com.procurement.submission.model.dto.BidDetails
+import com.procurement.submission.model.dto.SetInitialBidRs
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
+import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.*
@@ -172,9 +175,52 @@ class BidService(private val generationService: GenerationService,
                     }
                     bidDao.save(entity)
                 }
-            }
-        }
+                val details = arrayListOf<BidDetails>()
 
+                val firsBidEntities = bidDao.findAllByCpIdAndStage(dto.firstBids.id, stage)
+                firsBidEntities.forEach {
+                    val firstBidDto = toObject(Bid::class.java, it.jsonData)
+                    details.add(BidDetails(
+                        id = firstBidDto.id,
+                        date = firstBidDto.date,
+                        status = firstBidDto.status,
+                        statusDetails = firstBidDto.statusDetails,
+                        tenderers = firstBidDto.tenderers,
+                        value = firstBidDto.value!!,
+                        documents = firstBidDto.documents!!,
+                        relatedLots = firstBidDto.relatedLots
+                    ))
+                }
+                dto.awards.forEach {
+                    if (it.id != dto.firstBids.id) {
+                        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(it.id))
+                        val relatetBidDto = toObject(Bid::class.java, entity.jsonData)
+                        details.add(BidDetails(
+                            id = relatetBidDto.id,
+                            date = relatetBidDto.date,
+                            status = relatetBidDto.status,
+                            statusDetails = relatetBidDto.statusDetails,
+                            tenderers = relatetBidDto.tenderers,
+                            value = relatetBidDto.value!!,
+                            documents = relatetBidDto.documents!!.asSequence().filter {
+                                it.documentType == DocumentType.SUBMISSION_DOCUMENTS
+                                    || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
+                            }
+                                .toList(),
+                            relatedLots = relatetBidDto.relatedLots
+                        ))
+                    }
+                }
+
+                return ResponseDto(data = SetInitialBidsStatusDtoRs(
+                    bids = SetInitialBidRs(
+                        details = details
+                    )
+                ))
+            }
+
+        }
+        return ResponseDto(null)
     }
 
     private fun updateDocuments(documentsDb: List<Document>?, documentsDto: List<Document>?): List<Document>? {
@@ -298,13 +344,13 @@ class BidService(private val generationService: GenerationService,
                     value = null,
                     documents = null)
                 val entityCopy = getEntity(
-                        bid = bidCopy,
-                        cpId = entity.cpId,
-                        stage = stage,
-                        owner = entity.owner,
-                        token = entity.token,
-                        createdDate = localNowUTC().toDate(),
-                        pendingDate = null)
+                    bid = bidCopy,
+                    cpId = entity.cpId,
+                    stage = stage,
+                    owner = entity.owner,
+                    token = entity.token,
+                    createdDate = localNowUTC().toDate(),
+                    pendingDate = null)
                 bidsCopy[entityCopy] = bidCopy
             }
         }
