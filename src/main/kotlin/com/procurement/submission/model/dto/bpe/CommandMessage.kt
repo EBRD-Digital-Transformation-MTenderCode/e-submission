@@ -59,7 +59,8 @@ enum class CommandType(private val value: String) {
     BID_WITHDRAWN("bidWithdrawn"),
     PREPARE_BIDS_CANCELLATION("prepareBidsCancellation"),
     BIDS_CANCELLATION("bidsCancellation"),
-    GET_DOCS_OF_CONSIDERED_BID("getDocsOfConsideredBid");
+    GET_DOCS_OF_CONSIDERED_BID("getDocsOfConsideredBid"),
+    SET_INITIAL_BIDS_STATUS("setInitialBidsStatus");
 
     @JsonValue
     fun value(): String {
