@@ -162,6 +162,7 @@ class BidService(private val generationService: GenerationService,
 
         when (awardCriteria) {
             AwardCriteria.PRICE_ONLY -> {
+                val details = arrayListOf<BidDetails>()
                 dto.awards.forEach {
                     val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(it.id))
                     val bid: Bid = toObject(Bid::class.java, entity.jsonData)
@@ -174,42 +175,12 @@ class BidService(private val generationService: GenerationService,
                         jsonData = toJson(bid)
                     }
                     bidDao.save(entity)
-                }
-                val details = arrayListOf<BidDetails>()
-
-                val firsBidEntities = bidDao.findAllByCpIdAndStage(dto.firstBids.id, stage)
-                firsBidEntities.forEach {
-                    val firstBidDto = toObject(Bid::class.java, it.jsonData)
+                    val relatetBidDto = toObject(Bid::class.java, entity.jsonData)
                     details.add(BidDetails(
-                        id = firstBidDto.id,
-                        date = firstBidDto.date,
-                        status = firstBidDto.status,
-                        statusDetails = firstBidDto.statusDetails,
-                        tenderers = firstBidDto.tenderers,
-                        value = firstBidDto.value!!,
-                        documents = firstBidDto.documents!!,
-                        relatedLots = firstBidDto.relatedLots
+                        id = relatetBidDto.id,
+                        status = relatetBidDto.status,
+                        statusDetails = relatetBidDto.statusDetails
                     ))
-                }
-                dto.awards.forEach {
-                    if (it.id != dto.firstBids.id) {
-                        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(it.id))
-                        val relatetBidDto = toObject(Bid::class.java, entity.jsonData)
-                        details.add(BidDetails(
-                            id = relatetBidDto.id,
-                            date = relatetBidDto.date,
-                            status = relatetBidDto.status,
-                            statusDetails = relatetBidDto.statusDetails,
-                            tenderers = relatetBidDto.tenderers,
-                            value = relatetBidDto.value!!,
-                            documents = relatetBidDto.documents!!.asSequence().filter {
-                                it.documentType == DocumentType.SUBMISSION_DOCUMENTS
-                                    || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
-                            }
-                                .toList(),
-                            relatedLots = relatetBidDto.relatedLots
-                        ))
-                    }
                 }
 
                 return ResponseDto(data = SetInitialBidsStatusDtoRs(
