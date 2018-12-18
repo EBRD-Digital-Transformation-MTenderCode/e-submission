@@ -217,10 +217,12 @@ class BidService(private val generationService: GenerationService,
                         details = details
                     )
                 ))
-            }
+            } else -> {
+            throw ErrorException(AWARD_CRITERIA)
+        }
 
         }
-        return ResponseDto(null)
+
     }
 
     private fun updateDocuments(documentsDb: List<Document>?, documentsDto: List<Document>?): List<Document>? {
