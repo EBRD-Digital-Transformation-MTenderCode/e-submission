@@ -257,7 +257,7 @@ class StatusService(private val rulesService: RulesService,
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val awardCriteria = AwardCriteria.fromValue(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
         val dto = toObject(GetDocsOfConsideredBidRq::class.java, cm.data)
-        return if (awardCriteria == AwardCriteria.PRICE_ONLY) {
+        return if (awardCriteria == AwardCriteria.PRICE_ONLY && dto.consideredBidId != null) {
             val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(dto.consideredBidId))
             val bid = toObject(Bid::class.java, entity.jsonData)
             ResponseDto(data = GetDocsOfConsideredBidRs(ConsideredBid(bid.id, bid.documents)))
