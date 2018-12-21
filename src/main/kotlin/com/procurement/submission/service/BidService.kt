@@ -131,8 +131,12 @@ class BidService(private val generationService: GenerationService,
         //VR-4.8.4
         //if (bid.status != Status.PENDING) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
         //if (bid.statusDetails != StatusDetails.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-        if (bid.status != Status.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+       // if (bid.status != Status.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+       // if (bid.statusDetails != StatusDetails.EMPTY)
+        //todo обьеденить проверки
+
+        if(((bid.status != Status.PENDING)&&(bid.statusDetails != StatusDetails.VALID))
+                ||((bid.status != Status.VALID)&& (bid.statusDetails != StatusDetails.EMPTY))) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
 
         //VR-4.8.5
         documentsDto.forEach { document ->
