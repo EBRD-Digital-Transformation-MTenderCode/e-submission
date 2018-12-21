@@ -156,7 +156,6 @@ class BidService(private val generationService: GenerationService,
     fun setInitialBidsStatus(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val awardCriteria = AwardCriteria.fromValue(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
         val dto = toObject(SetInitialBidsStatusDtoRq::class.java, cm.data)
 
         val bidsRsList = arrayListOf<BidDetails>()
