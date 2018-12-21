@@ -114,7 +114,7 @@ class BidService(private val generationService: GenerationService,
         val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
         val token = cm.context.token ?: throw ErrorException(CONTEXT)
         val owner = cm.context.owner ?: throw ErrorException(CONTEXT)
-        var stage = cm.context.stage ?: throw ErrorException(CONTEXT)
+        val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
         val bidId = cm.context.id ?: throw ErrorException(CONTEXT)
         val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(CONTEXT)
         val dto = toObject(BidUpdateDocsRq::class.java, cm.data)
@@ -127,13 +127,11 @@ class BidService(private val generationService: GenerationService,
         if (entity.token.toString() != token) throw ErrorException(INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
-
         //VR-4.8.4
-        //if (bid.status != Status.PENDING) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-        //if (bid.statusDetails != StatusDetails.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-        if (bid.status != Status.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-
+        if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID)
+                && (bid.status != Status.VALID && bid.statusDetails != StatusDetails.EMPTY)) {
+            throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+        }
         //VR-4.8.5
         documentsDto.forEach { document ->
             if (document.relatedLots != null) {
@@ -172,16 +170,14 @@ class BidService(private val generationService: GenerationService,
             }
             bidDao.save(entity)
             bidsRsList.add(BidDetails(
-                id = bid.id,
-                status = bid.status,
-                statusDetails = bid.statusDetails
+                    id = bid.id,
+                    status = bid.status,
+                    statusDetails = bid.statusDetails
             ))
         }
         return ResponseDto(data = SetInitialBidsStatusDtoRs(bids = bidsRsList))
-
-        }
-
     }
+
 
     private fun updateDocuments(documentsDb: List<Document>?, documentsDto: List<Document>?): List<Document>? {
         return if (documentsDb != null && documentsDb.isNotEmpty()) {
@@ -263,8 +259,8 @@ class BidService(private val generationService: GenerationService,
                 val bidRelatedLots = bid.relatedLots
                 val bidTenderers = bid.tenderers.asSequence().map { it.id }.toSet()
                 if (bidTenderers.size == dtoTenderers.size &&
-                    bidTenderers.containsAll(dtoTenderers) &&
-                    bidRelatedLots.containsAll(dtoRelatedLots))
+                        bidTenderers.containsAll(dtoTenderers) &&
+                        bidRelatedLots.containsAll(dtoRelatedLots))
                     throw ErrorException(BID_ALREADY_WITH_LOT)
             }
         }
