@@ -129,9 +129,10 @@ class BidService(private val generationService: GenerationService,
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
 
         //VR-4.8.4
-        if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID)
-                && (bid.status != Status.VALID && bid.statusDetails != StatusDetails.EMPTY)
-        ) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+        //if (bid.status != Status.PENDING) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+        //if (bid.statusDetails != StatusDetails.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+        if (bid.status != Status.VALID) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
 
         //VR-4.8.5
         documentsDto.forEach { document ->
@@ -155,35 +156,28 @@ class BidService(private val generationService: GenerationService,
     fun setInitialBidsStatus(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val awardCriteria = AwardCriteria.fromValue(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
         val dto = toObject(SetInitialBidsStatusDtoRq::class.java, cm.data)
 
-        when (awardCriteria) {
-            AwardCriteria.PRICE_ONLY -> {
-                val bidsRsList = arrayListOf<BidDetails>()
-                dto.awards.forEach { award ->
-                    val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(award.relatedBid))
-                    val bid: Bid = toObject(Bid::class.java, entity.jsonData)
-                    bid.apply {
-                        status = Status.PENDING
-                        statusDetails = StatusDetails.EMPTY
-                    }
-                    entity.apply {
-                        status = Status.PENDING.value()
-                        jsonData = toJson(bid)
-                    }
-                    bidDao.save(entity)
-                    bidsRsList.add(BidDetails(
-                            id = bid.id,
-                            status = bid.status,
-                            statusDetails = bid.statusDetails
-                    ))
-                }
-                return ResponseDto(data = SetInitialBidsStatusDtoRs(bids = bidsRsList))
+        val bidsRsList = arrayListOf<BidDetails>()
+        dto.awards.forEach { award ->
+            val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(award.relatedBid))
+            val bid: Bid = toObject(Bid::class.java, entity.jsonData)
+            bid.apply {
+                status = Status.PENDING
+                statusDetails = StatusDetails.EMPTY
             }
-            else -> {
-                throw ErrorException(AWARD_CRITERIA)
+            entity.apply {
+                status = Status.PENDING.value()
+                jsonData = toJson(bid)
             }
+            bidDao.save(entity)
+            bidsRsList.add(BidDetails(
+                id = bid.id,
+                status = bid.status,
+                statusDetails = bid.statusDetails
+            ))
+        }
+        return ResponseDto(data = SetInitialBidsStatusDtoRs(bids = bidsRsList))
 
         }
 
@@ -269,8 +263,8 @@ class BidService(private val generationService: GenerationService,
                 val bidRelatedLots = bid.relatedLots
                 val bidTenderers = bid.tenderers.asSequence().map { it.id }.toSet()
                 if (bidTenderers.size == dtoTenderers.size &&
-                        bidTenderers.containsAll(dtoTenderers) &&
-                        bidRelatedLots.containsAll(dtoRelatedLots))
+                    bidTenderers.containsAll(dtoTenderers) &&
+                    bidRelatedLots.containsAll(dtoRelatedLots))
                     throw ErrorException(BID_ALREADY_WITH_LOT)
             }
         }
