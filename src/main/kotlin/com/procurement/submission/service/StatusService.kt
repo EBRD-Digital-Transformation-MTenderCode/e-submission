@@ -269,11 +269,15 @@ class StatusService(private val rulesService: RulesService,
         val owner = cm.context.owner ?: throw ErrorException(ErrorType.CONTEXT)
         val token = cm.context.token ?: throw ErrorException(ErrorType.CONTEXT)
         val dto = toObject(RelatedBidRq::class.java, cm.data)
-        val bidId = dto.relatedBid
+        val bidIds = dto.relatedBids
         val stage = "EV"
-        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
-        if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
-        if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
+        val tokens = bidEntities.asSequence()
+                .filter { bidIds.contains(it.bidId.toString()) }
+                .map {it.token}.toSet()
+        if (!tokens.contains(UUID.fromString(token))) throw ErrorException(ErrorType.INVALID_TOKEN)
+        if (bidEntities[0].owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
         return ResponseDto(data = "ok")
     }
 
