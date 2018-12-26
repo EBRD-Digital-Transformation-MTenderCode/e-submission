@@ -136,6 +136,8 @@ class BidService(private val generationService: GenerationService,
         documentsDto.forEach { document ->
             if (document.relatedLots != null) {
                 if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(INVALID_RELATED_LOT)
+            }else{
+                throw ErrorException(EMPTY_RELATED_LOTS)
             }
         }
         //BR-4.8.2
