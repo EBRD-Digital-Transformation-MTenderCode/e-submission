@@ -183,7 +183,10 @@ class StatusService(private val rulesService: RulesService,
             }
         }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = BidsStatusRs(bids))
+        val bidsRs = bids.asSequence()
+                .map { FinalBid(id = it.id, status = it.status, statusDetails = it.statusDetails) }
+                .toList()
+        return ResponseDto(data = BidsStatusRs(bidsRs))
     }
 
     fun bidWithdrawn(cm: CommandMessage): ResponseDto {
@@ -275,7 +278,7 @@ class StatusService(private val rulesService: RulesService,
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val tokens = bidEntities.asSequence()
                 .filter { bidIds.contains(it.bidId.toString()) }
-                .map {it.token}.toSet()
+                .map { it.token }.toSet()
         if (!tokens.contains(UUID.fromString(token))) throw ErrorException(ErrorType.INVALID_TOKEN)
         if (bidEntities[0].owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
         return ResponseDto(data = "ok")
