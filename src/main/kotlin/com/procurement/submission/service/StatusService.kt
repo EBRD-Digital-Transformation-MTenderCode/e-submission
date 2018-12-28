@@ -169,7 +169,7 @@ class StatusService(private val rulesService: RulesService,
 
     fun setFinalStatuses(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = "EV"
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
