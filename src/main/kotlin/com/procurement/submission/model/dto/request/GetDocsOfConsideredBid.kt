@@ -7,7 +7,7 @@ import com.procurement.submission.model.dto.ocds.Document
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class GetDocsOfConsideredBidRq @JsonCreator constructor(
 
-        val consideredBidId: String
+        val consideredBidId: String?
 )
 
 

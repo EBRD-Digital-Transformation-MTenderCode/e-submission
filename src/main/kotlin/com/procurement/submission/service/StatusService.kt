@@ -169,7 +169,7 @@ class StatusService(private val rulesService: RulesService,
 
     fun setFinalStatuses(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val stage = "EV"
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
@@ -183,7 +183,10 @@ class StatusService(private val rulesService: RulesService,
             }
         }
         bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = BidsStatusRs(bids))
+        val bidsRs = bids.asSequence()
+                .map { FinalBid(id = it.id, status = it.status, statusDetails = it.statusDetails) }
+                .toList()
+        return ResponseDto(data = BidsStatusRs(bidsRs))
     }
 
     fun bidWithdrawn(cm: CommandMessage): ResponseDto {
@@ -257,7 +260,7 @@ class StatusService(private val rulesService: RulesService,
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val awardCriteria = AwardCriteria.fromValue(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
         val dto = toObject(GetDocsOfConsideredBidRq::class.java, cm.data)
-        return if (awardCriteria == AwardCriteria.PRICE_ONLY) {
+        return if (awardCriteria == AwardCriteria.PRICE_ONLY && dto.consideredBidId != null) {
             val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(dto.consideredBidId))
             val bid = toObject(Bid::class.java, entity.jsonData)
             ResponseDto(data = GetDocsOfConsideredBidRs(ConsideredBid(bid.id, bid.documents)))
@@ -269,11 +272,15 @@ class StatusService(private val rulesService: RulesService,
         val owner = cm.context.owner ?: throw ErrorException(ErrorType.CONTEXT)
         val token = cm.context.token ?: throw ErrorException(ErrorType.CONTEXT)
         val dto = toObject(RelatedBidRq::class.java, cm.data)
-        val bidId = dto.relatedBid
+        val bidIds = dto.relatedBids
         val stage = "EV"
-        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
-        if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
-        if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
+        val tokens = bidEntities.asSequence()
+                .filter { bidIds.contains(it.bidId.toString()) }
+                .map { it.token }.toSet()
+        if (!tokens.contains(UUID.fromString(token))) throw ErrorException(ErrorType.INVALID_TOKEN)
+        if (bidEntities[0].owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
         return ResponseDto(data = "ok")
     }
 
