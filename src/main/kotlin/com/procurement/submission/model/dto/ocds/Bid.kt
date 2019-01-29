@@ -19,6 +19,7 @@ data class Bid @JsonCreator constructor(
 
         var value: Value?,
 
+        @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
         var documents: List<Document>?,
 
         val relatedLots: List<String>

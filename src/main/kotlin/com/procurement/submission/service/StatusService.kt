@@ -5,15 +5,39 @@ import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
-import com.procurement.submission.model.dto.ocds.*
-import com.procurement.submission.model.dto.request.*
-import com.procurement.submission.model.dto.response.*
+import com.procurement.submission.model.dto.ocds.AwardCriteria
+import com.procurement.submission.model.dto.ocds.AwardStatusDetails
+import com.procurement.submission.model.dto.ocds.Bid
+import com.procurement.submission.model.dto.ocds.DocumentType
+import com.procurement.submission.model.dto.ocds.Period
+import com.procurement.submission.model.dto.ocds.Status
+import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.model.dto.request.ConsideredBid
+import com.procurement.submission.model.dto.request.GetDocsOfConsideredBidRq
+import com.procurement.submission.model.dto.request.GetDocsOfConsideredBidRs
+import com.procurement.submission.model.dto.request.LotDto
+import com.procurement.submission.model.dto.request.RelatedBidRq
+import com.procurement.submission.model.dto.request.UpdateBidsByAwardStatusRq
+import com.procurement.submission.model.dto.request.UpdateBidsByLotsRq
+import com.procurement.submission.model.dto.response.BidCancellation
+import com.procurement.submission.model.dto.response.BidDto
+import com.procurement.submission.model.dto.response.BidRs
+import com.procurement.submission.model.dto.response.BidsData
+import com.procurement.submission.model.dto.response.BidsStatusRs
+import com.procurement.submission.model.dto.response.BidsUpdateStatusRs
+import com.procurement.submission.model.dto.response.CancellationRs
+import com.procurement.submission.model.dto.response.FinalBid
+import com.procurement.submission.model.dto.response.GetBidsAuctionRs
+import com.procurement.submission.model.dto.response.GetBidsRs
 import com.procurement.submission.model.entity.BidEntity
-import com.procurement.submission.utils.*
+import com.procurement.submission.utils.containsAny
+import com.procurement.submission.utils.toDate
+import com.procurement.submission.utils.toJson
+import com.procurement.submission.utils.toLocal
+import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.collections.ArrayList
-
 
 @Service
 class StatusService(private val rulesService: RulesService,
@@ -127,9 +151,9 @@ class StatusService(private val rulesService: RulesService,
             val firstBidsIds = dto.firstBids.asSequence().map { it.id }.toSet()
             for (bid in bids) {
                 if (bid.status == Status.PENDING && !firstBidsIds.contains(bid.id) && bid.documents != null) {
-                    bid.documents = bid.documents!!.asSequence().filter {
+                    bid.documents = bid.documents!!.filter {
                         it.documentType == DocumentType.SUBMISSION_DOCUMENTS || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
-                    }.toList()
+                    }.takeIf { it.isNotEmpty() }
                 }
             }
         }
