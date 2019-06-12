@@ -32,6 +32,9 @@ class BidService(private val generationService: GenerationService,
         val dto = toObject(BidCreateRq::class.java, cm.data)
         val bidDto = dto.bid
 
+        if(bidDto.tenderers.isEmpty())
+            throw ErrorException(error = TENDERERS_IS_EMPTY)
+
         periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         checkRelatedLotsInDocuments(bidDto)
         processTenderers(bidDto)

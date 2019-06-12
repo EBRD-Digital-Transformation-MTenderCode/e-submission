@@ -12,6 +12,7 @@ enum class ErrorType constructor(val code: String, val message: String) {
     STATUS_DETAIL_IS_NULL("00.08", "Status detail must not be empty."),
     VALUE_IS_NULL("00.09", "Value of bid must not be empty."),
     INVALID_DTO("00.10", "Invalid Dto"),
+    TENDERERS_IS_EMPTY("00.11", "The list of the tenderers is empty."),
     PERIOD_NOT_FOUND("01.01", "Period not found."),
     INVALID_PERIOD("01.02", "Invalid period."),
     INVALID_DATE("01.03", "Date does not match the period."),
