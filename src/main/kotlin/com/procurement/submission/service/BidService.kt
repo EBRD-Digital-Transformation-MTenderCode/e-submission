@@ -1,20 +1,54 @@
 package com.procurement.submission.service
 
+import com.procurement.submission.application.service.AppliedEvaluatedAwardsData
+import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
+import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
-import com.procurement.submission.exception.ErrorType.*
+import com.procurement.submission.exception.ErrorType.BID_ALREADY_WITH_LOT
+import com.procurement.submission.exception.ErrorType.BID_NOT_FOUND
+import com.procurement.submission.exception.ErrorType.CONTEXT
+import com.procurement.submission.exception.ErrorType.CREATE_BID_DOCUMENTS_SUBMISSION
+import com.procurement.submission.exception.ErrorType.INVALID_DOCS_FOR_UPDATE
+import com.procurement.submission.exception.ErrorType.INVALID_DOCS_ID
+import com.procurement.submission.exception.ErrorType.INVALID_OWNER
+import com.procurement.submission.exception.ErrorType.INVALID_RELATED_LOT
+import com.procurement.submission.exception.ErrorType.INVALID_STATUSES_FOR_UPDATE
+import com.procurement.submission.exception.ErrorType.INVALID_TOKEN
+import com.procurement.submission.exception.ErrorType.PERIOD_NOT_EXPIRED
+import com.procurement.submission.exception.ErrorType.RELATED_LOTS_MUST_BE_ONE_UNIT
+import com.procurement.submission.exception.ErrorType.TENDERERS_IS_EMPTY
+import com.procurement.submission.exception.ErrorType.VALUE_IS_NULL
 import com.procurement.submission.model.dto.BidDetails
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
-import com.procurement.submission.model.dto.ocds.*
-import com.procurement.submission.model.dto.request.*
+import com.procurement.submission.model.dto.ocds.AwardStatusDetails
+import com.procurement.submission.model.dto.ocds.Bid
+import com.procurement.submission.model.dto.ocds.Bids
+import com.procurement.submission.model.dto.ocds.Document
+import com.procurement.submission.model.dto.ocds.DocumentType
+import com.procurement.submission.model.dto.ocds.Period
+import com.procurement.submission.model.dto.ocds.Status
+import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.model.dto.request.BidCreate
+import com.procurement.submission.model.dto.request.BidCreateRq
+import com.procurement.submission.model.dto.request.BidUpdate
+import com.procurement.submission.model.dto.request.BidUpdateDocsRq
+import com.procurement.submission.model.dto.request.BidUpdateRq
+import com.procurement.submission.model.dto.request.LotDto
+import com.procurement.submission.model.dto.request.LotsDto
 import com.procurement.submission.model.dto.response.BidRs
 import com.procurement.submission.model.dto.response.BidsCopyRs
 import com.procurement.submission.model.entity.BidEntity
-import com.procurement.submission.utils.*
+import com.procurement.submission.utils.containsAny
+import com.procurement.submission.utils.localNowUTC
+import com.procurement.submission.utils.toDate
+import com.procurement.submission.utils.toJson
+import com.procurement.submission.utils.toLocal
+import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
 import java.util.*
 import kotlin.collections.ArrayList
@@ -179,6 +213,72 @@ class BidService(private val generationService: GenerationService,
             ))
         }
         return ResponseDto(data = SetInitialBidsStatusDtoRs(bids = bidsRsList))
+    }
+
+    /**
+     * CR-10.1.2.1
+     *
+     * eSubmission executes next steps:
+     * 1. forEach award object from Request system executes:
+     *   a. Finds appropriate bid object in DB where bid.id == award.relatedBid value from processed award object;
+     *   b. Sets bid.statusDetails in object (found before) by rule BR-10.1.2.1;
+     *   c. Saves updated Bid to DB;
+     *   d. Adds updated Bid to Bids array for response up to next data model:
+     *     i.  bid.ID;
+     *     ii. bid.statusDetails;
+     * 2. Returns bids array for Response;
+     *
+     */
+    fun applyEvaluatedAwards(
+        context: ApplyEvaluatedAwardsContext,
+        data: ApplyEvaluatedAwardsData
+    ): AppliedEvaluatedAwardsData {
+        val relatedBidsByStatuses: Map<UUID, AwardStatusDetails> = data.awards.associate {
+            it.relatedBid to it.statusDetails
+        }
+
+        val entities: List<BidEntity> = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
+        val updatedBids = mutableListOf<AppliedEvaluatedAwardsData.Bid>()
+        val updatedEntities: List<BidEntity> = mutableListOf<BidEntity>()
+            .apply {
+                entities.forEach { entity ->
+                    val bidId = entity.bidId
+                    val statusDetails = relatedBidsByStatuses[bidId]
+                    if (statusDetails != null) {
+                        val bid: Bid = toObject(Bid::class.java, entity.jsonData)
+                        val updatedBid: Bid = bid.updateStatusDetails(statusDetails)
+                        updatedBids.add(
+                            AppliedEvaluatedAwardsData.Bid(
+                                id = bidId,
+                                statusDetails = bid.statusDetails
+                            )
+                        )
+                        val updatedEntity = entity.copy(jsonData = toJson(updatedBid))
+                        add(updatedEntity)
+                    }
+                }
+            }
+        bidDao.saveAll(updatedEntities)
+
+        return AppliedEvaluatedAwardsData(bids = updatedBids)
+    }
+
+    /**
+     * BR-10.1.2.1 statusDetails (bid)
+     *
+     * 1. eEvaluation determines bid.statusDetails depends on award.statusDetails from processed award object of Request:
+     *   a. IF [award.statusDetails == "active"] then:
+     *      system sets bid.statusDetails == "valid";
+     *   b. ELSE [award.statusDetails == "unsuccessful"] then:
+     *      system sets bid.statusDetails == "disqualified";
+     */
+    private fun Bid.updateStatusDetails(statusDetails: AwardStatusDetails): Bid = when (statusDetails) {
+        AwardStatusDetails.ACTIVE -> this.copy(statusDetails = StatusDetails.VALID)
+        AwardStatusDetails.UNSUCCESSFUL -> this.copy(statusDetails = StatusDetails.DISQUALIFIED)
+        else -> throw ErrorException(
+            error = ErrorType.INVALID_STATUS_DETAILS,
+            message = "Current status details: '$statusDetails'. Expected status details: [${AwardStatusDetails.ACTIVE}, ${AwardStatusDetails.UNSUCCESSFUL}]"
+        )
     }
 
 
