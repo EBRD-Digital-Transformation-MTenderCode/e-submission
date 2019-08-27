@@ -1,10 +1,18 @@
 package com.procurement.submission.service
 
+import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
+import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
 import com.procurement.submission.dao.HistoryDao
+import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
+import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsResponse
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.CommandType
 import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.bpe.cpid
+import com.procurement.submission.model.dto.bpe.stage
+import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
@@ -13,6 +21,9 @@ class CommandService(private val historyDao: HistoryDao,
                      private val periodService: PeriodService,
                      private val statusService: StatusService) {
 
+    companion object {
+        private val log = LoggerFactory.getLogger(CommandService::class.java)
+    }
 
     fun execute(cm: CommandMessage): ResponseDto {
         var historyEntity = historyDao.getHistory(cm.id, cm.command.value())
@@ -41,6 +52,34 @@ class CommandService(private val historyDao: HistoryDao,
             CommandType.BIDS_CANCELLATION -> statusService.bidsCancellation(cm)
             CommandType.GET_DOCS_OF_CONSIDERED_BID -> statusService.getDocsOfConsideredBid(cm)
             CommandType.SET_INITIAL_BIDS_STATUS -> bidService.setInitialBidsStatus(cm)
+            CommandType.APPLY_EVALUATED_AWARDS -> {
+                val context = ApplyEvaluatedAwardsContext(
+                    cpid = cm.cpid,
+                    stage = cm.stage
+                )
+                val request = toObject(EvaluatedAwardsRequest::class.java, cm.data)
+                val data = ApplyEvaluatedAwardsData(
+                    awards = request.awards.map { award ->
+                        ApplyEvaluatedAwardsData.Award(
+                            statusDetails = award.statusDetails,
+                            relatedBid = award.relatedBid
+                        )
+                    }
+                )
+                val result = bidService.applyEvaluatedAwards(context = context, data = data)
+                if (log.isDebugEnabled)
+                    log.debug("Evaluated awards were apply. Result: ${toJson(result)}")
+
+                val dataResponse = EvaluatedAwardsResponse(
+                    bids = result.bids.map { bid ->
+                        EvaluatedAwardsResponse.Bid(
+                            id = bid.id,
+                            statusDetails = bid.statusDetails
+                        )
+                    }
+                )
+                return ResponseDto(data = dataResponse)
+            }
         }
         historyEntity = historyDao.saveHistory(cm.id, cm.command.value(), response)
         return toObject(ResponseDto::class.java, historyEntity.jsonData)

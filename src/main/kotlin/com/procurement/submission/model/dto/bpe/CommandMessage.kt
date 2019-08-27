@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
 import com.procurement.submission.exception.EnumException
 import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.exception.ErrorType
 
 data class CommandMessage @JsonCreator constructor(
 
@@ -39,6 +40,14 @@ data class Context @JsonCreator constructor(
 
 )
 
+val CommandMessage.cpid: String
+    get() = this.context.cpid
+        ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'cpid' attribute in context.")
+
+val CommandMessage.stage: String
+    get() = this.context.stage
+        ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'stage' attribute in context.")
+
 enum class CommandType(private val value: String) {
     CREATE_BID("createBid"),
     UPDATE_BID("updateBid"),
@@ -60,7 +69,8 @@ enum class CommandType(private val value: String) {
     PREPARE_BIDS_CANCELLATION("prepareBidsCancellation"),
     BIDS_CANCELLATION("bidsCancellation"),
     GET_DOCS_OF_CONSIDERED_BID("getDocsOfConsideredBid"),
-    SET_INITIAL_BIDS_STATUS("setInitialBidsStatus");
+    SET_INITIAL_BIDS_STATUS("setInitialBidsStatus"),
+    APPLY_EVALUATED_AWARDS("applyAwardingRes");
 
     @JsonValue
     fun value(): String {
