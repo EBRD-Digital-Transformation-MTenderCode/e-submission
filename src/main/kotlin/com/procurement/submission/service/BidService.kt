@@ -76,6 +76,7 @@ class BidService(private val generationService: GenerationService,
         isOneRelatedLot(bidDto)
         checkTypeOfDocuments(bidDto.documents ?: emptyList())
         checkTenderers(cpId, stage, bidDto)
+        checkDocumentsIds(bidDto.documents ?: emptyList())
         val bid = Bid(
                 id = generationService.getTimeBasedUUID(),
                 date = dateTime,
@@ -343,6 +344,16 @@ class BidService(private val generationService: GenerationService,
                 )
             }
         }
+    }
+
+    private fun checkDocumentsIds(documents: List<Document>) {
+        val uniqueDocumentIds: Set<String> = documents.asSequence()
+            .map{document ->
+                document.id
+            }
+            .toSet()
+        if(documents.size != uniqueDocumentIds.size)
+            throw ErrorException(error = INVALID_DOCS_ID, message = "Some documents have the same id.")
     }
 
     private fun isOneRelatedLot(bidDto: BidCreate) {
