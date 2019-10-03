@@ -12,6 +12,7 @@ import com.procurement.submission.exception.ErrorType.CONTEXT
 import com.procurement.submission.exception.ErrorType.CREATE_BID_DOCUMENTS_SUBMISSION
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_FOR_UPDATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_ID
+import com.procurement.submission.exception.ErrorType.INVALID_DOCUMENT_TYPE
 import com.procurement.submission.exception.ErrorType.INVALID_OWNER
 import com.procurement.submission.exception.ErrorType.INVALID_RELATED_LOT
 import com.procurement.submission.exception.ErrorType.INVALID_STATUSES_FOR_UPDATE
@@ -73,7 +74,7 @@ class BidService(private val generationService: GenerationService,
         checkRelatedLotsInDocuments(bidDto)
         processTenderers(bidDto)
         isOneRelatedLot(bidDto)
-//        checkTypeOfDocuments(bidDto.documents)
+        checkTypeOfDocuments(bidDto.documents ?: emptyList())
         checkTenderers(cpId, stage, bidDto)
         val bid = Bid(
                 id = generationService.getTimeBasedUUID(),
@@ -114,7 +115,7 @@ class BidService(private val generationService: GenerationService,
         if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
         checkStatusesBidUpdate(bid)
-//        checkTypeOfDocuments(bidDto.documents)
+        checkTypeOfDocuments(bidDto.documents ?: emptyList())
         validateRelatedLotsOfDocuments(bidDto = bidDto, bid = bid)
         validateValue(stage = stage, bidDto = bidDto)
         bid.apply {
@@ -325,10 +326,22 @@ class BidService(private val generationService: GenerationService,
         }
     }
 
-    private fun checkTypeOfDocuments(documents: List<Document>?) {
-        if (documents != null) {
-            documents.asSequence().firstOrNull { it.documentType == DocumentType.SUBMISSION_DOCUMENTS }
-                    ?: throw ErrorException(CREATE_BID_DOCUMENTS_SUBMISSION)
+    private fun checkTypeOfDocuments(documents: List<Document>) {
+        documents.forEach { document ->
+            when (document.documentType) {
+                DocumentType.SUBMISSION_DOCUMENTS,
+                DocumentType.ELIGIBILITY_DOCUMENTS,
+                DocumentType.ILLUSTRATION,
+                DocumentType.COMMERCIAL_OFFER,
+                DocumentType.QUALIFICATION_DOCUMENTS,
+                DocumentType.TECHNICAL_DOCUMENTS -> Unit
+
+                DocumentType.TECHNICAL_PROPOSAL,
+                DocumentType.SELECTION_DOCUMENTS -> throw ErrorException(
+                    error = INVALID_DOCUMENT_TYPE,
+                    message = "Document has invalid type: '${document.documentType.value()}'."
+                )
+            }
         }
     }
 
