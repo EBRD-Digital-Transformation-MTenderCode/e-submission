@@ -66,7 +66,7 @@ enum class DocumentType constructor(private val value: String) {
     }
 }
 
-enum class Status constructor(private val value: String) {
+enum class Status constructor(val value: String) {
     INVITED("invited"),
     PENDING("pending"),
     VALID("valid"),
@@ -84,23 +84,18 @@ enum class Status constructor(private val value: String) {
     }
 
     companion object {
+        private val CONSTANTS: Map<String, Status> = values().associateBy { it.value.toUpperCase() }
 
-        private val CONSTANTS = HashMap<String, Status>()
-
-        init {
-            for (c in values()) {
-                CONSTANTS[c.value] = c
-            }
-        }
-
-        @JsonCreator
-        fun fromValue(value: String): Status {
-            return CONSTANTS[value] ?: throw EnumException(Status::class.java.name, value, Arrays.toString(values()))
-        }
+        fun fromString(value: String): Status = CONSTANTS[value.toUpperCase()]
+            ?: throw EnumException(
+                enumType = Status::class.java.name,
+                value = value,
+                values = values().toString()
+            )
     }
 }
 
-enum class StatusDetails constructor(private val value: String) {
+enum class StatusDetails constructor(val value: String) {
     INVITED("invited"),
     PENDING("pending"),
     VALID("valid"),
@@ -118,20 +113,14 @@ enum class StatusDetails constructor(private val value: String) {
     }
 
     companion object {
+        private val CONSTANTS: Map<String, StatusDetails> = values().associateBy { it.value.toUpperCase() }
 
-        private val CONSTANTS = HashMap<String, StatusDetails>()
-
-        init {
-            for (c in values()) {
-                CONSTANTS[c.value] = c
-            }
-        }
-
-        @JsonCreator
-        fun fromValue(value: String): StatusDetails {
-            return CONSTANTS[value]
-                    ?: throw EnumException(StatusDetails::class.java.name, value, Arrays.toString(values()))
-        }
+        fun fromString(value: String): StatusDetails = CONSTANTS[value.toUpperCase()]
+            ?: throw EnumException(
+                enumType = StatusDetails::class.java.name,
+                value = value,
+                values = values().toString()
+            )
     }
 }
 

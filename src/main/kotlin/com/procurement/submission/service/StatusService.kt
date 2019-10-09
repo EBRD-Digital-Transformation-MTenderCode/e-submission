@@ -201,7 +201,7 @@ class StatusService(private val rulesService: RulesService,
         for (bid in bids) {
             bid.apply {
                 if (status == Status.PENDING && statusDetails != StatusDetails.EMPTY) {
-                    status = Status.fromValue(bid.statusDetails.value())
+                    status = Status.fromString(bid.statusDetails.value())
                     statusDetails = StatusDetails.EMPTY
                 }
             }
