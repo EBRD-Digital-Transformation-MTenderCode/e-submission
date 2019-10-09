@@ -3,6 +3,9 @@ package com.procurement.submission.service
 import com.procurement.submission.application.service.AppliedEvaluatedAwardsData
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
+import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
+import com.procurement.submission.application.service.FinalBidsStatusByLotsData
+import com.procurement.submission.application.service.FinalizedBidsStatusByLots
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
@@ -215,6 +218,83 @@ class BidService(private val generationService: GenerationService,
             ))
         }
         return ResponseDto(data = SetInitialBidsStatusDtoRs(bids = bidsRsList))
+    }
+
+    /**
+     * BR-4.6.6 "status" "statusDetails" (Bid) (set final status by lots)
+     *
+     * 1. Finds all Bids objects in DB by values of Stage && CPID from the context of Request and saves them as a list to memory;
+     * 2. FOR every lot.ID value from list got in Request, eSubmission executes next steps:
+     *   a. Selects bids from list (got on step 1) where bid.relatedLots == lots.[id] and saves them as a list to memory;
+     *   b. Selects bids from list (got on step 2.a) with bid.status == "pending" && bid.statusDetails == "disqualified" and saves them as a list to memory;
+     *   c. FOR every bid from list got on step 2.b:
+     *     i.   Sets bid.status == "disqualified" && bid.statusDetails ==  "empty";
+     *     ii.  Saves updated Bid to DB;
+     *     iii. Returns it for Response as bid.ID && bid.status && bid.statusDetails;
+     *   d. Selects bids from list (got on step 2.a) with bid.status == "pending" && bid.statusDetails == "valid" and saves them as a list to memory;
+     *   e. FOR every bid from list got on step 2.d:
+     *     i.   Sets bid.status == "valid" && bid.statusDetails ==  "empty";
+     *     ii.  Saves updated bid to DB;
+     *     iii. Returns it for Response as bid.ID && bid.status && bid.statusDetails;
+     */
+    fun finalBidsStatusByLots(
+        context: FinalBidsStatusByLotsContext,
+        data: FinalBidsStatusByLotsData
+    ): FinalizedBidsStatusByLots {
+        fun isValid(status: Status, details: StatusDetails) =
+            status == Status.PENDING && details == StatusDetails.VALID
+
+        fun isDisqualified(status: Status, details: StatusDetails) =
+            status == Status.PENDING && details == StatusDetails.DISQUALIFIED
+
+        fun Bid.updatingStatuses(): Bid = when {
+            isValid(this.status, this.statusDetails) -> this.copy(
+                status = Status.VALID,
+                statusDetails = StatusDetails.EMPTY
+            )
+            isDisqualified(this.status, this.statusDetails) -> this.copy(
+                status = Status.DISQUALIFIED,
+                statusDetails = StatusDetails.EMPTY
+            )
+            else -> throw IllegalStateException("No processing for award with status: '${this.status}' and details: '${this.statusDetails}'.")
+        }
+
+        val lotsIds: Set<UUID> = data.lots.asSequence()
+            .map { it.id }
+            .toSet()
+
+        val updatedBids: Map<Bid, BidEntity> = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
+            .asSequence()
+            .map { entity ->
+                val bid = toObject(Bid::class.java, entity.jsonData)
+                bid to entity
+            }
+            .filter { (bid, _) ->
+                bid.relatedLots.any { lotsIds.contains(UUID.fromString(it)) }
+            }
+            .map { (bid, entity) ->
+                val updatedBid = bid.updatingStatuses()
+
+                val updatedEntity = entity.copy(
+                    status = updatedBid.status.value,
+                    jsonData = toJson(updatedBid)
+                )
+
+                updatedBid to updatedEntity
+            }
+            .toMap()
+
+        bidDao.saveAll(updatedBids.values)
+
+        return FinalizedBidsStatusByLots(
+            bids = updatedBids.keys.map { bid ->
+                FinalizedBidsStatusByLots.Bid(
+                    id = UUID.fromString(bid.id),
+                    status = bid.status,
+                    statusDetails = bid.statusDetails
+                )
+            }
+        )
     }
 
     /**
