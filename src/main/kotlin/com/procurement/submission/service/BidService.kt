@@ -7,12 +7,12 @@ import com.procurement.submission.application.service.FinalBidsStatusByLotsConte
 import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.application.service.FinalizedBidsStatusByLots
 import com.procurement.submission.dao.BidDao
+import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.exception.ErrorType.BID_ALREADY_WITH_LOT
 import com.procurement.submission.exception.ErrorType.BID_NOT_FOUND
 import com.procurement.submission.exception.ErrorType.CONTEXT
-import com.procurement.submission.exception.ErrorType.CREATE_BID_DOCUMENTS_SUBMISSION
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_FOR_UPDATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_ID
 import com.procurement.submission.exception.ErrorType.INVALID_DOCUMENT_TYPE
@@ -263,7 +263,8 @@ class BidService(private val generationService: GenerationService,
             .map { it.id }
             .toSet()
 
-        val updatedBids: Map<Bid, BidEntity> = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
+        val stage = getStage(context)
+        val updatedBids: Map<Bid, BidEntity> = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = stage)
             .asSequence()
             .map { entity ->
                 val bid = toObject(Bid::class.java, entity.jsonData)
@@ -295,6 +296,19 @@ class BidService(private val generationService: GenerationService,
                 )
             }
         )
+    }
+
+    private fun getStage(context: FinalBidsStatusByLotsContext): String = when (context.pmd) {
+        ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+        ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+        ProcurementMethod.MV, ProcurementMethod.TEST_MV -> "EV"
+
+        ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+        ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+        ProcurementMethod.OP, ProcurementMethod.TEST_OP -> "NP"
+
+        ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+        ProcurementMethod.FA, ProcurementMethod.TEST_FA -> throw ErrorException(ErrorType.INVALID_PMD)
     }
 
     /**

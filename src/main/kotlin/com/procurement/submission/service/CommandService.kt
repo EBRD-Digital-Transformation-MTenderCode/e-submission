@@ -13,6 +13,7 @@ import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.CommandType
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.bpe.cpid
+import com.procurement.submission.model.dto.bpe.pmd
 import com.procurement.submission.model.dto.bpe.stage
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
@@ -89,7 +90,7 @@ class CommandService(
             CommandType.FINAL_BIDS_STATUS_BY_LOTS -> {
                 val context = FinalBidsStatusByLotsContext(
                     cpid = cm.cpid,
-                    stage = cm.stage
+                    pmd = cm.pmd
                 )
                 val request = toObject(FinalBidsStatusByLotsRequest::class.java, cm.data)
                 val data = FinalBidsStatusByLotsData(
