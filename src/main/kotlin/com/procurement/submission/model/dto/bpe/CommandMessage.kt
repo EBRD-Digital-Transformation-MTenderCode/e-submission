@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.databind.JsonNode
+import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.exception.EnumException
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
@@ -48,6 +49,11 @@ val CommandMessage.stage: String
     get() = this.context.stage
         ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'stage' attribute in context.")
 
+val CommandMessage.pmd: ProcurementMethod
+    get() = this.context.pmd?.let {
+        ProcurementMethod.fromString(it)
+    } ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'pmd' attribute in context.")
+
 enum class CommandType(private val value: String) {
     CREATE_BID("createBid"),
     UPDATE_BID("updateBid"),
@@ -70,7 +76,8 @@ enum class CommandType(private val value: String) {
     BIDS_CANCELLATION("bidsCancellation"),
     GET_DOCS_OF_CONSIDERED_BID("getDocsOfConsideredBid"),
     SET_INITIAL_BIDS_STATUS("setInitialBidsStatus"),
-    APPLY_EVALUATED_AWARDS("applyAwardingRes");
+    APPLY_EVALUATED_AWARDS("applyAwardingRes"),
+    FINAL_BIDS_STATUS_BY_LOTS("finalBidsStatusByLots");
 
     @JsonValue
     fun value(): String {

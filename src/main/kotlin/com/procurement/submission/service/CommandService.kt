@@ -2,13 +2,18 @@ package com.procurement.submission.service
 
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
+import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
+import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.dao.HistoryDao
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsResponse
+import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest
+import com.procurement.submission.infrastructure.dto.bid.finalize.response.FinalBidsStatusByLotsResponse
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.CommandType
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.bpe.cpid
+import com.procurement.submission.model.dto.bpe.pmd
 import com.procurement.submission.model.dto.bpe.stage
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
@@ -16,10 +21,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
 @Service
-class CommandService(private val historyDao: HistoryDao,
-                     private val bidService: BidService,
-                     private val periodService: PeriodService,
-                     private val statusService: StatusService) {
+class CommandService(
+    private val historyDao: HistoryDao,
+    private val bidService: BidService,
+    private val periodService: PeriodService,
+    private val statusService: StatusService
+) {
 
     companion object {
         private val log = LoggerFactory.getLogger(CommandService::class.java)
@@ -79,6 +86,37 @@ class CommandService(private val historyDao: HistoryDao,
                     }
                 )
                 return ResponseDto(data = dataResponse)
+            }
+            CommandType.FINAL_BIDS_STATUS_BY_LOTS -> {
+                val context = FinalBidsStatusByLotsContext(
+                    cpid = cm.cpid,
+                    pmd = cm.pmd
+                )
+                val request = toObject(FinalBidsStatusByLotsRequest::class.java, cm.data)
+                val data = FinalBidsStatusByLotsData(
+                    lots = request.lots.map { lot ->
+                        FinalBidsStatusByLotsData.Lot(
+                            id = lot.id
+                        )
+                    }
+                )
+
+                val result = bidService.finalBidsStatusByLots(context, data)
+                if (log.isDebugEnabled)
+                    log.debug("Bids were finalized. Result: ${toJson(result)}")
+
+                val dataResponse = FinalBidsStatusByLotsResponse(
+                    bids = result.bids.map { bid ->
+                        FinalBidsStatusByLotsResponse.Bid(
+                            id = bid.id,
+                            status = bid.status,
+                            statusDetails = bid.statusDetails
+                        )
+                    }
+                )
+                if (log.isDebugEnabled)
+                    log.debug("Bids were finalized. Response: ${toJson(dataResponse)}")
+                ResponseDto(data = dataResponse)
             }
         }
         historyEntity = historyDao.saveHistory(cm.id, cm.command.value(), response)

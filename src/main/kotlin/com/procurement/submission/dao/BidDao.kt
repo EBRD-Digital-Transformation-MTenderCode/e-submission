@@ -29,7 +29,7 @@ class BidDao(private val session: Session) {
     }
 
 
-    fun saveAll(entities: List<BidEntity>) {
+    fun saveAll(entities: Collection<BidEntity>) {
         val operations = ArrayList<Insert>()
         entities.forEach { entity ->
             operations.add(
