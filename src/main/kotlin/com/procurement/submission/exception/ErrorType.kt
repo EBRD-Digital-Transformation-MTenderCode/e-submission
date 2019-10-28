@@ -31,5 +31,8 @@ enum class ErrorType constructor(val code: String, val message: String) {
     EMPTY_RELATED_LOTS("20.02","Related lots must be presented!"),
     INVALID_STATUS_DETAILS("20.03","Related lots must be presented!"),
     INVALID_DOCUMENT_TYPE("20.04","Invalid document type."),
-    INVALID_PMD("20.05", "Invalid pmd.");
+    INVALID_PMD("20.05", "Invalid pmd."),
+    EMPTY_LIST("20.06", "List cannot be empty."),
+    NOT_UNIQUE_IDS("20.07", "List contains entities with the same id."),
+    INVALID_PERSONES("20.08", "Invalid persones.");
 }
