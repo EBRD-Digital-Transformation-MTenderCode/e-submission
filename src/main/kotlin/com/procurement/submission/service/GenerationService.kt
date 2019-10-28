@@ -22,4 +22,8 @@ class GenerationService {
     fun getTimeBasedUUID(): String {
         return generateTimeBasedUUID().toString()
     }
+
+    fun generateBidId(): UUID = UUID.randomUUID()
+
+    fun generateRequirementResponseId(): UUID = UUID.randomUUID()
 }
