@@ -72,6 +72,7 @@ import com.procurement.submission.model.dto.request.BidUpdateDocsRq
 import com.procurement.submission.model.dto.request.BidUpdateRq
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.LotsDto
+import com.procurement.submission.model.dto.response.BidCreateResponse
 import com.procurement.submission.model.dto.response.BidRs
 import com.procurement.submission.model.dto.response.BidsCopyRs
 import com.procurement.submission.model.entity.BidEntity
@@ -131,7 +132,11 @@ class BidService(private val generationService: GenerationService,
                 pendingDate = context.startDate.toDate()
         )
         bidDao.save(entity)
-        return ResponseDto(data = BidRs(entity.token.toString(), bid.id, bid))
+        val bidResponse = BidCreateResponse.Bid(
+            id = UUID.fromString(bid.id),
+            token = entity.token
+        )
+        return ResponseDto(data = BidCreateResponse(bid = bidResponse))
     }
 
     fun updateBid(cm: CommandMessage): ResponseDto {
