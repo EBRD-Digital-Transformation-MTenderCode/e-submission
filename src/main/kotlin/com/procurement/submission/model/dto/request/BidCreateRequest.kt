@@ -38,20 +38,19 @@ data class BidCreateRequest(
 
         @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<String>
     ) {
-        class Tenderer private constructor (
-            @field:JsonProperty("id") val id: String,
-            @field:JsonProperty("identifier") val identifier: Identifier,
-            @field:JsonProperty("name") val name: String,
-            @field:JsonProperty("address") val address: Address,
+        class Tenderer (
+            @field:JsonProperty("identifier") @param:JsonProperty("identifier") val identifier: Identifier,
+            @field:JsonProperty("name") @param:JsonProperty("name") val name: String,
+            @field:JsonProperty("address") @param:JsonProperty("address") val address: Address,
 
             @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @field:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
+            @field:JsonProperty("additionalIdentifiers") @param:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
 
-            @field:JsonProperty("contactPoint") val contactPoint: ContactPoint,
-            @field:JsonProperty("details") val details: Details,
+            @field:JsonProperty("contactPoint") @param:JsonProperty("contactPoint") val contactPoint: ContactPoint,
+            @field:JsonProperty("details") @param:JsonProperty("details") val details: Details,
 
             @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @field:JsonProperty("persones") val persones: List<Persone>?
+            @field:JsonProperty("persones") @param:JsonProperty("persones") val persones: List<Persone>?
 
         ) {
             data class Identifier(
@@ -89,21 +88,35 @@ data class BidCreateRequest(
                         @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
                         @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
                         @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
-                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String
+
+                        @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
                     )
 
                     data class Region(
-                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
                         @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
-                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String
+
+                        @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String?,
+
+                        @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
+
+                        @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
                     )
 
                     data class Country(
-                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
                         @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
-                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String
+
+                        @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String?,
+
+                        @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
+
+                        @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
                     )
                 }
             }
@@ -180,7 +193,9 @@ data class BidCreateRequest(
                                 @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
                                 @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
                                 @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
-                                @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String
+
+                                @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                                @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
                             )
 
                             data class Region(
@@ -283,27 +298,6 @@ data class BidCreateRequest(
                 )
             }
 
-            companion object {
-                @JsonCreator
-                @JvmStatic
-                operator fun invoke(
-                    @JsonProperty("id") id: String?,
-                    @JsonProperty("identifier") identifier: Identifier,
-                    @JsonProperty("name") name: String,
-                    @JsonProperty("address") address: Address,
-                    @JsonProperty("additionalIdentifiers") additionalIdentifiers: Set<Identifier>?,
-                    @JsonProperty("contactPoint") contactPoint: ContactPoint,
-                    @JsonProperty("details") details: Details
-                ): Tenderer = Tenderer(
-                    id = id.takeIf { it != null && it.isNotBlank() } ?: "${identifier.scheme}-${identifier.id}",
-                    identifier = identifier,
-                    name = name,
-                    address = address,
-                    additionalIdentifiers = additionalIdentifiers,
-                    contactPoint = contactPoint,
-                    details = details
-                )
-            }
         }
 
         data class Document(

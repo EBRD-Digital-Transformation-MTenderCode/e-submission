@@ -17,7 +17,7 @@ data class BidCreateData(
         val requirementResponses: List<RequirementResponse>,
         val relatedLots: List<String>
     ) {
-        class Tenderer (
+        class Tenderer private constructor(
             override val id: String,
             val identifier: Identifier,
             val name: String,
@@ -28,6 +28,29 @@ data class BidCreateData(
             val persones: List<Persone>
 
         ) : EntityBase<String>() {
+
+            companion object {
+                @JvmStatic
+                operator fun invoke(
+                    identifier: Identifier,
+                    name: String,
+                    address: Address,
+                    additionalIdentifiers: List<AdditionalIdentifier>,
+                    contactPoint: ContactPoint,
+                    details: Details,
+                    persones: List<Persone>
+                ): Tenderer = Tenderer(
+                    id = "${identifier.scheme}-${identifier.id}",
+                    identifier = identifier,
+                    name = name,
+                    address = address,
+                    additionalIdentifiers = additionalIdentifiers,
+                    contactPoint = contactPoint,
+                    details = details,
+                    persones = persones
+                )
+            }
+
             data class Identifier(
                 val scheme: String,
                 val id: String,
@@ -53,24 +76,24 @@ data class BidCreateData(
                     val locality: Locality
                 ) {
                     data class Locality(
-                        val scheme: String,
                         val id: String,
+                        val scheme: String,
                         val description: String,
-                        val uri: String
+                        val uri: String?
                     )
 
                     data class Region(
-                        val scheme: String,
                         val id: String,
-                        val description: String,
-                        val uri: String
+                        val scheme: String?,
+                        val description: String?,
+                        val uri: String?
                     )
 
                     data class Country(
-                        val scheme: String,
                         val id: String,
-                        val description: String,
-                        val uri: String
+                        val scheme: String?,
+                        val description: String?,
+                        val uri: String?
                     )
                 }
             }
@@ -130,7 +153,7 @@ data class BidCreateData(
                                 val scheme: String,
                                 val id: String,
                                 val description: String,
-                                val uri: String
+                                val uri: String?
                             )
 
                             data class Region(
@@ -218,8 +241,8 @@ data class BidCreateData(
         }
 
         data class Document(
-            val documentType: DocumentType,
             override val id: String,
+            val documentType: DocumentType,
             val title: String,
             val description: String,
             val relatedLots: List<String>

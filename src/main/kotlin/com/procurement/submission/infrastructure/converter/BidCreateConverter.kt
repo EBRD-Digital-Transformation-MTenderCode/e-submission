@@ -13,10 +13,9 @@ fun BidCreateRequest.toData(): BidCreateData {
         bid = BidCreateData.Bid(
             tenderers = this.bid.tenderers.mapIfNotEmpty { tenderer ->
                 BidCreateData.Bid.Tenderer(
-                    id = tenderer.id,
                     name = tenderer.name,
                     identifier = BidCreateData.Bid.Tenderer.Identifier(
-                        id = tenderer.id,
+                        id = tenderer.identifier.id,
                         scheme = tenderer.identifier.scheme,
                         legalName = tenderer.identifier.legalName,
                         uri = tenderer.identifier.uri
