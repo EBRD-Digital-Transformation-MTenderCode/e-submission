@@ -2,7 +2,6 @@ package com.procurement.submission.model.dto.ocds
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.procurement.access.model.dto.ocds.Address
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class OrganizationReference @JsonCreator constructor(
@@ -19,5 +18,7 @@ data class OrganizationReference @JsonCreator constructor(
 
         val contactPoint: ContactPoint,
 
-        var details: Details
+        var details: Details,
+
+        val persones: List<Persone>
 )

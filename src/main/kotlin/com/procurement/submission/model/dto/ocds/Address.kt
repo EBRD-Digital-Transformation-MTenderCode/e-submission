@@ -1,4 +1,4 @@
-package com.procurement.access.model.dto.ocds
+package com.procurement.submission.model.dto.ocds
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
