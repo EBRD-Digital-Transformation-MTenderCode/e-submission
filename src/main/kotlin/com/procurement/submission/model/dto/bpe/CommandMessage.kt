@@ -8,6 +8,8 @@ import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.exception.EnumException
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.utils.toLocal
+import java.time.LocalDateTime
 
 data class CommandMessage @JsonCreator constructor(
 
@@ -53,6 +55,15 @@ val CommandMessage.pmd: ProcurementMethod
     get() = this.context.pmd?.let {
         ProcurementMethod.fromString(it)
     } ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'pmd' attribute in context.")
+
+val CommandMessage.owner: String
+    get() = this.context.owner
+        ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'owner' attribute in context.")
+
+val CommandMessage.startDate: LocalDateTime
+    get() = this.context.startDate?.toLocal()
+        ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'startDate' attribute in context.")
+
 
 enum class CommandType(private val value: String) {
     CREATE_BID("createBid"),
