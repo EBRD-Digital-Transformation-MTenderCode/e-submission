@@ -8,7 +8,7 @@ import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.AwardCriteria
 import com.procurement.submission.model.dto.ocds.AwardStatusDetails
 import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.dto.ocds.DocumentType
+import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Status
 import com.procurement.submission.model.dto.ocds.StatusDetails
