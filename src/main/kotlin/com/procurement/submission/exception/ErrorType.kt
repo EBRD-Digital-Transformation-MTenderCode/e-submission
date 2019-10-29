@@ -34,5 +34,6 @@ enum class ErrorType constructor(val code: String, val message: String) {
     INVALID_PMD("20.05", "Invalid pmd."),
     EMPTY_LIST("20.06", "List cannot be empty."),
     NOT_UNIQUE_IDS("20.07", "List contains entities with the same id."),
-    INVALID_PERSONES("20.08", "Invalid persones.");
+    INVALID_PERSONES("20.08", "Invalid persones."),
+    INVALID_FORMAT_TOKEN("20.09", "Invalid format the award id."),
 }
