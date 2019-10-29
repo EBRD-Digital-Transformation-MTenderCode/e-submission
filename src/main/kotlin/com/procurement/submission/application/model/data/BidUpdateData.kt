@@ -7,7 +7,7 @@ import com.procurement.submission.domain.model.enums.DocumentType
 import java.time.LocalDateTime
 import java.util.*
 
-data class BidUpdateRequest(
+data class BidUpdateData(
     val bid: Bid
 ) {
     data class Bid(
