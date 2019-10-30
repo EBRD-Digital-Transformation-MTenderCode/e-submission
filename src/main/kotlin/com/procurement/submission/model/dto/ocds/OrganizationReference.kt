@@ -20,5 +20,5 @@ data class OrganizationReference @JsonCreator constructor(
 
         var details: Details,
 
-        val persones: List<Persone>
+        val persones: List<Persone>?
 )

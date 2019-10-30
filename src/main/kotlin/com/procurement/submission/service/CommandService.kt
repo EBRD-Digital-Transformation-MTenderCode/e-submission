@@ -3,6 +3,7 @@ package com.procurement.submission.service
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
 import com.procurement.submission.application.service.BidCreateContext
+import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.dao.HistoryDao
@@ -15,11 +16,14 @@ import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.CommandType
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.bpe.cpid
+import com.procurement.submission.model.dto.bpe.ctxId
 import com.procurement.submission.model.dto.bpe.owner
 import com.procurement.submission.model.dto.bpe.pmd
 import com.procurement.submission.model.dto.bpe.stage
 import com.procurement.submission.model.dto.bpe.startDate
+import com.procurement.submission.model.dto.bpe.token
 import com.procurement.submission.model.dto.request.BidCreateRequest
+import com.procurement.submission.model.dto.request.BidUpdateRequest
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
 import org.slf4j.LoggerFactory
@@ -54,7 +58,19 @@ class CommandService(
                 )
                 bidService.createBid(requestData = requestData, context = context)
             }
-            CommandType.UPDATE_BID                 -> bidService.updateBid(cm)
+            CommandType.UPDATE_BID                 -> {
+                val request = toObject(BidUpdateRequest::class.java, cm.data)
+                val requestData = request.toData()
+                val context = BidUpdateContext(
+                    id = cm.ctxId,
+                    cpid = cm.cpid,
+                    owner = cm.owner,
+                    stage = cm.stage,
+                    token = cm.token,
+                    startDate = cm.startDate
+                )
+                bidService.updateBid(requestData = requestData, context = context)
+            }
             CommandType.COPY_BIDS                  -> bidService.copyBids(cm)
             CommandType.GET_PERIOD                 -> periodService.getPeriod(cm)
             CommandType.SAVE_PERIOD                -> periodService.savePeriod(cm)

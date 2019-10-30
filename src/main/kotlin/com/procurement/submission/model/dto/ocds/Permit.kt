@@ -1,6 +1,8 @@
 package com.procurement.submission.model.dto.ocds
 
-data class Permit(
+import com.fasterxml.jackson.annotation.JsonCreator
+
+data class Permit @JsonCreator constructor(
     val id: String,
     val scheme: String,
     val url: String?,
