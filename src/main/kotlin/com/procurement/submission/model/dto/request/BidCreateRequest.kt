@@ -303,22 +303,31 @@ data class BidCreateRequest(
         data class Document(
             @field:JsonProperty("documentType") @param:JsonProperty("documentType") val documentType: DocumentType,
             @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-            @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
-            @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("title") @param:JsonProperty("title") val title: String?,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
+
             @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<String>
         )
 
         data class RequirementResponse(
             @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
             @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
-            @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
 
             @JsonDeserialize(using = RequirementValueDeserializer::class)
             @JsonSerialize(using = RequirementValueSerializer::class)
             @field:JsonProperty("value") @param:JsonProperty("value") val value: RequirementRsValue,
 
             @field:JsonProperty("requirement") @param:JsonProperty("requirement") val requirement: Requirement,
-            @field:JsonProperty("period") @param:JsonProperty("period") val period: Period
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("period") @param:JsonProperty("period") val period: Period?
         ) {
             data class Period(
                 @JsonDeserialize(using = JsonDateDeserializer::class)

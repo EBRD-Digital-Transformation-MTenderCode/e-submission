@@ -243,18 +243,18 @@ data class BidCreateData(
         data class Document(
             override val id: String,
             val documentType: DocumentType,
-            val title: String,
-            val description: String,
+            val title: String?,
+            val description: String?,
             val relatedLots: List<String>
         ) : EntityBase<String>()
 
         data class RequirementResponse(
             override val id: String,
             val title: String,
-            val description: String,
+            val description: String?,
             val value: RequirementRsValue,
             val requirement: Requirement,
-            val period: Period
+            val period: Period?
         ): EntityBase<String>() {
             data class Period(
                 val startDate: LocalDateTime,

@@ -242,10 +242,12 @@ fun BidCreateRequest.toData(): BidCreateData {
                     description = requirementResponse.description,
                     title = requirementResponse.title,
                     value = requirementResponse.value,
-                    period = BidCreateData.Bid.RequirementResponse.Period(
-                        startDate = requirementResponse.period.startDate,
-                        endDate = requirementResponse.period.endDate
-                    ),
+                    period = requirementResponse.period?.let { period ->
+                        BidCreateData.Bid.RequirementResponse.Period(
+                            startDate = period.startDate,
+                            endDate = period.endDate
+                        )
+                    },
                     requirement = BidCreateData.Bid.RequirementResponse.Requirement(
                         id = requirementResponse.requirement.id
                     )
