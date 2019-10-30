@@ -2,6 +2,7 @@ package com.procurement.submission.model.dto.ocds
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.procurement.submission.application.model.data.RequirementRsValue
@@ -17,7 +18,7 @@ data class RequirementResponse @JsonCreator constructor(
 
     @JsonDeserialize(using = RequirementValueDeserializer::class)
     @JsonSerialize(using = RequirementValueSerializer::class)
-    val value: RequirementRsValue,
+    @field:JsonProperty("value") @param:JsonProperty("value") val value: RequirementRsValue,
 
     val requirement: Requirement,
 
