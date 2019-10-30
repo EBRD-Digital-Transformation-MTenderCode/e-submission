@@ -24,11 +24,13 @@ data class BidUpdateRequest(
     @field:JsonProperty("bid") @param:JsonProperty("bid") val bid: Bid
 ) {
     data class Bid(
-        @field:JsonProperty("tenderers") @param:JsonProperty("tenderers") val tenderers: List<Tenderer>,
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        @field:JsonProperty("tenderers") @param:JsonProperty("tenderers") val tenderers: List<Tenderer>?,
 
         @JsonDeserialize(using = MoneyDeserializer::class)
         @JsonSerialize(using = MoneySerializer::class)
-        @field:JsonProperty("value") @param:JsonProperty("value") val value: Money,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @field:JsonProperty("value") @param:JsonProperty("value") val value: Money?,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
         @field:JsonProperty("documents") @param:JsonProperty("documents") val documents: List<Document>?,
@@ -44,7 +46,8 @@ data class BidUpdateRequest(
             @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
             @field:JsonProperty("additionalIdentifiers") @param:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
 
-            @field:JsonProperty("details") @param:JsonProperty("details") val details: Details,
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("details") @param:JsonProperty("details") val details: Details?,
 
             @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
             @field:JsonProperty("persones") @param:JsonProperty("persones") val persones: List<Persone>?
@@ -225,22 +228,31 @@ data class BidUpdateRequest(
         data class Document(
             @field:JsonProperty("documentType") @param:JsonProperty("documentType") val documentType: DocumentType,
             @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-            @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
-            @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("title") @param:JsonProperty("title") val title: String?,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
+
             @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<String>
         )
 
         data class RequirementResponse(
             @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
             @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
-            @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
 
             @JsonDeserialize(using = RequirementValueDeserializer::class)
             @JsonSerialize(using = RequirementValueSerializer::class)
             @field:JsonProperty("value") @param:JsonProperty("value") val value: RequirementRsValue,
 
             @field:JsonProperty("requirement") @param:JsonProperty("requirement") val requirement: Requirement,
-            @field:JsonProperty("period") @param:JsonProperty("period") val period: Period
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("period") @param:JsonProperty("period") val period: Period?
         ) {
             data class Period(
                 @JsonDeserialize(using = JsonDateDeserializer::class)

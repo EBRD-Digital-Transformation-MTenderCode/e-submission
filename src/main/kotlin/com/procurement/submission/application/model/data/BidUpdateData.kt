@@ -1,5 +1,6 @@
 package com.procurement.submission.application.model.data
 
+import com.procurement.submission.domain.model.EntityBase
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
@@ -12,28 +13,28 @@ data class BidUpdateData(
 ) {
     data class Bid(
         val tenderers: List<Tenderer>,
-        val value: Money,
-        val documents: List<Document>?,
-        val requirementResponses: List<RequirementResponse>?,
+        val value: Money?,
+        val documents: List<Document>,
+        val requirementResponses: List<RequirementResponse>,
         val relatedLots: List<String>
     ) {
         class Tenderer (
-            val id: UUID,
-            val additionalIdentifiers: List<AdditionalIdentifier>?,
-            val details: Details,
-            val persones: List<Persone>?
+            override val id: UUID,
+            val additionalIdentifiers: List<AdditionalIdentifier>,
+            val details: Details?,
+            val persones: List<Persone>
 
-        ) {
+        ) : EntityBase<UUID>() {
             data class AdditionalIdentifier(
+                override val id: String,
                 val scheme: String,
-                val id: String,
                 val legalName: String,
                 val uri: String?
-            )
+            ) : EntityBase<String>()
 
             data class Details(
-                val permits: List<Permit>?,
-                val bankAccounts: List<BankAccount>?,
+                val permits: List<Permit>,
+                val bankAccounts: List<BankAccount>,
                 val legalForm: LegalForm?
             ) {
                 data class LegalForm(
@@ -49,7 +50,7 @@ data class BidUpdateData(
                     val address: Address,
                     val identifier: Identifier,
                     val accountIdentification: AccountIdentification,
-                    val additionalAccountIdentifiers: List<AdditionalAccountIdentifier>?
+                    val additionalAccountIdentifiers: List<AdditionalAccountIdentifier>
                 ) {
                     data class Identifier(
                         val scheme: String,
@@ -138,22 +139,22 @@ data class BidUpdateData(
                 val businessFunctions: List<BusinessFunction>
             ) {
                 data class BusinessFunction(
-                    val id: String,
+                    override val id: String,
                     val type: BusinessFunctionType,
                     val jobTitle: String,
                     val period: Period,
-                    val documents: List<Document>?
-                ) {
+                    val documents: List<Document>
+                ) : EntityBase<String>() {
                     data class Period(
                         val startDate: LocalDateTime
                     )
 
                     data class Document(
-                        val id: String,
+                        override val id: String,
                         val documentType: BusinessFunctionDocumentType,
                         val title: String,
                         val description: String?
-                    )
+                    ) : EntityBase<String>()
                 }
 
                 data class Identifier(
@@ -166,21 +167,21 @@ data class BidUpdateData(
         }
 
         data class Document(
+            override val id: String,
             val documentType: DocumentType,
-            val id: String,
-            val title: String,
-            val description: String,
+            val title: String?,
+            val description: String?,
             val relatedLots: List<String>
-        )
+        ) : EntityBase<String>()
 
         data class RequirementResponse(
-            val id: String,
+            override val id: String,
             val title: String,
-            val description: String,
+            val description: String?,
             val value: RequirementRsValue,
             val requirement: Requirement,
-            val period: Period
-        ) {
+            val period: Period?
+        ) : EntityBase<String>() {
             data class Period(
                 val startDate: LocalDateTime,
                 val endDate: LocalDateTime
