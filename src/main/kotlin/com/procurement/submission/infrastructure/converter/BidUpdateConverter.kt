@@ -1,11 +1,13 @@
 package com.procurement.submission.infrastructure.converter
 
+import com.procurement.submission.application.model.data.BidCreateData
 import com.procurement.submission.application.model.data.BidUpdateData
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.lib.errorIfEmpty
 import com.procurement.submission.lib.mapIfNotEmpty
 import com.procurement.submission.lib.orThrow
+import com.procurement.submission.model.dto.request.BidUpdate
 import com.procurement.submission.model.dto.request.BidUpdateRequest
 
 fun BidUpdateRequest.toData(): BidUpdateData {
@@ -209,6 +211,9 @@ fun BidUpdateRequest.toData(): BidUpdateData {
                 )
             }.orEmpty(),
             relatedLots = this.bid.relatedLots
+        ),
+        lot = BidUpdateData.Lot(
+            value = this.lot.value
         )
     )
 }

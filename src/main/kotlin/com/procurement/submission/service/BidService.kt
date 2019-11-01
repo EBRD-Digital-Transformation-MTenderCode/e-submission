@@ -166,6 +166,7 @@ class BidService(private val generationService: GenerationService,
             requestDate = context.startDate
         )                                                           // FReq-1.2.1.39
         checkRelatedLots(bidEntity, bidRequest)                     // FReq-1.2.1.41
+        checkCurrency(bidRequest.value, requestData.lot.value)      // FReq-1.2.1.43
 
         val updatedTenderers = updateTenderers(bidRequest, bidEntity)    // FReq-1.2.1.30
         val updatedRequirementResponse = updateRequirementResponse(bidRequest, bidEntity)  // FReq-1.2.1.34
@@ -597,13 +598,15 @@ class BidService(private val generationService: GenerationService,
         )
     }
 
-    private fun checkCurrency(bidMoney: Money, lotMoney: Money) {
-        if (bidMoney.currency.equals(lotMoney.currency, true)) throw ErrorException(
-            error = ErrorType.INVALID_CURRENCY,
-            message = "Currency in bid missmatch with currency in related lot. " +
-                "Bid currency='${bidMoney.currency}', " +
-                "Lot currency='${lotMoney.currency}'. "
-        )
+    private fun checkCurrency(bidMoney: Money?, lotMoney: Money) {
+        bidMoney?.let {
+            if (bidMoney.currency.equals(lotMoney.currency, true)) throw ErrorException(
+                error = ErrorType.INVALID_CURRENCY,
+                message = "Currency in bid missmatch with currency in related lot. " +
+                    "Bid currency='${bidMoney.currency}', " +
+                    "Lot currency='${lotMoney.currency}'. "
+            )
+        }
     }
 
     private fun checkEntitiesListUniquenessById(bid: BidCreateData.Bid) {

@@ -1,4 +1,10 @@
 {
+  "lot":{
+    "value":{
+      "amount": 123.45,
+      "currency": "MDL"
+    }
+  },
   "bid": {
     "tenderers": [
       {

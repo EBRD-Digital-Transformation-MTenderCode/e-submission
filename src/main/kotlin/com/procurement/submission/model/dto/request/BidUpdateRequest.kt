@@ -17,12 +17,18 @@ import com.procurement.submission.infrastructure.bind.money.MoneySerializer
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import java.time.LocalDateTime
-import java.util.*
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class BidUpdateRequest(
+    @field:JsonProperty("lot") @param:JsonProperty("lot") val lot: Lot,
     @field:JsonProperty("bid") @param:JsonProperty("bid") val bid: Bid
 ) {
+    data class Lot(
+        @JsonDeserialize(using = MoneyDeserializer::class)
+        @JsonSerialize(using = MoneySerializer::class)
+        @field:JsonProperty("value") @param:JsonProperty("value") val value: Money
+    )
+
     data class Bid(
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
         @field:JsonProperty("tenderers") @param:JsonProperty("tenderers") val tenderers: List<Tenderer>?,

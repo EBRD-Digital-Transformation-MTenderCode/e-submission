@@ -6,11 +6,15 @@ import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentTyp
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import java.time.LocalDateTime
-import java.util.*
 
 data class BidUpdateData(
+    val lot: Lot,
     val bid: Bid
 ) {
+    data class Lot(
+        val value: Money
+    )
+
     data class Bid(
         val tenderers: List<Tenderer>,
         val value: Money?,
