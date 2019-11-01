@@ -36,5 +36,6 @@ enum class ErrorType constructor(val code: String, val message: String) {
     NOT_UNIQUE_IDS("20.07", "List contains entities with the same id."),
     INVALID_PERSONES("20.08", "Invalid persones."),
     INVALID_FORMAT_TOKEN("20.09", "Invalid format the award id."),
-    INVALID_TENDERER("20.10", "Invalid tenderer.")
+    INVALID_TENDERER("20.10", "Invalid tenderer."),
+    INVALID_AMOUNT("20.11", "Invalid amount.");
 }

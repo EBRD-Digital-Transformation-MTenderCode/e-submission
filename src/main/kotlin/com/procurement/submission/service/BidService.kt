@@ -11,6 +11,7 @@ import com.procurement.submission.application.service.FinalBidsStatusByLotsConte
 import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.application.service.FinalizedBidsStatusByLots
 import com.procurement.submission.dao.BidDao
+import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
@@ -84,6 +85,7 @@ import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toLocal
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.ArrayList
@@ -102,6 +104,7 @@ class BidService(private val generationService: GenerationService,
         checkTypeOfDocumentsCreateBid(bidRequest.documents)
         checkTenderers(context.cpid, context.stage, bidRequest)
         checkDocumentsIds(bidRequest.documents)
+        checkMoney(bidRequest.value)                                // FReq-1.2.1.42
         checkEntitiesListUniquenessById(bid = bidRequest)           // FReq-1.2.1.6
         checkBusinessFunctionTypeOfDocumentsCreateBid(bidRequest)   // FReq-1.2.1.19
         checkOneAuthority(bid = bidRequest)                         // FReq-1.2.1.20
@@ -585,6 +588,13 @@ class BidService(private val generationService: GenerationService,
     private fun checkDocumentsIds(documents: List<BidCreateData.Bid.Document>) {
         if (documents.isNotUniqueIds())
             throw ErrorException(error = INVALID_DOCS_ID, message = "Some documents have the same id.")
+    }
+
+    private fun checkMoney(money: Money) {
+        if (money.amount.compareTo(BigDecimal.ZERO) == -1) throw ErrorException(
+            error = ErrorType.INVALID_AMOUNT,
+            message = "Amount cannot be less than 0. Current value = ${money.amount}"
+        )
     }
 
     private fun checkEntitiesListUniquenessById(bid: BidCreateData.Bid) {
