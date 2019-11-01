@@ -12,8 +12,10 @@ data class Document @JsonCreator constructor(
 
     val documentType: DocumentType,
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     var title: String?,
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     var description: String?,
 
     var relatedLots: List<String>?

@@ -14,11 +14,13 @@ data class OrganizationReference @JsonCreator constructor(
 
         val address: Address,
 
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         val additionalIdentifiers: Set<Identifier>?,
 
         val contactPoint: ContactPoint,
 
         var details: Details,
 
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         val persones: List<Persone>?
 )

@@ -773,7 +773,7 @@ class BidService(private val generationService: GenerationService,
 
     }
 
-    private fun updateRequirementResponse(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<RequirementResponse> {
+    private fun updateRequirementResponse(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<RequirementResponse>? {
         if (bidRequest.requirementResponses.isEmpty()) return bidEntity.requirementResponses
 
         return bidRequest.requirementResponses.map { requirementResponse ->
@@ -842,7 +842,8 @@ class BidService(private val generationService: GenerationService,
         return updatedBusinessFunctions + newBusinessFunctions.toBidEntityBusinessFunction()
     }
 
-    private fun updateBusinessFunctionsDocuments(documentsDb: List<BusinessFunction.Document>, documentsRequest: List<BidUpdateData.Bid.Tenderer.Persone.BusinessFunction.Document>) : List<BusinessFunction.Document> {
+    private fun updateBusinessFunctionsDocuments(documentsEntities: List<BusinessFunction.Document>?, documentsRequest: List<BidUpdateData.Bid.Tenderer.Persone.BusinessFunction.Document>) : List<BusinessFunction.Document> {
+        val documentsDb = documentsEntities ?: emptyList()
         val newDocuments = documentsRequest.filter { it.id !in documentsDb.map { it.id } }
         val updatedDocuments = documentsDb.map { documentDb ->
             if (documentDb.id in documentsRequest.map { it.id }) {
@@ -894,7 +895,7 @@ class BidService(private val generationService: GenerationService,
         )
     }
 
-    private fun updatePermits(permitsDb: List<Permit>, permitsRequest: List<BidUpdateData.Bid.Tenderer.Details.Permit>) : List<Permit> {
+    private fun updatePermits(permitsDb: List<Permit>?, permitsRequest: List<BidUpdateData.Bid.Tenderer.Details.Permit>) : List<Permit>? {
         if (permitsRequest.isEmpty()) return permitsDb
 
         return permitsRequest.map { permitRequest ->
@@ -920,7 +921,7 @@ class BidService(private val generationService: GenerationService,
         }
     }
 
-    private fun updateBankAccounts(bankAccountsDb: List<BankAccount>, bankAccountsRequest: List<BidUpdateData.Bid.Tenderer.Details.BankAccount>) : List<BankAccount> {
+    private fun updateBankAccounts(bankAccountsDb: List<BankAccount>?, bankAccountsRequest: List<BidUpdateData.Bid.Tenderer.Details.BankAccount>) : List<BankAccount>? {
         if (bankAccountsRequest.isEmpty()) return bankAccountsDb
 
         return bankAccountsRequest.map { bankAccount ->
