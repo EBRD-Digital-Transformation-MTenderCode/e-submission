@@ -12,6 +12,7 @@ import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Status
 import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.model.dto.ocds.Value
 import com.procurement.submission.model.dto.request.ConsideredBid
 import com.procurement.submission.model.dto.request.GetDocsOfConsideredBidRq
 import com.procurement.submission.model.dto.request.GetDocsOfConsideredBidRs
@@ -108,7 +109,7 @@ class StatusService(private val rulesService: RulesService,
                 date = bid.date,
                 createdDate = entity.createdDate.toLocal(),
                 pendingDate = entity.pendingDate?.toLocal(),
-                value = bid.value!!,
+                value = bid.value!!.let { it.let { Value(amount = it.amount, currency = it.currency) } },
                 tenderers = bid.tenderers,
                 relatedLots = bid.relatedLots)
     }

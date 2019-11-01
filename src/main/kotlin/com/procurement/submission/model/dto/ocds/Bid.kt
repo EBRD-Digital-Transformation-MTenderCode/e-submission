@@ -2,6 +2,11 @@ package com.procurement.submission.model.dto.ocds
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.procurement.submission.domain.model.Money
+import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
+import com.procurement.submission.infrastructure.bind.money.MoneySerializer
 import java.time.LocalDateTime
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -17,7 +22,9 @@ data class Bid @JsonCreator constructor(
 
         val tenderers: List<OrganizationReference>,
 
-        var value: Value?,
+        @JsonDeserialize(using = MoneyDeserializer::class)
+        @JsonSerialize(using = MoneySerializer::class)
+        var value: Money?,
 
         @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
         var documents: List<Document>?,
