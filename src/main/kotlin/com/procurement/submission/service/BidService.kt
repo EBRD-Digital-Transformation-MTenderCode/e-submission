@@ -600,7 +600,7 @@ class BidService(private val generationService: GenerationService,
 
     private fun checkCurrency(bidMoney: Money?, lotMoney: Money) {
         bidMoney?.let {
-            if (bidMoney.currency.equals(lotMoney.currency, true)) throw ErrorException(
+            if (!bidMoney.currency.equals(lotMoney.currency, true)) throw ErrorException(
                 error = ErrorType.INVALID_CURRENCY,
                 message = "Currency in bid missmatch with currency in related lot. " +
                     "Bid currency='${bidMoney.currency}', " +
