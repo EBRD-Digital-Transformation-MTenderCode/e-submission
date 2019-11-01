@@ -70,7 +70,6 @@ import com.procurement.submission.model.dto.ocds.RequirementResponse
 import com.procurement.submission.model.dto.ocds.Status
 import com.procurement.submission.model.dto.ocds.StatusDetails
 import com.procurement.submission.model.dto.ocds.ValidityPeriod
-import com.procurement.submission.model.dto.ocds.Value
 import com.procurement.submission.model.dto.request.BidUpdateDocsRq
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.LotsDto
@@ -105,6 +104,7 @@ class BidService(private val generationService: GenerationService,
         checkTenderers(context.cpid, context.stage, bidRequest)
         checkDocumentsIds(bidRequest.documents)
         checkMoney(bidRequest.value)                                // FReq-1.2.1.42
+        checkCurrency(bidRequest.value, requestData.lot.value)      // FReq-1.2.1.43
         checkEntitiesListUniquenessById(bid = bidRequest)           // FReq-1.2.1.6
         checkBusinessFunctionTypeOfDocumentsCreateBid(bidRequest)   // FReq-1.2.1.19
         checkOneAuthority(bid = bidRequest)                         // FReq-1.2.1.20
@@ -594,6 +594,15 @@ class BidService(private val generationService: GenerationService,
         if (money.amount.compareTo(BigDecimal.ZERO) == -1) throw ErrorException(
             error = ErrorType.INVALID_AMOUNT,
             message = "Amount cannot be less than 0. Current value = ${money.amount}"
+        )
+    }
+
+    private fun checkCurrency(bidMoney: Money, lotMoney: Money) {
+        if (bidMoney.currency.equals(lotMoney.currency, true)) throw ErrorException(
+            error = ErrorType.INVALID_CURRENCY,
+            message = "Currency in bid missmatch with currency in related lot. " +
+                "Bid currency='${bidMoney.currency}', " +
+                "Lot currency='${lotMoney.currency}'. "
         )
     }
 

@@ -254,6 +254,9 @@ fun BidCreateRequest.toData(): BidCreateData {
                 )
             }.orEmpty(),
             relatedLots = this.bid.relatedLots
+        ),
+        lot = BidCreateData.Lot(
+            value = this.lot.value
         )
     )
 }

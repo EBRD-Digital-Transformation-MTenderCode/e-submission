@@ -8,8 +8,13 @@ import com.procurement.submission.domain.model.enums.DocumentType
 import java.time.LocalDateTime
 
 data class BidCreateData(
+    val lot: Lot,
     val bid: Bid
 ) {
+    data class Lot(
+        val value: Money
+    )
+
     data class Bid(
         val tenderers: List<Tenderer>,
         val value: Money,

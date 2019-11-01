@@ -21,8 +21,15 @@ import java.time.LocalDateTime
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class BidCreateRequest(
+    @field:JsonProperty("lot") @param:JsonProperty("lot") val lot: Lot,
     @field:JsonProperty("bid") @param:JsonProperty("bid") val bid: Bid
 ) {
+    data class Lot(
+        @JsonDeserialize(using = MoneyDeserializer::class)
+        @JsonSerialize(using = MoneySerializer::class)
+        @field:JsonProperty("value") @param:JsonProperty("value") val value: Money
+    )
+
     data class Bid(
         @field:JsonProperty("tenderers") @param:JsonProperty("tenderers") val tenderers: List<Tenderer>,
 

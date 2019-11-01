@@ -37,5 +37,6 @@ enum class ErrorType constructor(val code: String, val message: String) {
     INVALID_PERSONES("20.08", "Invalid persones."),
     INVALID_FORMAT_TOKEN("20.09", "Invalid format the award id."),
     INVALID_TENDERER("20.10", "Invalid tenderer."),
-    INVALID_AMOUNT("20.11", "Invalid amount.");
+    INVALID_AMOUNT("20.11", "Invalid amount."),
+    INVALID_CURRENCY("20.12", "Invalid amount.");
 }
