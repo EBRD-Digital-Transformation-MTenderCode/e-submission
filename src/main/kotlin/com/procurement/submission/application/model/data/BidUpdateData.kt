@@ -19,12 +19,12 @@ data class BidUpdateData(
         val relatedLots: List<String>
     ) {
         class Tenderer (
-            override val id: UUID,
+            override val id: String,
             val additionalIdentifiers: List<AdditionalIdentifier>,
             val details: Details?,
             val persones: List<Persone>
 
-        ) : EntityBase<UUID>() {
+        ) : EntityBase<String>() {
             data class AdditionalIdentifier(
                 override val id: String,
                 val scheme: String,

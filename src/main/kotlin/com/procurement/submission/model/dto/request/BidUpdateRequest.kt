@@ -41,7 +41,7 @@ data class BidUpdateRequest(
         @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<String>
     ) {
         class Tenderer (
-            @field:JsonProperty("id") @param:JsonProperty("id") val id: UUID,
+            @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
 
             @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
             @field:JsonProperty("additionalIdentifiers") @param:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
