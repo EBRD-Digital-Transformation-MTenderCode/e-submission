@@ -13,7 +13,7 @@ data class RequirementResponse @JsonCreator constructor(
     val id: String,
     val title: String,
 
-    @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     val description: String?,
 
     @JsonDeserialize(using = RequirementValueDeserializer::class)
@@ -22,6 +22,6 @@ data class RequirementResponse @JsonCreator constructor(
 
     val requirement: Requirement,
 
-    @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     val period: Period?
 )

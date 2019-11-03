@@ -49,13 +49,13 @@ data class BidUpdateRequest(
         class Tenderer (
             @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
 
-            @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+            @JsonInclude(JsonInclude.Include.NON_EMPTY)
             @field:JsonProperty("additionalIdentifiers") @param:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
             @field:JsonProperty("details") @param:JsonProperty("details") val details: Details?,
 
-            @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+            @JsonInclude(JsonInclude.Include.NON_EMPTY)
             @field:JsonProperty("persones") @param:JsonProperty("persones") val persones: List<Persone>?
 
         ) {
@@ -64,18 +64,18 @@ data class BidUpdateRequest(
                 @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
                 @field:JsonProperty("legalName") @param:JsonProperty("legalName") val legalName: String,
 
-                @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
             )
 
             data class Details(
-                @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @field:JsonProperty("permits") @param:JsonProperty("permits") val permits: List<Permit>?,
 
-                @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @field:JsonProperty("bankAccounts") @param:JsonProperty("bankAccounts") val bankAccounts: List<BankAccount>?,
 
-                @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                @JsonInclude(JsonInclude.Include.NON_NULL)
                 @field:JsonProperty("legalForm") @param:JsonProperty("legalForm") val legalForm: LegalForm?
             ) {
                 data class LegalForm(
@@ -83,7 +83,7 @@ data class BidUpdateRequest(
                     @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
                     @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
 
-                    @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                    @JsonInclude(JsonInclude.Include.NON_NULL)
                     @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
                 )
 
@@ -94,7 +94,7 @@ data class BidUpdateRequest(
                     @field:JsonProperty("identifier") @param:JsonProperty("identifier") val identifier: Identifier,
                     @field:JsonProperty("accountIdentification") @param:JsonProperty("accountIdentification") val accountIdentification: AccountIdentification,
 
-                    @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+                    @JsonInclude(JsonInclude.Include.NON_EMPTY)
                     @field:JsonProperty("additionalAccountIdentifiers") @param:JsonProperty("additionalAccountIdentifiers") val additionalAccountIdentifiers: List<AdditionalAccountIdentifier>?
                 ) {
                     data class Identifier(
@@ -110,7 +110,7 @@ data class BidUpdateRequest(
                     data class Address(
                         @field:JsonProperty("streetAddress") @param:JsonProperty("streetAddress") val streetAddress: String,
 
-                        @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                        @JsonInclude(JsonInclude.Include.NON_NULL)
                         @field:JsonProperty("postalCode") @param:JsonProperty("postalCode") val postalCode: String?,
 
                         @field:JsonProperty("addressDetails") @param:JsonProperty("addressDetails") val addressDetails: AddressDetails
@@ -125,7 +125,7 @@ data class BidUpdateRequest(
                                 @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
                                 @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
 
-                                @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                                @JsonInclude(JsonInclude.Include.NON_NULL)
                                 @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
                             )
 
@@ -155,7 +155,7 @@ data class BidUpdateRequest(
                     @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
                     @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
 
-                    @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                    @JsonInclude(JsonInclude.Include.NON_NULL)
                     @field:JsonProperty("url") @param:JsonProperty("url") val url: String?,
 
                     @field:JsonProperty("permitDetails") @param:JsonProperty("permitDetails") val permitDetails: PermitDetails
@@ -182,7 +182,7 @@ data class BidUpdateRequest(
 
                             @JsonDeserialize(using = JsonDateDeserializer::class)
                             @JsonSerialize(using = JsonDateSerializer::class)
-                            @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                            @JsonInclude(JsonInclude.Include.NON_NULL)
                             @field:JsonProperty("endDate") @param:JsonProperty("endDate") val endDate: LocalDateTime?
                         )
                     }
@@ -201,7 +201,7 @@ data class BidUpdateRequest(
                     @field:JsonProperty("jobTitle") @param:JsonProperty("jobTitle") val jobTitle: String,
                     @field:JsonProperty("period") @param:JsonProperty("period") val period: Period,
 
-                    @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+                    @JsonInclude(JsonInclude.Include.NON_EMPTY)
                     @field:JsonProperty("documents") @param:JsonProperty("documents") val documents: List<Document>?
                 ) {
                     data class Period(
@@ -215,7 +215,7 @@ data class BidUpdateRequest(
                         @field:JsonProperty("documentType") @param:JsonProperty("documentType") val documentType: BusinessFunctionDocumentType,
                         @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
 
-                        @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                        @JsonInclude(JsonInclude.Include.NON_NULL)
                         @field:JsonProperty("description") @param:JsonProperty("description") val description: String?
                     )
                 }
@@ -224,7 +224,7 @@ data class BidUpdateRequest(
                     @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
                     @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
 
-                    @field:JsonInclude(JsonInclude.Include.NON_NULL)
+                    @JsonInclude(JsonInclude.Include.NON_NULL)
                     @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
                 )
             }

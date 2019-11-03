@@ -26,11 +26,11 @@ data class Bid @JsonCreator constructor(
         @JsonSerialize(using = MoneySerializer::class)
         var value: Money?,
 
-        @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         var documents: List<Document>?,
 
         val relatedLots: List<String>,
 
-        @field:JsonInclude(JsonInclude.Include.NON_EMPTY)
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         val requirementResponses: List<RequirementResponse>?
 )
