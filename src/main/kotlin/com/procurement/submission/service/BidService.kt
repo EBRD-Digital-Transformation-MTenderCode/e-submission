@@ -544,6 +544,13 @@ class BidService(private val generationService: GenerationService,
                     message = "Only one person can has 'authority' business function type."
                 )
             }
+
+            if (authorityPersones.isEmpty()) {
+                throw ErrorException(
+                    error = INVALID_PERSONES,
+                    message = "At least one person with business function type 'authority' should be added. "
+                )
+            }
         }
     }
 
