@@ -229,6 +229,14 @@ fun BidCreateRequest.toData(): BidCreateData {
                     title = document.title,
                     description = document.description,
                     relatedLots = document.relatedLots
+                        .errorIfEmpty {
+                            throw ErrorException(
+                                error = ErrorType.EMPTY_LIST,
+                                message = "The list of Bid.documents.relatedLots cannot be empty"
+                            )
+                        }
+                        ?.map { it }
+                        .orEmpty()
                 )
             }.orEmpty(),
             requirementResponses = this.bid.requirementResponses.errorIfEmpty {

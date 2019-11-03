@@ -1,13 +1,11 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.model.data.BidCreateData
 import com.procurement.submission.application.model.data.BidUpdateData
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.lib.errorIfEmpty
 import com.procurement.submission.lib.mapIfNotEmpty
 import com.procurement.submission.lib.orThrow
-import com.procurement.submission.model.dto.request.BidUpdate
 import com.procurement.submission.model.dto.request.BidUpdateRequest
 
 fun BidUpdateRequest.toData(): BidUpdateData {
@@ -186,6 +184,14 @@ fun BidUpdateRequest.toData(): BidUpdateData {
                     title = document.title,
                     description = document.description,
                     relatedLots = document.relatedLots
+                        .errorIfEmpty {
+                            throw ErrorException(
+                                error = ErrorType.EMPTY_LIST,
+                                message = "The list of Bid.documents.relatedLots cannot be empty"
+                            )
+                        }
+                        ?.map { it }
+                        .orEmpty()
                 )
             }.orEmpty(),
             requirementResponses = this.bid.requirementResponses.errorIfEmpty {
