@@ -166,6 +166,7 @@ class BidService(private val generationService: GenerationService,
             requestDate = context.startDate
         )                                                           // FReq-1.2.1.39
         checkRelatedLots(bidEntity, bidRequest)                     // FReq-1.2.1.41
+        checkMoney(bidRequest.value)                                // FReq-1.2.1.42
         checkCurrency(bidRequest.value, requestData.lot.value)      // FReq-1.2.1.43
 
         val updatedTenderers = updateTenderers(bidRequest, bidEntity)    // FReq-1.2.1.30
@@ -591,11 +592,13 @@ class BidService(private val generationService: GenerationService,
             throw ErrorException(error = INVALID_DOCS_ID, message = "Some documents have the same id.")
     }
 
-    private fun checkMoney(money: Money) {
-        if (money.amount.compareTo(BigDecimal.ZERO) == -1) throw ErrorException(
-            error = ErrorType.INVALID_AMOUNT,
-            message = "Amount cannot be less than 0. Current value = ${money.amount}"
-        )
+    private fun checkMoney(money: Money?) {
+      money?.let {
+          if (money.amount.compareTo(BigDecimal.ZERO) == -1) throw ErrorException(
+              error = ErrorType.INVALID_AMOUNT,
+              message = "Amount cannot be less than 0. Current value = ${money.amount}"
+          )
+      }
     }
 
     private fun checkCurrency(bidMoney: Money?, lotMoney: Money) {
