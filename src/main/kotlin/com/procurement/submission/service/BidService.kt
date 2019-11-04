@@ -539,7 +539,7 @@ class BidService(private val generationService: GenerationService,
             if (authorityPersones.size > 1) {
                 throw ErrorException(
                     error = INVALID_PERSONES,
-                    message = "Only one person can has 'authority' business function type."
+                    message = "Only one person with one business functions type 'authority' should be added. "
                 )
             }
 
@@ -840,7 +840,7 @@ class BidService(private val generationService: GenerationService,
             if (authorityPersones.size > 1) {
                 throw ErrorException(
                     error = INVALID_PERSONES,
-                    message = "Only one person can has 'authority' business function type."
+                    message = "Only one person with one business functions type 'authority' should be added."
                 )
             }
 
