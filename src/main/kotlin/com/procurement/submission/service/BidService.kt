@@ -467,9 +467,9 @@ class BidService(private val generationService: GenerationService,
 
     private fun Document.updateDocument(documentDto: BidUpdateData.Bid.Document?) {
         if (documentDto != null) {
-            this.title = documentDto.title
-            this.description = documentDto.description
-            this.relatedLots = documentDto.relatedLots
+            this.title = documentDto.title ?: this.title
+            this.description = documentDto.description ?: this.description
+            this.relatedLots = documentDto.relatedLots.let { if (!it.isEmpty()) it else this.relatedLots }
         }
     }
 
