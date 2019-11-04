@@ -179,8 +179,8 @@ class BidService(private val generationService: GenerationService,
             value = bidRequest.value,
             tenderers = updatedTenderers,
             requirementResponses = updatedRequirementResponse
-
         )
+
         entity.jsonData = toJson(updatedBidEntity)
         entity.pendingDate = context.startDate.toDate()
         bidDao.save(entity)
@@ -532,10 +532,8 @@ class BidService(private val generationService: GenerationService,
 
         bid.tenderers.forEach {
             val authorityPersones = it.persones
-                .map { it.businessFunctions}
-                .filter {
-                    it.map { it.type }.contains(BusinessFunctionType.AUTHORITY)
-                }
+                .flatMap { it.businessFunctions }
+                .filter { it.type == BusinessFunctionType.AUTHORITY }
                 .toList()
 
             if (authorityPersones.size > 1) {
@@ -835,10 +833,8 @@ class BidService(private val generationService: GenerationService,
 
         bid.tenderers.forEach {
             val authorityPersones = it.persones
-                .map { it.businessFunctions}
-                .filter {
-                    it.map { it.type }.contains(BusinessFunctionType.AUTHORITY)
-                }
+                .flatMap { it.businessFunctions }
+                .filter { it.type == BusinessFunctionType.AUTHORITY }
                 .toList()
 
             if (authorityPersones.size > 1) {
