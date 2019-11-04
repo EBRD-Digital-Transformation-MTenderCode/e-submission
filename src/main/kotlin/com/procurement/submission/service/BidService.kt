@@ -160,7 +160,6 @@ class BidService(private val generationService: GenerationService,
         validateRelatedLotsOfDocuments(bidDto = bidRequest, bidEntity = bidEntity)
         checkEntitiesListUniquenessById(bid = bidRequest)           // Freq-1.2.1.6
         checkBusinessFunctionTypeOfDocumentsUpdateBid(bidRequest)   // FReq-1.2.1.19
-        checkOneAuthority(bidRequest)                               // FReq-1.2.1.26
         checkBusinessFunctionsPeriod(
             bid = bidRequest,
             requestDate = context.startDate
@@ -171,6 +170,8 @@ class BidService(private val generationService: GenerationService,
 
         val updatedTenderers = updateTenderers(bidRequest, bidEntity)    // FReq-1.2.1.30
         val updatedRequirementResponse = updateRequirementResponse(bidRequest, bidEntity)  // FReq-1.2.1.34
+
+        checkOneAuthority(updatedTenderers)                               // FReq-1.2.1.26
 
         val updatedBidEntity = bidEntity.copy(
             date = context.startDate,
@@ -530,24 +531,26 @@ class BidService(private val generationService: GenerationService,
             .forEach { it.validate() }
 
 
-        bid.tenderers.forEach {
-            val authorityPersones = it.persones
-                .flatMap { it.businessFunctions }
-                .filter { it.type == BusinessFunctionType.AUTHORITY }
-                .toList()
+        bid.tenderers.forEach { tenderer ->
+            if (!tenderer.persones.isEmpty()) {
+                val authorityPersones = tenderer.persones
+                    .flatMap { it.businessFunctions }
+                    .filter { it.type == BusinessFunctionType.AUTHORITY }
+                    .toList()
 
-            if (authorityPersones.size > 1) {
-                throw ErrorException(
-                    error = INVALID_PERSONES,
-                    message = "Only one person with one business functions type 'authority' should be added. "
-                )
-            }
+                if (authorityPersones.size > 1) {
+                    throw ErrorException(
+                        error = INVALID_PERSONES,
+                        message = "Only one person with one business functions type 'authority' should be added. "
+                    )
+                }
 
-            if (authorityPersones.isEmpty()) {
-                throw ErrorException(
-                    error = INVALID_PERSONES,
-                    message = "At least one person with business function type 'authority' should be added. "
-                )
+                if (authorityPersones.isEmpty()) {
+                    throw ErrorException(
+                        error = INVALID_PERSONES,
+                        message = "At least one person with business function type 'authority' should be added. "
+                    )
+                }
             }
         }
     }
@@ -816,7 +819,7 @@ class BidService(private val generationService: GenerationService,
             }
     }
 
-    private fun checkOneAuthority(bid: BidUpdateData.Bid) {
+    private fun checkOneAuthority(tenderers: List<OrganizationReference>) {
         fun BusinessFunctionType.validate() {
             when (this) {
                 BusinessFunctionType.AUTHORITY,
@@ -824,34 +827,33 @@ class BidService(private val generationService: GenerationService,
             }
         }
 
-        bid.tenderers.asSequence()
-            .flatMap { it.persones.asSequence() }
-            .flatMap { it.businessFunctions.asSequence() }
-            .map { it.type }
-            .forEach { it.validate() }
 
+        tenderers.forEach { tenderer ->
+            tenderer.persones?.let { persones ->
+                persones
+                    .flatMap { it.businessFunctions }
+                    .map { it.type }
+                    .forEach { it.validate() }
 
-        bid.tenderers.forEach {
-            val authorityPersones = it.persones
-                .flatMap { it.businessFunctions }
-                .filter { it.type == BusinessFunctionType.AUTHORITY }
-                .toList()
+                val authorityPersones = persones
+                    .flatMap { it.businessFunctions }
+                    .filter { it.type == BusinessFunctionType.AUTHORITY }
+                    .toList()
 
-            if (authorityPersones.size > 1) {
-                throw ErrorException(
-                    error = INVALID_PERSONES,
-                    message = "Only one person with one business functions type 'authority' should be added."
-                )
+                if (authorityPersones.size > 1) {
+                    throw ErrorException(
+                        error = INVALID_PERSONES,
+                        message = "Only one person with one business functions type 'authority' should be added."
+                    )
+                }
+
+                if (!persones.isEmpty() && authorityPersones.isEmpty()) {
+                    throw ErrorException(
+                        error = INVALID_PERSONES,
+                        message = "At least one person with business function type 'authority' should be added. "
+                    )
+                }
             }
-
-
-            if (authorityPersones.isEmpty()) {
-                throw ErrorException(
-                    error = INVALID_PERSONES,
-                    message = "At least one person with business function type 'authority' should be added. "
-                )
-            }
-
         }
     }
 
