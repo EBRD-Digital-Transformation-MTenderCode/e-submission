@@ -108,11 +108,11 @@ data class BidUpdateData(
 
                 data class Permit(
                     val scheme: String,
-                    val id: String,
+                    override val id: String,
                     val url: String?,
 
                     val permitDetails: PermitDetails
-                ) {
+                )  : EntityBase<String>()  {
                     data class PermitDetails(
                         val issuedBy: IssuedBy,
                         val issuedThought: IssuedThought,

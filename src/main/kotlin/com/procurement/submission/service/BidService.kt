@@ -158,7 +158,7 @@ class BidService(private val generationService: GenerationService,
         checkStatusesBidUpdate(bidEntity)
         checkTypeOfDocumentsUpdateBid(bidRequest.documents)
         validateRelatedLotsOfDocuments(bidDto = bidRequest, bidEntity = bidEntity)
-        checkEntitiesListUniquenessById(bid = bidRequest)
+        checkEntitiesListUniquenessById(bid = bidRequest)           // Freq-1.2.1.6
         checkBusinessFunctionTypeOfDocumentsUpdateBid(bidRequest)   // FReq-1.2.1.19
         checkOneAuthority(bidRequest)                               // FReq-1.2.1.26
         checkBusinessFunctionsPeriod(
@@ -719,43 +719,88 @@ class BidService(private val generationService: GenerationService,
             message = "Some bid.tenderers have the same id.")
         }
 
-        bid.tenderers.map { it.additionalIdentifiers }
-            .forEach {
-                it.isNotUniqueIds { throw ErrorException(
-                    error = NOT_UNIQUE_IDS,
-                    message = "Some bid.tenderers.additionalIdentifiers have the same id.")
+        bid.tenderers.forEach { tenderer ->
+            tenderer.additionalIdentifiers.isNotUniqueIds { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.additionalIdentifiers have the same id.")
+            }
+        }
+
+
+        bid.tenderers.forEach { tenderer ->
+            tenderer.details?.permits?.isNotUniqueIds { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.details.permits have the same id." )
+            }
+        }
+
+        bid.tenderers.forEach { tenderer ->
+            tenderer.details?.let { details ->
+                val actualIds = details.bankAccounts.map { it.identifier.id }
+                val uniqueIds = actualIds.toSet()
+                if (actualIds.size != uniqueIds.size) {
+                    throw ErrorException(
+                        error = NOT_UNIQUE_IDS,
+                        message = "Some bid.tenderers.details.bankAccounts have the same identifier id."
+                    )
+                }
+            }
+        }
+
+        bid.tenderers.forEach {tenderer ->
+            tenderer.details?.let { details ->
+                details.bankAccounts.forEach {
+                    val actualIds = it.additionalAccountIdentifiers.map { it.id }
+                    val uniqueIds = actualIds.toSet()
+
+                    if (actualIds.size != uniqueIds.size) {
+                        throw ErrorException(
+                            error = NOT_UNIQUE_IDS,
+                            message = "Some bid.tenderers.details.bankAccounts.additionalAccountIdentifiers have the same id."
+                        )
+                    }
                 }
             }
 
+        }
 
-        bid.tenderers.flatMap { it.persones }
-            .map { it.businessFunctions }
-            .forEach {
-                it.isNotUniqueIds { throw ErrorException(
-                    error = INVALID_DOCS_ID,
+        bid.tenderers.forEach {tenderer ->
+            tenderer.persones.forEach { person ->
+                person.businessFunctions.isNotUniqueIds { throw ErrorException(
+                    error = NOT_UNIQUE_IDS,
                     message = "Some bid.tenderers.persones.businessFunctions have the same id." )
                 }
             }
+        }
 
 
-        bid.tenderers.asSequence()
-            .flatMap { it.persones.asSequence() }
-            .flatMap { it.businessFunctions.asSequence() }
-            .toList()
-            .map { it.documents }
-            .forEach {
-                it.isNotUniqueIds { throw ErrorException(
-                    error = INVALID_DOCS_ID,
-                    message = "Some bid.tenderers.persones.businessFunctions.documents have the same id.")
+        bid.tenderers.forEach {tenderer ->
+            val actualIds = tenderer.persones.map { it.identifier.id }
+            val uniqueIds = actualIds.toSet()
+            if (actualIds.size != uniqueIds.size) { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.persones have the same identifier id." )
+            }
+        }
+
+        bid.tenderers.forEach { tenderer ->
+            tenderer.persones.forEach { person ->
+                person.businessFunctions.forEach { businessFunction ->
+                    businessFunction.documents.isNotUniqueIds { throw ErrorException(
+                        error = INVALID_DOCS_ID,
+                        message = "Some bid.tenderers.persones.businessFunctions.documents have the same id.")
+                    }
                 }
             }
+        }
 
         bid.documents.isNotUniqueIds { throw ErrorException(
             error = INVALID_DOCS_ID,
             message = "Some bid.documents have the same id.")
         }
+
         bid.requirementResponses.isNotUniqueIds { throw ErrorException(
-            error = INVALID_DOCS_ID,
+            error = NOT_UNIQUE_IDS,
             message = "Some bid.requirementResponses have the same id.")
         }
 
