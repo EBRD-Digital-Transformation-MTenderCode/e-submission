@@ -1,0 +1,113 @@
+{
+  "lot":{
+    "value":{
+      "amount": 123.45,
+      "currency": "MDL"
+    }
+  },
+  "bid": {
+    "tenderers": [
+      {
+        "name": "bid.tenderers[0].name",
+        "identifier": {
+          "scheme": "bid.tenderers[0].identifier.scheme",
+          "id": "bid.tenderers[0].identifier.id",
+          "legalName": "bid.tenderers[0].identifier.legalName",
+          "uri": "bid.tenderers[0].identifier.uri"
+        },
+        "address": {
+          "streetAddress": "bid.tenderers[0].address.streetAddress",
+          "addressDetails": {
+            "country": {
+              "id": "bid.tenderers[0].address.addressDetails.country.id"
+            },
+            "region": {
+              "id": "bid.tenderers[0].address.addressDetails.region.id"
+            },
+            "locality": {
+              "scheme": "bid.tenderers[0].address.addressDetails.locality.scheme",
+              "id": "bid.tenderers[0].address.addressDetails.locality.id",
+              "description": "bid.tenderers[0].address.addressDetails.locality.description"
+            }
+          }
+        },
+        "contactPoint": {
+          "name": "bid.tenderers[0].contactPoint.name",
+          "email": "bid.tenderers[0].contactPoint.email",
+          "telephone": "bid.tenderers[0].contactPoint.telephone"
+        },
+        "persones": [
+          {
+            "title": "bid.tenderers[0].persones[0].title",
+            "name": "bid.tenderers[0].persones[0].name",
+            "identifier": {
+              "scheme": "bid.tenderers[0].persones[0].identifier.scheme",
+              "id": "bid.tenderers[0].persones[0].identifier.id"
+            },
+            "businessFunctions": [
+              {
+                "id": "bid.tenderers[0].persones[0].businessFunctions[0].id",
+                "type": "authority",
+                "jobTitle": "Chief Executive Officer",
+                "period": {
+                  "startDate": "2019-10-28T16:41:39Z"
+                }
+              }
+            ]
+          }
+        ],
+        "details": {
+          "typeOfSupplier": "bid.tenderers[0].details.typeOfSupplier",
+          "mainEconomicActivities": [
+            "bid.tenderers[0].details.mainEconomicActivities[0]"
+          ],
+          "scale": "sme",
+          "bankAccounts": [
+            {
+              "description": "bid.tenderers[0].details.bankAccounts[0].description",
+              "bankName": "bid.tenderers[0].details.bankAccounts[0].bankName",
+              "address": {
+                "streetAddress": "bid.tenderers[0].details.bankAccounts[0].address.streetAddress",
+                "postalCode": "bid.tenderers[0].details.bankAccounts[0].address.postalCode",
+                "addressDetails": {
+                  "country": {
+                    "scheme": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.country.scheme",
+                    "id": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.country.id",
+                    "description": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.country.description",
+                    "uri": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.country.uri"
+                  },
+                  "region": {
+                    "scheme": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.region.scheme",
+                    "id": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.region.id",
+                    "description": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.region.description",
+                    "uri": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.region.uri"
+                  },
+                  "locality": {
+                    "scheme": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.locality.scheme",
+                    "id": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.locality.id",
+                    "description": "bid.tenderers[0].details.bankAccounts[0].address.addressDetails.locality.description"
+                  }
+                }
+              },
+              "identifier": {
+                "scheme": "UA-MFO",
+                "id": "300711"
+              },
+              "accountIdentification": {
+                "scheme": "IBAN",
+                "id": "2600000625637"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "value": {
+      "amount": 123.44,
+      "currency": "MDL"
+    },
+    "relatedLots": [
+      "630d1955-3804-4553-86ec-1daee59bf0bc"
+    ]
+  }
+}

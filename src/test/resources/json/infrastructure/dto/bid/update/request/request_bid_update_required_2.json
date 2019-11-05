@@ -1,0 +1,41 @@
+{
+  "lot":{
+    "value":{
+      "amount": 123.45,
+      "currency": "MDL"
+    }
+  },
+  "bid": {
+    "tenderers": [
+      {
+        "id": "8d7d6830-634b-45e8-9c3e-d8d6e43234b1"
+      }
+    ],
+    "value": {
+      "amount": 123.44,
+      "currency": "MDL"
+    },
+    "documents": [
+      {
+        "documentType": "submissionDocuments",
+        "id": "bid.documents[0].id",
+        "relatedLots": [
+          "8d7d6830-634b-45e8-9c3e-d8d6e43234b1"
+        ]
+      }
+    ],
+    "requirementResponses": [
+      {
+        "id": "bid.requirementResponses[0].id",
+        "title": "bid.requirementResponses[0].title",
+        "value": "bid.requirementResponses[0].value",
+        "requirement": {
+          "id": "bid.requirementResponses[0].requirement.id"
+        }
+      }
+    ],
+    "relatedLots": [
+      "630d1955-3804-4553-86ec-1daee59bf0bc"
+    ]
+  }
+}

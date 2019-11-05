@@ -1,49 +1,79 @@
 package com.procurement.submission.service
 
+import com.procurement.submission.application.model.data.BidCreateData
+import com.procurement.submission.application.model.data.BidUpdateData
 import com.procurement.submission.application.service.AppliedEvaluatedAwardsData
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
+import com.procurement.submission.application.service.BidCreateContext
+import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.application.service.FinalizedBidsStatusByLots
 import com.procurement.submission.dao.BidDao
+import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.ProcurementMethod
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
+import com.procurement.submission.domain.model.enums.BusinessFunctionType
+import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.exception.ErrorType.BID_ALREADY_WITH_LOT
 import com.procurement.submission.exception.ErrorType.BID_NOT_FOUND
 import com.procurement.submission.exception.ErrorType.CONTEXT
+import com.procurement.submission.exception.ErrorType.INVALID_DATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_FOR_UPDATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_ID
 import com.procurement.submission.exception.ErrorType.INVALID_DOCUMENT_TYPE
 import com.procurement.submission.exception.ErrorType.INVALID_OWNER
+import com.procurement.submission.exception.ErrorType.INVALID_PERSONES
 import com.procurement.submission.exception.ErrorType.INVALID_RELATED_LOT
 import com.procurement.submission.exception.ErrorType.INVALID_STATUSES_FOR_UPDATE
+import com.procurement.submission.exception.ErrorType.INVALID_TENDERER
 import com.procurement.submission.exception.ErrorType.INVALID_TOKEN
+import com.procurement.submission.exception.ErrorType.NOT_UNIQUE_IDS
 import com.procurement.submission.exception.ErrorType.PERIOD_NOT_EXPIRED
 import com.procurement.submission.exception.ErrorType.RELATED_LOTS_MUST_BE_ONE_UNIT
-import com.procurement.submission.exception.ErrorType.TENDERERS_IS_EMPTY
-import com.procurement.submission.exception.ErrorType.VALUE_IS_NULL
+import com.procurement.submission.lib.toSetBy
 import com.procurement.submission.model.dto.BidDetails
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.ocds.AccountIdentification
+import com.procurement.submission.model.dto.ocds.AdditionalAccountIdentifier
+import com.procurement.submission.model.dto.ocds.Address
+import com.procurement.submission.model.dto.ocds.AddressDetails
 import com.procurement.submission.model.dto.ocds.AwardStatusDetails
+import com.procurement.submission.model.dto.ocds.BankAccount
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.dto.ocds.Bids
+import com.procurement.submission.model.dto.ocds.BusinessFunction
+import com.procurement.submission.model.dto.ocds.ContactPoint
+import com.procurement.submission.model.dto.ocds.CountryDetails
+import com.procurement.submission.model.dto.ocds.Details
 import com.procurement.submission.model.dto.ocds.Document
-import com.procurement.submission.model.dto.ocds.DocumentType
+import com.procurement.submission.model.dto.ocds.Identifier
+import com.procurement.submission.model.dto.ocds.IssuedBy
+import com.procurement.submission.model.dto.ocds.IssuedThought
+import com.procurement.submission.model.dto.ocds.LegalForm
+import com.procurement.submission.model.dto.ocds.LocalityDetails
+import com.procurement.submission.model.dto.ocds.OrganizationReference
 import com.procurement.submission.model.dto.ocds.Period
+import com.procurement.submission.model.dto.ocds.Permit
+import com.procurement.submission.model.dto.ocds.PermitDetails
+import com.procurement.submission.model.dto.ocds.Persone
+import com.procurement.submission.model.dto.ocds.RegionDetails
+import com.procurement.submission.model.dto.ocds.Requirement
+import com.procurement.submission.model.dto.ocds.RequirementResponse
 import com.procurement.submission.model.dto.ocds.Status
 import com.procurement.submission.model.dto.ocds.StatusDetails
-import com.procurement.submission.model.dto.request.BidCreate
-import com.procurement.submission.model.dto.request.BidCreateRq
-import com.procurement.submission.model.dto.request.BidUpdate
+import com.procurement.submission.model.dto.ocds.ValidityPeriod
 import com.procurement.submission.model.dto.request.BidUpdateDocsRq
-import com.procurement.submission.model.dto.request.BidUpdateRq
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.LotsDto
+import com.procurement.submission.model.dto.response.BidCreateResponse
 import com.procurement.submission.model.dto.response.BidRs
 import com.procurement.submission.model.dto.response.BidsCopyRs
 import com.procurement.submission.model.entity.BidEntity
@@ -54,6 +84,8 @@ import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toLocal
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.ArrayList
 
@@ -62,76 +94,98 @@ class BidService(private val generationService: GenerationService,
                  private val periodService: PeriodService,
                  private val bidDao: BidDao) {
 
-    fun createBid(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
-        val owner = cm.context.owner ?: throw ErrorException(CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(CONTEXT)
-        val dto = toObject(BidCreateRq::class.java, cm.data)
-        val bidDto = dto.bid
+    fun createBid(requestData: BidCreateData, context: BidCreateContext): ResponseDto {
 
-        if(bidDto.tenderers.isEmpty())
-            throw ErrorException(error = TENDERERS_IS_EMPTY)
+        val bidRequest = requestData.bid
+        periodService.checkCurrentDateInPeriod(context.cpid, context.stage, context.startDate)
+        checkRelatedLotsInDocuments(bidRequest)
+        isOneRelatedLot(bidRequest)
+        checkTypeOfDocumentsCreateBid(bidRequest.documents)
+        checkTenderers(context.cpid, context.stage, bidRequest)
+        checkDocumentsIds(bidRequest.documents)
+        checkMoney(bidRequest.value)                                // FReq-1.2.1.42
+        checkCurrency(bidRequest.value, requestData.lot.value)      // FReq-1.2.1.43
+        checkEntitiesListUniquenessById(bid = bidRequest)           // FReq-1.2.1.6
+        checkBusinessFunctionTypeOfDocumentsCreateBid(bidRequest)   // FReq-1.2.1.19
+        checkOneAuthority(bid = bidRequest)                         // FReq-1.2.1.20
+        checkBusinessFunctionsPeriod(
+            bid = bidRequest,
+            requestDate = context.startDate
+        )                                                           // FReq-1.2.1.39
 
-        periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
-        checkRelatedLotsInDocuments(bidDto)
-        processTenderers(bidDto)
-        isOneRelatedLot(bidDto)
-        checkTypeOfDocuments(bidDto.documents ?: emptyList())
-        checkTenderers(cpId, stage, bidDto)
-        checkDocumentsIds(bidDto.documents ?: emptyList())
+        val requirementResponses = requirementResponseIdTempToPermanent(bidRequest.requirementResponses)
+
         val bid = Bid(
-                id = generationService.getTimeBasedUUID(),
-                date = dateTime,
+                id = generationService.generateBidId().toString(),
+                date = context.startDate,
                 status = Status.PENDING,
                 statusDetails = StatusDetails.EMPTY,
-                value = bidDto.value,
-                documents = bidDto.documents,
-                relatedLots = bidDto.relatedLots,
-                tenderers = bidDto.tenderers
+                value = bidRequest.value,
+                documents = bidRequest.documents.toBidEntityDocuments(),
+                relatedLots = bidRequest.relatedLots,
+                tenderers = bidRequest.tenderers.toBidEntityTenderers(),
+                requirementResponses = requirementResponses.toBidEntityRequirementResponse()
         )
         val entity = getEntity(
                 bid = bid,
-                cpId = cpId,
-                stage = stage,
-                owner = owner,
+                cpId = context.cpid,
+                stage = context.stage,
+                owner = context.owner,
                 token = generationService.generateRandomUUID(),
-                createdDate = dateTime.toDate(),
-                pendingDate = dateTime.toDate()
+                createdDate = context.startDate.toDate(),
+                pendingDate = context.startDate.toDate()
         )
         bidDao.save(entity)
-        return ResponseDto(data = BidRs(entity.token.toString(), bid.id, bid))
+        val bidResponse = BidCreateResponse.Bid(
+            id = UUID.fromString(bid.id),
+            token = entity.token
+        )
+        return ResponseDto(data = BidCreateResponse(bid = bidResponse))
     }
 
-    fun updateBid(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(CONTEXT)
-        val owner = cm.context.owner ?: throw ErrorException(CONTEXT)
-        val token = cm.context.token ?: throw ErrorException(CONTEXT)
-        val bidId = cm.context.id ?: throw ErrorException(CONTEXT)
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(CONTEXT)
-        val dto = toObject(BidUpdateRq::class.java, cm.data)
-        val bidDto = dto.bid
+    fun updateBid(requestData: BidUpdateData, context: BidUpdateContext): ResponseDto {
+        val bidId = context.id
+        val bidRequest = requestData.bid
 
-        periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
-        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
-        if (entity.token.toString() != token) throw ErrorException(INVALID_TOKEN)
-        if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
-        val bid: Bid = toObject(Bid::class.java, entity.jsonData)
-        checkStatusesBidUpdate(bid)
-        checkTypeOfDocuments(bidDto.documents ?: emptyList())
-        validateRelatedLotsOfDocuments(bidDto = bidDto, bid = bid)
-        validateValue(stage = stage, bidDto = bidDto)
-        bid.apply {
-            date = dateTime
-            status = Status.PENDING
-            documents = updateDocuments(bid.documents, bidDto.documents)
-            bidDto.value?.let { value = it }
-        }
-        entity.jsonData = toJson(bid)
-        entity.pendingDate = dateTime.toDate()
+        periodService.checkCurrentDateInPeriod(context.cpid, context.stage, context.startDate)
+
+        val entity = bidDao.findByCpIdAndStageAndBidId(context.cpid, context.stage, UUID.fromString(bidId))
+        if (entity.token != context.token) throw ErrorException(INVALID_TOKEN)
+        if (entity.owner != context.owner) throw ErrorException(INVALID_OWNER)
+
+        val bidEntity: Bid = toObject(Bid::class.java, entity.jsonData)
+
+        checkStatusesBidUpdate(bidEntity)
+        checkTypeOfDocumentsUpdateBid(bidRequest.documents)
+        validateRelatedLotsOfDocuments(bidDto = bidRequest, bidEntity = bidEntity)
+        checkEntitiesListUniquenessById(bid = bidRequest)           // Freq-1.2.1.6
+        checkBusinessFunctionTypeOfDocumentsUpdateBid(bidRequest)   // FReq-1.2.1.19
+        checkBusinessFunctionsPeriod(
+            bid = bidRequest,
+            requestDate = context.startDate
+        )                                                           // FReq-1.2.1.39
+        checkRelatedLots(bidEntity, bidRequest)                     // FReq-1.2.1.41
+        checkMoney(bidRequest.value)                                // FReq-1.2.1.42
+        checkCurrency(bidRequest.value, requestData.lot.value)      // FReq-1.2.1.43
+
+        val updatedTenderers = updateTenderers(bidRequest, bidEntity)    // FReq-1.2.1.30
+        val updatedRequirementResponse = updateRequirementResponse(bidRequest, bidEntity)  // FReq-1.2.1.34
+
+        checkOneAuthority(updatedTenderers)                               // FReq-1.2.1.26
+
+        val updatedBidEntity = bidEntity.copy(
+            date = context.startDate,
+            status = Status.PENDING,
+            documents = updateDocuments(bidEntity.documents, bidRequest.documents),
+            value = bidRequest.value,
+            tenderers = updatedTenderers,
+            requirementResponses = updatedRequirementResponse
+        )
+
+        entity.jsonData = toJson(updatedBidEntity)
+        entity.pendingDate = context.startDate.toDate()
         bidDao.save(entity)
-        return ResponseDto(data = BidRs(null, bid.id, bid))
+        return ResponseDto(data = "ok")
     }
 
     fun copyBids(cm: CommandMessage): ResponseDto {
@@ -378,9 +432,9 @@ class BidService(private val generationService: GenerationService,
     }
 
 
-    private fun updateDocuments(documentsDb: List<Document>?, documentsDto: List<Document>?): List<Document>? {
+    private fun updateDocuments(documentsDb: List<Document>?, documentsDto: List<BidUpdateData.Bid.Document>): List<Document>? {
         return if (documentsDb != null && documentsDb.isNotEmpty()) {
-            if (documentsDto != null) {
+            if (!documentsDto.isEmpty()) {
                 val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
                 if (documentsDtoId.size != documentsDto.size) throw ErrorException(INVALID_DOCS_ID)
                 val documentsDbId = documentsDb.asSequence().map { it.id }.toSet()
@@ -391,20 +445,32 @@ class BidService(private val generationService: GenerationService,
                 }
                 //new
                 val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
-                documentsDb + newDocuments
+                documentsDb + newDocuments.toDocumentEntity()
             } else {
                 documentsDb
             }
         } else {
-            documentsDto
+            documentsDto.toDocumentEntity()
         }
     }
 
-    private fun Document.updateDocument(documentDto: Document?) {
+    private fun List<BidUpdateData.Bid.Document>.toDocumentEntity() : List<Document> {
+        return this.map { document ->
+            Document(
+                id = document.id,
+                documentType = document.documentType,
+                title = document.title,
+                description = document.description,
+                relatedLots = document.relatedLots
+            )
+        }
+    }
+
+    private fun Document.updateDocument(documentDto: BidUpdateData.Bid.Document?) {
         if (documentDto != null) {
-            this.title = documentDto.title
-            this.description = documentDto.description
-            this.relatedLots = documentDto.relatedLots
+            this.title = documentDto.title ?: this.title
+            this.description = documentDto.description ?: this.description
+            this.relatedLots = documentDto.relatedLots.let { if (!it.isEmpty()) it else this.relatedLots }
         }
     }
 
@@ -413,15 +479,13 @@ class BidService(private val generationService: GenerationService,
         if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
     }
 
-    private fun checkRelatedLotsInDocuments(bidDto: BidCreate) {
-        bidDto.documents?.forEach { document ->
-            if (document.relatedLots != null) {
-                if (!bidDto.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(INVALID_RELATED_LOT)
-            }
+    private fun checkRelatedLotsInDocuments(bidDto: BidCreateData.Bid) {
+        bidDto.documents.forEach { document ->
+            if (!bidDto.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
         }
     }
 
-    private fun checkTypeOfDocuments(documents: List<Document>) {
+    private fun checkTypeOfDocumentsCreateBid(documents: List<BidCreateData.Bid.Document>) {
         documents.forEach { document ->
             when (document.documentType) {
                 DocumentType.SUBMISSION_DOCUMENTS,
@@ -440,58 +504,650 @@ class BidService(private val generationService: GenerationService,
         }
     }
 
-    private fun checkDocumentsIds(documents: List<Document>) {
-        val uniqueDocumentIds: Set<String> = documents.asSequence()
-            .map{document ->
-                document.id
-            }
-            .toSet()
-        if(documents.size != uniqueDocumentIds.size)
-            throw ErrorException(error = INVALID_DOCS_ID, message = "Some documents have the same id.")
-    }
-
-    private fun isOneRelatedLot(bidDto: BidCreate) {
-        if (bidDto.relatedLots.size > 1) throw ErrorException(RELATED_LOTS_MUST_BE_ONE_UNIT)
-    }
-
-    private fun validateRelatedLotsOfDocuments(bidDto: BidUpdate, bid: Bid) {
-        bidDto.documents?.forEach { document ->
-            if (document.relatedLots != null) {
-                if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(INVALID_RELATED_LOT)
+    private fun checkBusinessFunctionTypeOfDocumentsCreateBid(bid: BidCreateData.Bid) {
+        bid.tenderers.asSequence()
+            .flatMap { it.persones.asSequence() }
+            .flatMap { it.businessFunctions.asSequence() }
+            .flatMap { it.documents.asSequence() }
+            .forEach { document ->
+            when (document.documentType) {
+                BusinessFunctionDocumentType.REGULATORY_DOCUMENT -> Unit
             }
         }
     }
 
-    private fun processTenderers(bidDto: BidCreate) {
-        bidDto.tenderers.forEach { it.id = it.identifier.scheme + "-" + it.identifier.id }
+    private fun checkOneAuthority(bid: BidCreateData.Bid) {
+        fun BusinessFunctionType.validate() {
+            when (this) {
+                BusinessFunctionType.AUTHORITY,
+                BusinessFunctionType.CONTACT_POINT -> Unit
+            }
+        }
+
+        bid.tenderers.asSequence()
+            .flatMap { it.persones.asSequence() }
+            .flatMap { it.businessFunctions.asSequence() }
+            .map { it.type }
+            .forEach { it.validate() }
+
+
+        bid.tenderers.forEach { tenderer ->
+            if (!tenderer.persones.isEmpty()) {
+                val authorityPersones = tenderer.persones
+                    .flatMap { it.businessFunctions }
+                    .filter { it.type == BusinessFunctionType.AUTHORITY }
+                    .toList()
+
+                if (authorityPersones.size > 1) {
+                    throw ErrorException(
+                        error = INVALID_PERSONES,
+                        message = "Only one person with one business functions type 'authority' should be added. "
+                    )
+                }
+
+                if (authorityPersones.isEmpty()) {
+                    throw ErrorException(
+                        error = INVALID_PERSONES,
+                        message = "At least one person with business function type 'authority' should be added. "
+                    )
+                }
+            }
+        }
+    }
+
+    private fun requirementResponseIdTempToPermanent(requirementResponses: List<BidCreateData.Bid.RequirementResponse>): List<BidCreateData.Bid.RequirementResponse> {
+        return requirementResponses.map { requirementResponse ->
+            requirementResponse.copy(id = generationService.generateRequirementResponseId().toString())
+        }
+    }
+
+    private fun checkBusinessFunctionsPeriod(bid : BidCreateData.Bid, requestDate : LocalDateTime ) {
+        fun BidCreateData.Bid.Tenderer.Persone.BusinessFunction.Period.validate() {
+            if (this.startDate > requestDate) throw ErrorException(
+                    error = INVALID_DATE,
+                    message = "Period.startDate specified in  business functions cannot be greater than startDate from request."
+                )
+        }
+
+        bid.tenderers.flatMap { it.persones }
+            .flatMap { it.businessFunctions }
+            .map { it.period }
+            .forEach { it.validate() }
+    }
+
+
+    private fun checkTypeOfDocumentsUpdateBid(documents: List<BidUpdateData.Bid.Document>) {
+        documents.forEach { document ->
+            when (document.documentType) {
+                DocumentType.SUBMISSION_DOCUMENTS,
+                DocumentType.ELIGIBILITY_DOCUMENTS,
+                DocumentType.ILLUSTRATION,
+                DocumentType.COMMERCIAL_OFFER,
+                DocumentType.QUALIFICATION_DOCUMENTS,
+                DocumentType.TECHNICAL_DOCUMENTS -> Unit
+
+                DocumentType.TECHNICAL_PROPOSAL,
+                DocumentType.SELECTION_DOCUMENTS -> throw ErrorException(
+                    error = INVALID_DOCUMENT_TYPE,
+                    message = "Document has invalid type: '${document.documentType.value()}'."
+                )
+            }
+        }
+    }
+
+    private fun checkDocumentsIds(documents: List<BidCreateData.Bid.Document>) {
+        if (documents.isNotUniqueIds())
+            throw ErrorException(error = INVALID_DOCS_ID, message = "Some documents have the same id.")
+    }
+
+    private fun checkMoney(money: Money?) {
+      money?.let {
+          if (money.amount.compareTo(BigDecimal.ZERO) == -1) throw ErrorException(
+              error = ErrorType.INVALID_AMOUNT,
+              message = "Amount cannot be less than 0. Current value = ${money.amount}"
+          )
+      }
+    }
+
+    private fun checkCurrency(bidMoney: Money?, lotMoney: Money) {
+        bidMoney?.let {
+            if (!bidMoney.currency.equals(lotMoney.currency, true)) throw ErrorException(
+                error = ErrorType.INVALID_CURRENCY,
+                message = "Currency in bid missmatch with currency in related lot. " +
+                    "Bid currency='${bidMoney.currency}', " +
+                    "Lot currency='${lotMoney.currency}'. "
+            )
+        }
+    }
+
+    private fun checkEntitiesListUniquenessById(bid: BidCreateData.Bid) {
+        bid.tenderers.isNotUniqueIds { throw ErrorException(
+            error = NOT_UNIQUE_IDS,
+            message = "Some bid.tenderers have the same id.")
+        }
+
+        bid.tenderers.forEach { tenderer ->
+            tenderer.additionalIdentifiers.isNotUniqueIds { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.additionalIdentifiers have the same id.")
+            }
+        }
+
+
+        bid.tenderers.forEach {tenderer ->
+            tenderer.details.permits.isNotUniqueIds { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.details.permits have the same id." )
+            }
+        }
+
+        bid.tenderers.forEach { tenderer ->
+            val actualIds = tenderer.details.bankAccounts.map { it.identifier.id }
+            val uniqueIds = actualIds.toSet()
+            if (actualIds.size != uniqueIds.size) { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.details.bankAccounts have the same identifier id." )
+            }
+        }
+
+        bid.tenderers.forEach {tenderer ->
+            tenderer.details.bankAccounts.forEach {
+                val actualIds = it.additionalAccountIdentifiers.map { it.id }
+                val uniqueIds = actualIds.toSet()
+
+                if (actualIds.size != uniqueIds.size) { throw ErrorException(
+                    error = NOT_UNIQUE_IDS,
+                    message = "Some bid.tenderers.details.bankAccounts.additionalAccountIdentifiers have the same id." )
+                }
+            }
+        }
+
+        bid.tenderers.forEach {tenderer ->
+            tenderer.persones.forEach { person ->
+                person.businessFunctions.isNotUniqueIds { throw ErrorException(
+                    error = NOT_UNIQUE_IDS,
+                    message = "Some bid.tenderers.persones.businessFunctions have the same id." )
+                }
+            }
+        }
+
+
+        bid.tenderers.forEach {tenderer ->
+            val actualIds = tenderer.persones.map { it.identifier.id }
+            val uniqueIds = actualIds.toSet()
+            if (actualIds.size != uniqueIds.size) { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.persones have the same identifier id." )
+            }
+        }
+
+        bid.tenderers.forEach { tenderer ->
+            tenderer.persones.forEach { person ->
+                person.businessFunctions.forEach { businessFunction ->
+                    businessFunction.documents.isNotUniqueIds { throw ErrorException(
+                        error = INVALID_DOCS_ID,
+                        message = "Some bid.tenderers.persones.businessFunctions.documents have the same id.")
+                    }
+                }
+            }
+        }
+
+        bid.documents.isNotUniqueIds { throw ErrorException(
+            error = INVALID_DOCS_ID,
+            message = "Some bid.documents have the same id.")
+        }
+
+        bid.requirementResponses.isNotUniqueIds { throw ErrorException(
+            error = NOT_UNIQUE_IDS,
+            message = "Some bid.requirementResponses have the same id.")
+        }
+
+    }
+
+    private fun isOneRelatedLot(bidDto: BidCreateData.Bid) {
+        if (bidDto.relatedLots.size > 1) throw ErrorException(RELATED_LOTS_MUST_BE_ONE_UNIT)
+    }
+
+    private fun validateRelatedLotsOfDocuments(bidDto: BidUpdateData.Bid, bidEntity: Bid) {
+        bidDto.documents.forEach { document ->
+            if (!bidEntity.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
+        }
+    }
+
+    private fun checkEntitiesListUniquenessById(bid: BidUpdateData.Bid) {
+        bid.tenderers.isNotUniqueIds { throw ErrorException(
+            error = NOT_UNIQUE_IDS,
+            message = "Some bid.tenderers have the same id.")
+        }
+
+        bid.tenderers.forEach { tenderer ->
+            tenderer.additionalIdentifiers.isNotUniqueIds { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.additionalIdentifiers have the same id.")
+            }
+        }
+
+
+        bid.tenderers.forEach { tenderer ->
+            tenderer.details?.permits?.isNotUniqueIds { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.details.permits have the same id." )
+            }
+        }
+
+        bid.tenderers.forEach { tenderer ->
+            tenderer.details?.let { details ->
+                val actualIds = details.bankAccounts.map { it.identifier.id }
+                val uniqueIds = actualIds.toSet()
+                if (actualIds.size != uniqueIds.size) {
+                    throw ErrorException(
+                        error = NOT_UNIQUE_IDS,
+                        message = "Some bid.tenderers.details.bankAccounts have the same identifier id."
+                    )
+                }
+            }
+        }
+
+        bid.tenderers.forEach {tenderer ->
+            tenderer.details?.let { details ->
+                details.bankAccounts.forEach {
+                    val actualIds = it.additionalAccountIdentifiers.map { it.id }
+                    val uniqueIds = actualIds.toSet()
+
+                    if (actualIds.size != uniqueIds.size) {
+                        throw ErrorException(
+                            error = NOT_UNIQUE_IDS,
+                            message = "Some bid.tenderers.details.bankAccounts.additionalAccountIdentifiers have the same id."
+                        )
+                    }
+                }
+            }
+
+        }
+
+        bid.tenderers.forEach {tenderer ->
+            tenderer.persones.forEach { person ->
+                person.businessFunctions.isNotUniqueIds { throw ErrorException(
+                    error = NOT_UNIQUE_IDS,
+                    message = "Some bid.tenderers.persones.businessFunctions have the same id." )
+                }
+            }
+        }
+
+
+        bid.tenderers.forEach {tenderer ->
+            val actualIds = tenderer.persones.map { it.identifier.id }
+            val uniqueIds = actualIds.toSet()
+            if (actualIds.size != uniqueIds.size) { throw ErrorException(
+                error = NOT_UNIQUE_IDS,
+                message = "Some bid.tenderers.persones have the same identifier id." )
+            }
+        }
+
+        bid.tenderers.forEach { tenderer ->
+            tenderer.persones.forEach { person ->
+                person.businessFunctions.forEach { businessFunction ->
+                    businessFunction.documents.isNotUniqueIds { throw ErrorException(
+                        error = INVALID_DOCS_ID,
+                        message = "Some bid.tenderers.persones.businessFunctions.documents have the same id.")
+                    }
+                }
+            }
+        }
+
+        bid.documents.isNotUniqueIds { throw ErrorException(
+            error = INVALID_DOCS_ID,
+            message = "Some bid.documents have the same id.")
+        }
+
+        bid.requirementResponses.isNotUniqueIds { throw ErrorException(
+            error = NOT_UNIQUE_IDS,
+            message = "Some bid.requirementResponses have the same id.")
+        }
+
+    }
+
+    private fun checkBusinessFunctionTypeOfDocumentsUpdateBid(bid: BidUpdateData.Bid) {
+        bid.tenderers.asSequence()
+            .flatMap { it.persones.asSequence() }
+            .flatMap { it.businessFunctions.asSequence() }
+            .flatMap { it.documents.asSequence() }
+            .forEach { document ->
+                when (document.documentType) {
+                    BusinessFunctionDocumentType.REGULATORY_DOCUMENT -> Unit
+                }
+            }
+    }
+
+    private fun checkOneAuthority(tenderers: List<OrganizationReference>) {
+        fun BusinessFunctionType.validate() {
+            when (this) {
+                BusinessFunctionType.AUTHORITY,
+                BusinessFunctionType.CONTACT_POINT -> Unit
+            }
+        }
+
+
+        tenderers.forEach { tenderer ->
+            tenderer.persones?.let { persones ->
+                persones
+                    .flatMap { it.businessFunctions }
+                    .map { it.type }
+                    .forEach { it.validate() }
+
+                val authorityPersones = persones
+                    .flatMap { it.businessFunctions }
+                    .filter { it.type == BusinessFunctionType.AUTHORITY }
+                    .toList()
+
+                if (authorityPersones.size > 1) {
+                    throw ErrorException(
+                        error = INVALID_PERSONES,
+                        message = "Only one person with one business functions type 'authority' should be added."
+                    )
+                }
+
+                if (!persones.isEmpty() && authorityPersones.isEmpty()) {
+                    throw ErrorException(
+                        error = INVALID_PERSONES,
+                        message = "At least one person with business function type 'authority' should be added. "
+                    )
+                }
+            }
+        }
+    }
+
+    private fun updateTenderers(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<OrganizationReference> {
+        if (bidRequest.tenderers.isEmpty()) return bidEntity.tenderers
+
+        val tenderersRequestIds = bidRequest.tenderers.map { it.id.toString() }
+        val tenderersEntityIds = bidEntity.tenderers.map { it.id }
+
+        // FReq-1.2.1.40
+        if (!tenderersEntityIds.containsAll(tenderersRequestIds)) {
+            throw ErrorException(
+                error = INVALID_TENDERER,
+                message = "List of tenderers from request contains tenderer that is missing in database"
+            )
+        }
+
+        return bidEntity.tenderers.map { tenderer ->
+            val personesEntities = tenderer.persones
+            val tendererRequest = bidRequest.tenderers.find { it.id.toString() == tenderer.id }
+
+            val additionalIdentifiersDb = tenderer.additionalIdentifiers
+
+            if (tendererRequest != null) {
+                val additionalIdentifiersRequest = tendererRequest.additionalIdentifiers
+                val detailsRequest = tendererRequest.details
+
+                tenderer.copy(
+                    persones = updatePersones(personesEntities , tendererRequest.persones),
+                    additionalIdentifiers = updateAdditionalIdentifiers(additionalIdentifiersDb, additionalIdentifiersRequest).toSet(),
+                    details = updateDetails(tenderer.details, detailsRequest)
+                )
+
+            } else tenderer
+
+        }
+
+    }
+
+    private fun updateRequirementResponse(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<RequirementResponse>? {
+        if (bidRequest.requirementResponses.isEmpty()) return bidEntity.requirementResponses
+
+        return bidRequest.requirementResponses.map { requirementResponse ->
+            RequirementResponse(
+                id = generationService.generateBidId().toString(),
+                title = requirementResponse.title,
+                description = requirementResponse.description,
+                value = requirementResponse.value,
+                requirement = Requirement(
+                    id = requirementResponse.requirement.id
+                ),
+                period = requirementResponse.period?.let { period ->
+                    Period(
+                        startDate = period.startDate,
+                        endDate = period.endDate
+                    )
+                }
+            )
+        }
+
+    }
+
+    private fun updatePersones(personesEntities: List<Persone>?, personesRequest: List<BidUpdateData.Bid.Tenderer.Persone>) : List<Persone>? {
+        if (personesRequest.isEmpty()) return personesEntities
+        val personesDb = personesEntities ?: emptyList()
+
+        val updatedPersones = personesDb.map { personEntity ->
+            val personRequest = personesRequest.find { it.identifier.id == personEntity.identifier.id }
+            personRequest?.let { personEntity.updatePerson(it) }
+        }.filterNotNull()
+
+        val personesDbIds = personesDb.map { it.identifier.id }
+        val newPersones = personesRequest.filter { it.identifier.id !in personesDbIds }
+
+        return updatedPersones + newPersones.toBidEntityPersones()
+    }
+
+    private fun Persone.updatePerson(personRequest: BidUpdateData.Bid.Tenderer.Persone): Persone {
+        return Persone(
+            title = personRequest.title,
+            name = personRequest.name,
+            identifier = this.identifier,
+            businessFunctions = updateBusinessFunction(this.businessFunctions, personRequest.businessFunctions)
+        )
+    }
+
+    private fun updateBusinessFunction(businessFunctionsDb: List<BusinessFunction>, businessFunctionsRequest: List<BidUpdateData.Bid.Tenderer.Persone.BusinessFunction>) : List<BusinessFunction> {
+        val newBusinessFunctions = businessFunctionsRequest.filter { it.id !in businessFunctionsDb.map { it.id } }
+        val updatedBusinessFunctions = businessFunctionsDb.map { businessFunctionDb ->
+            if (businessFunctionDb.id in businessFunctionsRequest.map { it.id }) {
+                val businessFunctionRequest = businessFunctionsRequest.find { it.id == businessFunctionDb.id }!!
+                BusinessFunction(
+                    id = businessFunctionDb.id,
+                    type = businessFunctionRequest.type,
+                    jobTitle = businessFunctionRequest.jobTitle,
+                    period = BusinessFunction.Period(
+                        startDate = businessFunctionRequest.period.startDate
+                    ),
+                    documents = updateBusinessFunctionsDocuments(businessFunctionDb.documents, businessFunctionRequest.documents)
+                )
+            } else {
+                businessFunctionDb
+            }
+        }
+
+        return updatedBusinessFunctions + newBusinessFunctions.toBidEntityBusinessFunction()
+    }
+
+    private fun updateBusinessFunctionsDocuments(documentsEntities: List<BusinessFunction.Document>?, documentsRequest: List<BidUpdateData.Bid.Tenderer.Persone.BusinessFunction.Document>) : List<BusinessFunction.Document> {
+        val documentsDb = documentsEntities ?: emptyList()
+        val newDocuments = documentsRequest.filter { it.id !in documentsDb.map { it.id } }
+        val updatedDocuments = documentsDb.map { documentDb ->
+            if (documentDb.id in documentsRequest.map { it.id }) {
+                val documentRequest = documentsRequest.find { it.id == documentDb.id }!!
+
+                BusinessFunction.Document(
+                    id = documentDb.id,
+                    documentType = documentRequest.documentType,
+                    title = documentRequest.title,
+                    description = documentRequest.description
+                )
+            } else {
+                documentDb
+            }
+        }
+        return updatedDocuments + newDocuments.toBidEntityBusinessFunctionDocuments()
+    }
+
+    private fun updateAdditionalIdentifiers(additionalIdentifiersDb: Set<Identifier>?, additionalIdentifiersRequest: List<BidUpdateData.Bid.Tenderer.AdditionalIdentifier>) : List<Identifier> {
+        val additionalIdentifiersEntities = additionalIdentifiersDb ?: emptyList<Identifier>()
+
+        val newAdditionalIdentifiers = additionalIdentifiersRequest.filter { it.id !in additionalIdentifiersEntities.map { it.id } }
+        val updatedAdditionalIdentifiers =  additionalIdentifiersEntities.map { additionalIdentifierDb ->
+            if (additionalIdentifierDb.id in additionalIdentifiersRequest.map { it.id }) {
+                val additionalIdentifierRequest = additionalIdentifiersRequest.find { it.id == additionalIdentifierDb.id }!!
+                Identifier(
+                    id = additionalIdentifierDb.id,
+                    scheme = additionalIdentifierDb.scheme,
+                    legalName = additionalIdentifierRequest.legalName,
+                    uri = additionalIdentifierRequest.uri
+                )
+            } else {
+                additionalIdentifierDb
+            }
+        }
+        return updatedAdditionalIdentifiers + newAdditionalIdentifiers.toBidEntityAdditionalIdentifies()
+    }
+
+    private fun updateDetails(detailsDb: Details, detailsRequest: BidUpdateData.Bid.Tenderer.Details?) : Details {
+        if (detailsRequest == null) return detailsDb
+
+        return Details(
+            typeOfSupplier = detailsDb.typeOfSupplier,
+            mainEconomicActivities = detailsDb.mainEconomicActivities,
+            scale = detailsDb.scale,
+            permits = updatePermits(detailsDb.permits, detailsRequest.permits),
+            bankAccounts = updateBankAccounts(detailsDb.bankAccounts, detailsRequest.bankAccounts),
+            legalForm = updateLegalForm(detailsDb.legalForm, detailsRequest.legalForm)
+        )
+    }
+
+    private fun updatePermits(permitsDb: List<Permit>?, permitsRequest: List<BidUpdateData.Bid.Tenderer.Details.Permit>) : List<Permit>? {
+        if (permitsRequest.isEmpty()) return permitsDb
+
+        return permitsRequest.map { permitRequest ->
+            Permit(
+                id = permitRequest.id,
+                scheme = permitRequest.scheme,
+                url = permitRequest.url,
+                permitDetails = PermitDetails(
+                    issuedBy = IssuedBy(
+                        id = permitRequest.permitDetails.issuedBy.id,
+                        name = permitRequest.permitDetails.issuedBy.name
+                    ),
+                    issuedThought = IssuedThought(
+                        id = permitRequest.permitDetails.issuedThought.id,
+                        name = permitRequest.permitDetails.issuedThought.name
+                    ),
+                    validityPeriod = ValidityPeriod(
+                        startDate = permitRequest.permitDetails.validityPeriod.startDate,
+                        endDate = permitRequest.permitDetails.validityPeriod.endDate
+                    )
+                )
+            )
+        }
+    }
+
+    private fun updateBankAccounts(bankAccountsDb: List<BankAccount>?, bankAccountsRequest: List<BidUpdateData.Bid.Tenderer.Details.BankAccount>) : List<BankAccount>? {
+        if (bankAccountsRequest.isEmpty()) return bankAccountsDb
+
+        return bankAccountsRequest.map { bankAccount ->
+          BankAccount(
+              description = bankAccount.description,
+              bankName = bankAccount.bankName,
+              address = Address(
+                  streetAddress = bankAccount.address.streetAddress,
+                  postalCode = bankAccount.address.postalCode,
+                  addressDetails = AddressDetails(
+                      country = CountryDetails(
+                          id = bankAccount.address.addressDetails.country.id,
+                          scheme = bankAccount.address.addressDetails.country.scheme,
+                          description = bankAccount.address.addressDetails.country.description,
+                          uri = bankAccount.address.addressDetails.country.uri
+                      ),
+                      region = RegionDetails(
+                          id = bankAccount.address.addressDetails.region.id,
+                          scheme = bankAccount.address.addressDetails.region.scheme,
+                          description = bankAccount.address.addressDetails.region.description,
+                          uri = bankAccount.address.addressDetails.region.uri
+                      ),
+                      locality = LocalityDetails(
+                          id = bankAccount.address.addressDetails.locality.id,
+                          scheme = bankAccount.address.addressDetails.locality.scheme,
+                          description = bankAccount.address.addressDetails.locality.description,
+                          uri = bankAccount.address.addressDetails.locality.uri
+                      )
+                  )
+              ),
+              additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers.map { additionalAccountIdentifier ->
+                  AdditionalAccountIdentifier(
+                      id = additionalAccountIdentifier.id,
+                      scheme = additionalAccountIdentifier.scheme
+                  )
+              },
+              identifier = BankAccount.Identifier(
+                  id = bankAccount.identifier.id,
+                  scheme = bankAccount.identifier.scheme
+              ),
+              accountIdentification = AccountIdentification(
+                  id = bankAccount.accountIdentification.id,
+                  scheme = bankAccount.accountIdentification.scheme
+              )
+          )
+        }
+    }
+
+    private fun updateLegalForm(legalFormDb: LegalForm?, legalFormRequest: BidUpdateData.Bid.Tenderer.Details.LegalForm?) : LegalForm? {
+        if (legalFormRequest == null) return legalFormDb
+
+        return LegalForm(
+            id = legalFormRequest.id,
+            scheme = legalFormRequest.scheme,
+            description = legalFormRequest.description,
+            uri = legalFormRequest.uri
+        )
+
+    }
+
+    private fun checkBusinessFunctionsPeriod(bid : BidUpdateData.Bid, requestDate : LocalDateTime ) {
+        fun BidUpdateData.Bid.Tenderer.Persone.BusinessFunction.Period.validate() {
+            if (this.startDate > requestDate) throw ErrorException(
+                error = INVALID_DATE,
+                message = "Period.startDate specified in  business functions cannot be greater than startDate from request."
+            )
+        }
+
+        bid.tenderers.flatMap { it.persones }
+            .flatMap { it.businessFunctions }
+            .map { it.period }
+            .forEach { it.validate() }
+    }
+
+    private fun checkRelatedLots(bidEntity : Bid, bidRequest : BidUpdateData.Bid) {
+        if (!bidEntity.relatedLots.containsAll(bidRequest.relatedLots)) throw ErrorException(
+            error = INVALID_RELATED_LOT,
+            message = "Some of related lots from request is missing in database. " +
+                "Saved related lots: ${bidEntity.relatedLots}. " +
+                "Related lots from request: ${bidRequest.relatedLots}. "
+        )
     }
 
     private fun getBidsFromEntities(bidEntities: List<BidEntity>): List<Bid> {
         return bidEntities.asSequence().map { toObject(Bid::class.java, it.jsonData) }.toList()
     }
 
-    private fun checkTenderers(cpId: String, stage: String, bidDto: BidCreate) {
+    private fun checkTenderers(cpId: String, stage: String, bidDto: BidCreateData.Bid) {
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isNotEmpty()) {
-            val bids = getBidsFromEntities(bidEntities)
-            val dtoRelatedLots = bidDto.relatedLots
-            val dtoTenderers = bidDto.tenderers.asSequence().map { it.id }.toSet()
-            bids.filter { it.status != Status.WITHDRAWN }.forEach { bid ->
-                val bidRelatedLots = bid.relatedLots
-                val bidTenderers = bid.tenderers.asSequence().map { it.id }.toSet()
-                if (bidTenderers.size == dtoTenderers.size &&
-                        bidTenderers.containsAll(dtoTenderers) &&
-                        bidRelatedLots.containsAll(dtoRelatedLots))
-                    throw ErrorException(BID_ALREADY_WITH_LOT)
-            }
+            val receivedRelatedLots = bidDto.relatedLots.toSet()
+            val idsReceivedTenderers = bidDto.tenderers.toSetBy { it.id }
+            val savedBids = getBidsFromEntities(bidEntities)
+            savedBids.asSequence()
+                .filter {
+                    it.status != Status.WITHDRAWN
+                }
+                .forEach { bid ->
+                    val idsTenderers: Set<String> = bid.tenderers.toSetBy { it.id!! }
+                    val relatedLots: Set<String> = bid.relatedLots.toSet()
+                    if (idsReceivedTenderers.any { it in idsTenderers } && receivedRelatedLots.any { it in relatedLots })
+                        throw ErrorException(BID_ALREADY_WITH_LOT)
+                }
         }
     }
 
-    fun validateValue(stage: String, bidDto: BidUpdate) {
-        if (stage == "EV") {
-            if (bidDto.value == null) throw ErrorException(VALUE_IS_NULL)
-        }
-    }
 
     private fun getBidsForNewStageMap(bidEntities: List<BidEntity>, lotsDto: LotsDto): Map<BidEntity, Bid> {
         val validBids = HashMap<BidEntity, Bid>()
@@ -558,4 +1214,272 @@ class BidService(private val generationService: GenerationService,
         )
     }
 
+    private fun List<BidCreateData.Bid.Document>.toBidEntityDocuments(): List<Document> {
+        return this.map { document ->
+            Document(
+                id = document.id,
+                description = document.description,
+                title = document.title,
+                documentType = document.documentType,
+                relatedLots = document.relatedLots
+            )
+        }
+    }
+
+    private fun List<BidCreateData.Bid.Tenderer>.toBidEntityTenderers(): List<OrganizationReference> {
+        return this.map { tenderer ->
+            OrganizationReference(
+                id = tenderer.id,
+                name = tenderer.name,
+                identifier = Identifier(
+                    id = tenderer.identifier.id,
+                    scheme = tenderer.identifier.scheme,
+                    legalName = tenderer.identifier.legalName,
+                    uri = tenderer.identifier.uri
+                ),
+                additionalIdentifiers = tenderer.additionalIdentifiers.map { additionalIdentifier ->
+                    Identifier(
+                        id = additionalIdentifier.id,
+                        scheme = additionalIdentifier.scheme,
+                        legalName = additionalIdentifier.legalName,
+                        uri = additionalIdentifier.uri
+                    )
+                }.toSet(),
+                address = Address(
+                    streetAddress = tenderer.address.streetAddress,
+                    postalCode = tenderer.address.postalCode,
+                    addressDetails = AddressDetails(
+                        country = CountryDetails(
+                            id = tenderer.address.addressDetails.country.id,
+                            scheme = tenderer.address.addressDetails.country.scheme,
+                            description = tenderer.address.addressDetails.country.description,
+                            uri = tenderer.address.addressDetails.country.uri
+                        ),
+                        region = RegionDetails(
+                            id = tenderer.address.addressDetails.region.id,
+                            scheme = tenderer.address.addressDetails.region.scheme,
+                            description = tenderer.address.addressDetails.region.description,
+                            uri = tenderer.address.addressDetails.region.uri
+                        ),
+                        locality = LocalityDetails(
+                            id = tenderer.address.addressDetails.locality.id,
+                            scheme = tenderer.address.addressDetails.locality.scheme,
+                            description = tenderer.address.addressDetails.locality.description,
+                            uri = tenderer.address.addressDetails.locality.uri
+                        )
+                    )
+                ),
+                contactPoint = ContactPoint(
+                    name = tenderer.contactPoint.name,
+                    email = tenderer.contactPoint.email,
+                    telephone = tenderer.contactPoint.telephone,
+                    faxNumber = tenderer.contactPoint.faxNumber,
+                    url = tenderer.contactPoint.url
+                ),
+                details = Details(
+                    typeOfSupplier = tenderer.details.typeOfSupplier,
+                    mainEconomicActivities = tenderer.details.mainEconomicActivities,
+                    permits = tenderer.details.permits.map { permit ->
+                        Permit(
+                            id = permit.id,
+                            scheme = permit.scheme,
+                            url = permit.url,
+                            permitDetails = PermitDetails(
+                                issuedBy = IssuedBy(
+                                    id = permit.permitDetails.issuedBy.id,
+                                    name = permit.permitDetails.issuedBy.name
+                                ),
+                                issuedThought = IssuedThought(
+                                    id = permit.permitDetails.issuedThought.id,
+                                    name = permit.permitDetails.issuedThought.name
+                                ),
+                                validityPeriod = ValidityPeriod(
+                                    startDate = permit.permitDetails.validityPeriod.startDate,
+                                    endDate = permit.permitDetails.validityPeriod.endDate
+                                )
+                            )
+                        )
+                    },
+                    scale = tenderer.details.scale,
+                    bankAccounts = tenderer.details.bankAccounts.map { bankAccount ->
+                        BankAccount(
+                            description = bankAccount.description,
+                            bankName = bankAccount.bankName,
+                            address = Address(
+                                streetAddress = bankAccount.address.streetAddress,
+                                postalCode = bankAccount.address.postalCode,
+                                addressDetails = AddressDetails(
+                                    country = CountryDetails(
+                                        id = bankAccount.address.addressDetails.country.id,
+                                        scheme = bankAccount.address.addressDetails.country.scheme,
+                                        description = bankAccount.address.addressDetails.country.description,
+                                        uri = bankAccount.address.addressDetails.country.uri
+                                    ),
+                                    region = RegionDetails(
+                                        id = bankAccount.address.addressDetails.region.id,
+                                        scheme = bankAccount.address.addressDetails.region.scheme,
+                                        description = bankAccount.address.addressDetails.region.description,
+                                        uri = bankAccount.address.addressDetails.region.uri
+                                    ),
+                                    locality = LocalityDetails(
+                                        id = bankAccount.address.addressDetails.locality.id,
+                                        scheme = bankAccount.address.addressDetails.locality.scheme,
+                                        description = bankAccount.address.addressDetails.locality.description,
+                                        uri = bankAccount.address.addressDetails.locality.uri
+                                    )
+                                )
+                            ),
+                            identifier = BankAccount.Identifier(
+                                id = bankAccount.identifier.id,
+                                scheme = bankAccount.identifier.scheme
+                            ),
+                            accountIdentification = AccountIdentification(
+                                id = bankAccount.accountIdentification.scheme,
+                                scheme = bankAccount.accountIdentification.scheme
+                            ),
+                            additionalAccountIdentifiers =  bankAccount.additionalAccountIdentifiers.map { accountIdentifier ->
+                                AdditionalAccountIdentifier(
+                                    id = accountIdentifier.id,
+                                    scheme = accountIdentifier.scheme
+                                )
+                            }
+                        )
+                    },
+                    legalForm = tenderer.details.legalForm?.let {  legalForm ->
+                            LegalForm(
+                                id = legalForm.id,
+                                scheme = legalForm.scheme,
+                                description = legalForm.description,
+                                uri = legalForm.uri
+                            )
+                        }
+                ),
+                persones = tenderer.persones.map { person ->
+                    Persone(
+                        title = person.title,
+                        name = person.name,
+                        identifier = Persone.Identifier(
+                            id = person.identifier.id,
+                            scheme = person.identifier.scheme,
+                            uri = person.identifier.uri
+                        ),
+                        businessFunctions = person.businessFunctions.map { businessFunction ->
+                            BusinessFunction(
+                                id = businessFunction.id,
+                                type = businessFunction.type,
+                                jobTitle = businessFunction.jobTitle,
+                                period = BusinessFunction.Period(
+                                    startDate = businessFunction.period.startDate
+                                ),
+                                documents = businessFunction.documents.map { document ->
+                                    BusinessFunction.Document(
+                                        id = document.id,
+                                        documentType = document.documentType,
+                                        title = document.title,
+                                        description = document.description
+                                    )
+                                }
+                            )
+                        }
+                    )
+                }
+            )
+        }
+    }
+
+    private fun List<BidCreateData.Bid.RequirementResponse>.toBidEntityRequirementResponse(): List<RequirementResponse> {
+        return this.map { requirementResponse ->
+            RequirementResponse(
+                id = requirementResponse.id,
+                title = requirementResponse.title,
+                description = requirementResponse.description,
+                value = requirementResponse.value,
+                requirement = Requirement(
+                    id = requirementResponse.requirement.id
+                ),
+                period = requirementResponse.period?.let { period ->
+                    Period(
+                        startDate = period.startDate,
+                        endDate = period.endDate
+                    )
+                }
+            )
+        }
+    }
+
+    private fun List<BidUpdateData.Bid.Tenderer.Persone>.toBidEntityPersones(): List<Persone> {
+        return this.map { persone ->
+            Persone(
+                title = persone.title,
+                name = persone.name,
+                identifier = Persone.Identifier(
+                    id = persone.identifier.id,
+                    scheme = persone.identifier.scheme,
+                    uri = persone.identifier.uri
+                ),
+                businessFunctions = persone.businessFunctions.map { businessfunction ->
+                    BusinessFunction(
+                        id = businessfunction.id,
+                        type = businessfunction.type,
+                        jobTitle = businessfunction.jobTitle,
+                        period = BusinessFunction.Period(
+                            startDate = businessfunction.period.startDate
+                        ),
+                        documents = businessfunction.documents.map { document ->
+                            BusinessFunction.Document(
+                                id = document.id,
+                                documentType = document.documentType,
+                                title = document.title,
+                                description = document.description
+                            )
+                        }
+                    )
+                }
+            )
+        }
+    }
+
+    private fun List<BidUpdateData.Bid.Tenderer.Persone.BusinessFunction>.toBidEntityBusinessFunction(): List<BusinessFunction> {
+        return this.map { businessFunction ->
+            BusinessFunction(
+                id = businessFunction.id,
+                type = businessFunction.type,
+                jobTitle = businessFunction.jobTitle,
+                period = BusinessFunction.Period(
+                    startDate = businessFunction.period.startDate
+                ),
+                documents = businessFunction.documents.map { document ->
+                    BusinessFunction.Document(
+                        id = document.id,
+                        documentType = document.documentType,
+                        title = document.title,
+                        description = document.description
+                    )
+                }
+            )
+        }
+    }
+
+
+    private fun List<BidUpdateData.Bid.Tenderer.Persone.BusinessFunction.Document>.toBidEntityBusinessFunctionDocuments(): List<BusinessFunction.Document> {
+        return this.map { document ->
+            BusinessFunction.Document(
+                id = document.id,
+                documentType = document.documentType,
+                title = document.title,
+                description = document.description
+            )
+        }
+    }
+
+    private fun List<BidUpdateData.Bid.Tenderer.AdditionalIdentifier>.toBidEntityAdditionalIdentifies(): List<Identifier> {
+        return this.map { additionalIdentifier ->
+            Identifier(
+                id = additionalIdentifier.id,
+                scheme = additionalIdentifier.scheme,
+                legalName = additionalIdentifier.legalName,
+                uri = additionalIdentifier.uri
+            )
+        }
+    }
 }

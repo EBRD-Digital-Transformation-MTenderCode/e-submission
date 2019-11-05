@@ -28,44 +28,6 @@ enum class AwardCriteria(@JsonValue val value: String) {
     }
 }
 
-enum class DocumentType constructor(private val value: String) {
-
-    SUBMISSION_DOCUMENTS("submissionDocuments"),
-    ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments"),
-    ILLUSTRATION("illustration"),
-    COMMERCIAL_OFFER("x_commercialOffer"),
-    QUALIFICATION_DOCUMENTS("x_qualificationDocuments"),
-    TECHNICAL_PROPOSAL("technicalProposal"),
-    SELECTION_DOCUMENTS("selectionDocuments"),
-    TECHNICAL_DOCUMENTS("x_technicalDocuments");
-
-    override fun toString(): String {
-        return this.value
-    }
-
-    @JsonValue
-    fun value(): String {
-        return this.value
-    }
-
-    companion object {
-
-        private val CONSTANTS = HashMap<String, DocumentType>()
-
-        init {
-            for (c in values()) {
-                CONSTANTS[c.value] = c
-            }
-        }
-
-        @JsonCreator
-        fun fromValue(value: String): DocumentType {
-            return CONSTANTS[value]
-                    ?: throw EnumException(DocumentType::class.java.name, value, Arrays.toString(values()))
-        }
-    }
-}
-
 enum class Status constructor(val value: String) {
     INVITED("invited"),
     PENDING("pending"),
