@@ -1,5 +1,6 @@
 package com.procurement.submission.service
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
 import com.procurement.submission.application.service.BidCreateContext
@@ -7,6 +8,9 @@ import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.dao.HistoryDao
+import com.procurement.submission.domain.model.ProcurementMethod
+import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.toData
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsResponse
@@ -48,28 +52,58 @@ class CommandService(
         }
         val response = when (cm.command) {
             CommandType.CREATE_BID                 -> {
-                val request = toObject(BidCreateRequest::class.java, cm.data)
-                val requestData = request.toData()
-                val context = BidCreateContext(
-                    cpid = cm.cpid,
-                    owner = cm.owner,
-                    stage = cm.stage,
-                    startDate = cm.startDate
-                )
-                bidService.createBid(requestData = requestData, context = context)
+                when (cm.pmd) {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.MV, ProcurementMethod.TEST_MV -> {
+                        val request = toObject(BidCreateRequest::class.java, cm.data)
+                        val requestData = request.toData()
+                        val context = BidCreateContext(
+                            cpid = cm.cpid,
+                            owner = cm.owner,
+                            stage = cm.stage,
+                            startDate = cm.startDate
+                        )
+                        bidService.createBid(requestData = requestData, context = context)
+                    }
+
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
+                        throw ErrorException(ErrorType.INVALID_PMD)
+                    }
+
+                }
             }
             CommandType.UPDATE_BID                 -> {
-                val request = toObject(BidUpdateRequest::class.java, cm.data)
-                val requestData = request.toData()
-                val context = BidUpdateContext(
-                    id = cm.ctxId,
-                    cpid = cm.cpid,
-                    owner = cm.owner,
-                    stage = cm.stage,
-                    token = cm.token,
-                    startDate = cm.startDate
-                )
-                bidService.updateBid(requestData = requestData, context = context)
+                when (cm.pmd) {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.MV, ProcurementMethod.TEST_MV -> {
+                        val request = toObject(BidUpdateRequest::class.java, cm.data)
+                        val requestData = request.toData()
+                        val context = BidUpdateContext(
+                            id = cm.ctxId,
+                            cpid = cm.cpid,
+                            owner = cm.owner,
+                            stage = cm.stage,
+                            token = cm.token,
+                            startDate = cm.startDate
+                        )
+                        bidService.updateBid(requestData = requestData, context = context)
+                    }
+
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
+                        throw ErrorException(ErrorType.INVALID_PMD)
+                    }
+
+                }
             }
             CommandType.COPY_BIDS                  -> bidService.copyBids(cm)
             CommandType.GET_PERIOD                 -> periodService.getPeriod(cm)
