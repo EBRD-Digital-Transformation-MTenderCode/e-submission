@@ -1,8 +1,8 @@
 package com.procurement.submission.infrastructure.dto.bid.finalize.response
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.procurement.submission.model.dto.ocds.Status
-import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.StatusDetails
 import java.util.*
 
 data class FinalBidsStatusByLotsResponse(

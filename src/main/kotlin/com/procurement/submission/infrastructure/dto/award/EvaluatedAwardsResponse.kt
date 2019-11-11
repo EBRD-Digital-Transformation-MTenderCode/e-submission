@@ -2,7 +2,7 @@ package com.procurement.submission.infrastructure.dto.award
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.domain.model.enums.StatusDetails
 import java.util.*
 
 data class EvaluatedAwardsResponse(

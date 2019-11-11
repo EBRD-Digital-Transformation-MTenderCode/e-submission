@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.procurement.submission.domain.model.Money
+import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
 import com.procurement.submission.infrastructure.bind.money.MoneySerializer
 import java.time.LocalDateTime

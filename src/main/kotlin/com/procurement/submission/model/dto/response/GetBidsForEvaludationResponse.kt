@@ -17,8 +17,8 @@ import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
 import com.procurement.submission.infrastructure.bind.money.MoneySerializer
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
-import com.procurement.submission.model.dto.ocds.Status
-import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.StatusDetails
 import java.time.LocalDateTime
 import java.util.*
 

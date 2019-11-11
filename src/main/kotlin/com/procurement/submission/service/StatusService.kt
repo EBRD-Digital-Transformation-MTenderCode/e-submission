@@ -5,13 +5,13 @@ import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
-import com.procurement.submission.model.dto.ocds.AwardCriteria
-import com.procurement.submission.model.dto.ocds.AwardStatusDetails
+import com.procurement.submission.domain.model.enums.AwardCriteria
+import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.model.dto.ocds.Period
-import com.procurement.submission.model.dto.ocds.Status
-import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.model.dto.ocds.Value
 import com.procurement.submission.model.dto.request.ConsideredBid
 import com.procurement.submission.model.dto.request.GetDocsOfConsideredBidRq
@@ -119,7 +119,7 @@ class StatusService(private val rulesService: RulesService,
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
         val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
         val pmd = cm.context.pmd ?: throw ErrorException(ErrorType.CONTEXT)
-        val awardCriteria = AwardCriteria.fromValue(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
+        val awardCriteria = AwardCriteria.fromString(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
         val dto = toObject(UpdateBidsByLotsRq::class.java, cm.data)
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
@@ -170,15 +170,15 @@ class StatusService(private val rulesService: RulesService,
         val dto = toObject(UpdateBidsByAwardStatusRq::class.java, cm.data)
 
         val bidId = dto.bidId
-        val awardStatusDetails = AwardStatusDetails.fromValue(dto.awardStatusDetails)
+        val awardStatusDetails = AwardStatusDetails.fromString(dto.awardStatusDetails)
 
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         val bid = toObject(Bid::class.java, entity.jsonData)
         when (awardStatusDetails) {
-            AwardStatusDetails.EMPTY -> bid.statusDetails = StatusDetails.EMPTY
-            AwardStatusDetails.ACTIVE -> bid.statusDetails = StatusDetails.VALID
-            AwardStatusDetails.UNSUCCESSFUL -> bid.statusDetails = StatusDetails.DISQUALIFIED
-            AwardStatusDetails.PENDING -> TODO()
+            AwardStatusDetails.EMPTY         -> bid.statusDetails = StatusDetails.EMPTY
+            AwardStatusDetails.ACTIVE        -> bid.statusDetails = StatusDetails.VALID
+            AwardStatusDetails.UNSUCCESSFUL  -> bid.statusDetails = StatusDetails.DISQUALIFIED
+            AwardStatusDetails.PENDING       -> TODO()
             AwardStatusDetails.CONSIDERATION -> TODO()
         }
         bidDao.save(getEntity(
@@ -202,7 +202,7 @@ class StatusService(private val rulesService: RulesService,
         for (bid in bids) {
             bid.apply {
                 if (status == Status.PENDING && statusDetails != StatusDetails.EMPTY) {
-                    status = Status.fromString(bid.statusDetails.value())
+                    status = Status.fromString(bid.statusDetails.value)
                     statusDetails = StatusDetails.EMPTY
                 }
             }
@@ -234,7 +234,7 @@ class StatusService(private val rulesService: RulesService,
         }
         entity.pendingDate = dateTime.toDate()
         entity.jsonData = toJson(bid)
-        entity.status = bid.status.value()
+        entity.status = bid.status.value
         bidDao.save(entity)
         return ResponseDto(data = BidRs(null, null, bid))
     }
@@ -283,7 +283,7 @@ class StatusService(private val rulesService: RulesService,
     fun getDocsOfConsideredBid(cm: CommandMessage): ResponseDto {
         val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
         val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val awardCriteria = AwardCriteria.fromValue(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
+        val awardCriteria = AwardCriteria.fromString(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
         val dto = toObject(GetDocsOfConsideredBidRq::class.java, cm.data)
         return if (awardCriteria == AwardCriteria.PRICE_ONLY && dto.consideredBidId != null) {
             val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(dto.consideredBidId))
@@ -333,7 +333,7 @@ class StatusService(private val rulesService: RulesService,
 
     private fun getPendingBids(entities: List<BidEntity>): Set<Bid> {
         return entities.asSequence()
-                .filter { it.status == Status.PENDING.value() }
+                .filter { it.status == Status.PENDING.value }
                 .map { toObject(Bid::class.java, it.jsonData) }
                 .toSet()
     }
@@ -419,7 +419,7 @@ class StatusService(private val rulesService: RulesService,
                 cpId = cpId,
                 stage = stage,
                 owner = owner,
-                status = bid.status.value(),
+                status = bid.status.value,
                 bidId = UUID.fromString(bid.id),
                 token = token,
                 createdDate = createdDate,
