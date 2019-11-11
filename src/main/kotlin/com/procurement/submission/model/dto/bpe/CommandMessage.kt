@@ -102,7 +102,8 @@ enum class CommandType(private val value: String) {
     GET_DOCS_OF_CONSIDERED_BID("getDocsOfConsideredBid"),
     SET_INITIAL_BIDS_STATUS("setInitialBidsStatus"),
     APPLY_EVALUATED_AWARDS("applyAwardingRes"),
-    FINAL_BIDS_STATUS_BY_LOTS("finalBidsStatusByLots");
+    FINAL_BIDS_STATUS_BY_LOTS("finalBidsStatusByLots"),
+    GET_BIDS_FOR_EVALUATION("getBidsForEvaluation");
 
     @JsonValue
     fun value(): String {
