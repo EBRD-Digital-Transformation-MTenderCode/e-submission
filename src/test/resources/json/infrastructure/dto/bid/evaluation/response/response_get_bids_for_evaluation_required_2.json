@@ -1,0 +1,77 @@
+{
+  "bids": [
+    {
+      "id": "ef5b4e8f-d0ab-4824-bee3-7469eff8bbcf",
+      "date": "2019-11-11T12:00:12Z",
+      "status": "pending",
+      "statusDetails": "valid",
+      "tenderers": [
+        {
+          "id": "bids[0].tenderers[0].id",
+          "name": "bids[0].tenderers[0].name",
+          "identifier": {
+            "scheme": "bids[0].tenderers[0].identifier.scheme",
+            "id": "bids[0].tenderers[0].identifier.id",
+            "legalName": "bids[0].tenderers[0].identifier.legalName"
+          },
+          "address": {
+            "streetAddress": "bids[0].tenderers[0].address.streetAddress",
+            "addressDetails": {
+              "country": {
+                "id": "bids[0].tenderers[0].address.addressDetails.country.id"
+              },
+              "region": {
+                "id": "bids[0].tenderers[0].address.addressDetails.region.id"
+              },
+              "locality": {
+                "scheme": "bids[0].tenderers[0].address.addressDetails.locality.scheme",
+                "id": "bids[0].tenderers[0].address.addressDetails.locality.id",
+                "description": "bids[0].tenderers[0].address.addressDetails.locality.description"
+              }
+            }
+          },
+          "contactPoint": {
+            "name": "bids[0].tenderers[0].contactPoint.name",
+            "email": "bids[0].tenderers[0].contactPoint.email",
+            "telephone": "bids[0].tenderers[0].contactPoint.telephone"
+          },
+          "persones": [
+            {
+              "title": "bids[0].tenderers[0].persones[0].title",
+              "name": "bids[0].tenderers[0].persones[0].name",
+              "identifier": {
+                "scheme": "bids[0].tenderers[0].persones[0].identifier.scheme",
+                "id": "bids[0].tenderers[0].persones[0].identifier.id",
+                "uri": "bids[0].tenderers[0].persones[0].identifier.uri"
+              },
+              "businessFunctions": [
+                {
+                  "id": "bids[0].tenderers[0].persones[0].businessFunctions[0].id",
+                  "type": "authority",
+                  "jobTitle": "Chief Executive Officer",
+                  "period": {
+                    "startDate": "2019-11-11T12:00:12Z"
+                  }
+                }
+              ]
+            }
+          ],
+          "details": {
+            "typeOfSupplier": "company",
+            "mainEconomicActivities": [
+              "bids[0].tenderers[0].details.mainEconomicActivities[0]"
+            ],
+            "scale": "sme"
+          }
+        }
+      ],
+      "value": {
+        "amount": 100.00,
+        "currency": "MDL"
+      },
+      "relatedLots": [
+        "1091acb1-4b11-4cc5-83e2-5c584c4b9a57"
+      ]
+    }
+  ]
+}
