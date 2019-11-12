@@ -78,6 +78,10 @@ val CommandMessage.startDate: LocalDateTime
     get() = this.context.startDate?.toLocal()
         ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'startDate' attribute in context.")
 
+val CommandMessage.country: String
+    get() = this.context.country
+        ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'country' attribute in context.")
+
 
 enum class CommandType(private val value: String) {
     CREATE_BID("createBid"),
