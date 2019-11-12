@@ -2,6 +2,8 @@ package com.procurement.submission.service
 
 import com.procurement.submission.application.model.data.BidCreateData
 import com.procurement.submission.application.model.data.BidUpdateData
+import com.procurement.submission.application.model.data.BidsForEvaluationRequestData
+import com.procurement.submission.application.model.data.BidsForEvaludationResponseData
 import com.procurement.submission.application.service.AppliedEvaluatedAwardsData
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
@@ -10,12 +12,17 @@ import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.application.service.FinalizedBidsStatusByLots
+import com.procurement.submission.application.service.GetBidsForEvaluationContext
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.ProcurementMethod
+import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
+import com.procurement.submission.domain.model.enums.Countries
 import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
@@ -35,6 +42,7 @@ import com.procurement.submission.exception.ErrorType.INVALID_TOKEN
 import com.procurement.submission.exception.ErrorType.NOT_UNIQUE_IDS
 import com.procurement.submission.exception.ErrorType.PERIOD_NOT_EXPIRED
 import com.procurement.submission.exception.ErrorType.RELATED_LOTS_MUST_BE_ONE_UNIT
+import com.procurement.submission.infrastructure.converter.toResponseData
 import com.procurement.submission.lib.toSetBy
 import com.procurement.submission.model.dto.BidDetails
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
@@ -45,7 +53,6 @@ import com.procurement.submission.model.dto.ocds.AccountIdentification
 import com.procurement.submission.model.dto.ocds.AdditionalAccountIdentifier
 import com.procurement.submission.model.dto.ocds.Address
 import com.procurement.submission.model.dto.ocds.AddressDetails
-import com.procurement.submission.model.dto.ocds.AwardStatusDetails
 import com.procurement.submission.model.dto.ocds.BankAccount
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.dto.ocds.Bids
@@ -67,8 +74,6 @@ import com.procurement.submission.model.dto.ocds.Persone
 import com.procurement.submission.model.dto.ocds.RegionDetails
 import com.procurement.submission.model.dto.ocds.Requirement
 import com.procurement.submission.model.dto.ocds.RequirementResponse
-import com.procurement.submission.model.dto.ocds.Status
-import com.procurement.submission.model.dto.ocds.StatusDetails
 import com.procurement.submission.model.dto.ocds.ValidityPeriod
 import com.procurement.submission.model.dto.request.BidUpdateDocsRq
 import com.procurement.submission.model.dto.request.LotDto
@@ -88,6 +93,7 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 @Service
 class BidService(private val generationService: GenerationService,
@@ -116,15 +122,15 @@ class BidService(private val generationService: GenerationService,
         val requirementResponses = requirementResponseIdTempToPermanent(bidRequest.requirementResponses)
 
         val bid = Bid(
-                id = generationService.generateBidId().toString(),
-                date = context.startDate,
-                status = Status.PENDING,
-                statusDetails = StatusDetails.EMPTY,
-                value = bidRequest.value,
-                documents = bidRequest.documents.toBidEntityDocuments(),
-                relatedLots = bidRequest.relatedLots,
-                tenderers = bidRequest.tenderers.toBidEntityTenderers(),
-                requirementResponses = requirementResponses.toBidEntityRequirementResponse()
+            id = generationService.generateBidId().toString(),
+            date = context.startDate,
+            status = Status.PENDING,
+            statusDetails = StatusDetails.EMPTY,
+            value = bidRequest.value,
+            documents = bidRequest.documents.toBidEntityDocuments(),
+            relatedLots = bidRequest.relatedLots,
+            tenderers = bidRequest.tenderers.toBidEntityTenderers(),
+            requirementResponses = requirementResponses.toBidEntityRequirementResponse()
         )
         val entity = getEntity(
                 bid = bid,
@@ -186,6 +192,37 @@ class BidService(private val generationService: GenerationService,
         entity.pendingDate = context.startDate.toDate()
         bidDao.save(entity)
         return ResponseDto(data = "ok")
+    }
+
+    fun getBidsForEvaluation(requestData: BidsForEvaluationRequestData, context: GetBidsForEvaluationContext): BidsForEvaludationResponseData {
+        fun List<Bid>.archive(bidDao: BidDao ,bidsRecordsByIds: Map<UUID, BidEntity>) {
+            this.asSequence()
+                .map { ignoredBid -> ignoredBid.copy(statusDetails = StatusDetails.ARCHIVED) }
+                .map { archivedBid -> updateBidRecord(archivedBid, bidsRecordsByIds) }
+                .forEach { updatedRecord -> bidDao.save(updatedRecord) }
+        }
+
+        val bidsRecordsByIds = bidDao.findAllByCpIdAndStage(context.cpid, context.stage).associateBy { it.bidId }
+        val bidsDb = bidsRecordsByIds.values.map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
+
+        // FReq-1.4.1.10
+        val ignoredBids = bidsDb.filter { it.status == Status.PENDING && !it.relatedLots.containsAny(requestData.lots) }
+        ignoredBids.archive(bidDao, bidsRecordsByIds)
+
+        // FReq-1.4.1.2
+        return requestData.lots
+            .map { lot ->
+                val bids = bidsDb.filter { it.relatedLots.contains(lot.id.toString()) }
+                val bidsAmount = bids.size
+                if (isEnoughForOpening(context, bidsAmount)) {
+                    bids
+                } else {
+                    bids.archive(bidDao, bidsRecordsByIds)
+                    emptyList()
+                }
+            }
+            .flatten()
+            .toResponseData()
     }
 
     fun copyBids(cm: CommandMessage): ResponseDto {
@@ -261,7 +298,7 @@ class BidService(private val generationService: GenerationService,
                 statusDetails = StatusDetails.EMPTY
             }
             entity.apply {
-                status = Status.PENDING.value()
+                status = Status.PENDING.value
                 jsonData = toJson(bid)
             }
             bidDao.save(entity)
@@ -423,9 +460,9 @@ class BidService(private val generationService: GenerationService,
      *      system sets bid.statusDetails == "disqualified";
      */
     private fun Bid.updateStatusDetails(statusDetails: AwardStatusDetails): Bid = when (statusDetails) {
-        AwardStatusDetails.ACTIVE -> this.copy(statusDetails = StatusDetails.VALID)
+        AwardStatusDetails.ACTIVE       -> this.copy(statusDetails = StatusDetails.VALID)
         AwardStatusDetails.UNSUCCESSFUL -> this.copy(statusDetails = StatusDetails.DISQUALIFIED)
-        else -> throw ErrorException(
+        else                                                                          -> throw ErrorException(
             error = ErrorType.INVALID_STATUS_DETAILS,
             message = "Current status details: '$statusDetails'. Expected status details: [${AwardStatusDetails.ACTIVE}, ${AwardStatusDetails.UNSUCCESSFUL}]"
         )
@@ -857,6 +894,37 @@ class BidService(private val generationService: GenerationService,
         }
     }
 
+    private fun isEnoughForOpening(context: GetBidsForEvaluationContext, bidsAmount: Int): Boolean {
+       return when (Countries.fromString(context.country)) {
+            Countries.MD -> when (context.pmd) {
+                ProcurementMethod.OT,
+                ProcurementMethod.SV,
+                ProcurementMethod.MV      -> bidsAmount >= 1
+
+                ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+                ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+                ProcurementMethod.TEST_OT,
+                ProcurementMethod.TEST_SV,
+                ProcurementMethod.TEST_MV -> false
+            }
+       }
+    }
+
+    private fun updateBidRecord(
+        updatedBid: Bid,
+        bidsRecordsByIds: Map<UUID, BidEntity>
+    ): BidEntity {
+        val bidId = UUID.fromString(updatedBid.id)
+        val oldRecord = bidsRecordsByIds.get(bidId) ?: throw ErrorException(
+            error = BID_NOT_FOUND,
+            message = "Cannot find bid with id ${bidId}. Available bids : ${bidsRecordsByIds.keys}"
+        )
+        return oldRecord.copy(jsonData = toJson(updatedBid))
+    }
+
     private fun updateTenderers(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<OrganizationReference> {
         if (bidRequest.tenderers.isEmpty()) return bidEntity.tenderers
 
@@ -1171,11 +1239,11 @@ class BidService(private val generationService: GenerationService,
             val (entity, bid) = map
             if (bid.relatedLots.containsAny(lotsIds)) {
                 val bidCopy = bid.copy(
-                        date = localNowUTC(),
-                        status = Status.INVITED,
-                        statusDetails = StatusDetails.EMPTY,
-                        value = null,
-                        documents = null)
+                    date = localNowUTC(),
+                    status = Status.INVITED,
+                    statusDetails = StatusDetails.EMPTY,
+                    value = null,
+                    documents = null)
                 val entityCopy = getEntity(
                         bid = bidCopy,
                         cpId = entity.cpId,
@@ -1205,7 +1273,7 @@ class BidService(private val generationService: GenerationService,
                 cpId = cpId,
                 stage = stage,
                 owner = owner,
-                status = bid.status.value(),
+                status = bid.status.value,
                 bidId = UUID.fromString(bid.id),
                 token = token,
                 createdDate = createdDate,
