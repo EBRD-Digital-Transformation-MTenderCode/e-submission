@@ -23,7 +23,8 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class GetBidsForEvaludationResponse(
-    @field:JsonProperty("bids") @param:JsonProperty("bids") val bids: List<Bid>
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @field:JsonProperty("bids") @param:JsonProperty("bids") val bids: List<Bid>?
 ) {
     data class Bid(
         @field:JsonProperty("id") @param:JsonProperty("id") val id: UUID,

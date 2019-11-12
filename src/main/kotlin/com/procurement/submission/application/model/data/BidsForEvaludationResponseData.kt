@@ -23,7 +23,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 data class BidsForEvaludationResponseData(
-    val bids: List<Bid>
+    val bids: List<Bid>?
 ) {
     data class Bid(
         val id: UUID,

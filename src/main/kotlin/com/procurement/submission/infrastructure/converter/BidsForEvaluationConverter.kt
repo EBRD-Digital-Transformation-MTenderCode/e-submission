@@ -22,7 +22,7 @@ fun GetBidsForEvaluationRequest.toData() : BidsForEvaluationRequestData {
 
 fun BidsForEvaludationResponseData.toResponse() : GetBidsForEvaludationResponse {
     return GetBidsForEvaludationResponse(
-        bids = this.bids.map { bid ->
+        bids = this.bids?.map { bid ->
             GetBidsForEvaludationResponse.Bid(
                 id = bid.id,
                 date = bid.date,
