@@ -1,17 +1,18 @@
 package com.procurement.submission.service
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
 import com.procurement.submission.application.service.BidCreateContext
 import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsData
+import com.procurement.submission.application.service.GetBidsForEvaluationContext
 import com.procurement.submission.dao.HistoryDao
 import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.toData
+import com.procurement.submission.infrastructure.converter.toResponse
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsResponse
 import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest
@@ -19,6 +20,7 @@ import com.procurement.submission.infrastructure.dto.bid.finalize.response.Final
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.CommandType
 import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.bpe.country
 import com.procurement.submission.model.dto.bpe.cpid
 import com.procurement.submission.model.dto.bpe.ctxId
 import com.procurement.submission.model.dto.bpe.owner
@@ -28,6 +30,7 @@ import com.procurement.submission.model.dto.bpe.startDate
 import com.procurement.submission.model.dto.bpe.token
 import com.procurement.submission.model.dto.request.BidCreateRequest
 import com.procurement.submission.model.dto.request.BidUpdateRequest
+import com.procurement.submission.model.dto.request.GetBidsForEvaluationRequest
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
 import org.slf4j.LoggerFactory
@@ -93,6 +96,34 @@ class CommandService(
                             startDate = cm.startDate
                         )
                         bidService.updateBid(requestData = requestData, context = context)
+                    }
+
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
+                        throw ErrorException(ErrorType.INVALID_PMD)
+                    }
+
+                }
+            }
+            CommandType.GET_BIDS_FOR_EVALUATION                 -> {
+                when (cm.pmd) {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.MV, ProcurementMethod.TEST_MV -> {
+                        val request = toObject(GetBidsForEvaluationRequest::class.java, cm.data)
+                        val requestData = request.toData()
+                        val context = GetBidsForEvaluationContext(
+                            cpid = cm.cpid,
+                            stage = cm.stage,
+                            country = cm.country,
+                            pmd = cm.pmd
+                        )
+                        val serviceResponse = bidService.getBidsForEvaluation(requestData = requestData, context = context)
+                        val response = serviceResponse.toResponse()
+                        return ResponseDto(data = response)
                     }
 
                     ProcurementMethod.RT, ProcurementMethod.TEST_RT,
