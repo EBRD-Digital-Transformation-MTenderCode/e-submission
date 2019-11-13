@@ -12,8 +12,6 @@ enum class DocumentType constructor(private val value: String) {
     ILLUSTRATION("illustration"),
     COMMERCIAL_OFFER("x_commercialOffer"),
     QUALIFICATION_DOCUMENTS("x_qualificationDocuments"),
-    TECHNICAL_PROPOSAL("technicalProposal"),
-    SELECTION_DOCUMENTS("selectionDocuments"),
     TECHNICAL_DOCUMENTS("x_technicalDocuments");
 
     override fun toString(): String {

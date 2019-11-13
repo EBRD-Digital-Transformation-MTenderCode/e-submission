@@ -494,12 +494,6 @@ class BidService(private val generationService: GenerationService,
                 DocumentType.COMMERCIAL_OFFER,
                 DocumentType.QUALIFICATION_DOCUMENTS,
                 DocumentType.TECHNICAL_DOCUMENTS -> Unit
-
-                DocumentType.TECHNICAL_PROPOSAL,
-                DocumentType.SELECTION_DOCUMENTS -> throw ErrorException(
-                    error = INVALID_DOCUMENT_TYPE,
-                    message = "Document has invalid type: '${document.documentType.value()}'."
-                )
             }
         }
     }
@@ -585,12 +579,6 @@ class BidService(private val generationService: GenerationService,
                 DocumentType.COMMERCIAL_OFFER,
                 DocumentType.QUALIFICATION_DOCUMENTS,
                 DocumentType.TECHNICAL_DOCUMENTS -> Unit
-
-                DocumentType.TECHNICAL_PROPOSAL,
-                DocumentType.SELECTION_DOCUMENTS -> throw ErrorException(
-                    error = INVALID_DOCUMENT_TYPE,
-                    message = "Document has invalid type: '${document.documentType.value()}'."
-                )
             }
         }
     }
