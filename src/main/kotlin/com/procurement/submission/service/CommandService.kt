@@ -7,6 +7,7 @@ import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.application.service.GetBidsForEvaluationContext
+import com.procurement.submission.application.service.OpenBidsForPublishingContext
 import com.procurement.submission.dao.HistoryDao
 import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
@@ -31,6 +32,7 @@ import com.procurement.submission.model.dto.bpe.token
 import com.procurement.submission.model.dto.request.BidCreateRequest
 import com.procurement.submission.model.dto.request.BidUpdateRequest
 import com.procurement.submission.model.dto.request.GetBidsForEvaluationRequest
+import com.procurement.submission.model.dto.request.OpenBidsForPublishingRequest
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
 import org.slf4j.LoggerFactory
@@ -122,6 +124,32 @@ class CommandService(
                             pmd = cm.pmd
                         )
                         val serviceResponse = bidService.getBidsForEvaluation(requestData = requestData, context = context)
+                        val response = serviceResponse.toResponse()
+                        return ResponseDto(data = response)
+                    }
+
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
+                        throw ErrorException(ErrorType.INVALID_PMD)
+                    }
+
+                }
+            }
+            CommandType.OPEN_BIDS_FOR_PUBLISHING                 -> {
+                when (cm.pmd) {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.MV, ProcurementMethod.TEST_MV -> {
+                        val request = toObject(OpenBidsForPublishingRequest::class.java, cm.data)
+                        val requestData = request.toData()
+                        val context = OpenBidsForPublishingContext(
+                            cpid = cm.cpid,
+                            stage = cm.stage
+                        )
+                        val serviceResponse = bidService.openBidsForPublishing(requestData = requestData, context = context)
                         val response = serviceResponse.toResponse()
                         return ResponseDto(data = response)
                     }
