@@ -22,7 +22,7 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import java.time.LocalDateTime
 import java.util.*
 
-data class GetBidsForEvaludationResponse(
+data class GetBidsForEvaluationResponse(
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @field:JsonProperty("bids") @param:JsonProperty("bids") val bids: List<Bid>?
 ) {

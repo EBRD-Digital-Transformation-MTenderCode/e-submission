@@ -1,11 +1,10 @@
 package com.procurement.submission.infrastructure.dto.bid.evaluation.response
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.model.dto.response.BidCreateResponse
-import com.procurement.submission.model.dto.response.GetBidsForEvaludationResponse
+import com.procurement.submission.model.dto.response.GetBidsForEvaluationResponse
 import org.junit.jupiter.api.Test
 
-class GetBidsForEvaluationResponseTest : AbstractDTOTestBase<GetBidsForEvaludationResponse>(GetBidsForEvaludationResponse::class.java) {
+class GetBidsForEvaluationResponseTest : AbstractDTOTestBase<GetBidsForEvaluationResponse>(GetBidsForEvaluationResponse::class.java) {
 
     @Test
     fun fully() {

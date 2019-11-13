@@ -22,7 +22,7 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import java.time.LocalDateTime
 import java.util.*
 
-data class BidsForEvaludationResponseData(
+data class BidsForEvaluationResponseData(
     val bids: List<Bid>?
 ) {
     data class Bid(
