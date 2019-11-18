@@ -328,15 +328,15 @@ fun List<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationResponseData{
                                         addressDetails = BidsForEvaluationResponseData.Bid.Tenderer.Details.BankAccount.Address.AddressDetails(
                                             country = BidsForEvaluationResponseData.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
                                                 id = bankAccount.address.addressDetails.country.id,
-                                                scheme = bankAccount.address.addressDetails.country.scheme!!,
-                                                description = bankAccount.address.addressDetails.country.description!!,
-                                                uri = bankAccount.address.addressDetails.country.uri!!
+                                                scheme = bankAccount.address.addressDetails.country.scheme,
+                                                description = bankAccount.address.addressDetails.country.description,
+                                                uri = bankAccount.address.addressDetails.country.uri
                                             ),
                                             region = BidsForEvaluationResponseData.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
                                                 id = bankAccount.address.addressDetails.region.id,
-                                                scheme = bankAccount.address.addressDetails.region.scheme!!,
-                                                description = bankAccount.address.addressDetails.region.description!!,
-                                                uri = bankAccount.address.addressDetails.region.uri!!
+                                                scheme = bankAccount.address.addressDetails.region.scheme,
+                                                description = bankAccount.address.addressDetails.region.description,
+                                                uri = bankAccount.address.addressDetails.region.uri
                                             ),
                                             locality = BidsForEvaluationResponseData.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
                                                 id = bankAccount.address.addressDetails.locality.id,

@@ -25,10 +25,16 @@
             "streetAddress": "bids[0].tenderers[0].address.streetAddress",
             "addressDetails": {
               "country": {
-                "id": "bids[0].tenderers[0].address.addressDetails.country.id"
+                "scheme": "bids[0].tenderers[0].address.addressDetails.country.scheme",
+                "id": "bids[0].tenderers[0].address.addressDetails.country.id",
+                "description": "bids[0].tenderers[0].address.addressDetails.country.description",
+                "uri": "bids[0].tenderers[0].address.addressDetails.country.uri"
               },
               "region": {
-                "id": "bids[0].tenderers[0].address.addressDetails.region.id"
+                "scheme": "bids[0].tenderers[0].address.addressDetails.region.scheme",
+                "id": "bids[0].tenderers[0].address.addressDetails.region.id",
+                "description": "bids[0].tenderers[0].address.addressDetails.region.description",
+                "uri": "bids[0].tenderers[0].address.addressDetails.region.uri"
               },
               "locality": {
                 "scheme": "bids[0].tenderers[0].address.addressDetails.locality.scheme",

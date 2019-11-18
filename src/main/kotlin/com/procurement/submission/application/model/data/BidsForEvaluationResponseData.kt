@@ -80,16 +80,16 @@ data class BidsForEvaluationResponseData(
 
                     data class Country(
                         val id: String,
-                        val scheme: String?,
-                        val description: String?,
-                        val uri: String?
+                        val scheme: String,
+                        val description: String,
+                        val uri: String
                     )
 
                     data class Region(
-                        val id: String?,
-                        val scheme: String?,
-                        val description: String?,
-                        val uri: String?
+                        val id: String,
+                        val scheme: String,
+                        val description: String,
+                        val uri: String
                     )
                 }
             }
