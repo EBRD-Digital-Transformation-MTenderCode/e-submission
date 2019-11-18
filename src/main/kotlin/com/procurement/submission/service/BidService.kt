@@ -1322,7 +1322,7 @@ class BidService(private val generationService: GenerationService,
                                 scheme = bankAccount.identifier.scheme
                             ),
                             accountIdentification = AccountIdentification(
-                                id = bankAccount.accountIdentification.scheme,
+                                id = bankAccount.accountIdentification.id,
                                 scheme = bankAccount.accountIdentification.scheme
                             ),
                             additionalAccountIdentifiers =  bankAccount.additionalAccountIdentifiers.map { accountIdentifier ->
