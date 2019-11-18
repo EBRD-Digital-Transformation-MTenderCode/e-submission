@@ -101,28 +101,16 @@ data class BidCreateRequest(
 
                     data class Region(
                         @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String?,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
+                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
+                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
+                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String
                     )
 
                     data class Country(
                         @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String?,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
+                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
+                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
+                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String
                     )
                 }
             }
