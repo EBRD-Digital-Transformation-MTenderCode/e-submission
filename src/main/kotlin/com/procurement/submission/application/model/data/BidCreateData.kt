@@ -89,16 +89,16 @@ data class BidCreateData(
 
                     data class Region(
                         val id: String,
-                        val scheme: String?,
-                        val description: String?,
-                        val uri: String?
+                        val scheme: String,
+                        val description: String,
+                        val uri: String
                     )
 
                     data class Country(
                         val id: String,
-                        val scheme: String?,
-                        val description: String?,
-                        val uri: String?
+                        val scheme: String,
+                        val description: String,
+                        val uri: String
                     )
                 }
             }

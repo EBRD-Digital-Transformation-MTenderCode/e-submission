@@ -575,12 +575,6 @@ class BidService(private val generationService: GenerationService,
                 DocumentType.COMMERCIAL_OFFER,
                 DocumentType.QUALIFICATION_DOCUMENTS,
                 DocumentType.TECHNICAL_DOCUMENTS -> Unit
-
-                DocumentType.TECHNICAL_PROPOSAL,
-                DocumentType.SELECTION_DOCUMENTS -> throw ErrorException(
-                    error = INVALID_DOCUMENT_TYPE,
-                    message = "Document has invalid type: '${document.documentType.value()}'."
-                )
             }
         }
     }
@@ -666,12 +660,6 @@ class BidService(private val generationService: GenerationService,
                 DocumentType.COMMERCIAL_OFFER,
                 DocumentType.QUALIFICATION_DOCUMENTS,
                 DocumentType.TECHNICAL_DOCUMENTS -> Unit
-
-                DocumentType.TECHNICAL_PROPOSAL,
-                DocumentType.SELECTION_DOCUMENTS -> throw ErrorException(
-                    error = INVALID_DOCUMENT_TYPE,
-                    message = "Document has invalid type: '${document.documentType.value()}'."
-                )
             }
         }
     }
@@ -1446,7 +1434,7 @@ class BidService(private val generationService: GenerationService,
                                 scheme = bankAccount.identifier.scheme
                             ),
                             accountIdentification = AccountIdentification(
-                                id = bankAccount.accountIdentification.scheme,
+                                id = bankAccount.accountIdentification.id,
                                 scheme = bankAccount.accountIdentification.scheme
                             ),
                             additionalAccountIdentifiers =  bankAccount.additionalAccountIdentifiers.map { accountIdentifier ->
