@@ -112,7 +112,7 @@ data class BidCreateData(
             )
 
             data class Details(
-                val typeOfSupplier: String,
+                val typeOfSupplier: String?,
                 val mainEconomicActivities: List<String>,
                 val scale: String,
                 val permits: List<Permit>,
