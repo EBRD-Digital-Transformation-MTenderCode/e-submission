@@ -590,7 +590,7 @@ class BidService(private val generationService: GenerationService,
 
     private fun checkMoney(money: Money?) {
       money?.let {
-          if (money.amount.compareTo(BigDecimal.ZERO) == -1) throw ErrorException(
+          if (money.amount.compareTo(BigDecimal.ZERO) <= 0) throw ErrorException(
               error = ErrorType.INVALID_AMOUNT,
               message = "Amount cannot be less than 0. Current value = ${money.amount}"
           )
