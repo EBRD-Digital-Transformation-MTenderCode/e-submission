@@ -995,7 +995,7 @@ class BidService(private val generationService: GenerationService,
 
         return Details(
             typeOfSupplier = detailsDb.typeOfSupplier,
-            mainEconomicActivities = detailsDb.mainEconomicActivities,
+            mainEconomicActivities = detailsRequest.mainEconomicActivities,
             scale = detailsDb.scale,
             permits = updatePermits(detailsDb.permits, detailsRequest.permits),
             bankAccounts = updateBankAccounts(detailsDb.bankAccounts, detailsRequest.bankAccounts),

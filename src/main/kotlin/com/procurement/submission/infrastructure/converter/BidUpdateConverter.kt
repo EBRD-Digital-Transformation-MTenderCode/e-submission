@@ -122,7 +122,15 @@ fun BidUpdateRequest.toData(): BidUpdateData {
                                     description = legalform.description,
                                     uri = legalform.uri
                                 )
+                            },
+                            mainEconomicActivities = details.mainEconomicActivities.errorIfEmpty {
+                                throw ErrorException(
+                                    error = ErrorType.EMPTY_LIST,
+                                    message = "The list of Bid.tenderers.details.mainEconomicActivities cannot be empty"
+                                )
                             }
+                                ?.map { it }
+                                .orEmpty()
                         )
                     } ,
                     persones = tenderer.persones.errorIfEmpty {
