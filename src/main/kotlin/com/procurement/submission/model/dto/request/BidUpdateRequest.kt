@@ -70,6 +70,9 @@ data class BidUpdateRequest(
 
             data class Details(
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>?,
+
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @field:JsonProperty("permits") @param:JsonProperty("permits") val permits: List<Permit>?,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)

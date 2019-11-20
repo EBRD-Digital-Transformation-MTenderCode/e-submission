@@ -128,8 +128,12 @@ data class BidCreateRequest(
             )
 
             data class Details(
-                @field:JsonProperty("typeOfSupplier") @param:JsonProperty("typeOfSupplier") val typeOfSupplier: String,
-                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>,
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                @field:JsonProperty("typeOfSupplier") @param:JsonProperty("typeOfSupplier") val typeOfSupplier: String?,
+
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>?,
+
                 @field:JsonProperty("scale") @param:JsonProperty("scale") val scale: String,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
