@@ -134,7 +134,7 @@ data class BidsForEvaluationResponseData(
             )
 
             data class Details(
-                val typeOfSupplier: TypeOfSupplier,
+                val typeOfSupplier: TypeOfSupplier?,
                 val mainEconomicActivities: List<String>,
                 val scale: Scale,
                 val permits: List<Permit>?,

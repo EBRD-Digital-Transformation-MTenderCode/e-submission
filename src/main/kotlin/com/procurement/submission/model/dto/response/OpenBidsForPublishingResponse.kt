@@ -125,7 +125,9 @@ data class OpenBidsForPublishingResponse(
             }
 
             data class Details(
-                @field:JsonProperty("typeOfSupplier") @param:JsonProperty("typeOfSupplier") val typeOfSupplier: TypeOfSupplier,
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                @field:JsonProperty("typeOfSupplier") @param:JsonProperty("typeOfSupplier") val typeOfSupplier: TypeOfSupplier?,
+
                 @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>,
                 @field:JsonProperty("scale") @param:JsonProperty("scale") val scale: Scale,
 

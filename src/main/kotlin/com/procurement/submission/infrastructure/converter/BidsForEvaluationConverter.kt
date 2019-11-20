@@ -279,7 +279,7 @@ fun List<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationResponseData{
                             url = tenderer.contactPoint.url
                         ),
                         details = BidsForEvaluationResponseData.Bid.Tenderer.Details(
-                            typeOfSupplier = TypeOfSupplier.fromString(tenderer.details.typeOfSupplier),
+                            typeOfSupplier = tenderer.details.typeOfSupplier?.let { TypeOfSupplier.fromString(it) },
                             mainEconomicActivities = tenderer.details.mainEconomicActivities,
                             scale = Scale.fromString(tenderer.details.scale),
                             permits = tenderer.details.permits?.map { permit ->

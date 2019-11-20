@@ -174,7 +174,7 @@ data class GetBidsForEvaluationResponse(
             )
 
             data class Details(
-                @field:JsonProperty("typeOfSupplier") @param:JsonProperty("typeOfSupplier") val typeOfSupplier: TypeOfSupplier,
+                @field:JsonProperty("typeOfSupplier") @param:JsonProperty("typeOfSupplier") val typeOfSupplier: TypeOfSupplier?,
                 @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>,
                 @field:JsonProperty("scale") @param:JsonProperty("scale") val scale: Scale,
 
