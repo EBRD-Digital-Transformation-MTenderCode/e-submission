@@ -375,18 +375,15 @@ class StatusService(private val rulesService: RulesService,
     private fun isEnoughForOpening(context: GetBidsAuctionContext, bidsAmount: Int): Boolean {
         return when (Countries.fromString(context.country)) {
             Countries.MD -> when (context.pmd) {
-                ProcurementMethod.OT,
-                ProcurementMethod.SV,
-                ProcurementMethod.MV      -> bidsAmount >= 1
+                ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                ProcurementMethod.MV, ProcurementMethod.TEST_MV -> bidsAmount >= 1
 
                 ProcurementMethod.RT, ProcurementMethod.TEST_RT,
                 ProcurementMethod.DA, ProcurementMethod.TEST_DA,
                 ProcurementMethod.NP, ProcurementMethod.TEST_NP,
                 ProcurementMethod.FA, ProcurementMethod.TEST_FA,
-                ProcurementMethod.OP, ProcurementMethod.TEST_OP,
-                ProcurementMethod.TEST_OT,
-                ProcurementMethod.TEST_SV,
-                ProcurementMethod.TEST_MV -> false
+                ProcurementMethod.OP, ProcurementMethod.TEST_OP -> false
             }
         }
     }
