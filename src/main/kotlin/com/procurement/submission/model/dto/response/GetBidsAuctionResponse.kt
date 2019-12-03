@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.domain.model.Money
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
@@ -13,6 +14,9 @@ import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
+import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.domain.model.requirement.RequirementId
+import com.procurement.submission.domain.model.requirement.RequirementResponseId
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueDeserializer
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueSerializer
 import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
@@ -31,7 +35,7 @@ data class GetBidsAuctionResponse(
         @field:JsonProperty("bids") @param:JsonProperty("bids") val bids: List<Bid>
     ) {
         data class Bid(
-            @field:JsonProperty("id") @param:JsonProperty("id") val id: UUID,
+            @field:JsonProperty("id") @param:JsonProperty("id") val id: BidId,
 
             @JsonDeserialize(using = JsonDateDeserializer::class)
             @JsonSerialize(using = JsonDateSerializer::class)
@@ -55,7 +59,7 @@ data class GetBidsAuctionResponse(
             @JsonInclude(JsonInclude.Include.NON_EMPTY)
             @field:JsonProperty("requirementResponses") @param:JsonProperty("requirementResponses") val requirementResponses: List<RequirementResponse>?,
 
-            @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<UUID>
+            @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<LotId>
         ) {
 
             data class Tenderer(
@@ -322,11 +326,11 @@ data class GetBidsAuctionResponse(
                 @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<UUID>?
+                @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<LotId>?
             )
 
             data class RequirementResponse(
-                @field:JsonProperty("id") @param:JsonProperty("id") val id: UUID,
+                @field:JsonProperty("id") @param:JsonProperty("id") val id: RequirementResponseId,
                 @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
 
                 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -342,7 +346,7 @@ data class GetBidsAuctionResponse(
                 @field:JsonProperty("period") @param:JsonProperty("period") val period: Period?
             ) {
                 data class Requirement(
-                    @field:JsonProperty("id") @param:JsonProperty("id") val id: UUID
+                    @field:JsonProperty("id") @param:JsonProperty("id") val id: RequirementId
                 )
 
                 data class Period(

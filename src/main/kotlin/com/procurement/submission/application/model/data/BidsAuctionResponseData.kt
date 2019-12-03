@@ -1,6 +1,7 @@
 package com.procurement.submission.application.model.data
 
 import com.procurement.submission.domain.model.Money
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
@@ -8,6 +9,9 @@ import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
+import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.domain.model.requirement.RequirementId
+import com.procurement.submission.domain.model.requirement.RequirementResponseId
 import java.time.LocalDateTime
 import java.util.*
 
@@ -19,7 +23,7 @@ data class BidsAuctionResponseData(
         val bids: List<Bid>
     ) {
         data class Bid(
-            val id: UUID,
+            val id: BidId,
             val date: LocalDateTime,
             val pendingDate: LocalDateTime,
             val status: Status,
@@ -28,7 +32,7 @@ data class BidsAuctionResponseData(
             val value: Money,
             val documents: List<Document>?,
             val requirementResponses: List<RequirementResponse>?,
-            val relatedLots: List<UUID>
+            val relatedLots: List<LotId>
         ) {
 
             data class Tenderer(
@@ -235,11 +239,11 @@ data class BidsAuctionResponseData(
                 val id: String,
                 val title: String?,
                 val description: String?,
-                val relatedLots: List<UUID>?
+                val relatedLots: List<LotId>?
             )
 
             data class RequirementResponse(
-                val id: UUID,
+                val id: RequirementResponseId,
                 val title: String,
                 val description: String?,
                 val value: RequirementRsValue,
@@ -247,7 +251,7 @@ data class BidsAuctionResponseData(
                 val period: Period?
             ) {
                 data class Requirement(
-                    val id: UUID
+                    val id: RequirementId
                 )
 
                 data class Period(

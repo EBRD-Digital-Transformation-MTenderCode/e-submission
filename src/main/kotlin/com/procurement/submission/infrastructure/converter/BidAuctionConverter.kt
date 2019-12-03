@@ -2,8 +2,12 @@ package com.procurement.submission.infrastructure.converter
 
 import com.procurement.submission.application.model.data.BidsAuctionRequestData
 import com.procurement.submission.application.model.data.BidsAuctionResponseData
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
+import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.domain.model.requirement.RequirementId
+import com.procurement.submission.domain.model.requirement.RequirementResponseId
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.dto.request.GetBidsAuctionRequest
 import com.procurement.submission.model.dto.response.GetBidsAuctionResponse
@@ -234,12 +238,12 @@ fun BidsAuctionResponseData.toResponse(): GetBidsAuctionResponse {
 
 fun Bid.toBidsForAuctionResponseData(pendingDate: LocalDateTime): BidsAuctionResponseData.BidsData.Bid {
     return BidsAuctionResponseData.BidsData.Bid(
-            id = UUID.fromString(this.id),
-            pendingDate = pendingDate,
-            date = this.date,
-            status = this.status,
-            statusDetails = this.statusDetails,
-            tenderers = this.tenderers.map { tenderer ->
+        id = BidId.fromString(this.id),
+        pendingDate = pendingDate,
+        date = this.date,
+        status = this.status,
+        statusDetails = this.statusDetails,
+        tenderers = this.tenderers.map { tenderer ->
                 BidsAuctionResponseData.BidsData.Bid.Tenderer(
                     id = tenderer.id!!,
                     name = tenderer.name,
@@ -399,21 +403,21 @@ fun Bid.toBidsForAuctionResponseData(pendingDate: LocalDateTime): BidsAuctionRes
                     }
                 )
             },
-            value = this.value!!,
-            documents = this.documents?.map { document ->
+        value = this.value!!,
+        documents = this.documents?.map { document ->
                 BidsAuctionResponseData.BidsData.Bid.Document(
                     id = document.id,
                     documentType = document.documentType,
                     description = document.description,
                     title = document.title,
                     relatedLots = document.relatedLots?.let { documents ->
-                        documents.map { UUID.fromString(it) }
+                        documents.map { LotId.fromString(it) }
                     }
                 )
             },
-            requirementResponses = this.requirementResponses?.map { requirementResponse ->
+        requirementResponses = this.requirementResponses?.map { requirementResponse ->
                 BidsAuctionResponseData.BidsData.Bid.RequirementResponse(
-                    id = UUID.fromString(requirementResponse.id),
+                    id = RequirementResponseId.fromString(requirementResponse.id),
                     description = requirementResponse.description,
                     title = requirementResponse.title,
                     value = requirementResponse.value,
@@ -424,11 +428,11 @@ fun Bid.toBidsForAuctionResponseData(pendingDate: LocalDateTime): BidsAuctionRes
                         )
                     },
                     requirement = BidsAuctionResponseData.BidsData.Bid.RequirementResponse.Requirement(
-                        id = UUID.fromString(requirementResponse.requirement.id)
+                        id = RequirementId.fromString(requirementResponse.requirement.id)
                     )
                 )
             },
-            relatedLots = this.relatedLots.map { UUID.fromString(it) }
+        relatedLots = this.relatedLots.map { LotId.fromString(it) }
         )
 }
 
