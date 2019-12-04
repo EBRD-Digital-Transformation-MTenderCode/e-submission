@@ -1,0 +1,13 @@
+{
+  "bid": {
+    "id": "bid.id",
+    "documents": [
+      {
+        "documentType": "x_qualificationDocuments",
+        "id": "bid.documents.id",
+        "relatedLots": [
+        ]
+      }
+    ]
+  }
+}
