@@ -4,6 +4,7 @@ import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsDat
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsResult
 import com.procurement.submission.infrastructure.dto.bid.opendoc.request.OpenBidDocsRequest
 import com.procurement.submission.infrastructure.dto.bid.opendoc.response.OpenBidDocsResponse
+import com.procurement.submission.lib.mapIfNotEmpty
 
 fun OpenBidDocsRequest.toData() = OpenBidDocsData(nextAwardForUpdate = this.nextAwardForUpdate.let { nextAwardForUpdate ->
     OpenBidDocsData.NextAwardForUpdate(
@@ -16,14 +17,16 @@ fun OpenBidDocsResult.toResponse() = OpenBidDocsResponse(
     bid = this.bid.let { bid ->
         OpenBidDocsResponse.Bid(
             id = bid.id,
-            documents = bid.documents.map { document ->
-                OpenBidDocsResponse.Bid.Document(
-                    id = document.id,
-                    description = document.description,
-                    documentType = document.documentType,
-                    relatedLots = document.relatedLots,
-                    title = document.title
-                )
-            }
+            documents = bid.documents
+                .mapIfNotEmpty { document ->
+                    OpenBidDocsResponse.Bid.Document(
+                        id = document.id,
+                        description = document.description,
+                        documentType = document.documentType,
+                        relatedLots = document.relatedLots.toList(),
+                        title = document.title
+                    )
+                }
+                .orEmpty()
         )
     })
