@@ -36,7 +36,6 @@ import com.procurement.submission.exception.ErrorType.CONTEXT
 import com.procurement.submission.exception.ErrorType.INVALID_DATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_FOR_UPDATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_ID
-import com.procurement.submission.exception.ErrorType.INVALID_DOCUMENT_TYPE
 import com.procurement.submission.exception.ErrorType.INVALID_OWNER
 import com.procurement.submission.exception.ErrorType.INVALID_PERSONES
 import com.procurement.submission.exception.ErrorType.INVALID_RELATED_LOT
@@ -936,22 +935,19 @@ class BidService(private val generationService: GenerationService,
     }
 
     private fun isEnoughForOpening(context: GetBidsForEvaluationContext, bidsAmount: Int): Boolean {
-       return when (Countries.fromString(context.country)) {
+        return when (Countries.fromString(context.country)) {
             Countries.MD -> when (context.pmd) {
-                ProcurementMethod.OT,
-                ProcurementMethod.SV,
-                ProcurementMethod.MV      -> bidsAmount >= 1
+                ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                ProcurementMethod.MV, ProcurementMethod.TEST_MV -> bidsAmount >= 1
 
                 ProcurementMethod.RT, ProcurementMethod.TEST_RT,
                 ProcurementMethod.DA, ProcurementMethod.TEST_DA,
                 ProcurementMethod.NP, ProcurementMethod.TEST_NP,
                 ProcurementMethod.FA, ProcurementMethod.TEST_FA,
-                ProcurementMethod.OP, ProcurementMethod.TEST_OP,
-                ProcurementMethod.TEST_OT,
-                ProcurementMethod.TEST_SV,
-                ProcurementMethod.TEST_MV -> false
+                ProcurementMethod.OP, ProcurementMethod.TEST_OP -> false
             }
-       }
+        }
     }
 
     private fun updateBidRecord(
