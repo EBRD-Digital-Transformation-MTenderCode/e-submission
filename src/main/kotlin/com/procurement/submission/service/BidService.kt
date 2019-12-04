@@ -102,6 +102,7 @@ import kotlin.collections.HashMap
 
 @Service
 class BidService(private val generationService: GenerationService,
+                 private val rulesService: RulesService,
                  private val periodService: PeriodService,
                  private val bidDao: BidDao) {
 
@@ -200,34 +201,42 @@ class BidService(private val generationService: GenerationService,
     }
 
     fun getBidsForEvaluation(requestData: BidsForEvaluationRequestData, context: GetBidsForEvaluationContext): BidsForEvaluationResponseData {
-        fun List<Bid>.archive(bidDao: BidDao ,bidsRecordsByIds: Map<UUID, BidEntity>) {
-            this.asSequence()
-                .map { ignoredBid -> ignoredBid.copy(statusDetails = StatusDetails.ARCHIVED) }
-                .map { archivedBid -> updateBidRecord(archivedBid, bidsRecordsByIds) }
-                .forEach { updatedRecord -> bidDao.save(updatedRecord) }
-        }
-
         val bidsRecordsByIds = bidDao.findAllByCpIdAndStage(context.cpid, context.stage).associateBy { it.bidId }
         val bidsDb = bidsRecordsByIds.values.map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
 
+        val bidsByRelatedLot:Map<String, List<Bid>> = bidsDb.asSequence()
+            .flatMap {bid ->
+                bid.relatedLots.asSequence()
+                    .map {lotId ->
+                        lotId to bid
+                    }
+            }
+            .groupBy (keySelector = {it.first}, valueTransform = {it.second})
+
         // FReq-1.4.1.10
         val ignoredBids = bidsDb.filter { it.status == Status.PENDING && !it.relatedLots.containsAny(requestData.lots) }
-        ignoredBids.archive(bidDao, bidsRecordsByIds)
 
         // FReq-1.4.1.2
-        return requestData.lots
-            .map { lot ->
-                val bids = bidsDb.filter { it.relatedLots.contains(lot.id.toString()) }
-                val bidsAmount = bids.size
-                if (isEnoughForOpening(context, bidsAmount)) {
+        val notEnoughForOpeningBids = mutableSetOf<Bid>()
+        val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd.name)
+        val bidsForResponse = requestData.lots
+            .flatMap { lot ->
+                val bids = bidsByRelatedLot[lot.id.toString()] ?: emptyList()
+                if (bids.size >= minNumberOfBids) {
                     bids
                 } else {
-                    bids.archive(bidDao, bidsRecordsByIds)
+                    notEnoughForOpeningBids.addAll(bids)
                     emptyList()
                 }
             }
-            .flatten()
             .toBidsForEvaluationResponseData()
+
+        (ignoredBids + notEnoughForOpeningBids).asSequence()
+            .map { ignoredBid -> ignoredBid.copy(statusDetails = StatusDetails.ARCHIVED) }
+            .map { archivedBid -> updateBidRecord(archivedBid, bidsRecordsByIds) }
+            .also { updatedRecord -> bidDao.saveAll(updatedRecord.toList()) }
+
+        return bidsForResponse
     }
 
     fun openBidsForPublishing(requestData: BidsForPublishingRequestData, context: OpenBidsForPublishingContext): BidsForPublishingResponseData {
