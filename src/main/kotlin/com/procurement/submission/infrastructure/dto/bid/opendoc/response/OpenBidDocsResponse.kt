@@ -2,7 +2,9 @@ package com.procurement.submission.infrastructure.dto.bid.opendoc.response
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.lot.LotId
 
 data class OpenBidDocsResponse(
     @field:JsonProperty("bid") @param:JsonProperty("bid") val bid: Bid
@@ -11,7 +13,7 @@ data class OpenBidDocsResponse(
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
         @field:JsonProperty("documents") @param:JsonProperty("documents") val documents: List<Document>,
 
-        @field:JsonProperty("id") @param:JsonProperty("id") val id: String
+        @field:JsonProperty("id") @param:JsonProperty("id") val id: BidId
     ) {
         data class Document(
             @field:JsonProperty("documentType") @param:JsonProperty("documentType") val documentType: DocumentType,
@@ -24,7 +26,7 @@ data class OpenBidDocsResponse(
             @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
 
             @JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<String>
+            @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<LotId>
         )
     }
 }
