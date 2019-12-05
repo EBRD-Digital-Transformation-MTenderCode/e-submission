@@ -1,6 +1,6 @@
 {
   "bid": {
-    "id": "bid.id",
+    "id": "f4fd8153-ac42-4e2d-9033-577e5fd32ca8",
     "documents": [
       {
         "documentType": "x_qualificationDocuments",
@@ -8,7 +8,7 @@
         "title": "bid.documents.title",
         "description": "bid.documents.description",
         "relatedLots": [
-          "bid.documents.relatedLots"
+          "b08b503e-9803-48a7-9e5f-0d85d74c9a3d"
         ]
       }
     ]
