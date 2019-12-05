@@ -88,7 +88,7 @@
             "mainEconomicActivities": [
               "bids[0].tenderers[0].details.mainEconomicActivities[0]"
             ],
-            "scale": "sme",
+            "scale": "SME",
             "permits": [
               {
                 "scheme": "SRLE",

@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.procurement.submission.exception.EnumException
 
 enum class Scale(@JsonValue val value: String) {
-    MICRO("micro"),
-    SME("sme"),
-    LARGE("large"),
+    MICRO("MICRO"),
+    SME("SME"),
+    LARGE("LARGE"),
     EMPTY("");
 
     override fun toString(): String {
