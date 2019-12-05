@@ -13,6 +13,7 @@ import com.procurement.submission.dao.HistoryDao
 import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.converter.toData
 import com.procurement.submission.infrastructure.converter.toResponse
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
@@ -251,16 +252,15 @@ class CommandService(
                 ResponseDto(data = dataResponse)
             }
             CommandType.OPEN_BID_DOCS -> {
-                val openBidDocsContext = OpenBidDocsContext(cpid = cm.cpid, stage = cm.stage)
-                val openBidDocsRequest = toObject(OpenBidDocsRequest::class.java, cm.data)
-                val openBidDocsData = openBidDocsRequest.toData()
-                val result = bidService.openBidDocs(context = openBidDocsContext, data = openBidDocsData)
+                val context = OpenBidDocsContext(cpid = cm.cpid, stage = cm.stage)
+                val request = toObject(OpenBidDocsRequest::class.java, cm.data)
+                val result = bidService.openBidDocs(context = context, data = request.convert())
                 if (log.isDebugEnabled)
                     log.debug("Docs were opened. Result: ${toJson(result)}")
-                val openBidDocsResponse = result.toResponse()
+                val response = result.convert()
                 if (log.isDebugEnabled)
-                    log.debug("Docs were opened. Response: ${toJson(openBidDocsResponse)}")
-                ResponseDto(data = openBidDocsResponse)
+                    log.debug("Docs were opened. Response: ${toJson(response)}")
+                ResponseDto(data = response)
             }
         }
         historyEntity = historyDao.saveHistory(cm.id, cm.command.value(), response)
