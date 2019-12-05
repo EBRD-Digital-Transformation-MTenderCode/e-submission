@@ -221,7 +221,7 @@ fun BidsForEvaluationResponseData.toResponse() : GetBidsForEvaluationResponse {
     )
 }
 
-fun List<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationResponseData{
+fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationResponseData{
     return BidsForEvaluationResponseData(
         bids = this.map {  bid ->
             BidsForEvaluationResponseData.Bid(

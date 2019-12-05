@@ -199,44 +199,67 @@ class BidService(private val generationService: GenerationService,
         return ResponseDto(data = "ok")
     }
 
-    fun getBidsForEvaluation(requestData: BidsForEvaluationRequestData, context: GetBidsForEvaluationContext): BidsForEvaluationResponseData {
-        val bidsRecordsByIds = bidDao.findAllByCpIdAndStage(context.cpid, context.stage).associateBy { it.bidId }
-        val bidsDb = bidsRecordsByIds.values.map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
+    fun getBidsForEvaluation(
+        requestData: BidsForEvaluationRequestData,
+        context: GetBidsForEvaluationContext
+    ): BidsForEvaluationResponseData {
+        val bidsEntitiesByIds = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+            .asSequence()
+            .filter { entity ->
+                Status.fromString(entity.status) == Status.PENDING
+            }
+            .associateBy { it.bidId }
 
-        val bidsByRelatedLot:Map<String, List<Bid>> = bidsDb.asSequence()
-            .flatMap {bid ->
+        val bidsDb = bidsEntitiesByIds.asSequence()
+            .map { (id, entity) ->
+                id to toObject(Bid::class.java, entity.jsonData)
+            }
+            .toMap()
+
+        val bidsByRelatedLot: Map<String, List<Bid>> = bidsDb.values
+            .asSequence()
+            .flatMap { bid ->
                 bid.relatedLots.asSequence()
-                    .map {lotId ->
+                    .map { lotId ->
                         lotId to bid
                     }
             }
-            .groupBy (keySelector = {it.first}, valueTransform = {it.second})
+            .groupBy(keySelector = { it.first }, valueTransform = { it.second })
 
-        // FReq-1.4.1.10
-        val ignoredBids = bidsDb.filter { it.status == Status.PENDING && !it.relatedLots.containsAny(requestData.lots) }
-
-        // FReq-1.4.1.2
-        val notEnoughForOpeningBids = mutableSetOf<Bid>()
         val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd.name)
-        val bidsForResponse = requestData.lots
+        val bidsForEvaluation = requestData.lots
+            .asSequence()
             .flatMap { lot ->
                 val bids = bidsByRelatedLot[lot.id.toString()] ?: emptyList()
-                if (bids.size >= minNumberOfBids) {
-                    bids
-                } else {
-                    notEnoughForOpeningBids.addAll(bids)
-                    emptyList()
-                }
+                if (bids.size >= minNumberOfBids)
+                    bids.asSequence()
+                else
+                    emptySequence()
             }
-            .toBidsForEvaluationResponseData()
+            .associateBy { bid ->
+                UUID.fromString(bid.id)
+            }
 
-        (ignoredBids + notEnoughForOpeningBids).asSequence()
-            .map { ignoredBid -> ignoredBid.copy(statusDetails = StatusDetails.ARCHIVED) }
-            .map { archivedBid -> updateBidRecord(archivedBid, bidsRecordsByIds) }
-            .also { updatedRecord -> bidDao.saveAll(updatedRecord.toList()) }
+        val updatedBidEntities = getBidsForArchive(bids = bidsDb, subtractBids = bidsForEvaluation)
+            .map { bid ->
+                bid.archive()
+            }
+            .map { updatedBid ->
+                bidsEntitiesByIds.getValue(UUID.fromString(updatedBid.id))
+                    .copy(jsonData = toJson(updatedBid))
+            }
+            .toList()
+        bidDao.saveAll(updatedBidEntities)
 
-        return bidsForResponse
+        return bidsForEvaluation.values.toBidsForEvaluationResponseData()
     }
+
+    private fun getBidsForArchive(bids: Map<UUID, Bid>, subtractBids: Map<UUID, Bid>) =
+        bids.asSequence()
+            .filter { (id, _) -> id !in subtractBids }
+            .map { it.value }
+
+    private fun Bid.archive() = this.copy(statusDetails = StatusDetails.ARCHIVED)
 
     fun openBidsForPublishing(requestData: BidsForPublishingRequestData, context: OpenBidsForPublishingContext): BidsForPublishingResponseData {
         val bidsRecords = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
