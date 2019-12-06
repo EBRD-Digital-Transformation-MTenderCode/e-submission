@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.procurement.submission.exception.EnumException
 
 enum class Scale(@JsonValue val value: String) {
-    MICRO("MICRO"),
-    SME("SME"),
-    LARGE("LARGE"),
+    MICRO("micro"),
+    SME("sme"),
+    LARGE("large"),
     EMPTY("");
 
     override fun toString(): String {
@@ -18,6 +18,7 @@ enum class Scale(@JsonValue val value: String) {
         private val elements: Map<String, Scale> = values().associateBy { it.value.toUpperCase() }
 
         @JsonCreator
+        @JvmStatic
         fun fromString(value: String): Scale = elements[value.toUpperCase()]
             ?: throw EnumException(
                 enumType = Scale::class.java.canonicalName,
