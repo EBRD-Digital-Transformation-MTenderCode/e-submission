@@ -36,7 +36,6 @@ import com.procurement.submission.exception.ErrorType.CONTEXT
 import com.procurement.submission.exception.ErrorType.INVALID_DATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_FOR_UPDATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_ID
-import com.procurement.submission.exception.ErrorType.INVALID_DOCUMENT_TYPE
 import com.procurement.submission.exception.ErrorType.INVALID_OWNER
 import com.procurement.submission.exception.ErrorType.INVALID_PERSONES
 import com.procurement.submission.exception.ErrorType.INVALID_RELATED_LOT
@@ -102,6 +101,7 @@ import kotlin.collections.HashMap
 
 @Service
 class BidService(private val generationService: GenerationService,
+                 private val rulesService: RulesService,
                  private val periodService: PeriodService,
                  private val bidDao: BidDao) {
 
@@ -199,36 +199,67 @@ class BidService(private val generationService: GenerationService,
         return ResponseDto(data = "ok")
     }
 
-    fun getBidsForEvaluation(requestData: BidsForEvaluationRequestData, context: GetBidsForEvaluationContext): BidsForEvaluationResponseData {
-        fun List<Bid>.archive(bidDao: BidDao ,bidsRecordsByIds: Map<UUID, BidEntity>) {
-            this.asSequence()
-                .map { ignoredBid -> ignoredBid.copy(statusDetails = StatusDetails.ARCHIVED) }
-                .map { archivedBid -> updateBidRecord(archivedBid, bidsRecordsByIds) }
-                .forEach { updatedRecord -> bidDao.save(updatedRecord) }
-        }
-
-        val bidsRecordsByIds = bidDao.findAllByCpIdAndStage(context.cpid, context.stage).associateBy { it.bidId }
-        val bidsDb = bidsRecordsByIds.values.map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
-
-        // FReq-1.4.1.10
-        val ignoredBids = bidsDb.filter { it.status == Status.PENDING && !it.relatedLots.containsAny(requestData.lots) }
-        ignoredBids.archive(bidDao, bidsRecordsByIds)
-
-        // FReq-1.4.1.2
-        return requestData.lots
-            .map { lot ->
-                val bids = bidsDb.filter { it.relatedLots.contains(lot.id.toString()) }
-                val bidsAmount = bids.size
-                if (isEnoughForOpening(context, bidsAmount)) {
-                    bids
-                } else {
-                    bids.archive(bidDao, bidsRecordsByIds)
-                    emptyList()
-                }
+    fun getBidsForEvaluation(
+        requestData: BidsForEvaluationRequestData,
+        context: GetBidsForEvaluationContext
+    ): BidsForEvaluationResponseData {
+        val bidsEntitiesByIds = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+            .asSequence()
+            .filter { entity ->
+                Status.fromString(entity.status) == Status.PENDING
             }
-            .flatten()
-            .toBidsForEvaluationResponseData()
+            .associateBy { it.bidId }
+
+        val bidsDb = bidsEntitiesByIds.asSequence()
+            .map { (id, entity) ->
+                id to toObject(Bid::class.java, entity.jsonData)
+            }
+            .toMap()
+
+        val bidsByRelatedLot: Map<String, List<Bid>> = bidsDb.values
+            .asSequence()
+            .flatMap { bid ->
+                bid.relatedLots.asSequence()
+                    .map { lotId ->
+                        lotId to bid
+                    }
+            }
+            .groupBy(keySelector = { it.first }, valueTransform = { it.second })
+
+        val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd.name)
+        val bidsForEvaluation = requestData.lots
+            .asSequence()
+            .flatMap { lot ->
+                val bids = bidsByRelatedLot[lot.id.toString()] ?: emptyList()
+                if (bids.size >= minNumberOfBids)
+                    bids.asSequence()
+                else
+                    emptySequence()
+            }
+            .associateBy { bid ->
+                UUID.fromString(bid.id)
+            }
+
+        val updatedBidEntities = getBidsForArchive(bids = bidsDb, subtractBids = bidsForEvaluation)
+            .map { bid ->
+                bid.archive()
+            }
+            .map { updatedBid ->
+                bidsEntitiesByIds.getValue(UUID.fromString(updatedBid.id))
+                    .copy(jsonData = toJson(updatedBid))
+            }
+            .toList()
+        bidDao.saveAll(updatedBidEntities)
+
+        return bidsForEvaluation.values.toBidsForEvaluationResponseData()
     }
+
+    private fun getBidsForArchive(bids: Map<UUID, Bid>, subtractBids: Map<UUID, Bid>) =
+        bids.asSequence()
+            .filter { (id, _) -> id !in subtractBids }
+            .map { it.value }
+
+    private fun Bid.archive() = this.copy(statusDetails = StatusDetails.ARCHIVED)
 
     fun openBidsForPublishing(requestData: BidsForPublishingRequestData, context: OpenBidsForPublishingContext): BidsForPublishingResponseData {
         val bidsRecords = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
@@ -927,22 +958,19 @@ class BidService(private val generationService: GenerationService,
     }
 
     private fun isEnoughForOpening(context: GetBidsForEvaluationContext, bidsAmount: Int): Boolean {
-       return when (Countries.fromString(context.country)) {
+        return when (Countries.fromString(context.country)) {
             Countries.MD -> when (context.pmd) {
-                ProcurementMethod.OT,
-                ProcurementMethod.SV,
-                ProcurementMethod.MV      -> bidsAmount >= 1
+                ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                ProcurementMethod.MV, ProcurementMethod.TEST_MV -> bidsAmount >= 1
 
                 ProcurementMethod.RT, ProcurementMethod.TEST_RT,
                 ProcurementMethod.DA, ProcurementMethod.TEST_DA,
                 ProcurementMethod.NP, ProcurementMethod.TEST_NP,
                 ProcurementMethod.FA, ProcurementMethod.TEST_FA,
-                ProcurementMethod.OP, ProcurementMethod.TEST_OP,
-                ProcurementMethod.TEST_OT,
-                ProcurementMethod.TEST_SV,
-                ProcurementMethod.TEST_MV -> false
+                ProcurementMethod.OP, ProcurementMethod.TEST_OP -> false
             }
-       }
+        }
     }
 
     private fun updateBidRecord(
