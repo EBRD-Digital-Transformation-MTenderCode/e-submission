@@ -15,6 +15,7 @@ import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.toData
 import com.procurement.submission.infrastructure.converter.toResponse
+import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsResponse
 import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest
@@ -181,7 +182,7 @@ class CommandService(
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV -> {
                         val request = toObject(GetBidsAuctionRequest::class.java, cm.data)
-                        val requestData = request.toData()
+                        val requestData = request.convert()
                         val context = GetBidsAuctionContext(
                             cpid = cm.cpid,
                             stage = cm.stage,
@@ -189,7 +190,7 @@ class CommandService(
                             pmd = cm.pmd
                         )
                         val serviceResponse = statusService.getBidsAuction(requestData, context)
-                        val response = serviceResponse.toResponse()
+                        val response = serviceResponse.convert()
                         return ResponseDto(data = response)
                     }
 

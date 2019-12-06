@@ -10,12 +10,10 @@ import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
-import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.BidData
-import com.procurement.submission.infrastructure.converter.toBidsForAuctionResponseData
-import com.procurement.submission.infrastructure.converter.toResponseData
+import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Bid
@@ -95,7 +93,7 @@ class StatusService(private val rulesService: RulesService,
                         error = ErrorType.BID_NOT_FOUND,
                         message = "Cannot find bid with ${bidData.bid.id}. Bids records: ${bidsRecordsByIds.keys}."
                     )
-                bidData.bid.toBidsForAuctionResponseData(pendingDate)
+                bidData.bid.convert(pendingDate)
             }
             return BidsAuctionResponseData.BidsData(owner = owner, bids = bidsWithPendingData)
         }
@@ -135,7 +133,7 @@ class StatusService(private val rulesService: RulesService,
             .map { bid -> determineOwner(bid, bidsRecordsByIds) }
             .groupBy { it.owner }
             .map { bidsByOwner -> setPendingDate(bidsByOwner, bidsRecordsByIds) }
-            .toResponseData()
+            .convert()
 
         (ignoredInRequestBids + notEnoughForOpeningBids).asSequence()
             .map { ignoredBid -> ignoredBid.copy(statusDetails = StatusDetails.ARCHIVED) }
