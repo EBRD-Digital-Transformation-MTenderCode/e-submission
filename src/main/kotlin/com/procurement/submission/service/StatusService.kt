@@ -1,17 +1,23 @@
 package com.procurement.submission.service
 
+import com.procurement.submission.application.model.data.BidsAuctionRequestData
+import com.procurement.submission.application.model.data.BidsAuctionResponseData
+import com.procurement.submission.application.service.GetBidsAuctionContext
 import com.procurement.submission.dao.BidDao
-import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.exception.ErrorType
-import com.procurement.submission.model.dto.bpe.CommandMessage
-import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteria
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
-import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.domain.model.enums.DocumentType
-import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.infrastructure.converter.BidData
+import com.procurement.submission.infrastructure.converter.convert
+import com.procurement.submission.model.dto.bpe.CommandMessage
+import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.ocds.Bid
+import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Value
 import com.procurement.submission.model.dto.request.ConsideredBid
 import com.procurement.submission.model.dto.request.GetDocsOfConsideredBidRq
@@ -23,12 +29,10 @@ import com.procurement.submission.model.dto.request.UpdateBidsByLotsRq
 import com.procurement.submission.model.dto.response.BidCancellation
 import com.procurement.submission.model.dto.response.BidDto
 import com.procurement.submission.model.dto.response.BidRs
-import com.procurement.submission.model.dto.response.BidsData
 import com.procurement.submission.model.dto.response.BidsStatusRs
 import com.procurement.submission.model.dto.response.BidsUpdateStatusRs
 import com.procurement.submission.model.dto.response.CancellationRs
 import com.procurement.submission.model.dto.response.FinalBid
-import com.procurement.submission.model.dto.response.GetBidsAuctionRs
 import com.procurement.submission.model.dto.response.GetBidsRs
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.containsAny
@@ -71,35 +75,72 @@ class StatusService(private val rulesService: RulesService,
         return ResponseDto(data = GetBidsRs(bids = bids))
     }
 
-    fun getBidsAuction(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
-        val pmd = cm.context.pmd ?: throw ErrorException(ErrorType.CONTEXT)
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        val ownerToBidsDataMap = HashMap<String, Set<BidDto>>()
-        if (bidEntities.isNotEmpty()) {
-            val pendingBidsSet = getPendingBids(bidEntities)
-            val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
-            val relatedLotsFromBidsList = getRelatedLotsListFromBids(pendingBidsSet)
-            val uniqueLotsMap = getUniqueLotsMap(relatedLotsFromBidsList)
-            val successfulLotsSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
-            val successfulBidsSet = getBidsByRelatedLots(pendingBidsSet, successfulLotsSet)
-            val successfulBidsIdSet = successfulBidsSet.asSequence().map { it.id }.toSet()
-            for (entity in bidEntities) {
-                if (entity.bidId.toString() in successfulBidsIdSet) {
-                    val bids = ownerToBidsDataMap[entity.owner]?.toMutableSet() ?: mutableSetOf()
-                    bids.add(convertBidEntityToBidData(entity))
-                    ownerToBidsDataMap[entity.owner] = bids
+    fun getBidsAuction(requestData: BidsAuctionRequestData, context: GetBidsAuctionContext): BidsAuctionResponseData {
+        fun determineOwner(bid: Bid, bidsRecordsByIds: Map<BidId, BidEntity>): BidData {
+            val bidId = BidId.fromString(bid.id)
+            val bidOwner = UUID.fromString(bidsRecordsByIds[bidId]!!.owner)
+            return BidData(bidOwner, bid)
+        }
+
+        fun setPendingDate(
+            bidsByOwner: Map.Entry<BidId, List<BidData>>,
+            bidsRecordsByIds: Map<BidId, BidEntity>
+        ) : BidsAuctionResponseData.BidsData  {
+            val owner = bidsByOwner.key
+            val bidsWithPendingData = bidsByOwner.value.map { bidData ->
+                val pendingDate = bidsRecordsByIds[BidId.fromString(bidData.bid.id)]?.pendingDate?.toLocal()
+                    ?: throw ErrorException(
+                        error = ErrorType.BID_NOT_FOUND,
+                        message = "Cannot find bid with ${bidData.bid.id}. Bids records: ${bidsRecordsByIds.keys}."
+                    )
+                bidData.bid.convert(pendingDate)
+            }
+            return BidsAuctionResponseData.BidsData(owner = owner, bids = bidsWithPendingData)
+        }
+
+        val bidsRecords = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+        val bidsRecordsByIds = bidsRecords.associateBy { it.bidId }
+        val bidsDb = bidsRecordsByIds.values.map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
+
+        val bidsByRelatedLot:Map<String, List<Bid>> = bidsDb.asSequence()
+            .flatMap {bid ->
+                bid.relatedLots.asSequence()
+                    .map {lotId ->
+                        lotId to bid
+                    }
+            }
+            .groupBy (keySelector = {it.first}, valueTransform = {it.second})
+
+        val relatedLots = bidsByRelatedLot.keys
+
+        // FReq-1.4.1.10
+        val ignoredInRequestBids = bidsDb.filter { it.status == Status.PENDING && !it.relatedLots.containsAny(relatedLots) }
+
+        // FReq-1.4.1.2
+        val notEnoughForOpeningBids = mutableSetOf<Bid>()
+        val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd.name)
+        val bidsForResponse =  requestData.lots
+            .asSequence()
+            .flatMap { lot ->
+                val bids = bidsByRelatedLot[lot.id.toString()] ?: emptyList()
+                if (bids.size >= minNumberOfBids) {
+                    bids.asSequence()
+                } else {
+                    notEnoughForOpeningBids.addAll(bids)
+                    emptySequence()
                 }
             }
-        }
-        val bidsData = HashSet<BidsData>()
-        for (owner in ownerToBidsDataMap.keys) {
-            val bids = ownerToBidsDataMap[owner] ?: setOf()
-            bidsData.add(BidsData(owner, bids))
-        }
-        return ResponseDto(data = GetBidsAuctionRs(bidsData))
+            .map { bid -> determineOwner(bid, bidsRecordsByIds) }
+            .groupBy { it.owner }
+            .map { bidsByOwner -> setPendingDate(bidsByOwner, bidsRecordsByIds) }
+            .convert()
+
+        (ignoredInRequestBids + notEnoughForOpeningBids).asSequence()
+            .map { ignoredBid -> ignoredBid.copy(statusDetails = StatusDetails.ARCHIVED) }
+            .map { archivedBid -> updateBidRecord(archivedBid, bidsRecordsByIds) }
+            .let { updatedRecord -> bidDao.saveAll(updatedRecord.toList()) }
+
+        return bidsForResponse
     }
 
     private fun convertBidEntityToBidData(entity: BidEntity): BidDto {
@@ -336,6 +377,18 @@ class StatusService(private val rulesService: RulesService,
                 .filter { it.status == Status.PENDING.value }
                 .map { toObject(Bid::class.java, it.jsonData) }
                 .toSet()
+    }
+
+    private fun updateBidRecord(
+        updatedBid: Bid,
+        bidsRecordsByIds: Map<UUID, BidEntity>
+    ): BidEntity {
+        val bidId = UUID.fromString(updatedBid.id)
+        val oldRecord = bidsRecordsByIds.get(bidId) ?: throw ErrorException(
+            error = ErrorType.BID_NOT_FOUND,
+            message = "Cannot find bid with id ${bidId}. Available bids : ${bidsRecordsByIds.keys}"
+        )
+        return oldRecord.copy(jsonData = toJson(updatedBid))
     }
 
     private fun getRelatedLotsListFromBids(bids: Set<Bid>): List<String> {
