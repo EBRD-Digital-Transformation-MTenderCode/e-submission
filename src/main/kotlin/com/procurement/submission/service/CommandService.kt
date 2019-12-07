@@ -13,9 +13,9 @@ import com.procurement.submission.dao.HistoryDao
 import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.converter.toData
 import com.procurement.submission.infrastructure.converter.toResponse
-import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsResponse
 import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest
@@ -59,7 +59,7 @@ class CommandService(
             return toObject(ResponseDto::class.java, historyEntity.jsonData)
         }
         val response = when (cm.command) {
-            CommandType.CREATE_BID                 -> {
+            CommandType.CREATE_BID -> {
                 when (cm.pmd) {
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV,
@@ -85,7 +85,7 @@ class CommandService(
 
                 }
             }
-            CommandType.UPDATE_BID                 -> {
+            CommandType.UPDATE_BID -> {
                 when (cm.pmd) {
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV,
@@ -113,7 +113,7 @@ class CommandService(
 
                 }
             }
-            CommandType.GET_BIDS_FOR_EVALUATION                 -> {
+            CommandType.GET_BIDS_FOR_EVALUATION -> {
                 when (cm.pmd) {
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV,
@@ -126,7 +126,10 @@ class CommandService(
                             country = cm.country,
                             pmd = cm.pmd
                         )
-                        val serviceResponse = bidService.getBidsForEvaluation(requestData = requestData, context = context)
+                        val serviceResponse = bidService.getBidsForEvaluation(
+                            requestData = requestData,
+                            context = context
+                        )
                         val response = serviceResponse.toResponse()
                         return ResponseDto(data = response)
                     }
@@ -141,7 +144,7 @@ class CommandService(
 
                 }
             }
-            CommandType.OPEN_BIDS_FOR_PUBLISHING                 -> {
+            CommandType.OPEN_BIDS_FOR_PUBLISHING -> {
                 when (cm.pmd) {
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV,
@@ -152,7 +155,10 @@ class CommandService(
                             cpid = cm.cpid,
                             stage = cm.stage
                         )
-                        val serviceResponse = bidService.openBidsForPublishing(requestData = requestData, context = context)
+                        val serviceResponse = bidService.openBidsForPublishing(
+                            requestData = requestData,
+                            context = context
+                        )
                         val response = serviceResponse.toResponse()
                         return ResponseDto(data = response)
                     }
@@ -167,16 +173,16 @@ class CommandService(
 
                 }
             }
-            CommandType.COPY_BIDS                  -> bidService.copyBids(cm)
-            CommandType.GET_PERIOD                 -> periodService.getPeriod(cm)
-            CommandType.SAVE_PERIOD                -> periodService.savePeriod(cm)
-            CommandType.SAVE_NEW_PERIOD            -> periodService.saveNewPeriod(cm)
-            CommandType.VALIDATE_PERIOD            -> periodService.periodValidation(cm)
-            CommandType.CHECK_PERIOD_END_DATE      -> periodService.checkEndDate(cm)
-            CommandType.CHECK_PERIOD               -> periodService.checkPeriod(cm)
-            CommandType.CHECK_TOKEN_OWNER          -> statusService.checkTokenOwner(cm)
-            CommandType.GET_BIDS                   -> statusService.getBids(cm)
-            CommandType.GET_BIDS_AUCTION           -> {
+            CommandType.COPY_BIDS -> bidService.copyBids(cm)
+            CommandType.GET_PERIOD -> periodService.getPeriod(cm)
+            CommandType.SAVE_PERIOD -> periodService.savePeriod(cm)
+            CommandType.SAVE_NEW_PERIOD -> periodService.saveNewPeriod(cm)
+            CommandType.VALIDATE_PERIOD -> periodService.periodValidation(cm)
+            CommandType.CHECK_PERIOD_END_DATE -> periodService.checkEndDate(cm)
+            CommandType.CHECK_PERIOD -> periodService.checkPeriod(cm)
+            CommandType.CHECK_TOKEN_OWNER -> statusService.checkTokenOwner(cm)
+            CommandType.GET_BIDS -> statusService.getBids(cm)
+            CommandType.GET_BIDS_AUCTION -> {
                 when (cm.pmd) {
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV,
@@ -204,16 +210,16 @@ class CommandService(
 
                 }
             }
-            CommandType.UPDATE_BIDS_BY_LOTS        -> statusService.updateBidsByLots(cm)
+            CommandType.UPDATE_BIDS_BY_LOTS -> statusService.updateBidsByLots(cm)
             CommandType.UPDATE_BID_BY_AWARD_STATUS -> statusService.updateBidsByAwardStatus(cm)
-            CommandType.UPDATE_BID_DOCS            -> bidService.updateBidDocs(cm)
-            CommandType.SET_BIDS_FINAL_STATUSES    -> statusService.setFinalStatuses(cm)
-            CommandType.BID_WITHDRAWN              -> statusService.bidWithdrawn(cm)
-            CommandType.PREPARE_BIDS_CANCELLATION  -> statusService.prepareBidsCancellation(cm)
-            CommandType.BIDS_CANCELLATION          -> statusService.bidsCancellation(cm)
+            CommandType.UPDATE_BID_DOCS -> bidService.updateBidDocs(cm)
+            CommandType.SET_BIDS_FINAL_STATUSES -> statusService.setFinalStatuses(cm)
+            CommandType.BID_WITHDRAWN -> statusService.bidWithdrawn(cm)
+            CommandType.PREPARE_BIDS_CANCELLATION -> statusService.prepareBidsCancellation(cm)
+            CommandType.BIDS_CANCELLATION -> statusService.bidsCancellation(cm)
             CommandType.GET_DOCS_OF_CONSIDERED_BID -> statusService.getDocsOfConsideredBid(cm)
-            CommandType.SET_INITIAL_BIDS_STATUS    -> bidService.setInitialBidsStatus(cm)
-            CommandType.APPLY_EVALUATED_AWARDS     -> {
+            CommandType.SET_INITIAL_BIDS_STATUS -> bidService.setInitialBidsStatus(cm)
+            CommandType.APPLY_EVALUATED_AWARDS -> {
                 val context = ApplyEvaluatedAwardsContext(
                     cpid = cm.cpid,
                     stage = cm.stage
