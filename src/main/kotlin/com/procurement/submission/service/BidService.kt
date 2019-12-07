@@ -535,9 +535,15 @@ class BidService(private val generationService: GenerationService,
      *      system sets bid.statusDetails == "disqualified";
      */
     private fun Bid.updateStatusDetails(statusDetails: AwardStatusDetails): Bid = when (statusDetails) {
-        AwardStatusDetails.ACTIVE       -> this.copy(statusDetails = StatusDetails.VALID)
+        AwardStatusDetails.ACTIVE -> this.copy(statusDetails = StatusDetails.VALID)
         AwardStatusDetails.UNSUCCESSFUL -> this.copy(statusDetails = StatusDetails.DISQUALIFIED)
-        else                                                                          -> throw ErrorException(
+
+        AwardStatusDetails.EMPTY,
+        AwardStatusDetails.PENDING,
+        AwardStatusDetails.CONSIDERATION,
+        AwardStatusDetails.AWAITING,
+        AwardStatusDetails.NO_OFFERS_RECEIVED,
+        AwardStatusDetails.LOT_CANCELLED -> throw ErrorException(
             error = ErrorType.INVALID_STATUS_DETAILS,
             message = "Current status details: '$statusDetails'. Expected status details: [${AwardStatusDetails.ACTIVE}, ${AwardStatusDetails.UNSUCCESSFUL}]"
         )

@@ -216,20 +216,30 @@ class StatusService(private val rulesService: RulesService,
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         val bid = toObject(Bid::class.java, entity.jsonData)
         when (awardStatusDetails) {
-            AwardStatusDetails.EMPTY         -> bid.statusDetails = StatusDetails.EMPTY
-            AwardStatusDetails.ACTIVE        -> bid.statusDetails = StatusDetails.VALID
-            AwardStatusDetails.UNSUCCESSFUL  -> bid.statusDetails = StatusDetails.DISQUALIFIED
-            AwardStatusDetails.PENDING       -> TODO()
-            AwardStatusDetails.CONSIDERATION -> TODO()
+            AwardStatusDetails.EMPTY -> bid.statusDetails = StatusDetails.EMPTY
+            AwardStatusDetails.ACTIVE -> bid.statusDetails = StatusDetails.VALID
+            AwardStatusDetails.UNSUCCESSFUL -> bid.statusDetails = StatusDetails.DISQUALIFIED
+
+            AwardStatusDetails.PENDING,
+            AwardStatusDetails.CONSIDERATION,
+            AwardStatusDetails.AWAITING,
+            AwardStatusDetails.NO_OFFERS_RECEIVED,
+            AwardStatusDetails.LOT_CANCELLED -> throw ErrorException(
+                error = ErrorType.INVALID_STATUS_DETAILS,
+                message = "Current status details: '$awardStatusDetails'. Expected status details: [${AwardStatusDetails.ACTIVE}, ${AwardStatusDetails.UNSUCCESSFUL}]"
+            )
         }
-        bidDao.save(getEntity(
+        bidDao.save(
+            getEntity(
                 bid = bid,
                 cpId = cpId,
                 stage = entity.stage,
                 owner = entity.owner,
                 token = entity.token,
                 createdDate = entity.createdDate,
-                pendingDate = entity.pendingDate))
+                pendingDate = entity.pendingDate
+            )
+        )
         return ResponseDto(data = BidRs(null, null, bid))
     }
 
