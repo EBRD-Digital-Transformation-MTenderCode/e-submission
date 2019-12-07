@@ -12,7 +12,7 @@ import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import java.time.LocalDateTime
 import java.util.*
 
-data class BidsForPublishingResponseData(
+data class OpenBidsForPublishingResult(
     val bids: List<Bid>
 ) {
     data class Bid(

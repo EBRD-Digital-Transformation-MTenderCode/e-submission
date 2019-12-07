@@ -2,24 +2,8 @@
   "awardCriteriaDetails": "automated",
   "awards": [
     {
-      "id": "awards[0].id",
-      "date": "2019-11-12T17:09:10Z",
-      "status": "awards[0].status",
       "statusDetails": "pending",
-      "relatedLots": [
-        "4cc81d06-31a0-459f-8481-31d1303a8c43"
-      ],
-      "relatedBid": "70cbe6fb-42c1-4dfa-aa59-add47f1d819e",
-      "value": {
-        "amount": 123.43,
-        "currency": "MDL"
-      },
-      "suppliers": [
-        {
-          "id": "awards[0].suppliers[0].id",
-          "name": "awards[0].suppliers[0].name"
-        }
-      ]
+      "relatedBid": "70cbe6fb-42c1-4dfa-aa59-add47f1d819e"
     }
   ]
 }

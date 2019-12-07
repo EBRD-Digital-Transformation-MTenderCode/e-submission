@@ -149,17 +149,16 @@ class CommandService(
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV -> {
-                        val request = toObject(OpenBidsForPublishingRequest::class.java, cm.data)
-                        val requestData = request.toData()
                         val context = OpenBidsForPublishingContext(
                             cpid = cm.cpid,
                             stage = cm.stage
                         )
+                        val request = toObject(OpenBidsForPublishingRequest::class.java, cm.data)
                         val serviceResponse = bidService.openBidsForPublishing(
-                            requestData = requestData,
-                            context = context
+                            context = context,
+                            data = request.convert()
                         )
-                        val response = serviceResponse.toResponse()
+                        val response = serviceResponse.convert()
                         return ResponseDto(data = response)
                     }
 
