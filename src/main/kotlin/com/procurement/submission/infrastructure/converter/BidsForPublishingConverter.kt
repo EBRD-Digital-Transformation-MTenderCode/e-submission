@@ -2,21 +2,32 @@ package com.procurement.submission.infrastructure.converter
 
 import com.procurement.submission.application.model.data.OpenBidsForPublishingData
 import com.procurement.submission.application.model.data.OpenBidsForPublishingResult
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
+import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.lib.mapIfNotEmpty
+import com.procurement.submission.lib.orThrow
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.dto.request.OpenBidsForPublishingRequest
 import com.procurement.submission.model.dto.response.OpenBidsForPublishingResponse
-import java.util.*
 
 fun OpenBidsForPublishingRequest.convert(): OpenBidsForPublishingData {
     return OpenBidsForPublishingData(
         awardCriteriaDetails = this.awardCriteriaDetails,
         awards = this.awards
-            .map { award ->
+            .mapIfNotEmpty { award ->
                 OpenBidsForPublishingData.Award(
                     statusDetails = award.statusDetails,
                     relatedBid = award.relatedBid
+                )
+            }
+            .orThrow {
+                throw ErrorException(
+                    error = ErrorType.EMPTY_LIST,
+                    message = "The data contains empty list of the awards."
                 )
             }
     )
@@ -36,145 +47,203 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
                             OpenBidsForPublishingResponse.Bid.Tenderer(
                                 id = tenderer.id,
                                 name = tenderer.name,
-                                identifier = OpenBidsForPublishingResponse.Bid.Tenderer.Identifier(
-                                    id = tenderer.identifier.id,
-                                    scheme = tenderer.identifier.scheme,
-                                    legalName = tenderer.identifier.legalName,
-                                    uri = tenderer.identifier.uri
-                                ),
-                                additionalIdentifiers = tenderer.additionalIdentifiers
-                                    ?.map { additionalIdentifiers ->
-                                        OpenBidsForPublishingResponse.Bid.Tenderer.AdditionalIdentifier(
-                                            id = additionalIdentifiers.id,
-                                            scheme = additionalIdentifiers.scheme,
-                                            legalName = additionalIdentifiers.legalName,
-                                            uri = additionalIdentifiers.uri
+                                identifier = tenderer.identifier
+                                    .let { identifier ->
+                                        OpenBidsForPublishingResponse.Bid.Tenderer.Identifier(
+                                            id = identifier.id,
+                                            scheme = identifier.scheme,
+                                            legalName = identifier.legalName,
+                                            uri = identifier.uri
                                         )
                                     },
-                                address = OpenBidsForPublishingResponse.Bid.Tenderer.Address(
-                                    streetAddress = tenderer.address.streetAddress,
-                                    postalCode = tenderer.address.postalCode,
-                                    addressDetails = OpenBidsForPublishingResponse.Bid.Tenderer.Address.AddressDetails(
-                                        country = OpenBidsForPublishingResponse.Bid.Tenderer.Address.AddressDetails.Country(
-                                            id = tenderer.address.addressDetails.country.id,
-                                            scheme = tenderer.address.addressDetails.country.scheme,
-                                            description = tenderer.address.addressDetails.country.description,
-                                            uri = tenderer.address.addressDetails.country.uri
-                                        ),
-                                        region = OpenBidsForPublishingResponse.Bid.Tenderer.Address.AddressDetails.Region(
-                                            id = tenderer.address.addressDetails.region.id,
-                                            scheme = tenderer.address.addressDetails.region.scheme,
-                                            description = tenderer.address.addressDetails.region.description,
-                                            uri = tenderer.address.addressDetails.region.uri
-                                        ),
-                                        locality = OpenBidsForPublishingResponse.Bid.Tenderer.Address.AddressDetails.Locality(
-                                            id = tenderer.address.addressDetails.locality.id,
-                                            scheme = tenderer.address.addressDetails.locality.scheme,
-                                            description = tenderer.address.addressDetails.locality.description,
-                                            uri = tenderer.address.addressDetails.locality.uri
+                                additionalIdentifiers = tenderer.additionalIdentifiers
+                                    .map { additionalIdentifier ->
+                                        OpenBidsForPublishingResponse.Bid.Tenderer.AdditionalIdentifier(
+                                            id = additionalIdentifier.id,
+                                            scheme = additionalIdentifier.scheme,
+                                            legalName = additionalIdentifier.legalName,
+                                            uri = additionalIdentifier.uri
                                         )
-                                    )
-                                ),
-                                contactPoint = OpenBidsForPublishingResponse.Bid.Tenderer.ContactPoint(
-                                    name = tenderer.contactPoint.name,
-                                    email = tenderer.contactPoint.email,
-                                    telephone = tenderer.contactPoint.telephone,
-                                    faxNumber = tenderer.contactPoint.faxNumber,
-                                    url = tenderer.contactPoint.url
-                                ),
-                                details = OpenBidsForPublishingResponse.Bid.Tenderer.Details(
-                                    typeOfSupplier = tenderer.details.typeOfSupplier,
-                                    mainEconomicActivities = tenderer.details.mainEconomicActivities,
-                                    scale = tenderer.details.scale,
-                                    permits = tenderer.details.permits
-                                        ?.map { permit ->
-                                            OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit(
-                                                id = permit.id,
-                                                scheme = permit.scheme,
-                                                url = permit.url,
-                                                permitDetails = OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit.PermitDetails(
-                                                    issuedBy = OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit.PermitDetails.IssuedBy(
-                                                        id = permit.permitDetails.issuedBy.id,
-                                                        name = permit.permitDetails.issuedBy.name
-                                                    ),
-                                                    issuedThought = OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit.PermitDetails.IssuedThought(
-                                                        id = permit.permitDetails.issuedThought.id,
-                                                        name = permit.permitDetails.issuedThought.name
-                                                    ),
-                                                    validityPeriod = OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit.PermitDetails.ValidityPeriod(
-                                                        startDate = permit.permitDetails.validityPeriod.startDate,
-                                                        endDate = permit.permitDetails.validityPeriod.endDate
+                                    },
+                                address = tenderer.address
+                                    .let { address ->
+                                        OpenBidsForPublishingResponse.Bid.Tenderer.Address(
+                                            streetAddress = address.streetAddress,
+                                            postalCode = address.postalCode,
+                                            addressDetails = address.addressDetails
+                                                .let { addressDetails ->
+                                                    OpenBidsForPublishingResponse.Bid.Tenderer.Address.AddressDetails(
+                                                        country = addressDetails.country
+                                                            .let { country ->
+                                                                OpenBidsForPublishingResponse.Bid.Tenderer.Address.AddressDetails.Country(
+                                                                    id = country.id,
+                                                                    scheme = country.scheme,
+                                                                    description = country.description,
+                                                                    uri = country.uri
+                                                                )
+                                                            },
+                                                        region = addressDetails.region
+                                                            .let { region ->
+                                                                OpenBidsForPublishingResponse.Bid.Tenderer.Address.AddressDetails.Region(
+                                                                    id = region.id,
+                                                                    scheme = region.scheme,
+                                                                    description = region.description,
+                                                                    uri = region.uri
+                                                                )
+                                                            },
+                                                        locality = addressDetails.locality
+                                                            .let { locality ->
+                                                                OpenBidsForPublishingResponse.Bid.Tenderer.Address.AddressDetails.Locality(
+                                                                    id = locality.id,
+                                                                    scheme = locality.scheme,
+                                                                    description = locality.description,
+                                                                    uri = locality.uri
+                                                                )
+                                                            }
                                                     )
-                                                )
-                                            )
-                                        },
-
-                                    bankAccounts = tenderer.details.bankAccounts
-                                        ?.map { bankAccount ->
-                                            OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount(
-                                                description = bankAccount.description,
-                                                bankName = bankAccount.bankName,
-                                                identifier = OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Identifier(
-                                                    id = bankAccount.identifier.id,
-                                                    scheme = bankAccount.identifier.scheme
-                                                ),
-                                                additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers
-                                                    ?.map { additionalIdentifier ->
-                                                        OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
-                                                            id = additionalIdentifier.id,
-                                                            scheme = additionalIdentifier.scheme
-                                                        )
-                                                    },
-                                                accountIdentification = OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.AccountIdentification(
-                                                    id = bankAccount.accountIdentification.id,
-                                                    scheme = bankAccount.accountIdentification.scheme
-                                                ),
-                                                address = OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address(
-                                                    streetAddress = bankAccount.address.streetAddress,
-                                                    postalCode = bankAccount.address.postalCode,
-                                                    addressDetails = OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address.AddressDetails(
-                                                        country = OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
-                                                            id = bankAccount.address.addressDetails.country.id,
-                                                            scheme = bankAccount.address.addressDetails.country.scheme,
-                                                            description = bankAccount.address.addressDetails.country.description,
-                                                            uri = bankAccount.address.addressDetails.country.uri
-                                                        ),
-                                                        region = OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
-                                                            id = bankAccount.address.addressDetails.region.id,
-                                                            scheme = bankAccount.address.addressDetails.region.scheme,
-                                                            description = bankAccount.address.addressDetails.region.description,
-                                                            uri = bankAccount.address.addressDetails.region.uri
-                                                        ),
-                                                        locality = OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
-                                                            id = bankAccount.address.addressDetails.locality.id,
-                                                            scheme = bankAccount.address.addressDetails.locality.scheme,
-                                                            description = bankAccount.address.addressDetails.locality.description,
-                                                            uri = bankAccount.address.addressDetails.locality.uri
-                                                        )
+                                                }
+                                        )
+                                    },
+                                contactPoint = tenderer.contactPoint
+                                    .let { contactPoint ->
+                                        OpenBidsForPublishingResponse.Bid.Tenderer.ContactPoint(
+                                            name = contactPoint.name,
+                                            email = contactPoint.email,
+                                            telephone = contactPoint.telephone,
+                                            faxNumber = contactPoint.faxNumber,
+                                            url = contactPoint.url
+                                        )
+                                    },
+                                details = tenderer.details
+                                    .let { details ->
+                                        OpenBidsForPublishingResponse.Bid.Tenderer.Details(
+                                            typeOfSupplier = details.typeOfSupplier,
+                                            mainEconomicActivities = details.mainEconomicActivities,
+                                            scale = details.scale,
+                                            permits = details.permits
+                                                .map { permit ->
+                                                    OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit(
+                                                        id = permit.id,
+                                                        scheme = permit.scheme,
+                                                        url = permit.url,
+                                                        permitDetails = permit.permitDetails
+                                                            .let { permitDetails ->
+                                                                OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit.PermitDetails(
+                                                                    issuedBy = permitDetails.issuedBy
+                                                                        .let { issuedBy ->
+                                                                            OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit.PermitDetails.IssuedBy(
+                                                                                id = issuedBy.id,
+                                                                                name = issuedBy.name
+                                                                            )
+                                                                        },
+                                                                    issuedThought = permitDetails.issuedThought
+                                                                        .let { issuedThought ->
+                                                                            OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit.PermitDetails.IssuedThought(
+                                                                                id = issuedThought.id,
+                                                                                name = issuedThought.name
+                                                                            )
+                                                                        },
+                                                                    validityPeriod = permitDetails.validityPeriod
+                                                                        .let { validityPeriod ->
+                                                                            OpenBidsForPublishingResponse.Bid.Tenderer.Details.Permit.PermitDetails.ValidityPeriod(
+                                                                                startDate = validityPeriod.startDate,
+                                                                                endDate = validityPeriod.endDate
+                                                                            )
+                                                                        }
+                                                                )
+                                                            }
                                                     )
-
-                                                )
-                                            )
-                                        },
-                                    legalForm = tenderer.details.legalForm
-                                        ?.let { legalform ->
-                                            OpenBidsForPublishingResponse.Bid.Tenderer.Details.LegalForm(
-                                                id = legalform.id,
-                                                scheme = legalform.scheme,
-                                                description = legalform.description,
-                                                uri = legalform.uri
-                                            )
-                                        }
-                                ),
+                                                },
+                                            bankAccounts = details.bankAccounts
+                                                .map { bankAccount ->
+                                                    OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount(
+                                                        description = bankAccount.description,
+                                                        bankName = bankAccount.bankName,
+                                                        identifier = bankAccount.identifier
+                                                            .let { identifier ->
+                                                                OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Identifier(
+                                                                    id = identifier.id,
+                                                                    scheme = identifier.scheme
+                                                                )
+                                                            },
+                                                        additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers
+                                                            .map { additionalIdentifier ->
+                                                                OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
+                                                                    id = additionalIdentifier.id,
+                                                                    scheme = additionalIdentifier.scheme
+                                                                )
+                                                            },
+                                                        accountIdentification = bankAccount.accountIdentification
+                                                            .let { accountIdentification ->
+                                                                OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.AccountIdentification(
+                                                                    id = accountIdentification.id,
+                                                                    scheme = accountIdentification.scheme
+                                                                )
+                                                            },
+                                                        address = bankAccount.address
+                                                            .let { address ->
+                                                                OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address(
+                                                                    streetAddress = address.streetAddress,
+                                                                    postalCode = address.postalCode,
+                                                                    addressDetails = address.addressDetails
+                                                                        .let { addressDetails ->
+                                                                            OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address.AddressDetails(
+                                                                                country = addressDetails.country
+                                                                                    .let { country ->
+                                                                                        OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
+                                                                                            id = country.id,
+                                                                                            scheme = country.scheme,
+                                                                                            description = country.description,
+                                                                                            uri = country.uri
+                                                                                        )
+                                                                                    },
+                                                                                region = addressDetails.region
+                                                                                    .let { region ->
+                                                                                        OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
+                                                                                            id = region.id,
+                                                                                            scheme = region.scheme,
+                                                                                            description = region.description,
+                                                                                            uri = region.uri
+                                                                                        )
+                                                                                    },
+                                                                                locality = addressDetails.locality
+                                                                                    .let { locality ->
+                                                                                        OpenBidsForPublishingResponse.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
+                                                                                            id = locality.id,
+                                                                                            scheme = locality.scheme,
+                                                                                            description = locality.description,
+                                                                                            uri = locality.uri
+                                                                                        )
+                                                                                    }
+                                                                            )
+                                                                        }
+                                                                )
+                                                            }
+                                                    )
+                                                },
+                                            legalForm = details.legalForm
+                                                ?.let { legalForm ->
+                                                    OpenBidsForPublishingResponse.Bid.Tenderer.Details.LegalForm(
+                                                        id = legalForm.id,
+                                                        scheme = legalForm.scheme,
+                                                        description = legalForm.description,
+                                                        uri = legalForm.uri
+                                                    )
+                                                }
+                                        )
+                                    },
                                 persones = tenderer.persones
-                                    ?.map { person ->
+                                    .map { person ->
                                         OpenBidsForPublishingResponse.Bid.Tenderer.Persone(
                                             title = person.title,
-                                            identifier = OpenBidsForPublishingResponse.Bid.Tenderer.Persone.Identifier(
-                                                id = person.identifier.id,
-                                                scheme = person.identifier.scheme,
-                                                uri = person.identifier.uri
-                                            ),
+                                            identifier = person.identifier
+                                                .let { identifier ->
+                                                    OpenBidsForPublishingResponse.Bid.Tenderer.Persone.Identifier(
+                                                        id = identifier.id,
+                                                        scheme = identifier.scheme,
+                                                        uri = identifier.uri
+                                                    )
+                                                },
                                             name = person.name,
                                             businessFunctions = person.businessFunctions
                                                 .map { businessFunction ->
@@ -186,7 +255,7 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
                                                             startDate = businessFunction.period.startDate
                                                         ),
                                                         documents = businessFunction.documents
-                                                            ?.map { document ->
+                                                            .map { document ->
                                                                 OpenBidsForPublishingResponse.Bid.Tenderer.Persone.BusinessFunction.Document(
                                                                     id = document.id,
                                                                     documentType = document.documentType,
@@ -202,7 +271,7 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
                         },
                     value = bid.value,
                     documents = bid.documents
-                        ?.map { document ->
+                        .map { document ->
                             OpenBidsForPublishingResponse.Bid.Document(
                                 id = document.id,
                                 documentType = document.documentType,
@@ -212,7 +281,7 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
                             )
                         },
                     requirementResponses = bid.requirementResponses
-                        ?.map { requirementResponse ->
+                        .map { requirementResponse ->
                             OpenBidsForPublishingResponse.Bid.RequirementResponse(
                                 id = requirementResponse.id,
                                 description = requirementResponse.description,
@@ -230,7 +299,7 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
                                 )
                             )
                         },
-                    relatedLots = bid.relatedLots
+                    relatedLots = bid.relatedLots.toList()
                 )
             }
     )
@@ -238,7 +307,7 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
 
 fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
     OpenBidsForPublishingResult.Bid(
-        id = UUID.fromString(bid.id),
+        id = BidId.fromString(bid.id),
         date = bid.date,
         status = bid.status,
         statusDetails = bid.statusDetails,
@@ -247,146 +316,207 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                 OpenBidsForPublishingResult.Bid.Tenderer(
                     id = tenderer.id!!,
                     name = tenderer.name,
-                    identifier = OpenBidsForPublishingResult.Bid.Tenderer.Identifier(
-                        id = tenderer.identifier.id,
-                        scheme = tenderer.identifier.scheme,
-                        legalName = tenderer.identifier.legalName,
-                        uri = tenderer.identifier.uri
-                    ),
-                    additionalIdentifiers = tenderer.additionalIdentifiers
-                        ?.map { additionalIdentifiers ->
-                            OpenBidsForPublishingResult.Bid.Tenderer.AdditionalIdentifier(
-                                id = additionalIdentifiers.id,
-                                scheme = additionalIdentifiers.scheme,
-                                legalName = additionalIdentifiers.legalName,
-                                uri = additionalIdentifiers.uri
+                    identifier = tenderer.identifier
+                        .let { identifier ->
+                            OpenBidsForPublishingResult.Bid.Tenderer.Identifier(
+                                id = identifier.id,
+                                scheme = identifier.scheme,
+                                legalName = identifier.legalName,
+                                uri = identifier.uri
                             )
                         },
-                    address = OpenBidsForPublishingResult.Bid.Tenderer.Address(
-                        streetAddress = tenderer.address.streetAddress,
-                        postalCode = tenderer.address.postalCode,
-                        addressDetails = OpenBidsForPublishingResult.Bid.Tenderer.Address.AddressDetails(
-                            country = OpenBidsForPublishingResult.Bid.Tenderer.Address.AddressDetails.Country(
-                                id = tenderer.address.addressDetails.country.id,
-                                scheme = tenderer.address.addressDetails.country.scheme,
-                                description = tenderer.address.addressDetails.country.description,
-                                uri = tenderer.address.addressDetails.country.uri
-                            ),
-                            region = OpenBidsForPublishingResult.Bid.Tenderer.Address.AddressDetails.Region(
-                                id = tenderer.address.addressDetails.region.id,
-                                scheme = tenderer.address.addressDetails.region.scheme,
-                                description = tenderer.address.addressDetails.region.description,
-                                uri = tenderer.address.addressDetails.region.uri
-                            ),
-                            locality = OpenBidsForPublishingResult.Bid.Tenderer.Address.AddressDetails.Locality(
-                                id = tenderer.address.addressDetails.locality.id,
-                                scheme = tenderer.address.addressDetails.locality.scheme,
-                                description = tenderer.address.addressDetails.locality.description,
-                                uri = tenderer.address.addressDetails.locality.uri
+                    additionalIdentifiers = tenderer.additionalIdentifiers
+                        ?.map { additionalIdentifier ->
+                            OpenBidsForPublishingResult.Bid.Tenderer.AdditionalIdentifier(
+                                id = additionalIdentifier.id,
+                                scheme = additionalIdentifier.scheme,
+                                legalName = additionalIdentifier.legalName,
+                                uri = additionalIdentifier.uri
                             )
-                        )
-                    ),
-                    contactPoint = OpenBidsForPublishingResult.Bid.Tenderer.ContactPoint(
-                        name = tenderer.contactPoint.name,
-                        email = tenderer.contactPoint.email!!,
-                        telephone = tenderer.contactPoint.telephone,
-                        faxNumber = tenderer.contactPoint.faxNumber,
-                        url = tenderer.contactPoint.url
-                    ),
-                    details = OpenBidsForPublishingResult.Bid.Tenderer.Details(
-                        typeOfSupplier = tenderer.details.typeOfSupplier
-                            ?.let { TypeOfSupplier.fromString(it) },
-                        mainEconomicActivities = tenderer.details.mainEconomicActivities,
-                        scale = Scale.fromString(tenderer.details.scale),
-                        permits = tenderer.details.permits
-                            ?.map { permit ->
-                                OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit(
-                                    id = permit.id,
-                                    scheme = permit.scheme,
-                                    url = permit.url,
-                                    permitDetails = OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit.PermitDetails(
-                                        issuedBy = OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit.PermitDetails.IssuedBy(
-                                            id = permit.permitDetails.issuedBy.id,
-                                            name = permit.permitDetails.issuedBy.name
-                                        ),
-                                        issuedThought = OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit.PermitDetails.IssuedThought(
-                                            id = permit.permitDetails.issuedThought.id,
-                                            name = permit.permitDetails.issuedThought.name
-                                        ),
-                                        validityPeriod = OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit.PermitDetails.ValidityPeriod(
-                                            startDate = permit.permitDetails.validityPeriod.startDate,
-                                            endDate = permit.permitDetails.validityPeriod.endDate
+                        }
+                        .orEmpty(),
+                    address = tenderer.address
+                        .let { address ->
+                            OpenBidsForPublishingResult.Bid.Tenderer.Address(
+                                streetAddress = address.streetAddress,
+                                postalCode = address.postalCode,
+                                addressDetails = address.addressDetails
+                                    .let { addressDetails ->
+                                        OpenBidsForPublishingResult.Bid.Tenderer.Address.AddressDetails(
+                                            country = addressDetails.country
+                                                .let { country ->
+                                                    OpenBidsForPublishingResult.Bid.Tenderer.Address.AddressDetails.Country(
+                                                        id = country.id,
+                                                        scheme = country.scheme,
+                                                        description = country.description,
+                                                        uri = country.uri
+                                                    )
+                                                },
+                                            region = addressDetails.region
+                                                .let { region ->
+                                                    OpenBidsForPublishingResult.Bid.Tenderer.Address.AddressDetails.Region(
+                                                        id = region.id,
+                                                        scheme = region.scheme,
+                                                        description = region.description,
+                                                        uri = region.uri
+                                                    )
+                                                },
+                                            locality = addressDetails.locality
+                                                .let { locality ->
+                                                    OpenBidsForPublishingResult.Bid.Tenderer.Address.AddressDetails.Locality(
+                                                        id = locality.id,
+                                                        scheme = locality.scheme,
+                                                        description = locality.description,
+                                                        uri = locality.uri
+                                                    )
+                                                }
                                         )
-                                    )
-                                )
-                            },
-
-                        bankAccounts = tenderer.details.bankAccounts
-                            ?.map { bankAccount ->
-                                OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount(
-                                    description = bankAccount.description,
-                                    bankName = bankAccount.bankName,
-                                    identifier = OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Identifier(
-                                        id = bankAccount.identifier.id,
-                                        scheme = bankAccount.identifier.scheme
-                                    ),
-                                    additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers
-                                        .map { additionalIdentifier ->
-                                            OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
-                                                id = additionalIdentifier.id,
-                                                scheme = additionalIdentifier.scheme
-                                            )
-                                        },
-                                    accountIdentification = OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.AccountIdentification(
-                                        id = bankAccount.accountIdentification.id,
-                                        scheme = bankAccount.accountIdentification.scheme
-                                    ),
-                                    address = OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address(
-                                        streetAddress = bankAccount.address.streetAddress,
-                                        postalCode = bankAccount.address.postalCode,
-                                        addressDetails = OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails(
-                                            country = OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
-                                                id = bankAccount.address.addressDetails.country.id,
-                                                scheme = bankAccount.address.addressDetails.country.scheme,
-                                                description = bankAccount.address.addressDetails.country.description,
-                                                uri = bankAccount.address.addressDetails.country.uri
-                                            ),
-                                            region = OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
-                                                id = bankAccount.address.addressDetails.region.id,
-                                                scheme = bankAccount.address.addressDetails.region.scheme,
-                                                description = bankAccount.address.addressDetails.region.description,
-                                                uri = bankAccount.address.addressDetails.region.uri
-                                            ),
-                                            locality = OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
-                                                id = bankAccount.address.addressDetails.locality.id,
-                                                scheme = bankAccount.address.addressDetails.locality.scheme,
-                                                description = bankAccount.address.addressDetails.locality.description,
-                                                uri = bankAccount.address.addressDetails.locality.uri
-                                            )
+                                    }
+                            )
+                        },
+                    contactPoint = tenderer.contactPoint
+                        .let { contactPoint ->
+                            OpenBidsForPublishingResult.Bid.Tenderer.ContactPoint(
+                                name = contactPoint.name,
+                                email = contactPoint.email!!,
+                                telephone = contactPoint.telephone,
+                                faxNumber = contactPoint.faxNumber,
+                                url = contactPoint.url
+                            )
+                        },
+                    details = tenderer.details
+                        .let { details ->
+                            OpenBidsForPublishingResult.Bid.Tenderer.Details(
+                                typeOfSupplier = details.typeOfSupplier
+                                    ?.let { TypeOfSupplier.fromString(it) },
+                                mainEconomicActivities = details.mainEconomicActivities,
+                                scale = Scale.fromString(details.scale),
+                                permits = details.permits
+                                    ?.map { permit ->
+                                        OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit(
+                                            id = permit.id,
+                                            scheme = permit.scheme,
+                                            url = permit.url,
+                                            permitDetails = permit.permitDetails
+                                                .let { permitDetails ->
+                                                    OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit.PermitDetails(
+                                                        issuedBy = permitDetails.issuedBy
+                                                            .let { issuedBy ->
+                                                                OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit.PermitDetails.IssuedBy(
+                                                                    id = issuedBy.id,
+                                                                    name = issuedBy.name
+                                                                )
+                                                            },
+                                                        issuedThought = permitDetails.issuedThought
+                                                            .let { issuedThought ->
+                                                                OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit.PermitDetails.IssuedThought(
+                                                                    id = issuedThought.id,
+                                                                    name = issuedThought.name
+                                                                )
+                                                            },
+                                                        validityPeriod = permitDetails.validityPeriod
+                                                            .let { validityPeriod ->
+                                                                OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit.PermitDetails.ValidityPeriod(
+                                                                    startDate = validityPeriod.startDate,
+                                                                    endDate = validityPeriod.endDate
+                                                                )
+                                                            }
+                                                    )
+                                                }
                                         )
-
-                                    )
-                                )
-                            },
-                        legalForm = tenderer.details.legalForm
-                            ?.let { legalform ->
-                                OpenBidsForPublishingResult.Bid.Tenderer.Details.LegalForm(
-                                    id = legalform.id,
-                                    scheme = legalform.scheme,
-                                    description = legalform.description,
-                                    uri = legalform.uri
-                                )
-                            }
-                    ),
+                                    }
+                                    .orEmpty(),
+                                bankAccounts = details.bankAccounts
+                                    ?.map { bankAccount ->
+                                        OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount(
+                                            description = bankAccount.description,
+                                            bankName = bankAccount.bankName,
+                                            identifier = bankAccount.identifier
+                                                .let { identifier ->
+                                                    OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Identifier(
+                                                        id = identifier.id,
+                                                        scheme = identifier.scheme
+                                                    )
+                                                },
+                                            additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers
+                                                .map { additionalIdentifier ->
+                                                    OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
+                                                        id = additionalIdentifier.id,
+                                                        scheme = additionalIdentifier.scheme
+                                                    )
+                                                },
+                                            accountIdentification = bankAccount.accountIdentification
+                                                .let { accountIdentification ->
+                                                    OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.AccountIdentification(
+                                                        id = accountIdentification.id,
+                                                        scheme = accountIdentification.scheme
+                                                    )
+                                                },
+                                            address = bankAccount.address
+                                                .let { address ->
+                                                    OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address(
+                                                        streetAddress = address.streetAddress,
+                                                        postalCode = address.postalCode,
+                                                        addressDetails = address.addressDetails
+                                                            .let { addressDetails ->
+                                                                OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails(
+                                                                    country = addressDetails.country
+                                                                        .let { country ->
+                                                                            OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
+                                                                                id = country.id,
+                                                                                scheme = country.scheme,
+                                                                                description = country.description,
+                                                                                uri = country.uri
+                                                                            )
+                                                                        },
+                                                                    region = addressDetails.region
+                                                                        .let { region ->
+                                                                            OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
+                                                                                id = region.id,
+                                                                                scheme = region.scheme,
+                                                                                description = region.description,
+                                                                                uri = region.uri
+                                                                            )
+                                                                        },
+                                                                    locality = addressDetails.locality
+                                                                        .let { locality ->
+                                                                            OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
+                                                                                id = locality.id,
+                                                                                scheme = locality.scheme,
+                                                                                description = locality.description,
+                                                                                uri = locality.uri
+                                                                            )
+                                                                        }
+                                                                )
+                                                            }
+                                                    )
+                                                }
+                                        )
+                                    }
+                                    .orEmpty(),
+                                legalForm = details.legalForm
+                                    ?.let { legalform ->
+                                        OpenBidsForPublishingResult.Bid.Tenderer.Details.LegalForm(
+                                            id = legalform.id,
+                                            scheme = legalform.scheme,
+                                            description = legalform.description,
+                                            uri = legalform.uri
+                                        )
+                                    }
+                            )
+                        },
                     persones = tenderer.persones
                         ?.map { person ->
                             OpenBidsForPublishingResult.Bid.Tenderer.Persone(
                                 title = person.title,
-                                identifier = OpenBidsForPublishingResult.Bid.Tenderer.Persone.Identifier(
-                                    id = person.identifier.id,
-                                    scheme = person.identifier.scheme,
-                                    uri = person.identifier.uri
-                                ),
+                                identifier = person.identifier
+                                    .let { identifier ->
+                                        OpenBidsForPublishingResult.Bid.Tenderer.Persone.Identifier(
+                                            id = identifier.id,
+                                            scheme = identifier.scheme,
+                                            uri = identifier.uri
+                                        )
+                                    },
                                 name = person.name,
                                 businessFunctions = person.businessFunctions
                                     .map { businessFunction ->
@@ -394,9 +524,12 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                                             id = businessFunction.id,
                                             jobTitle = businessFunction.jobTitle,
                                             type = businessFunction.type,
-                                            period = OpenBidsForPublishingResult.Bid.Tenderer.Persone.BusinessFunction.Period(
-                                                startDate = businessFunction.period.startDate
-                                            ),
+                                            period = businessFunction.period
+                                                .let { period ->
+                                                    OpenBidsForPublishingResult.Bid.Tenderer.Persone.BusinessFunction.Period(
+                                                        startDate = period.startDate
+                                                    )
+                                                },
                                             documents = businessFunction.documents
                                                 ?.map { document ->
                                                     OpenBidsForPublishingResult.Bid.Tenderer.Persone.BusinessFunction.Document(
@@ -406,10 +539,12 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                                                         description = document.description
                                                     )
                                                 }
+                                                .orEmpty()
                                         )
                                     }
                             )
                         }
+                        .orEmpty()
                 )
             },
         value = bid.value!!,
@@ -421,8 +556,11 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                     description = document.description,
                     title = document.title,
                     relatedLots = document.relatedLots
+                        ?.map { LotId.fromString(it) }
+                        .orEmpty()
                 )
-            },
+            }
+            .orEmpty(),
         requirementResponses = bid.requirementResponses
             ?.map { requirementResponse ->
                 OpenBidsForPublishingResult.Bid.RequirementResponse(
@@ -437,12 +575,16 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                                 endDate = period.endDate
                             )
                         },
-                    requirement = OpenBidsForPublishingResult.Bid.RequirementResponse.Requirement(
-                        id = requirementResponse.requirement.id
-                    )
+                    requirement = requirementResponse.requirement
+                        .let { requirement ->
+                            OpenBidsForPublishingResult.Bid.RequirementResponse.Requirement(
+                                id = requirement.id
+                            )
+                        }
+
                 )
-            },
-        relatedLots = bid.relatedLots
+            }
+            .orEmpty(),
+        relatedLots = bid.relatedLots.map { LotId.fromString(it) }
     )
 }
-

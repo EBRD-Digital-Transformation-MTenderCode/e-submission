@@ -9,6 +9,7 @@ import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
+import com.procurement.submission.domain.model.lot.LotId
 import java.time.LocalDateTime
 import java.util.*
 
@@ -22,18 +23,18 @@ data class OpenBidsForPublishingResult(
         val statusDetails: StatusDetails,
         val tenderers: List<Tenderer>,
         val value: Money,
-        val documents: List<Document>?,
-        val requirementResponses: List<RequirementResponse>?,
-        val relatedLots: List<String>
+        val documents: List<Document>,
+        val requirementResponses: List<RequirementResponse>,
+        val relatedLots: List<LotId>
     ) {
         data class Tenderer(
             val id: String,
             val name: String,
             val identifier: Identifier,
-            val additionalIdentifiers: List<AdditionalIdentifier>?,
+            val additionalIdentifiers: List<AdditionalIdentifier>,
             val address: Address,
             val contactPoint: ContactPoint,
-            val persones: List<Persone>?,
+            val persones: List<Persone>,
             val details: Details
         ) {
             data class ContactPoint(
@@ -88,8 +89,8 @@ data class OpenBidsForPublishingResult(
                 val typeOfSupplier: TypeOfSupplier?,
                 val mainEconomicActivities: List<String>,
                 val scale: Scale,
-                val permits: List<Permit>?,
-                val bankAccounts: List<BankAccount>?,
+                val permits: List<Permit>,
+                val bankAccounts: List<BankAccount>,
                 val legalForm: LegalForm?
             ) {
                 data class Permit(
@@ -133,7 +134,7 @@ data class OpenBidsForPublishingResult(
                     val address: Address,
                     val identifier: Identifier,
                     val accountIdentification: AccountIdentification,
-                    val additionalAccountIdentifiers: List<AdditionalAccountIdentifier>?
+                    val additionalAccountIdentifiers: List<AdditionalAccountIdentifier>
                 ) {
                     data class Identifier(
                         val scheme: String,
@@ -203,7 +204,7 @@ data class OpenBidsForPublishingResult(
                     val type: BusinessFunctionType,
                     val jobTitle: String,
                     val period: Period,
-                    val documents: List<Document>?
+                    val documents: List<Document>
                 ) {
                     data class Document(
                         val id: String,
@@ -249,7 +250,7 @@ data class OpenBidsForPublishingResult(
             val documentType: DocumentType,
             val title: String?,
             val description: String?,
-            val relatedLots: List<String>?
+            val relatedLots: List<LotId>
         )
     }
 }

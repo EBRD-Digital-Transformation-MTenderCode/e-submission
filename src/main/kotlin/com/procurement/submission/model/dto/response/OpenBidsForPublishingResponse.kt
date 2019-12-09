@@ -1,6 +1,5 @@
 package com.procurement.submission.model.dto.response
 
-
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -14,6 +13,7 @@ import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
+import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueDeserializer
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueSerializer
 import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
@@ -42,12 +42,12 @@ data class OpenBidsForPublishingResponse(
         @field:JsonProperty("value") @param:JsonProperty("value") val value: Money,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        @field:JsonProperty("documents") @param:JsonProperty("documents") val documents: List<Document>?,
+        @field:JsonProperty("documents") @param:JsonProperty("documents") val documents: List<Document> = emptyList(),
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        @field:JsonProperty("requirementResponses") @param:JsonProperty("requirementResponses") val requirementResponses: List<RequirementResponse>?,
+        @field:JsonProperty("requirementResponses") @param:JsonProperty("requirementResponses") val requirementResponses: List<RequirementResponse> = emptyList(),
 
-        @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<String>
+        @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<LotId>
     ) {
         data class Tenderer(
             @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
@@ -55,13 +55,13 @@ data class OpenBidsForPublishingResponse(
             @field:JsonProperty("identifier") @param:JsonProperty("identifier") val identifier: Identifier,
 
             @JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @field:JsonProperty("additionalIdentifiers") @param:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
+            @field:JsonProperty("additionalIdentifiers") @param:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier> = emptyList(),
 
             @field:JsonProperty("address") @param:JsonProperty("address") val address: Address,
             @field:JsonProperty("contactPoint") @param:JsonProperty("contactPoint") val contactPoint: ContactPoint,
 
             @JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @field:JsonProperty("persones") @param:JsonProperty("persones") val persones: List<Persone>?,
+            @field:JsonProperty("persones") @param:JsonProperty("persones") val persones: List<Persone> = emptyList(),
 
             @field:JsonProperty("details") @param:JsonProperty("details") val details: Details
         ) {
@@ -132,10 +132,10 @@ data class OpenBidsForPublishingResponse(
                 @field:JsonProperty("scale") @param:JsonProperty("scale") val scale: Scale,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                @field:JsonProperty("permits") @param:JsonProperty("permits") val permits: List<Permit>?,
+                @field:JsonProperty("permits") @param:JsonProperty("permits") val permits: List<Permit> = emptyList(),
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                @field:JsonProperty("bankAccounts") @param:JsonProperty("bankAccounts") val bankAccounts: List<BankAccount>?,
+                @field:JsonProperty("bankAccounts") @param:JsonProperty("bankAccounts") val bankAccounts: List<BankAccount> = emptyList(),
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @field:JsonProperty("legalForm") @param:JsonProperty("legalForm") val legalForm: LegalForm?
@@ -194,7 +194,7 @@ data class OpenBidsForPublishingResponse(
                     @field:JsonProperty("accountIdentification") @param:JsonProperty("accountIdentification") val accountIdentification: AccountIdentification,
 
                     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                    @field:JsonProperty("additionalAccountIdentifiers") @param:JsonProperty("additionalAccountIdentifiers") val additionalAccountIdentifiers: List<AdditionalAccountIdentifier>?
+                    @field:JsonProperty("additionalAccountIdentifiers") @param:JsonProperty("additionalAccountIdentifiers") val additionalAccountIdentifiers: List<AdditionalAccountIdentifier> = emptyList()
                 ) {
                     data class Identifier(
                         @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
@@ -272,7 +272,7 @@ data class OpenBidsForPublishingResponse(
                     @field:JsonProperty("period") @param:JsonProperty("period") val period: Period,
 
                     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                    @field:JsonProperty("documents") @param:JsonProperty("documents") val documents: List<Document>?
+                    @field:JsonProperty("documents") @param:JsonProperty("documents") val documents: List<Document> = emptyList()
                 ) {
                     data class Document(
                         @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
@@ -343,7 +343,7 @@ data class OpenBidsForPublishingResponse(
             @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
 
             @JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<String>?
+            @field:JsonProperty("relatedLots") @param:JsonProperty("relatedLots") val relatedLots: List<LotId> = emptyList()
         )
     }
 }
