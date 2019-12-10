@@ -9,6 +9,7 @@ import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.application.service.GetBidsAuctionContext
 import com.procurement.submission.application.service.GetBidsForEvaluationContext
 import com.procurement.submission.application.service.OpenBidsForPublishingContext
+import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
 import com.procurement.submission.dao.HistoryDao
 import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
@@ -20,6 +21,7 @@ import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsReques
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsResponse
 import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.response.FinalBidsStatusByLotsResponse
+import com.procurement.submission.infrastructure.dto.bid.opendoc.request.OpenBidDocsRequest
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.CommandType
 import com.procurement.submission.model.dto.bpe.ResponseDto
@@ -276,6 +278,17 @@ class CommandService(
                 if (log.isDebugEnabled)
                     log.debug("Bids were finalized. Response: ${toJson(dataResponse)}")
                 ResponseDto(data = dataResponse)
+            }
+            CommandType.OPEN_BID_DOCS -> {
+                val context = OpenBidDocsContext(cpid = cm.cpid, stage = cm.stage)
+                val request = toObject(OpenBidDocsRequest::class.java, cm.data)
+                val result = bidService.openBidDocs(context = context, data = request.convert())
+                if (log.isDebugEnabled)
+                    log.debug("Docs were opened. Result: ${toJson(result)}")
+                val response = result.convert()
+                if (log.isDebugEnabled)
+                    log.debug("Docs were opened. Response: ${toJson(response)}")
+                ResponseDto(data = response)
             }
         }
         historyEntity = historyDao.saveHistory(cm.id, cm.command.value(), response)

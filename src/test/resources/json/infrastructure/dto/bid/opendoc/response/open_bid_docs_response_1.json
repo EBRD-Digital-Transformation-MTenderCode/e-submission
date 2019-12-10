@@ -1,0 +1,13 @@
+{
+  "bid": {
+    "id": "3a8b1733-b05b-46bd-8728-e6e2d249862f",
+    "documents": [
+      {
+        "documentType": "x_qualificationDocuments",
+        "id": "bid.documents.id",
+        "relatedLots": [
+        ]
+      }
+    ]
+  }
+}
