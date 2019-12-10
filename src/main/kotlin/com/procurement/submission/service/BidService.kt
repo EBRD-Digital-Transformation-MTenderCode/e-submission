@@ -4,8 +4,8 @@ import com.procurement.submission.application.model.data.BidCreateData
 import com.procurement.submission.application.model.data.BidUpdateData
 import com.procurement.submission.application.model.data.BidsForEvaluationRequestData
 import com.procurement.submission.application.model.data.BidsForEvaluationResponseData
-import com.procurement.submission.application.model.data.BidsForPublishingRequestData
-import com.procurement.submission.application.model.data.BidsForPublishingResponseData
+import com.procurement.submission.application.model.data.OpenBidsForPublishingData
+import com.procurement.submission.application.model.data.OpenBidsForPublishingResult
 import com.procurement.submission.application.service.AppliedEvaluatedAwardsData
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
@@ -22,6 +22,7 @@ import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsRes
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.ProcurementMethod
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
@@ -48,8 +49,8 @@ import com.procurement.submission.exception.ErrorType.INVALID_TOKEN
 import com.procurement.submission.exception.ErrorType.NOT_UNIQUE_IDS
 import com.procurement.submission.exception.ErrorType.PERIOD_NOT_EXPIRED
 import com.procurement.submission.exception.ErrorType.RELATED_LOTS_MUST_BE_ONE_UNIT
+import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.converter.toBidsForEvaluationResponseData
-import com.procurement.submission.infrastructure.converter.toBidsForPublishingResponseData
 import com.procurement.submission.lib.toSetBy
 import com.procurement.submission.model.dto.BidDetails
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
@@ -267,45 +268,55 @@ class BidService(
     private fun Bid.archive() = this.copy(statusDetails = StatusDetails.ARCHIVED)
 
     fun openBidsForPublishing(
-        requestData: BidsForPublishingRequestData,
-        context: OpenBidsForPublishingContext
-    ): BidsForPublishingResponseData {
-        val bidsRecords = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
-        val activeBidsDb = bidsRecords.asSequence()
+        context: OpenBidsForPublishingContext,
+        data: OpenBidsForPublishingData
+    ): OpenBidsForPublishingResult {
+        val activeBidsByIds: Map<BidId, Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+            .asSequence()
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
             .filter { it.status == Status.PENDING && it.statusDetails == StatusDetails.EMPTY }
-            .toList()
+            .associateBy { BidId.fromString(it.id) }
 
-        if (requestData.awardCriteriaDetails != AwardCriteriaDetails.AUTOMATED) return activeBidsDb.toBidsForPublishingResponseData()
+        if (data.awardCriteriaDetails == AwardCriteriaDetails.MANUAL)
+            return OpenBidsForPublishingResult(
+                bids = activeBidsByIds.values
+                    .map { bid -> bid.convert() }
+            )
 
-        val priorityBids = requestData.awards.asSequence()
-            .filter { it.statusDetails == AwardStatusDetails.AWAITING }
-            .map { it.relatedBid }
-            .map { bidId ->
-                activeBidsDb.find { it.id == bidId.toString() } ?: throw ErrorException(
-                    error = BID_NOT_FOUND,
-                    message = "Cannot find bid with id=${bidId}. Available bids: ${activeBidsDb.map { it.id }}"
-                )
+        val awardsByRelatedBids: Map<BidId, OpenBidsForPublishingData.Award> = data.awards
+            .asSequence()
+            .filter { it.relatedBid != null }
+            .associateBy { it.relatedBid!! }
+
+        val relatedBids = awardsByRelatedBids.keys
+        val bidsForPublishing = activeBidsByIds.asSequence()
+            .filter { (id, _) ->
+                id in relatedBids
             }
-            .toList()
+            .map { (id, bid) ->
+                val award = awardsByRelatedBids.getValue(id)
+                val bidForPublishing = when (award.statusDetails) {
+                    AwardStatusDetails.AWAITING -> bid
 
-        val nonPriorityBidsIds = activeBidsDb.map { it.id } - priorityBids.map { it.id }
-
-        val restrictedBids = nonPriorityBidsIds.asSequence()
-            .map { id ->
-                activeBidsDb.find { it.id == id } ?: throw ErrorException(
-                    error = BID_NOT_FOUND,
-                    message = "Cannot find bid with id=${id}. Available bids: ${activeBidsDb.map { it.id }}"
-                )
-            }
-            .map { nonPriorityBid ->
-                val tendererDucuments = nonPriorityBid.documents?.filter {
-                    it.documentType == DocumentType.SUBMISSION_DOCUMENTS || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
+                    AwardStatusDetails.PENDING,
+                    AwardStatusDetails.ACTIVE,
+                    AwardStatusDetails.UNSUCCESSFUL,
+                    AwardStatusDetails.CONSIDERATION,
+                    AwardStatusDetails.EMPTY,
+                    AwardStatusDetails.NO_OFFERS_RECEIVED,
+                    AwardStatusDetails.LOT_CANCELLED ->
+                        bid.copy(
+                            documents = bid.documents
+                                ?.filter { document ->
+                                    document.documentType == DocumentType.SUBMISSION_DOCUMENTS ||
+                                        document.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
+                                }
+                        )
                 }
-                nonPriorityBid.copy(documents = tendererDucuments)
+                bidForPublishing.convert()
             }
-
-        return (priorityBids + restrictedBids).toBidsForPublishingResponseData()
+            .toList()
+        return OpenBidsForPublishingResult(bids = bidsForPublishing)
     }
 
     fun copyBids(cm: CommandMessage): ResponseDto {
@@ -547,7 +558,13 @@ class BidService(
     private fun Bid.updateStatusDetails(statusDetails: AwardStatusDetails): Bid = when (statusDetails) {
         AwardStatusDetails.ACTIVE -> this.copy(statusDetails = StatusDetails.VALID)
         AwardStatusDetails.UNSUCCESSFUL -> this.copy(statusDetails = StatusDetails.DISQUALIFIED)
-        else -> throw ErrorException(
+
+        AwardStatusDetails.EMPTY,
+        AwardStatusDetails.PENDING,
+        AwardStatusDetails.CONSIDERATION,
+        AwardStatusDetails.AWAITING,
+        AwardStatusDetails.NO_OFFERS_RECEIVED,
+        AwardStatusDetails.LOT_CANCELLED -> throw ErrorException(
             error = ErrorType.INVALID_STATUS_DETAILS,
             message = "Current status details: '$statusDetails'. Expected status details: [${AwardStatusDetails.ACTIVE}, ${AwardStatusDetails.UNSUCCESSFUL}]"
         )

@@ -6,6 +6,7 @@ import com.procurement.submission.application.service.BidCreateContext
 import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsData
+import com.procurement.submission.application.service.GetBidsAuctionContext
 import com.procurement.submission.application.service.GetBidsForEvaluationContext
 import com.procurement.submission.application.service.OpenBidsForPublishingContext
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
@@ -34,6 +35,7 @@ import com.procurement.submission.model.dto.bpe.startDate
 import com.procurement.submission.model.dto.bpe.token
 import com.procurement.submission.model.dto.request.BidCreateRequest
 import com.procurement.submission.model.dto.request.BidUpdateRequest
+import com.procurement.submission.model.dto.request.GetBidsAuctionRequest
 import com.procurement.submission.model.dto.request.GetBidsForEvaluationRequest
 import com.procurement.submission.model.dto.request.OpenBidsForPublishingRequest
 import com.procurement.submission.utils.toJson
@@ -149,17 +151,16 @@ class CommandService(
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV -> {
-                        val request = toObject(OpenBidsForPublishingRequest::class.java, cm.data)
-                        val requestData = request.toData()
                         val context = OpenBidsForPublishingContext(
                             cpid = cm.cpid,
                             stage = cm.stage
                         )
+                        val request = toObject(OpenBidsForPublishingRequest::class.java, cm.data)
                         val serviceResponse = bidService.openBidsForPublishing(
-                            requestData = requestData,
-                            context = context
+                            context = context,
+                            data = request.convert()
                         )
-                        val response = serviceResponse.toResponse()
+                        val response = serviceResponse.convert()
                         return ResponseDto(data = response)
                     }
 
@@ -182,7 +183,34 @@ class CommandService(
             CommandType.CHECK_PERIOD -> periodService.checkPeriod(cm)
             CommandType.CHECK_TOKEN_OWNER -> statusService.checkTokenOwner(cm)
             CommandType.GET_BIDS -> statusService.getBids(cm)
-            CommandType.GET_BIDS_AUCTION -> statusService.getBidsAuction(cm)
+            CommandType.GET_BIDS_AUCTION -> {
+                when (cm.pmd) {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.MV, ProcurementMethod.TEST_MV -> {
+                        val request = toObject(GetBidsAuctionRequest::class.java, cm.data)
+                        val requestData = request.convert()
+                        val context = GetBidsAuctionContext(
+                            cpid = cm.cpid,
+                            stage = cm.stage,
+                            country = cm.country,
+                            pmd = cm.pmd
+                        )
+                        val serviceResponse = statusService.getBidsAuction(requestData, context)
+                        val response = serviceResponse.convert()
+                        return ResponseDto(data = response)
+                    }
+
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
+                        throw ErrorException(ErrorType.INVALID_PMD)
+                    }
+
+                }
+            }
             CommandType.UPDATE_BIDS_BY_LOTS -> statusService.updateBidsByLots(cm)
             CommandType.UPDATE_BID_BY_AWARD_STATUS -> statusService.updateBidsByAwardStatus(cm)
             CommandType.UPDATE_BID_DOCS -> bidService.updateBidDocs(cm)

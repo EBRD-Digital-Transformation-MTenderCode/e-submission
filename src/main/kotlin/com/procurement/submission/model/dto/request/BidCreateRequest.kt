@@ -73,7 +73,7 @@ data class BidCreateRequest(
                 @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
                 @field:JsonProperty("legalName") @param:JsonProperty("legalName") val legalName: String,
 
-                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @JsonInclude(JsonInclude.Include.NON_NULL)
                 @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
             )
 
