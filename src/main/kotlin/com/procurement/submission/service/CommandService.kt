@@ -9,6 +9,7 @@ import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.application.service.GetBidsAuctionContext
 import com.procurement.submission.application.service.GetBidsForEvaluationContext
 import com.procurement.submission.application.service.OpenBidsForPublishingContext
+import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsContext
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
 import com.procurement.submission.dao.HistoryDao
 import com.procurement.submission.domain.model.ProcurementMethod
@@ -19,6 +20,7 @@ import com.procurement.submission.infrastructure.converter.toData
 import com.procurement.submission.infrastructure.converter.toResponse
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsResponse
+import com.procurement.submission.infrastructure.dto.bid.bidsbylots.request.GetBidsByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.response.FinalBidsStatusByLotsResponse
 import com.procurement.submission.infrastructure.dto.bid.opendoc.request.OpenBidDocsRequest
@@ -288,6 +290,20 @@ class CommandService(
                 val response = result.convert()
                 if (log.isDebugEnabled)
                     log.debug("Docs were opened. Response: ${toJson(response)}")
+                ResponseDto(data = response)
+            }
+            CommandType.GET_BIDS_BY_LOTS -> {
+                val context = GetBidsByLotsContext(
+                    cpid = cm.cpid,
+                    stage = cm.stage
+                )
+                val request = toObject(GetBidsByLotsRequest::class.java, cm.data)
+                val result = bidService.getBidsByLots(context = context, data = request.convert())
+                if (log.isDebugEnabled)
+                    log.debug("Bids are gotten. Result: ${toJson(result)}")
+                val response = result.convert()
+                if (log.isDebugEnabled)
+                    log.debug("Bids are gotten. Response: ${toJson(response)}")
                 ResponseDto(data = response)
             }
         }
