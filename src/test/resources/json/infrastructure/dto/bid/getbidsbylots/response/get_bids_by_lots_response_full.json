@@ -1,0 +1,201 @@
+{
+  "bids": [
+    {
+      "id": "0a7d7980-e713-4c4d-b20d-da382d7258c5",
+      "date": "2019-09-03T22:22:22Z",
+      "status": "withdrawn",
+      "statusDetails": "archived",
+      "tenderers": [
+        {
+          "id": "bids[0].tenderers[0].id",
+          "name": "bids[0].tenderers[0].name",
+          "identifier": {
+            "scheme": "bids[0].tenderers[0].identifier.scheme",
+            "id": "bids[0].tenderers[0].identifier.id",
+            "legalName": "bids[0].tenderers[0].identifier.legalName",
+            "uri": "bids[0].tenderers[0].identifier.uri"
+          },
+          "additionalIdentifiers": [
+            {
+              "scheme": "bids[0].tenderers[0].additionalIdentifiers.scheme",
+              "id": "bids[0].tenderers[0].additionalIdentifiers.id",
+              "legalName": "bids[0].tenderers[0].additionalIdentifiers.legalName",
+              "uri": "bids[0].tenderers[0].additionalIdentifiers.uri"
+            }
+          ],
+          "address": {
+            "streetAddress": "bids[0].tenderers[0].address.streetAddress",
+            "postalCode": "bids[0].tenderers[0].address.postalCode",
+            "addressDetails": {
+              "country": {
+                "scheme": "bids[0].tenderers[0].address.addressDetails.country.scheme",
+                "id": "bids[0].tenderers[0].address.addressDetails.country.id",
+                "description": "bids[0].tenderers[0].address.addressDetails.country.description",
+                "uri": "bids[0].tenderers[0].address.addressDetails.country.uri"
+              },
+              "region": {
+                "scheme": "bids[0].tenderers[0].address.addressDetails.region.scheme",
+                "id": "bids[0].tenderers[0].address.addressDetails.region.id",
+                "description": "bids[0].tenderers[0].address.addressDetails.region.description",
+                "uri": "bids[0].tenderers[0].address.addressDetails.region.uri"
+              },
+              "locality": {
+                "scheme": "bids[0].tenderers[0].address.addressDetails.locality.scheme",
+                "id": "bids[0].tenderers[0].address.addressDetails.locality.id",
+                "description": "bids[0].tenderers[0].address.addressDetails.locality.description",
+                "uri": "bids[0].tenderers[0].address.addressDetails.locality.uri"
+              }
+            }
+          },
+          "contactPoint": {
+            "name": "bids[0].tenderers[0].contactPoint.name",
+            "email": "bids[0].tenderers[0].contactPoint.email",
+            "telephone": "bids[0].tenderers[0].contactPoint.telephone",
+            "faxNumber": "bids[0].tenderers[0].contactPoint.faxNumber",
+            "url": "bids[0].tenderers[0].contactPoint.url"
+          },
+          "persones": [
+            {
+              "title": "bids[0].tenderers[0].persones.title",
+              "name": "bids[0].tenderers[0].persones.name",
+              "identifier": {
+                "scheme": "bids[0].tenderers[0].persones.identifier.scheme",
+                "id": "bids[0].tenderers[0].persones.identifier.id",
+                "uri": "bids[0].tenderers[0].persones.identifier.uri"
+              },
+              "businessFunctions": [
+                {
+                  "id": "bids[0].tenderers[0].persones.businessFunctions.id",
+                  "type": "authority",
+                  "jobTitle": "Chief Executive Officer",
+                  "period": {
+                    "startDate": "2019-09-03T22:22:22Z"
+                  },
+                  "documents": [
+                    {
+                      "id": "d5504088-e0a0-4111-9f2a-ea41428c3912",
+                      "documentType": "regulatoryDocument",
+                      "title": "bids[0].tenderers[0].persones.businessFunctions.documents[0].title",
+                      "description": "bids[0].tenderers[0].persones.businessFunctions.documents[0].description"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "details": {
+            "typeOfSupplier": "bids[0].tenderers[0].details.typeOfSupplier",
+            "mainEconomicActivities": [
+              "bids[0].tenderers[0].details.mainEconomicActivities[0]"
+            ],
+            "scale": "sme",
+            "permits": [
+              {
+                "scheme": "SRLE",
+                "id": "bids[0].tenderers[0].details.permits.id",
+                "url": "bids[0].tenderers[0].details.permits.url",
+                "permitDetails": {
+                  "issuedBy": {
+                    "id": "bids[0].tenderers[0].details.permitDetails.issuedBy.id",
+                    "name": "bids[0].tenderers[0].details.permitDetails.issuedBy.name"
+                  },
+                  "issuedThought": {
+                    "id": "bids[0].tenderers[0].details.permitDetails.issuedThought.id",
+                    "name": "bids[0].tenderers[0].details.permitDetails.issuedThought.name"
+                  },
+                  "validityPeriod": {
+                    "startDate": "2019-09-03T22:22:22Z",
+                    "endDate": "2019-09-03T22:22:23Z"
+                  }
+                }
+              }
+            ],
+            "bankAccounts": [
+              {
+                "description": "bids[0].tenderers[0].bankAccounts[0].description",
+                "bankName": "bids[0].tenderers[0].bankAccounts[0].bankName",
+                "address": {
+                  "streetAddress": "bids[0].tenderers[0].bankAccounts[0].address.streetAddress",
+                  "postalCode": "bids[0].tenderers[0].bankAccounts[0].address.postalCode",
+                  "addressDetails": {
+                    "country": {
+                      "scheme": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.country.scheme",
+                      "id": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.country.id",
+                      "description": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.country.description",
+                      "uri": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.country.uri"
+                    },
+                    "region": {
+                      "scheme": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.region.scheme",
+                      "id": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.region.id",
+                      "description": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.region.description",
+                      "uri": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.region.uri"
+                    },
+                    "locality": {
+                      "scheme": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.locality.scheme",
+                      "id": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.locality.id",
+                      "description": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.locality.description",
+                      "uri": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.locality.uri"
+                    }
+                  }
+                },
+                "identifier": {
+                  "scheme": "UA-MFO",
+                  "id": "300711"
+                },
+                "accountIdentification": {
+                  "scheme": "IBAN",
+                  "id": "2600000625637"
+                },
+                "additionalAccountIdentifiers": [
+                  {
+                    "scheme": "settlement",
+                    "id": "bids[0].tenderers[0].bankAccounts[0].additionalAccountIdentifiers.id"
+                  }
+                ]
+              }
+            ],
+            "legalForm": {
+              "scheme": "bids[0].tenderers[0].legalForm.scheme",
+              "id": "bids[0].tenderers[0].legalForm.id",
+              "description": "bids[0].tenderers[0].legalForm.description",
+              "uri": "bids[0].tenderers[0].legalForm.uri"
+            }
+          }
+        }
+      ],
+      "value": {
+        "amount": 210.00,
+        "currency": "bids[0].currency"
+      },
+      "documents": [
+        {
+          "documentType": "bids[0].documents[0].documentType",
+          "id": "bids[0].documents[0].id",
+          "title": "bids[0].documents[0].title",
+          "description": "bids[0].documents[0].description",
+          "relatedLots": [
+            "bdf479b4-c35b-45d0-acc4-3b68b683b1c1"
+          ]
+        }
+      ],
+      "requirementResponses": [
+        {
+          "id": "bids[0].requirementResponses.id",
+          "title": "bids[0].requirementResponses.title",
+          "description": "bids[0].requirementResponses.description",
+          "value": "bids[0].requirementResponses.value",
+          "requirement": {
+            "id": "bids[0].requirementResponses.requirement.id"
+          },
+          "period": {
+            "startDate": "2019-09-03T22:22:22Z",
+            "endDate": "2019-09-03T22:22:23Z"
+          }
+        }
+      ],
+      "relatedLots": [
+        "d90848e8-a93b-4b16-ad3e-de6f2c471464"
+      ]
+    }
+  ]
+}

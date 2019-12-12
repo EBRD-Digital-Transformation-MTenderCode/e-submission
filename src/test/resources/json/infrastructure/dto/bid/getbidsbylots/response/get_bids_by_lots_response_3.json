@@ -1,0 +1,54 @@
+{
+  "bids": [
+    {
+      "id": "0a7d7980-e713-4c4d-b20d-da382d7258c5",
+      "date": "2019-09-03T22:22:22Z",
+      "status": "withdrawn",
+      "statusDetails": "archived",
+      "tenderers": [
+        {
+          "name": "bids[0].tenderers[0].name",
+          "additionalIdentifiers": [
+          ],
+          "persones": [
+          ],
+          "details": {
+            "typeOfSupplier": "bids[0].tenderers[0].details.typeOfSupplier",
+            "mainEconomicActivities": [
+              "bids[0].tenderers[0].details.mainEconomicActivities[0]"
+            ],
+            "scale": "sme",
+            "permits": [
+            ],
+            "bankAccounts": [
+            ]
+          }
+        }
+      ],
+      "value": {
+        "amount": 210.00,
+        "currency": "bids[0].currency"
+      },
+      "documents": [
+        {
+          "id": "bids[0].documents[0].id",
+          "relatedLots": [
+          ]
+        }
+      ],
+      "requirementResponses": [
+        {
+          "id": "bids[0].requirementResponses.id",
+          "title": "bids[0].requirementResponses.title",
+          "value": "bids[0].requirementResponses.value",
+          "requirement": {
+            "id": "bids[0].requirementResponses.requirement.id"
+          }
+        }
+      ],
+      "relatedLots": [
+        "d90848e8-a93b-4b16-ad3e-de6f2c471464"
+      ]
+    }
+  ]
+}
