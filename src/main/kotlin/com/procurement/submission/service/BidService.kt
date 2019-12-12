@@ -16,6 +16,9 @@ import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.application.service.FinalizedBidsStatusByLots
 import com.procurement.submission.application.service.GetBidsForEvaluationContext
 import com.procurement.submission.application.service.OpenBidsForPublishingContext
+import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsContext
+import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsData
+import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsResult
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsData
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsResult
@@ -37,6 +40,7 @@ import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.exception.ErrorType.BID_ALREADY_WITH_LOT
 import com.procurement.submission.exception.ErrorType.BID_NOT_FOUND
 import com.procurement.submission.exception.ErrorType.CONTEXT
+import com.procurement.submission.exception.ErrorType.EMPTY_LIST
 import com.procurement.submission.exception.ErrorType.INVALID_DATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_FOR_UPDATE
 import com.procurement.submission.exception.ErrorType.INVALID_DOCS_ID
@@ -51,6 +55,9 @@ import com.procurement.submission.exception.ErrorType.PERIOD_NOT_EXPIRED
 import com.procurement.submission.exception.ErrorType.RELATED_LOTS_MUST_BE_ONE_UNIT
 import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.converter.toBidsForEvaluationResponseData
+import com.procurement.submission.lib.errorIfEmpty
+import com.procurement.submission.lib.mapIfNotEmpty
+import com.procurement.submission.lib.orThrow
 import com.procurement.submission.lib.toSetBy
 import com.procurement.submission.model.dto.BidDetails
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
@@ -1727,6 +1734,327 @@ class BidService(
                     }
                     .orEmpty()
             )
+        )
+    }
+
+    fun getBidsByLots(context: GetBidsByLotsContext, data: GetBidsByLotsData): GetBidsByLotsResult {
+        val bidsEntity = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
+        val bids = bidsEntity.map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }
+            .filter { bid ->
+                bid.status == Status.PENDING &&
+                    bid.statusDetails == StatusDetails.EMPTY &&
+                    bid.relatedLots.containsAll(data.lots.map { lot -> lot.id.toString() })
+            }
+        return GetBidsByLotsResult(
+            bids = bids.map { bid ->
+                GetBidsByLotsResult.Bid(
+                    id = UUID.fromString(bid.id),
+                    documents = bid.documents.errorIfEmpty {
+                        ErrorException(
+                            message = "The list of Bid.documents cannot be empty",
+                            error = EMPTY_LIST
+                        )
+                    }?.map { document ->
+                        GetBidsByLotsResult.Bid.Document(
+                            id = document.id,
+                            relatedLots = document.relatedLots
+                                .errorIfEmpty {
+                                    ErrorException(
+                                        message = "The list of Bid.documents.relatedLots cannot be empty",
+                                        error = EMPTY_LIST
+                                    )
+                                }
+                                ?.map { relatedLot -> UUID.fromString(relatedLot) }
+                                .orEmpty(),
+                            description = document.description,
+                            title = document.title,
+                            documentType = document.documentType.value()
+                        )
+                    }.orEmpty(),
+                    relatedLots = bid.relatedLots
+                        .map { relatedLot -> UUID.fromString(relatedLot) },
+                    statusDetails = bid.statusDetails,
+                    status = bid.status,
+                    tenderers = bid.tenderers
+                        .mapIfNotEmpty { tender ->
+                            GetBidsByLotsResult.Bid.Tenderer(
+                                id = tender.id,
+                                name = tender.name,
+                                identifier = tender.identifier.let { identifier ->
+                                    GetBidsByLotsResult.Bid.Tenderer.Identifier(
+                                        scheme = identifier.scheme,
+                                        id = identifier.id,
+                                        legalName = identifier.legalName,
+                                        uri = identifier.uri
+                                    )
+                                },
+                                address = tender.address.let { address ->
+                                    GetBidsByLotsResult.Bid.Tenderer.Address(
+                                        postalCode = address.postalCode,
+                                        streetAddress = address.streetAddress,
+                                        addressDetails = address.addressDetails
+                                            .let { addressDetail ->
+                                                GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails(
+                                                    country = addressDetail.country
+                                                        .let { country ->
+                                                            GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Country(
+                                                                id = country.id,
+                                                                scheme = country.scheme,
+                                                                description = country.description,
+                                                                uri = country.uri
+                                                            )
+                                                        },
+                                                    locality = addressDetail.locality
+                                                        .let { locality ->
+                                                            GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Locality(
+                                                                id = locality.id,
+                                                                scheme = locality.scheme,
+                                                                description = locality.description,
+                                                                uri = locality.uri
+                                                            )
+                                                        },
+                                                    region = addressDetail.region
+                                                        .let { region ->
+                                                            GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Region(
+                                                                id = region.id,
+                                                                scheme = region.scheme,
+                                                                description = region.description,
+                                                                uri = region.uri
+                                                            )
+                                                        }
+                                                )
+                                            }
+                                    )
+                                },
+                                details = tender.details
+                                    .let { detail ->
+                                        GetBidsByLotsResult.Bid.Tenderer.Details(
+                                            typeOfSupplier = detail.typeOfSupplier,
+                                            mainEconomicActivities = detail.mainEconomicActivities,
+                                            scale = detail.scale,
+                                            permits = detail.permits.errorIfEmpty {
+                                                throw ErrorException(
+                                                    error = EMPTY_LIST,
+                                                    message = "The list of Bid.tenderers.details.permits cannot be empty"
+                                                )
+                                            }?.map { permit ->
+                                                GetBidsByLotsResult.Bid.Tenderer.Details.Permit(
+                                                    id = permit.id,
+                                                    scheme = permit.scheme,
+                                                    url = permit.url,
+                                                    permitDetails = permit.permitDetails.let { permitDetail ->
+                                                        GetBidsByLotsResult.Bid.Tenderer.Details.Permit.PermitDetails(
+                                                            issuedBy = permitDetail.issuedBy.let { issuedBy ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Details.Permit.PermitDetails.IssuedBy(
+                                                                    id = issuedBy.id,
+                                                                    name = issuedBy.name
+                                                                )
+                                                            },
+                                                            issuedThought = permitDetail.issuedThought.let { issuedThought ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Details.Permit.PermitDetails.IssuedThought(
+                                                                    id = issuedThought.id,
+                                                                    name = issuedThought.name
+                                                                )
+                                                            },
+                                                            validityPeriod = permitDetail.validityPeriod.let { validityPeriod ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Details.Permit.PermitDetails.ValidityPeriod(
+                                                                    startDate = validityPeriod.startDate,
+                                                                    endDate = validityPeriod.endDate
+                                                                )
+                                                            }
+                                                        )
+                                                    }
+                                                )
+                                            }.orEmpty(),
+                                            legalForm = detail.legalForm?.let { legalForm ->
+                                                GetBidsByLotsResult.Bid.Tenderer.Details.LegalForm(
+                                                    scheme = legalForm.scheme,
+                                                    id = legalForm.id,
+                                                    description = legalForm.description,
+                                                    uri = legalForm.uri
+                                                )
+                                            },
+                                            bankAccounts = detail.bankAccounts
+                                                .errorIfEmpty {
+                                                    throw ErrorException(
+                                                        error = EMPTY_LIST,
+                                                        message = "The list of Bid.tenderers.details.bankAccounts cannot be empty"
+                                                    )
+                                                }?.map { bankAccount ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount(
+                                                        description = bankAccount.description,
+                                                        bankName = bankAccount.bankName,
+                                                        identifier = bankAccount.identifier.let { identifier ->
+                                                            GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Identifier(
+                                                                id = identifier.id,
+                                                                scheme = identifier.scheme
+                                                            )
+                                                        },
+                                                        address = bankAccount.address.let { address ->
+                                                            GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address(
+                                                                streetAddress = address.streetAddress,
+                                                                postalCode = address.postalCode,
+                                                                addressDetails = address.addressDetails.let { addressDetail ->
+                                                                    GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails(
+                                                                        country = addressDetail.country.let { country ->
+                                                                            GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
+                                                                                id = country.id,
+                                                                                scheme = country.scheme,
+                                                                                description = country.description,
+                                                                                uri = country.uri
+                                                                            )
+                                                                        },
+                                                                        locality = addressDetail.locality.let { locality ->
+                                                                            GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
+                                                                                id = locality.id,
+                                                                                scheme = locality.scheme,
+                                                                                description = locality.description,
+                                                                                uri = locality.uri
+                                                                            )
+                                                                        },
+                                                                        region = addressDetail.region.let { region ->
+                                                                            GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
+                                                                                id = region.id,
+                                                                                scheme = region.scheme,
+                                                                                description = region.description,
+                                                                                uri = region.uri
+                                                                            )
+                                                                        }
+                                                                    )
+                                                                }
+                                                            )
+                                                        },
+                                                        additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers.errorIfEmpty {
+                                                            throw ErrorException(
+                                                                error = EMPTY_LIST,
+                                                                message = "The list of Bid.tenderers.details.bankAccounts.additionalAccountIdentifiers cannot be empty"
+                                                            )
+                                                        }?.map { additionalAccountIdentifier ->
+                                                            GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
+                                                                id = additionalAccountIdentifier.id,
+                                                                scheme = additionalAccountIdentifier.scheme
+                                                            )
+                                                        }.orEmpty(),
+                                                        accountIdentification = bankAccount.accountIdentification.let { accountIdentification ->
+                                                            GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.AccountIdentification(
+                                                                scheme = accountIdentification.scheme,
+                                                                id = accountIdentification.id
+                                                            )
+                                                        }
+                                                    )
+                                                }
+                                                .orEmpty()
+                                        )
+                                    },
+                                contactPoint = tender.contactPoint.let { contactPoint ->
+                                    GetBidsByLotsResult.Bid.Tenderer.ContactPoint(
+                                        name = contactPoint.name,
+                                        telephone = contactPoint.telephone,
+                                        faxNumber = contactPoint.faxNumber,
+                                        email = contactPoint.email,
+                                        url = contactPoint.url
+                                    )
+                                },
+                                additionalIdentifiers = tender.additionalIdentifiers.errorIfEmpty {
+                                    throw ErrorException(
+                                        error = EMPTY_LIST,
+                                        message = "The list of Bid.tenderers.additionalIdentifiers cannot be empty"
+                                    )
+                                }?.map { additionalIdentifier ->
+                                    GetBidsByLotsResult.Bid.Tenderer.AdditionalIdentifier(
+                                        id = additionalIdentifier.id,
+                                        scheme = additionalIdentifier.scheme,
+                                        legalName = additionalIdentifier.legalName,
+                                        uri = additionalIdentifier.uri
+                                    )
+                                }.orEmpty(),
+                                persones = tender.persones.errorIfEmpty {
+                                    throw ErrorException(
+                                        error = EMPTY_LIST,
+                                        message = "The list of Bid.tenderers.persones cannot be empty"
+                                    )
+                                }?.map { person ->
+                                    GetBidsByLotsResult.Bid.Tenderer.Persone(
+                                        identifier = person.identifier.let { identifier ->
+                                            GetBidsByLotsResult.Bid.Tenderer.Persone.Identifier(
+                                                id = identifier.id,
+                                                scheme = identifier.scheme,
+                                                uri = identifier.uri
+                                            )
+                                        },
+                                        name = person.name,
+                                        title = person.title,
+                                        businessFunctions = person.businessFunctions.mapIfNotEmpty { businessFunction ->
+                                            GetBidsByLotsResult.Bid.Tenderer.Persone.BusinessFunction(
+                                                id = businessFunction.id,
+                                                type = businessFunction.type,
+                                                jobTitle = businessFunction.jobTitle,
+                                                documents = businessFunction.documents.errorIfEmpty {
+                                                    throw ErrorException(
+                                                        error = EMPTY_LIST,
+                                                        message = "The list of Bid.tenderers.persones.businessFunctions.documents cannot be empty"
+                                                    )
+                                                }?.map { document ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Persone.BusinessFunction.Document(
+                                                        id = document.id,
+                                                        documentType = document.documentType,
+                                                        title = document.title,
+                                                        description = document.description
+                                                    )
+                                                }.orEmpty(),
+                                                period = businessFunction.period.let { period ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Persone.BusinessFunction.Period(
+                                                        startDate = period.startDate
+                                                    )
+                                                }
+                                            )
+                                        }.orThrow {
+                                            throw ErrorException(
+                                                error = EMPTY_LIST,
+                                                message = "The list of Bid.tenderers.persones.businessFunctions cannot be empty"
+                                            )
+                                        }
+                                    )
+                                }.orEmpty()
+                            )
+                        }.orThrow {
+                            throw ErrorException(
+                                error = EMPTY_LIST,
+                                message = "The list of Bid.tenderers cannot be empty"
+                            )
+                        },
+                    requirementResponses = bid.requirementResponses
+                        .errorIfEmpty {
+                            throw ErrorException(
+                                error = EMPTY_LIST,
+                                message = "The list of Bid.requirementResponse cannot be empty"
+                            )
+                        }?.map { requirementResponse ->
+                            GetBidsByLotsResult.Bid.RequirementResponse(
+                                id = requirementResponse.id,
+                                description = requirementResponse.description,
+                                title = requirementResponse.title,
+                                value = requirementResponse.value,
+                                period = requirementResponse.period?.let { period ->
+                                    GetBidsByLotsResult.Bid.RequirementResponse.Period(
+                                        startDate = period.startDate,
+                                        endDate = period.endDate
+                                    )
+                                },
+                                requirement = GetBidsByLotsResult.Bid.RequirementResponse.Requirement(
+                                    id = requirementResponse.requirement.id
+                                )
+                            )
+                        }.orEmpty(),
+                    date = bid.date,
+                    value = bid.value?.let { value ->
+                        GetBidsByLotsResult.Bid.Value(
+                            amount = value.amount,
+                            currency = value.currency
+                        )
+                    }
+                )
+            }
         )
     }
 }
