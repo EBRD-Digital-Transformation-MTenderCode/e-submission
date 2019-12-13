@@ -1743,12 +1743,12 @@ class BidService(
             .filter { bid ->
                 bid.status == Status.PENDING &&
                     bid.statusDetails == StatusDetails.EMPTY &&
-                    bid.relatedLots.containsAll(data.lots.map { lot -> lot.id.toString() })
+                    bid.relatedLots.containsAny(data.lots)
             }
         return GetBidsByLotsResult(
             bids = bids.map { bid ->
                 GetBidsByLotsResult.Bid(
-                    id = UUID.fromString(bid.id),
+                    id = BidId.fromString(bid.id),
                     documents = bid.documents.errorIfEmpty {
                         ErrorException(
                             message = "The list of Bid.documents cannot be empty",
@@ -1788,44 +1788,45 @@ class BidService(
                                         uri = identifier.uri
                                     )
                                 },
-                                address = tender.address.let { address ->
-                                    GetBidsByLotsResult.Bid.Tenderer.Address(
-                                        postalCode = address.postalCode,
-                                        streetAddress = address.streetAddress,
-                                        addressDetails = address.addressDetails
-                                            .let { addressDetail ->
-                                                GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails(
-                                                    country = addressDetail.country
-                                                        .let { country ->
-                                                            GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Country(
-                                                                id = country.id,
-                                                                scheme = country.scheme,
-                                                                description = country.description,
-                                                                uri = country.uri
-                                                            )
-                                                        },
-                                                    locality = addressDetail.locality
-                                                        .let { locality ->
-                                                            GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Locality(
-                                                                id = locality.id,
-                                                                scheme = locality.scheme,
-                                                                description = locality.description,
-                                                                uri = locality.uri
-                                                            )
-                                                        },
-                                                    region = addressDetail.region
-                                                        .let { region ->
-                                                            GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Region(
-                                                                id = region.id,
-                                                                scheme = region.scheme,
-                                                                description = region.description,
-                                                                uri = region.uri
-                                                            )
-                                                        }
-                                                )
-                                            }
-                                    )
-                                },
+                                address = tender.address
+                                    .let { address ->
+                                        GetBidsByLotsResult.Bid.Tenderer.Address(
+                                            postalCode = address.postalCode,
+                                            streetAddress = address.streetAddress,
+                                            addressDetails = address.addressDetails
+                                                .let { addressDetail ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails(
+                                                        country = addressDetail.country
+                                                            .let { country ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Country(
+                                                                    id = country.id,
+                                                                    scheme = country.scheme,
+                                                                    description = country.description,
+                                                                    uri = country.uri
+                                                                )
+                                                            },
+                                                        locality = addressDetail.locality
+                                                            .let { locality ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Locality(
+                                                                    id = locality.id,
+                                                                    scheme = locality.scheme,
+                                                                    description = locality.description,
+                                                                    uri = locality.uri
+                                                                )
+                                                            },
+                                                        region = addressDetail.region
+                                                            .let { region ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Region(
+                                                                    id = region.id,
+                                                                    scheme = region.scheme,
+                                                                    description = region.description,
+                                                                    uri = region.uri
+                                                                )
+                                                            }
+                                                    )
+                                                }
+                                        )
+                                    },
                                 details = tender.details
                                     .let { detail ->
                                         GetBidsByLotsResult.Bid.Tenderer.Details(
