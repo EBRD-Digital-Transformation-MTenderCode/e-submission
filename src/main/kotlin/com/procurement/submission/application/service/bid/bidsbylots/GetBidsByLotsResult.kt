@@ -6,10 +6,12 @@ import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
+import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.lot.LotId
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 class GetBidsByLotsResult(
@@ -124,9 +126,9 @@ class GetBidsByLotsResult(
             }
 
             data class Details(
-                val typeOfSupplier: String?,
+                val typeOfSupplier: TypeOfSupplier?,
                 val mainEconomicActivities: List<String>,
-                val scale: String,
+                val scale: Scale,
                 val permits: List<Permit>,
                 val bankAccounts: List<BankAccount>,
                 val legalForm: LegalForm?
@@ -225,14 +227,9 @@ class GetBidsByLotsResult(
             }
         }
 
-        data class Value(
-            val amount: BigDecimal,
-            val currency: String
-        )
-
         data class Document(
-            val documentType: String?,
-            val id: String,
+            val documentType: DocumentType,
+            val id: DocumentId,
             val title: String?,
             val description: String?,
             val relatedLots: List<LotId>

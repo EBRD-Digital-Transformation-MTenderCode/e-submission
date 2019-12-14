@@ -32,8 +32,10 @@ import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentTyp
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.Countries
 import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
@@ -1763,7 +1765,7 @@ class BidService(
                                     .orEmpty(),
                                 description = document.description,
                                 title = document.title,
-                                documentType = document.documentType.value()
+                                documentType = document.documentType
                             )
                         }
                         .orEmpty(),
@@ -1827,9 +1829,10 @@ class BidService(
                                 details = tender.details
                                     .let { detail ->
                                         GetBidsByLotsResult.Bid.Tenderer.Details(
-                                            typeOfSupplier = detail.typeOfSupplier,
+                                            typeOfSupplier = detail.typeOfSupplier
+                                                ?.let { TypeOfSupplier.fromString(it) },
                                             mainEconomicActivities = detail.mainEconomicActivities,
-                                            scale = detail.scale,
+                                            scale = Scale.fromString(detail.scale),
                                             permits = detail.permits
                                                 ?.map { permit ->
                                                     GetBidsByLotsResult.Bid.Tenderer.Details.Permit(
