@@ -6,9 +6,9 @@ import com.procurement.submission.application.model.data.BidsForEvaluationReques
 import com.procurement.submission.application.model.data.BidsForEvaluationResponseData
 import com.procurement.submission.application.model.data.OpenBidsForPublishingData
 import com.procurement.submission.application.model.data.OpenBidsForPublishingResult
-import com.procurement.submission.application.service.AppliedEvaluatedAwardsData
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
+import com.procurement.submission.application.service.ApplyEvaluatedAwardsResult
 import com.procurement.submission.application.service.BidCreateContext
 import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
@@ -515,7 +515,7 @@ class BidService(
     fun applyEvaluatedAwards(
         context: ApplyEvaluatedAwardsContext,
         data: ApplyEvaluatedAwardsData
-    ): AppliedEvaluatedAwardsData {
+    ): ApplyEvaluatedAwardsResult {
         val relatedBidsByStatuses: Map<UUID, AwardStatusDetails> = data.awards.associate {
             it.relatedBid to it.statusDetails
         }
@@ -534,10 +534,10 @@ class BidService(
             }
             .toMap()
 
-        val result = AppliedEvaluatedAwardsData(
+        val result = ApplyEvaluatedAwardsResult(
             bids = updatedBidEntitiesByBid.keys
                 .map { bid ->
-                    AppliedEvaluatedAwardsData.Bid(
+                    ApplyEvaluatedAwardsResult.Bid(
                         id = BidId.fromString(bid.id),
                         statusDetails = bid.statusDetails
                     )
