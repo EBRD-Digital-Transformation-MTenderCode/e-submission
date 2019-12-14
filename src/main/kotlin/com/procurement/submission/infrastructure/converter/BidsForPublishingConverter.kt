@@ -439,12 +439,13 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                                                     )
                                                 },
                                             additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers
-                                                .map { additionalIdentifier ->
+                                                ?.map { additionalIdentifier ->
                                                     OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
                                                         id = additionalIdentifier.id,
                                                         scheme = additionalIdentifier.scheme
                                                     )
-                                                },
+                                                }
+                                                .orEmpty(),
                                             accountIdentification = bankAccount.accountIdentification
                                                 .let { accountIdentification ->
                                                     OpenBidsForPublishingResult.Bid.Tenderer.Details.BankAccount.AccountIdentification(

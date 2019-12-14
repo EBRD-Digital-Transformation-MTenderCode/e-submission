@@ -424,7 +424,7 @@ fun Bid.convert(pendingDate: LocalDateTime): BidsAuctionResponseData.BidsData.Bi
                                                     )
                                                 },
                                             additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers
-                                                .map { additionalIdentifier ->
+                                                ?.map { additionalIdentifier ->
                                                     BidsAuctionResponseData.BidsData.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
                                                         id = additionalIdentifier.id,
                                                         scheme = additionalIdentifier.scheme

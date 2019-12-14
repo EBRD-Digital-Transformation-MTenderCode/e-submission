@@ -312,7 +312,7 @@ fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationRespons
                                         id = bankAccount.identifier.id,
                                         scheme = bankAccount.identifier.scheme
                                     ),
-                                    additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers.map { additionalIdentifier ->
+                                    additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers?.map { additionalIdentifier ->
                                         BidsForEvaluationResponseData.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
                                             id = additionalIdentifier.id,
                                             scheme = additionalIdentifier.scheme

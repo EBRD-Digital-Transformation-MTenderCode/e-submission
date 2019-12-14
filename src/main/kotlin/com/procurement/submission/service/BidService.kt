@@ -1929,12 +1929,13 @@ class BidService(
                                                                 )
                                                             },
                                                         additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers
-                                                            .map { additionalAccountIdentifier ->
+                                                            ?.map { additionalAccountIdentifier ->
                                                                 GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
                                                                     id = additionalAccountIdentifier.id,
                                                                     scheme = additionalAccountIdentifier.scheme
                                                                 )
-                                                            },
+                                                            }
+                                                            .orEmpty(),
                                                         accountIdentification = bankAccount.accountIdentification
                                                             .let { accountIdentification ->
                                                                 GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.AccountIdentification(
