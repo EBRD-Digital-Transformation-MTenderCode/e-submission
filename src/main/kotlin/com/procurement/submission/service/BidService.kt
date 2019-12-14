@@ -1739,13 +1739,17 @@ class BidService(
     }
 
     fun getBidsByLots(context: GetBidsByLotsContext, data: GetBidsByLotsData): GetBidsByLotsResult {
-        val bidsEntity = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
-        val bids = bidsEntity.map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }
+        val lotsIds = data.lots
+            .toSetBy { it.id }
+        val bids = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
+            .asSequence()
+            .map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }
             .filter { bid ->
-                bid.status == Status.PENDING &&
-                    bid.statusDetails == StatusDetails.EMPTY &&
-                    bid.relatedLots.containsAny(data.lots)
+                bid.status == Status.PENDING
+                    && bid.statusDetails == StatusDetails.EMPTY
+                    && lotsIds.containsAny(bid.relatedLots)
             }
+            .toList()
         return GetBidsByLotsResult(
             bids = bids.map { bid ->
                 GetBidsByLotsResult.Bid(
