@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.domain.model.DocumentId
+import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
@@ -14,9 +15,10 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueDeserializer
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueSerializer
+import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
+import com.procurement.submission.infrastructure.bind.money.MoneySerializer
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
-import java.math.BigDecimal
 import java.time.LocalDateTime
 
 data class GetBidsByLotsResponse(
@@ -33,8 +35,9 @@ data class GetBidsByLotsResponse(
         @param:JsonProperty("statusDetails") @field:JsonProperty("statusDetails") val statusDetails: StatusDetails,
         @param:JsonProperty("tenderers") @field:JsonProperty("tenderers") val tenderers: List<Tenderer>,
 
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        @param:JsonProperty("value") @field:JsonProperty("value") val value: Value?,
+        @JsonDeserialize(using = MoneyDeserializer::class)
+        @JsonSerialize(using = MoneySerializer::class)
+        @param:JsonProperty("value") @field:JsonProperty("value") val value: Money,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
         @param:JsonProperty("documents") @field:JsonProperty("documents") val documents: List<Document>,
@@ -299,11 +302,6 @@ data class GetBidsByLotsResponse(
                 )
             }
         }
-
-        data class Value(
-            @param:JsonProperty("amount") @field:JsonProperty("amount") val amount: BigDecimal,
-            @param:JsonProperty("currency") @field:JsonProperty("currency") val currency: String
-        )
 
         data class Document(
             @JsonInclude(JsonInclude.Include.NON_NULL)

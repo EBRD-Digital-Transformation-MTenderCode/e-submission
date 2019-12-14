@@ -2,6 +2,7 @@ package com.procurement.submission.application.service.bid.bidsbylots
 
 import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.domain.model.DocumentId
+import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
@@ -20,7 +21,7 @@ class GetBidsByLotsResult(
         val status: Status,
         val statusDetails: StatusDetails,
         val tenderers: List<Tenderer>,
-        val value: Value?,
+        val value: Money,
         val documents: List<Document>,
         val requirementResponses: List<RequirementResponse>,
         val relatedLots: List<LotId>

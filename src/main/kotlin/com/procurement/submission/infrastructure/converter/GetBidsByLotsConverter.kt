@@ -314,12 +314,7 @@ fun GetBidsByLotsResult.convert() = GetBidsByLotsResponse(
                     )
                 }.orEmpty(),
             date = bid.date,
-            value = bid.value?.let { value ->
-                GetBidsByLotsResponse.Bid.Value(
-                    amount = value.amount,
-                    currency = value.currency
-                )
-            }
+            value = bid.value
         )
     }
 )
