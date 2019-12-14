@@ -6,9 +6,9 @@ import com.procurement.submission.application.model.data.BidsForEvaluationReques
 import com.procurement.submission.application.model.data.BidsForEvaluationResponseData
 import com.procurement.submission.application.model.data.OpenBidsForPublishingData
 import com.procurement.submission.application.model.data.OpenBidsForPublishingResult
-import com.procurement.submission.application.service.AppliedEvaluatedAwardsData
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
+import com.procurement.submission.application.service.ApplyEvaluatedAwardsResult
 import com.procurement.submission.application.service.BidCreateContext
 import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
@@ -522,35 +522,37 @@ class BidService(
     fun applyEvaluatedAwards(
         context: ApplyEvaluatedAwardsContext,
         data: ApplyEvaluatedAwardsData
-    ): AppliedEvaluatedAwardsData {
+    ): ApplyEvaluatedAwardsResult {
         val relatedBidsByStatuses: Map<UUID, AwardStatusDetails> = data.awards.associate {
             it.relatedBid to it.statusDetails
         }
 
-        val entities: List<BidEntity> = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
-        val updatedBids = mutableListOf<AppliedEvaluatedAwardsData.Bid>()
-        val updatedEntities: List<BidEntity> = mutableListOf<BidEntity>()
-            .apply {
-                entities.forEach { entity ->
-                    val bidId = entity.bidId
-                    val statusDetails = relatedBidsByStatuses[bidId]
-                    if (statusDetails != null) {
-                        val bid: Bid = toObject(Bid::class.java, entity.jsonData)
-                        val updatedBid: Bid = bid.updateStatusDetails(statusDetails)
-                        updatedBids.add(
-                            AppliedEvaluatedAwardsData.Bid(
-                                id = bidId,
-                                statusDetails = bid.statusDetails
-                            )
-                        )
-                        val updatedEntity = entity.copy(jsonData = toJson(updatedBid))
-                        add(updatedEntity)
-                    }
-                }
+        val updatedBidEntitiesByBid = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
+            .asSequence()
+            .filter { entity ->
+                entity.bidId in relatedBidsByStatuses
             }
-        bidDao.saveAll(updatedEntities)
+            .map { entity ->
+                val statusDetails = relatedBidsByStatuses.getValue(entity.bidId)
+                val updatedBid: Bid = toObject(Bid::class.java, entity.jsonData)
+                    .updateStatusDetails(statusDetails)
+                val updatedEntity: BidEntity = entity.copy(jsonData = toJson(updatedBid))
+                updatedBid to updatedEntity
+            }
+            .toMap()
 
-        return AppliedEvaluatedAwardsData(bids = updatedBids)
+        val result = ApplyEvaluatedAwardsResult(
+            bids = updatedBidEntitiesByBid.keys
+                .map { bid ->
+                    ApplyEvaluatedAwardsResult.Bid(
+                        id = BidId.fromString(bid.id),
+                        statusDetails = bid.statusDetails
+                    )
+                }
+        )
+
+        bidDao.saveAll(updatedBidEntitiesByBid.values)
+        return result
     }
 
     /**

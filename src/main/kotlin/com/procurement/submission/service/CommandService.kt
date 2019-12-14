@@ -1,7 +1,6 @@
 package com.procurement.submission.service
 
 import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
-import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
 import com.procurement.submission.application.service.BidCreateContext
 import com.procurement.submission.application.service.BidUpdateContext
 import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
@@ -18,8 +17,7 @@ import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.converter.toData
 import com.procurement.submission.infrastructure.converter.toResponse
-import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
-import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsResponse
+import com.procurement.submission.infrastructure.dto.award.ApplyEvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.bid.bidsbylots.request.GetBidsByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.response.FinalBidsStatusByLotsResponse
@@ -227,27 +225,14 @@ class CommandService(
                     cpid = cm.cpid,
                     stage = cm.stage
                 )
-                val request = toObject(EvaluatedAwardsRequest::class.java, cm.data)
-                val data = ApplyEvaluatedAwardsData(
-                    awards = request.awards.map { award ->
-                        ApplyEvaluatedAwardsData.Award(
-                            statusDetails = award.statusDetails,
-                            relatedBid = award.relatedBid
-                        )
-                    }
-                )
-                val result = bidService.applyEvaluatedAwards(context = context, data = data)
+                val request = toObject(ApplyEvaluatedAwardsRequest::class.java, cm.data)
+                val result = bidService.applyEvaluatedAwards(context = context, data = request.convert())
                 if (log.isDebugEnabled)
                     log.debug("Evaluated awards were apply. Result: ${toJson(result)}")
 
-                val dataResponse = EvaluatedAwardsResponse(
-                    bids = result.bids.map { bid ->
-                        EvaluatedAwardsResponse.Bid(
-                            id = bid.id,
-                            statusDetails = bid.statusDetails
-                        )
-                    }
-                )
+                val dataResponse = result.convert()
+                if (log.isDebugEnabled)
+                    log.debug("Evaluated awards were apply. Response: ${toJson(dataResponse)}")
                 return ResponseDto(data = dataResponse)
             }
             CommandType.FINAL_BIDS_STATUS_BY_LOTS -> {
