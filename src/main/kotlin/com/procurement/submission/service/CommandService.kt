@@ -16,7 +16,7 @@ import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.converter.toData
 import com.procurement.submission.infrastructure.converter.toResponse
-import com.procurement.submission.infrastructure.dto.award.EvaluatedAwardsRequest
+import com.procurement.submission.infrastructure.dto.award.ApplyEvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.response.FinalBidsStatusByLotsResponse
 import com.procurement.submission.infrastructure.dto.bid.opendoc.request.OpenBidDocsRequest
@@ -223,7 +223,7 @@ class CommandService(
                     cpid = cm.cpid,
                     stage = cm.stage
                 )
-                val request = toObject(EvaluatedAwardsRequest::class.java, cm.data)
+                val request = toObject(ApplyEvaluatedAwardsRequest::class.java, cm.data)
                 val result = bidService.applyEvaluatedAwards(context = context, data = request.convert())
                 if (log.isDebugEnabled)
                     log.debug("Evaluated awards were apply. Result: ${toJson(result)}")
