@@ -13,22 +13,17 @@ class GetBidsByLotsResponseTest :
     }
 
     @Test
-    fun fully1() {
+    fun required1() {
         testBindingAndMapping("json/infrastructure/dto/bid/getbidsbylots/response/get_bids_by_lots_response_1.json")
     }
 
     @Test
-    fun fully2() {
+    fun required2() {
         testBindingAndMapping("json/infrastructure/dto/bid/getbidsbylots/response/get_bids_by_lots_response_2.json")
     }
 
     @Test
-    fun fully3() {
+    fun required3() {
         testBindingAndMapping("json/infrastructure/dto/bid/getbidsbylots/response/get_bids_by_lots_response_3.json")
-    }
-
-    @Test
-    fun fully4() {
-        testBindingAndMapping("json/infrastructure/dto/bid/getbidsbylots/response/get_bids_by_lots_response_4.json")
     }
 }

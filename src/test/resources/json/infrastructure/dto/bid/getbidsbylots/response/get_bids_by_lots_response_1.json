@@ -12,20 +12,17 @@
           "identifier": {
             "scheme": "bids[0].tenderers[0].identifier.scheme",
             "id": "bids[0].tenderers[0].identifier.id",
-            "legalName": "bids[0].tenderers[0].identifier.legalName",
-            "uri": "bids[0].tenderers[0].identifier.uri"
+            "legalName": "bids[0].tenderers[0].identifier.legalName"
           },
           "additionalIdentifiers": [
             {
               "scheme": "bids[0].tenderers[0].additionalIdentifiers.scheme",
               "id": "bids[0].tenderers[0].additionalIdentifiers.id",
-              "legalName": "bids[0].tenderers[0].additionalIdentifiers.legalName",
-              "uri": "bids[0].tenderers[0].additionalIdentifiers.uri"
+              "legalName": "bids[0].tenderers[0].additionalIdentifiers.legalName"
             }
           ],
           "address": {
             "streetAddress": "bids[0].tenderers[0].address.streetAddress",
-            "postalCode": "bids[0].tenderers[0].address.postalCode",
             "addressDetails": {
               "country": {
                 "scheme": "bids[0].tenderers[0].address.addressDetails.country.scheme",
@@ -49,9 +46,7 @@
           "contactPoint": {
             "name": "bids[0].tenderers[0].contactPoint.name",
             "email": "bids[0].tenderers[0].contactPoint.email",
-            "telephone": "bids[0].tenderers[0].contactPoint.telephone",
-            "faxNumber": "bids[0].tenderers[0].contactPoint.faxNumber",
-            "url": "bids[0].tenderers[0].contactPoint.url"
+            "telephone": "bids[0].tenderers[0].contactPoint.telephone"
           },
           "persones": [
             {
@@ -71,8 +66,8 @@
                   },
                   "documents": [
                     {
-                      "id": "d5504088-e0a0-4111-9f2a-ea41428c3912",
                       "documentType": "regulatoryDocument",
+                      "id": "bids[0].tenderers[0].persones.businessFunctions.documents[0].id",
                       "title": "bids[0].tenderers[0].persones.businessFunctions.documents[0].title"
                     }
                   ]
@@ -81,10 +76,6 @@
             }
           ],
           "details": {
-            "typeOfSupplier": "bids[0].tenderers[0].details.typeOfSupplier",
-            "mainEconomicActivities": [
-              "bids[0].tenderers[0].details.mainEconomicActivities[0]"
-            ],
             "scale": "sme",
             "permits": [
               {
@@ -138,13 +129,7 @@
                 "accountIdentification": {
                   "scheme": "IBAN",
                   "id": "2600000625637"
-                },
-                "additionalAccountIdentifiers": [
-                  {
-                    "scheme": "settlement",
-                    "id": "bids[0].tenderers[0].bankAccounts[0].additionalAccountIdentifiers.id"
-                  }
-                ]
+                }
               }
             ],
             "legalForm": {
@@ -157,13 +142,12 @@
       ],
       "value": {
         "amount": 210.00,
-        "currency": "bids[0].currency"
+        "currency": "MDL"
       },
       "documents": [
         {
-          "id": "bids[0].documents[0].id",
-          "relatedLots": [
-          ]
+          "documentType": "submissionDocuments",
+          "id": "bids[0].documents[0].id"
         }
       ],
       "requirementResponses": [
@@ -173,10 +157,6 @@
           "value": "bids[0].requirementResponses.value",
           "requirement": {
             "id": "bids[0].requirementResponses.requirement.id"
-          },
-          "period": {
-            "startDate": "2019-09-03T22:22:22Z",
-            "endDate": "2019-09-03T22:22:23Z"
           }
         }
       ],

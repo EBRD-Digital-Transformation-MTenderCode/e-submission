@@ -10,8 +10,11 @@ import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
+import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueDeserializer
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueSerializer
@@ -40,10 +43,10 @@ data class GetBidsByLotsResponse(
         @param:JsonProperty("value") @field:JsonProperty("value") val value: Money,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        @param:JsonProperty("documents") @field:JsonProperty("documents") val documents: List<Document>,
+        @param:JsonProperty("documents") @field:JsonProperty("documents") val documents: List<Document> = emptyList(),
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        @param:JsonProperty("requirementResponses") @field:JsonProperty("requirementResponses") val requirementResponses: List<RequirementResponse>,
+        @param:JsonProperty("requirementResponses") @field:JsonProperty("requirementResponses") val requirementResponses: List<RequirementResponse> = emptyList(),
 
         @param:JsonProperty("relatedLots") @field:JsonProperty("relatedLots") val relatedLots: List<LotId>
     ) {
@@ -57,7 +60,7 @@ data class GetBidsByLotsResponse(
             @param:JsonProperty("identifier") @field:JsonProperty("identifier") val identifier: Identifier?,
 
             @JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @param:JsonProperty("additionalIdentifiers") @field:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>,
+            @param:JsonProperty("additionalIdentifiers") @field:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier> = emptyList(),
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
             @param:JsonProperty("address") @field:JsonProperty("address") val address: Address?,
@@ -66,7 +69,7 @@ data class GetBidsByLotsResponse(
             @param:JsonProperty("contactPoint") @field:JsonProperty("contactPoint") val contactPoint: ContactPoint?,
 
             @JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @param:JsonProperty("persones") @field:JsonProperty("persones") val persones: List<Persone>,
+            @param:JsonProperty("persones") @field:JsonProperty("persones") val persones: List<Persone> = emptyList(),
 
             @param:JsonProperty("details") @field:JsonProperty("details") val details: Details
         ) {
@@ -160,7 +163,7 @@ data class GetBidsByLotsResponse(
                     @param:JsonProperty("period") @field:JsonProperty("period") val period: Period,
 
                     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                    @param:JsonProperty("documents") @field:JsonProperty("documents") val documents: List<Document>
+                    @param:JsonProperty("documents") @field:JsonProperty("documents") val documents: List<Document> = emptyList()
                 ) {
                     data class Period(
                         @JsonDeserialize(using = JsonDateDeserializer::class)
@@ -180,15 +183,19 @@ data class GetBidsByLotsResponse(
             }
 
             data class Details(
-                @param:JsonProperty("typeOfSupplier") @field:JsonProperty("typeOfSupplier") val typeOfSupplier: String?,
-                @param:JsonProperty("mainEconomicActivities") @field:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>,
-                @param:JsonProperty("scale") @field:JsonProperty("scale") val scale: String,
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                @param:JsonProperty("typeOfSupplier") @field:JsonProperty("typeOfSupplier") val typeOfSupplier: TypeOfSupplier?,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                @param:JsonProperty("permits") @field:JsonProperty("permits") val permits: List<Permit>,
+                @param:JsonProperty("mainEconomicActivities") @field:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String> = emptyList(),
+
+                @param:JsonProperty("scale") @field:JsonProperty("scale") val scale: Scale,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                @param:JsonProperty("bankAccounts") @field:JsonProperty("bankAccounts") val bankAccounts: List<BankAccount>,
+                @param:JsonProperty("permits") @field:JsonProperty("permits") val permits: List<Permit> = emptyList(),
+
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @param:JsonProperty("bankAccounts") @field:JsonProperty("bankAccounts") val bankAccounts: List<BankAccount> = emptyList(),
 
                 @JsonInclude(JsonInclude.Include.NON_NULL)
                 @param:JsonProperty("legalForm") @field:JsonProperty("legalForm") val legalForm: LegalForm?
@@ -237,7 +244,7 @@ data class GetBidsByLotsResponse(
                     @param:JsonProperty("accountIdentification") @field:JsonProperty("accountIdentification") val accountIdentification: AccountIdentification,
 
                     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                    @param:JsonProperty("additionalAccountIdentifiers") @field:JsonProperty("additionalAccountIdentifiers") val additionalAccountIdentifiers: List<AdditionalAccountIdentifier>
+                    @param:JsonProperty("additionalAccountIdentifiers") @field:JsonProperty("additionalAccountIdentifiers") val additionalAccountIdentifiers: List<AdditionalAccountIdentifier> = emptyList()
                 ) {
                     data class Address(
                         @param:JsonProperty("streetAddress") @field:JsonProperty("streetAddress") val streetAddress: String,
@@ -304,9 +311,7 @@ data class GetBidsByLotsResponse(
         }
 
         data class Document(
-            @JsonInclude(JsonInclude.Include.NON_NULL)
-            @param:JsonProperty("documentType") @field:JsonProperty("documentType") val documentType: String?,
-
+            @param:JsonProperty("documentType") @field:JsonProperty("documentType") val documentType: DocumentType,
             @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -316,7 +321,7 @@ data class GetBidsByLotsResponse(
             @param:JsonProperty("description") @field:JsonProperty("description") val description: String?,
 
             @JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @param:JsonProperty("relatedLots") @field:JsonProperty("relatedLots") val relatedLots: List<LotId>
+            @param:JsonProperty("relatedLots") @field:JsonProperty("relatedLots") val relatedLots: List<LotId> = emptyList()
         )
 
         data class RequirementResponse(

@@ -73,8 +73,8 @@
                   },
                   "documents": [
                     {
-                      "id": "d5504088-e0a0-4111-9f2a-ea41428c3912",
                       "documentType": "regulatoryDocument",
+                      "id": "bids[0].tenderers[0].persones.businessFunctions.documents[0].id",
                       "title": "bids[0].tenderers[0].persones.businessFunctions.documents[0].title",
                       "description": "bids[0].tenderers[0].persones.businessFunctions.documents[0].description"
                     }
@@ -84,7 +84,7 @@
             }
           ],
           "details": {
-            "typeOfSupplier": "bids[0].tenderers[0].details.typeOfSupplier",
+            "typeOfSupplier": "company",
             "mainEconomicActivities": [
               "bids[0].tenderers[0].details.mainEconomicActivities[0]"
             ],
@@ -165,11 +165,11 @@
       ],
       "value": {
         "amount": 210.00,
-        "currency": "bids[0].currency"
+        "currency": "MDL"
       },
       "documents": [
         {
-          "documentType": "bids[0].documents[0].documentType",
+          "documentType": "submissionDocuments",
           "id": "bids[0].documents[0].id",
           "title": "bids[0].documents[0].title",
           "description": "bids[0].documents[0].description",

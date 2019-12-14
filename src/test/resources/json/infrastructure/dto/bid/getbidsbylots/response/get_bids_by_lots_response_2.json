@@ -14,13 +14,6 @@
             "id": "bids[0].tenderers[0].identifier.id",
             "legalName": "bids[0].tenderers[0].identifier.legalName"
           },
-          "additionalIdentifiers": [
-            {
-              "scheme": "bids[0].tenderers[0].additionalIdentifiers.scheme",
-              "id": "bids[0].tenderers[0].additionalIdentifiers.id",
-              "legalName": "bids[0].tenderers[0].additionalIdentifiers.legalName"
-            }
-          ],
           "address": {
             "streetAddress": "bids[0].tenderers[0].address.streetAddress",
             "addressDetails": {
@@ -45,6 +38,7 @@
           },
           "contactPoint": {
             "name": "bids[0].tenderers[0].contactPoint.name",
+            "email": "bids[0].tenderers[0].contactPoint.email",
             "telephone": "bids[0].tenderers[0].contactPoint.telephone"
           },
           "persones": [
@@ -56,79 +50,26 @@
                 "id": "bids[0].tenderers[0].persones.identifier.id"
               },
               "businessFunctions": [
+                {
+                  "id": "bids[0].tenderers[0].persones.businessFunctions.id",
+                  "type": "authority",
+                  "jobTitle": "Chief Executive Officer",
+                  "period": {
+                    "startDate": "2019-09-03T22:22:22Z"
+                  }
+                }
               ]
             }
           ],
           "details": {
-            "typeOfSupplier": "bids[0].tenderers[0].details.typeOfSupplier",
-            "mainEconomicActivities": [
-              "bids[0].tenderers[0].details.mainEconomicActivities[0]"
-            ],
-            "scale": "sme",
-            "permits": [
-            ],
-            "bankAccounts": [
-              {
-                "description": "bids[0].tenderers[0].bankAccounts[0].description",
-                "bankName": "bids[0].tenderers[0].bankAccounts[0].bankName",
-                "address": {
-                  "streetAddress": "bids[0].tenderers[0].bankAccounts[0].address.streetAddress",
-                  "addressDetails": {
-                    "country": {
-                      "scheme": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.country.scheme",
-                      "id": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.country.id",
-                      "description": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.country.description",
-                      "uri": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.country.uri"
-                    },
-                    "region": {
-                      "scheme": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.region.scheme",
-                      "id": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.region.id",
-                      "description": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.region.description",
-                      "uri": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.region.uri"
-                    },
-                    "locality": {
-                      "scheme": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.locality.scheme",
-                      "id": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.locality.id",
-                      "description": "bids[0].tenderers[0].bankAccounts[0].address.addressDetails.locality.description"
-                    }
-                  }
-                },
-                "identifier": {
-                  "scheme": "UA-MFO",
-                  "id": "300711"
-                },
-                "accountIdentification": {
-                  "scheme": "IBAN",
-                  "id": "2600000625637"
-                },
-                "additionalAccountIdentifiers": [
-                ]
-              }
-            ]
+            "scale": "sme"
           }
         }
       ],
       "value": {
         "amount": 210.00,
-        "currency": "bids[0].currency"
+        "currency": "MDL"
       },
-      "documents": [
-        {
-          "id": "bids[0].documents[0].id",
-          "relatedLots": [
-          ]
-        }
-      ],
-      "requirementResponses": [
-        {
-          "id": "bids[0].requirementResponses.id",
-          "title": "bids[0].requirementResponses.title",
-          "value": "bids[0].requirementResponses.value",
-          "requirement": {
-            "id": "bids[0].requirementResponses.requirement.id"
-          }
-        }
-      ],
       "relatedLots": [
         "d90848e8-a93b-4b16-ad3e-de6f2c471464"
       ]
