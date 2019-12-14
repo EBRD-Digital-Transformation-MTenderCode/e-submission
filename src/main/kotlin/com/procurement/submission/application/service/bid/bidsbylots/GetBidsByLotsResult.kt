@@ -84,7 +84,7 @@ class GetBidsByLotsResult(
 
             data class ContactPoint(
                 val name: String,
-                val email: String?,
+                val email: String,
                 val telephone: String,
                 val faxNumber: String?,
                 val url: String?

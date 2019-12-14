@@ -1954,7 +1954,7 @@ class BidService(
                                         name = contactPoint.name,
                                         telephone = contactPoint.telephone,
                                         faxNumber = contactPoint.faxNumber,
-                                        email = contactPoint.email,
+                                        email = contactPoint.email!!,
                                         url = contactPoint.url
                                     )
                                 },

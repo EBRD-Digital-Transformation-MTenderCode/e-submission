@@ -125,9 +125,7 @@ data class GetBidsByLotsResponse(
 
             data class ContactPoint(
                 @param:JsonProperty("name") @field:JsonProperty("name") val name: String,
-
-                @JsonInclude(JsonInclude.Include.NON_NULL)
-                @param:JsonProperty("email") @field:JsonProperty("email") val email: String?,
+                @param:JsonProperty("email") @field:JsonProperty("email") val email: String,
 
                 @param:JsonProperty("telephone") @field:JsonProperty("telephone") val telephone: String,
 
