@@ -16,6 +16,9 @@ import com.procurement.submission.application.service.FinalBidsStatusByLotsData
 import com.procurement.submission.application.service.FinalizedBidsStatusByLots
 import com.procurement.submission.application.service.GetBidsForEvaluationContext
 import com.procurement.submission.application.service.OpenBidsForPublishingContext
+import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsContext
+import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsData
+import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsResult
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsData
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsResult
@@ -29,8 +32,10 @@ import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentTyp
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.Countries
 import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
@@ -356,7 +361,8 @@ class BidService(
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
         //VR-4.8.4
         if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID)
-            && (bid.status != Status.VALID && bid.statusDetails != StatusDetails.EMPTY)) {
+            && (bid.status != Status.VALID && bid.statusDetails != StatusDetails.EMPTY)
+        ) {
             throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
         }
         //VR-4.8.5
@@ -1194,10 +1200,12 @@ class BidService(
     ): List<Identifier> {
         val additionalIdentifiersEntities = additionalIdentifiersDb ?: emptyList<Identifier>()
 
-        val newAdditionalIdentifiers = additionalIdentifiersRequest.filter { it.id !in additionalIdentifiersEntities.map { it.id } }
+        val newAdditionalIdentifiers =
+            additionalIdentifiersRequest.filter { it.id !in additionalIdentifiersEntities.map { it.id } }
         val updatedAdditionalIdentifiers = additionalIdentifiersEntities.map { additionalIdentifierDb ->
             if (additionalIdentifierDb.id in additionalIdentifiersRequest.map { it.id }) {
-                val additionalIdentifierRequest = additionalIdentifiersRequest.find { it.id == additionalIdentifierDb.id }!!
+                val additionalIdentifierRequest =
+                    additionalIdentifiersRequest.find { it.id == additionalIdentifierDb.id }!!
                 Identifier(
                     id = additionalIdentifierDb.id,
                     scheme = additionalIdentifierDb.scheme,
@@ -1729,6 +1737,302 @@ class BidService(
                     }
                     .orEmpty()
             )
+        )
+    }
+
+    fun getBidsByLots(context: GetBidsByLotsContext, data: GetBidsByLotsData): GetBidsByLotsResult {
+        val lotsIds = data.lots
+            .toSetBy { it.id }
+        val bids = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
+            .asSequence()
+            .map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }
+            .filter { bid ->
+                bid.status == Status.PENDING
+                    && bid.statusDetails == StatusDetails.EMPTY
+                    && lotsIds.containsAny(bid.relatedLots)
+            }
+            .toList()
+        return GetBidsByLotsResult(
+            bids = bids.map { bid ->
+                GetBidsByLotsResult.Bid(
+                    id = BidId.fromString(bid.id),
+                    documents = bid.documents
+                        ?.map { document ->
+                            GetBidsByLotsResult.Bid.Document(
+                                id = document.id,
+                                relatedLots = document.relatedLots
+                                    ?.map { relatedLot -> UUID.fromString(relatedLot) }
+                                    .orEmpty(),
+                                description = document.description,
+                                title = document.title,
+                                documentType = document.documentType
+                            )
+                        }
+                        .orEmpty(),
+                    relatedLots = bid.relatedLots
+                        .map { relatedLot -> UUID.fromString(relatedLot) },
+                    statusDetails = bid.statusDetails,
+                    status = bid.status,
+                    tenderers = bid.tenderers
+                        .map { tender ->
+                            GetBidsByLotsResult.Bid.Tenderer(
+                                id = tender.id,
+                                name = tender.name,
+                                identifier = tender.identifier
+                                    .let { identifier ->
+                                        GetBidsByLotsResult.Bid.Tenderer.Identifier(
+                                            scheme = identifier.scheme,
+                                            id = identifier.id,
+                                            legalName = identifier.legalName,
+                                            uri = identifier.uri
+                                        )
+                                    },
+                                address = tender.address
+                                    .let { address ->
+                                        GetBidsByLotsResult.Bid.Tenderer.Address(
+                                            postalCode = address.postalCode,
+                                            streetAddress = address.streetAddress,
+                                            addressDetails = address.addressDetails
+                                                .let { addressDetail ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails(
+                                                        country = addressDetail.country
+                                                            .let { country ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Country(
+                                                                    id = country.id,
+                                                                    scheme = country.scheme,
+                                                                    description = country.description,
+                                                                    uri = country.uri
+                                                                )
+                                                            },
+                                                        locality = addressDetail.locality
+                                                            .let { locality ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Locality(
+                                                                    id = locality.id,
+                                                                    scheme = locality.scheme,
+                                                                    description = locality.description,
+                                                                    uri = locality.uri
+                                                                )
+                                                            },
+                                                        region = addressDetail.region
+                                                            .let { region ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Address.AddressDetails.Region(
+                                                                    id = region.id,
+                                                                    scheme = region.scheme,
+                                                                    description = region.description,
+                                                                    uri = region.uri
+                                                                )
+                                                            }
+                                                    )
+                                                }
+                                        )
+                                    },
+                                details = tender.details
+                                    .let { detail ->
+                                        GetBidsByLotsResult.Bid.Tenderer.Details(
+                                            typeOfSupplier = detail.typeOfSupplier
+                                                ?.let { TypeOfSupplier.fromString(it) },
+                                            mainEconomicActivities = detail.mainEconomicActivities,
+                                            scale = Scale.fromString(detail.scale),
+                                            permits = detail.permits
+                                                ?.map { permit ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Details.Permit(
+                                                        id = permit.id,
+                                                        scheme = permit.scheme,
+                                                        url = permit.url,
+                                                        permitDetails = permit.permitDetails
+                                                            .let { permitDetail ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Details.Permit.PermitDetails(
+                                                                    issuedBy = permitDetail.issuedBy
+                                                                        .let { issuedBy ->
+                                                                            GetBidsByLotsResult.Bid.Tenderer.Details.Permit.PermitDetails.IssuedBy(
+                                                                                id = issuedBy.id,
+                                                                                name = issuedBy.name
+                                                                            )
+                                                                        },
+                                                                    issuedThought = permitDetail.issuedThought
+                                                                        .let { issuedThought ->
+                                                                            GetBidsByLotsResult.Bid.Tenderer.Details.Permit.PermitDetails.IssuedThought(
+                                                                                id = issuedThought.id,
+                                                                                name = issuedThought.name
+                                                                            )
+                                                                        },
+                                                                    validityPeriod = permitDetail.validityPeriod
+                                                                        .let { validityPeriod ->
+                                                                            GetBidsByLotsResult.Bid.Tenderer.Details.Permit.PermitDetails.ValidityPeriod(
+                                                                                startDate = validityPeriod.startDate,
+                                                                                endDate = validityPeriod.endDate
+                                                                            )
+                                                                        }
+                                                                )
+                                                            }
+                                                    )
+                                                }
+                                                .orEmpty(),
+                                            legalForm = detail.legalForm
+                                                ?.let { legalForm ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Details.LegalForm(
+                                                        scheme = legalForm.scheme,
+                                                        id = legalForm.id,
+                                                        description = legalForm.description,
+                                                        uri = legalForm.uri
+                                                    )
+                                                },
+                                            bankAccounts = detail.bankAccounts
+                                                ?.map { bankAccount ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount(
+                                                        description = bankAccount.description,
+                                                        bankName = bankAccount.bankName,
+                                                        identifier = bankAccount.identifier
+                                                            .let { identifier ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Identifier(
+                                                                    id = identifier.id,
+                                                                    scheme = identifier.scheme
+                                                                )
+                                                            },
+                                                        address = bankAccount.address
+                                                            .let { address ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address(
+                                                                    streetAddress = address.streetAddress,
+                                                                    postalCode = address.postalCode,
+                                                                    addressDetails = address.addressDetails
+                                                                        .let { addressDetail ->
+                                                                            GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails(
+                                                                                country = addressDetail.country
+                                                                                    .let { country ->
+                                                                                        GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
+                                                                                            id = country.id,
+                                                                                            scheme = country.scheme,
+                                                                                            description = country.description,
+                                                                                            uri = country.uri
+                                                                                        )
+                                                                                    },
+                                                                                locality = addressDetail.locality
+                                                                                    .let { locality ->
+                                                                                        GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
+                                                                                            id = locality.id,
+                                                                                            scheme = locality.scheme,
+                                                                                            description = locality.description,
+                                                                                            uri = locality.uri
+                                                                                        )
+                                                                                    },
+                                                                                region = addressDetail.region
+                                                                                    .let { region ->
+                                                                                        GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
+                                                                                            id = region.id,
+                                                                                            scheme = region.scheme,
+                                                                                            description = region.description,
+                                                                                            uri = region.uri
+                                                                                        )
+                                                                                    }
+                                                                            )
+                                                                        }
+                                                                )
+                                                            },
+                                                        additionalAccountIdentifiers = bankAccount.additionalAccountIdentifiers
+                                                            .map { additionalAccountIdentifier ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
+                                                                    id = additionalAccountIdentifier.id,
+                                                                    scheme = additionalAccountIdentifier.scheme
+                                                                )
+                                                            },
+                                                        accountIdentification = bankAccount.accountIdentification
+                                                            .let { accountIdentification ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Details.BankAccount.AccountIdentification(
+                                                                    scheme = accountIdentification.scheme,
+                                                                    id = accountIdentification.id
+                                                                )
+                                                            }
+                                                    )
+                                                }
+                                                .orEmpty()
+                                        )
+                                    },
+                                contactPoint = tender.contactPoint
+                                    .let { contactPoint ->
+                                        GetBidsByLotsResult.Bid.Tenderer.ContactPoint(
+                                            name = contactPoint.name,
+                                            telephone = contactPoint.telephone,
+                                            faxNumber = contactPoint.faxNumber,
+                                            email = contactPoint.email!!,
+                                            url = contactPoint.url
+                                        )
+                                    },
+                                additionalIdentifiers = tender.additionalIdentifiers
+                                    ?.map { additionalIdentifier ->
+                                        GetBidsByLotsResult.Bid.Tenderer.AdditionalIdentifier(
+                                            id = additionalIdentifier.id,
+                                            scheme = additionalIdentifier.scheme,
+                                            legalName = additionalIdentifier.legalName,
+                                            uri = additionalIdentifier.uri
+                                        )
+                                    }
+                                    .orEmpty(),
+                                persones = tender.persones
+                                    ?.map { person ->
+                                        GetBidsByLotsResult.Bid.Tenderer.Persone(
+                                            identifier = person.identifier
+                                                .let { identifier ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Persone.Identifier(
+                                                        id = identifier.id,
+                                                        scheme = identifier.scheme,
+                                                        uri = identifier.uri
+                                                    )
+                                                },
+                                            name = person.name,
+                                            title = person.title,
+                                            businessFunctions = person.businessFunctions
+                                                .map { businessFunction ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Persone.BusinessFunction(
+                                                        id = businessFunction.id,
+                                                        type = businessFunction.type,
+                                                        jobTitle = businessFunction.jobTitle,
+                                                        documents = businessFunction.documents
+                                                            ?.map { document ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Persone.BusinessFunction.Document(
+                                                                    id = document.id,
+                                                                    documentType = document.documentType,
+                                                                    title = document.title,
+                                                                    description = document.description
+                                                                )
+                                                            }
+                                                            .orEmpty(),
+                                                        period = businessFunction.period
+                                                            .let { period ->
+                                                                GetBidsByLotsResult.Bid.Tenderer.Persone.BusinessFunction.Period(
+                                                                    startDate = period.startDate
+                                                                )
+                                                            }
+                                                    )
+                                                }
+                                        )
+                                    }
+                                    .orEmpty()
+                            )
+                        },
+                    requirementResponses = bid.requirementResponses
+                        ?.map { requirementResponse ->
+                            GetBidsByLotsResult.Bid.RequirementResponse(
+                                id = requirementResponse.id,
+                                description = requirementResponse.description,
+                                title = requirementResponse.title,
+                                value = requirementResponse.value,
+                                period = requirementResponse.period
+                                    ?.let { period ->
+                                        GetBidsByLotsResult.Bid.RequirementResponse.Period(
+                                            startDate = period.startDate,
+                                            endDate = period.endDate
+                                        )
+                                    },
+                                requirement = GetBidsByLotsResult.Bid.RequirementResponse.Requirement(
+                                    id = requirementResponse.requirement.id
+                                )
+                            )
+                        }
+                        .orEmpty(),
+                    date = bid.date,
+                    value = bid.value!!
+                )
+            }
         )
     }
 }

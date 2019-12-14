@@ -1,0 +1,58 @@
+{
+  "bids": [
+    {
+      "id": "0a7d7980-e713-4c4d-b20d-da382d7258c5",
+      "date": "2019-09-03T22:22:22Z",
+      "status": "withdrawn",
+      "statusDetails": "archived",
+      "tenderers": [
+        {
+          "id": "bids[0].tenderers[0].id",
+          "name": "bids[0].tenderers[0].name",
+          "identifier": {
+            "scheme": "bids[0].tenderers[0].identifier.scheme",
+            "id": "bids[0].tenderers[0].identifier.id",
+            "legalName": "bids[0].tenderers[0].identifier.legalName"
+          },
+          "address": {
+            "streetAddress": "bids[0].tenderers[0].address.streetAddress",
+            "addressDetails": {
+              "country": {
+                "scheme": "bids[0].tenderers[0].address.addressDetails.country.scheme",
+                "id": "bids[0].tenderers[0].address.addressDetails.country.id",
+                "description": "bids[0].tenderers[0].address.addressDetails.country.description",
+                "uri": "bids[0].tenderers[0].address.addressDetails.country.uri"
+              },
+              "region": {
+                "scheme": "bids[0].tenderers[0].address.addressDetails.region.scheme",
+                "id": "bids[0].tenderers[0].address.addressDetails.region.id",
+                "description": "bids[0].tenderers[0].address.addressDetails.region.description",
+                "uri": "bids[0].tenderers[0].address.addressDetails.region.uri"
+              },
+              "locality": {
+                "scheme": "bids[0].tenderers[0].address.addressDetails.locality.scheme",
+                "id": "bids[0].tenderers[0].address.addressDetails.locality.id",
+                "description": "bids[0].tenderers[0].address.addressDetails.locality.description"
+              }
+            }
+          },
+          "contactPoint": {
+            "name": "bids[0].tenderers[0].contactPoint.name",
+            "email": "bids[0].tenderers[0].contactPoint.email",
+            "telephone": "bids[0].tenderers[0].contactPoint.telephone"
+          },
+          "details": {
+            "scale": "sme"
+          }
+        }
+      ],
+      "value": {
+        "amount": 210.00,
+        "currency": "MDL"
+      },
+      "relatedLots": [
+        "d90848e8-a93b-4b16-ad3e-de6f2c471464"
+      ]
+    }
+  ]
+}
