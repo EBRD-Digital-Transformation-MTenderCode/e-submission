@@ -37,6 +37,7 @@ data class BidUpdateData(
             ) : EntityBase<String>()
 
             data class Details(
+                val mainEconomicActivities: List<String>,
                 val permits: List<Permit>,
                 val bankAccounts: List<BankAccount>,
                 val legalForm: LegalForm?

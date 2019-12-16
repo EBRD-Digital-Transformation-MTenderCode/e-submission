@@ -2,8 +2,8 @@ package com.procurement.submission.model.dto
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.procurement.submission.model.dto.ocds.Status
-import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.StatusDetails
 
 data class SetInitialBidsStatusDtoRq @JsonCreator constructor(
 

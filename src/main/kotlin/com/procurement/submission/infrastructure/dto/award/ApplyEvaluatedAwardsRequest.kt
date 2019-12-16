@@ -2,10 +2,10 @@ package com.procurement.submission.infrastructure.dto.award
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.procurement.submission.model.dto.ocds.AwardStatusDetails
+import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import java.util.*
 
-data class EvaluatedAwardsRequest(
+data class ApplyEvaluatedAwardsRequest(
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @field:JsonProperty("awards") @param:JsonProperty("awards") val awards: List<Award>
 ) {

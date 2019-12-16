@@ -73,7 +73,7 @@ data class BidCreateRequest(
                 @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
                 @field:JsonProperty("legalName") @param:JsonProperty("legalName") val legalName: String,
 
-                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @JsonInclude(JsonInclude.Include.NON_NULL)
                 @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
             )
 
@@ -101,28 +101,16 @@ data class BidCreateRequest(
 
                     data class Region(
                         @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String?,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
+                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
+                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
+                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String
                     )
 
                     data class Country(
                         @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String?,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
-
-                        @JsonInclude(JsonInclude.Include.NON_NULL)
-                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
+                        @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
+                        @field:JsonProperty("description") @param:JsonProperty("description") val description: String,
+                        @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String
                     )
                 }
             }
@@ -140,8 +128,12 @@ data class BidCreateRequest(
             )
 
             data class Details(
-                @field:JsonProperty("typeOfSupplier") @param:JsonProperty("typeOfSupplier") val typeOfSupplier: String,
-                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>,
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                @field:JsonProperty("typeOfSupplier") @param:JsonProperty("typeOfSupplier") val typeOfSupplier: String?,
+
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>?,
+
                 @field:JsonProperty("scale") @param:JsonProperty("scale") val scale: String,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)

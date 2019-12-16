@@ -66,13 +66,14 @@ fun BidCreateRequest.toData(): BidCreateData {
                     ),
                     details = BidCreateData.Bid.Tenderer.Details(
                         typeOfSupplier = tenderer.details.typeOfSupplier,
-                        mainEconomicActivities = tenderer.details.mainEconomicActivities.mapIfNotEmpty { it }
-                            .orThrow {
-                                throw ErrorException(
-                                    error = ErrorType.EMPTY_LIST,
-                                    message = "The list of Bid.tenderers.details.mainEconomicActivities cannot be empty"
-                                )
-                            },
+                        mainEconomicActivities = tenderer.details.mainEconomicActivities.errorIfEmpty {
+                            throw ErrorException(
+                                error = ErrorType.EMPTY_LIST,
+                                message = "The list of Bid.tenderers.details.mainEconomicActivities cannot be empty"
+                            )
+                        }
+                            ?.map { it }
+                            .orEmpty(),
                         scale = tenderer.details.scale,
                         permits = tenderer.details.permits.errorIfEmpty {
                             throw ErrorException(

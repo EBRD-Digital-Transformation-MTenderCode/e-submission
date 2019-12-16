@@ -64,11 +64,14 @@ data class BidUpdateRequest(
                 @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
                 @field:JsonProperty("legalName") @param:JsonProperty("legalName") val legalName: String,
 
-                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @JsonInclude(JsonInclude.Include.NON_NULL)
                 @field:JsonProperty("uri") @param:JsonProperty("uri") val uri: String?
             )
 
             data class Details(
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>?,
+
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @field:JsonProperty("permits") @param:JsonProperty("permits") val permits: List<Permit>?,
 

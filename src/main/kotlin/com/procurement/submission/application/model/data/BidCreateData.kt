@@ -89,16 +89,16 @@ data class BidCreateData(
 
                     data class Region(
                         val id: String,
-                        val scheme: String?,
-                        val description: String?,
-                        val uri: String?
+                        val scheme: String,
+                        val description: String,
+                        val uri: String
                     )
 
                     data class Country(
                         val id: String,
-                        val scheme: String?,
-                        val description: String?,
-                        val uri: String?
+                        val scheme: String,
+                        val description: String,
+                        val uri: String
                     )
                 }
             }
@@ -112,7 +112,7 @@ data class BidCreateData(
             )
 
             data class Details(
-                val typeOfSupplier: String,
+                val typeOfSupplier: String?,
                 val mainEconomicActivities: List<String>,
                 val scale: String,
                 val permits: List<Permit>,

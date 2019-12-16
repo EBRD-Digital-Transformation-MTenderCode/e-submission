@@ -2,10 +2,10 @@ package com.procurement.submission.infrastructure.dto.award
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.procurement.submission.model.dto.ocds.StatusDetails
+import com.procurement.submission.domain.model.enums.StatusDetails
 import java.util.*
 
-data class EvaluatedAwardsResponse(
+data class ApplyEvaluatedAwardsResponse(
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @field:JsonProperty("bids") @param:JsonProperty("bids") val bids: List<Bid>
 ) {

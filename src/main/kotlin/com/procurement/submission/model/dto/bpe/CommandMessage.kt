@@ -78,6 +78,10 @@ val CommandMessage.startDate: LocalDateTime
     get() = this.context.startDate?.toLocal()
         ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'startDate' attribute in context.")
 
+val CommandMessage.country: String
+    get() = this.context.country
+        ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'country' attribute in context.")
+
 
 enum class CommandType(private val value: String) {
     CREATE_BID("createBid"),
@@ -102,7 +106,11 @@ enum class CommandType(private val value: String) {
     GET_DOCS_OF_CONSIDERED_BID("getDocsOfConsideredBid"),
     SET_INITIAL_BIDS_STATUS("setInitialBidsStatus"),
     APPLY_EVALUATED_AWARDS("applyAwardingRes"),
-    FINAL_BIDS_STATUS_BY_LOTS("finalBidsStatusByLots");
+    FINAL_BIDS_STATUS_BY_LOTS("finalBidsStatusByLots"),
+    GET_BIDS_FOR_EVALUATION("getBidsForEvaluation"),
+    OPEN_BIDS_FOR_PUBLISHING("openBidsForPublishing"),
+    OPEN_BID_DOCS("openBidDocs"),
+    GET_BIDS_BY_LOTS("getBidsByLots");
 
     @JsonValue
     fun value(): String {

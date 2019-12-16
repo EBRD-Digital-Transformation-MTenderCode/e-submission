@@ -19,10 +19,16 @@
           "streetAddress": "bid.tenderers[0].address.streetAddress",
           "addressDetails": {
             "country": {
-              "id": "bid.tenderers[0].address.addressDetails.country.id"
+              "scheme": "bid.tenderers[0].address.addressDetails.country.scheme",
+              "id": "bid.tenderers[0].address.addressDetails.country.id",
+              "description": "bid.tenderers[0].address.addressDetails.country.description",
+              "uri": "bid.tenderers[0].address.addressDetails.country.uri"
             },
             "region": {
-              "id": "bid.tenderers[0].address.addressDetails.region.id"
+              "scheme": "bid.tenderers[0].address.addressDetails.region.scheme",
+              "id": "bid.tenderers[0].address.addressDetails.region.id",
+              "description": "bid.tenderers[0].address.addressDetails.region.description",
+              "uri": "bid.tenderers[0].address.addressDetails.region.uri"
             },
             "locality": {
               "scheme": "bid.tenderers[0].address.addressDetails.locality.scheme",

@@ -29,7 +29,7 @@ enum class ErrorType constructor(val code: String, val message: String) {
     AWARD_CRITERIA("03.08", "Award Criteria can't be recognized"),
     CONTEXT("20.01", "Context parameter not found."),
     EMPTY_RELATED_LOTS("20.02","Related lots must be presented!"),
-    INVALID_STATUS_DETAILS("20.03","Related lots must be presented!"),
+    INVALID_STATUS_DETAILS("20.03","Invalid status details."),
     INVALID_DOCUMENT_TYPE("20.04","Invalid document type."),
     INVALID_PMD("20.05", "Invalid pmd."),
     EMPTY_LIST("20.06", "List cannot be empty."),
