@@ -37,6 +37,7 @@ import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
+import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.exception.ErrorType.BID_ALREADY_WITH_LOT
@@ -440,6 +441,9 @@ class BidService(
         fun isDisqualified(status: Status, details: StatusDetails) =
             status == Status.PENDING && details == StatusDetails.DISQUALIFIED
 
+        fun predicateOfBidStatus(bid: Bid): Boolean = isValid(status = bid.status, details = bid.statusDetails)
+            || isDisqualified(status = bid.status, details = bid.statusDetails)
+
         fun Bid.updatingStatuses(): Bid = when {
             isValid(this.status, this.statusDetails) -> this.copy(
                 status = Status.VALID,
@@ -452,9 +456,7 @@ class BidService(
             else -> throw IllegalStateException("No processing for award with status: '${this.status}' and details: '${this.statusDetails}'.")
         }
 
-        val lotsIds: Set<UUID> = data.lots.asSequence()
-            .map { it.id }
-            .toSet()
+        val lotsIds: Set<LotId> = data.lots.toSetBy { it.id }
 
         val stage = getStage(context)
         val updatedBids: Map<Bid, BidEntity> = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = stage)
@@ -464,7 +466,7 @@ class BidService(
                 bid to entity
             }
             .filter { (bid, _) ->
-                bid.relatedLots.any { lotsIds.contains(UUID.fromString(it)) }
+                bid.relatedLots.any { lotsIds.contains(LotId.fromString(it)) } && predicateOfBidStatus(bid = bid)
             }
             .map { (bid, entity) ->
                 val updatedBid = bid.updatingStatuses()
@@ -481,13 +483,14 @@ class BidService(
         bidDao.saveAll(updatedBids.values)
 
         return FinalizedBidsStatusByLots(
-            bids = updatedBids.keys.map { bid ->
-                FinalizedBidsStatusByLots.Bid(
-                    id = UUID.fromString(bid.id),
-                    status = bid.status,
-                    statusDetails = bid.statusDetails
-                )
-            }
+            bids = updatedBids.keys
+                .map { bid ->
+                    FinalizedBidsStatusByLots.Bid(
+                        id = UUID.fromString(bid.id),
+                        status = bid.status,
+                        statusDetails = bid.statusDetails
+                    )
+                }
         )
     }
 
