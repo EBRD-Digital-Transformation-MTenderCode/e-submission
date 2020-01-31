@@ -174,7 +174,7 @@ data class BidUpdateData(
         data class Document(
             override val id: String,
             val documentType: DocumentType,
-            val title: String?,
+            val title: String,
             val description: String?,
             val relatedLots: List<String>
         ) : EntityBase<String>()
