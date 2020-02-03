@@ -18,6 +18,7 @@
     "documents": [
       {
         "documentType": "submissionDocuments",
+        "title": "bid.documents[0].title",
         "id": "bid.documents[0].id",
         "relatedLots": [
           "8d7d6830-634b-45e8-9c3e-d8d6e43234b1"
