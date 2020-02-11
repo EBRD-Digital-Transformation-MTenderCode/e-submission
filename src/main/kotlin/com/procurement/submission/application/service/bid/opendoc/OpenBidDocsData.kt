@@ -1,7 +1,7 @@
 package com.procurement.submission.application.service.bid.opendoc
 
-import java.util.*
+import com.procurement.submission.domain.model.bid.BidId
 
 data class OpenBidDocsData(
-    val bidId: UUID
+    val bidId: BidId
 )
