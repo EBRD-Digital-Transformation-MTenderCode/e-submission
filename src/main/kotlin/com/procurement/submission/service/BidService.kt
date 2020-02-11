@@ -1719,7 +1719,7 @@ class BidService(
         val bidEntity = bidDao.findByCpIdAndStageAndBidId(
             cpId = context.cpid,
             stage = context.stage,
-            bidId = data.nextAwardForUpdate.relatedBid
+            bidId = data.bidId
         )
         val bid = toObject(Bid::class.java, bidEntity.jsonData)
 
