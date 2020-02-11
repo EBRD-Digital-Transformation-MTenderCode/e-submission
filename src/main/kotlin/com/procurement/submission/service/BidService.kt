@@ -283,45 +283,35 @@ class BidService(
             .filter { it.status == Status.PENDING && it.statusDetails == StatusDetails.EMPTY }
             .associateBy { BidId.fromString(it.id) }
 
-        if (data.awardCriteriaDetails == AwardCriteriaDetails.MANUAL)
-            return OpenBidsForPublishingResult(
-                bids = activeBidsByIds.values
-                    .map { bid -> bid.convert() }
-            )
+        val bidsForPublishing = when (data.awardCriteriaDetails) {
+            AwardCriteriaDetails.AUTOMATED -> {
+                val awardsByRelatedBids: Map<BidId, OpenBidsForPublishingData.Award> = data.awards
+                    .asSequence()
+                    .filter { it.relatedBid != null }
+                    .associateBy { it.relatedBid!! }
 
-        val awardsByRelatedBids: Map<BidId, OpenBidsForPublishingData.Award> = data.awards
-            .asSequence()
-            .filter { it.relatedBid != null }
-            .associateBy { it.relatedBid!! }
-
-        val relatedBids = awardsByRelatedBids.keys
-        val bidsForPublishing = activeBidsByIds.asSequence()
-            .filter { (id, _) ->
-                id in relatedBids
-            }
-            .map { (id, bid) ->
-                val award = awardsByRelatedBids.getValue(id)
-                val bidForPublishing = when (award.statusDetails) {
-                    AwardStatusDetails.AWAITING -> bid
-
-                    AwardStatusDetails.PENDING,
-                    AwardStatusDetails.ACTIVE,
-                    AwardStatusDetails.UNSUCCESSFUL,
-                    AwardStatusDetails.CONSIDERATION,
-                    AwardStatusDetails.EMPTY,
-                    AwardStatusDetails.NO_OFFERS_RECEIVED,
-                    AwardStatusDetails.LOT_CANCELLED ->
-                        bid.copy(
+                val relatedBids = awardsByRelatedBids.keys
+                activeBidsByIds.asSequence()
+                    .filter { (id, _) ->
+                        id in relatedBids
+                    }
+                    .map { (_, bid) ->
+                        val bidForPublishing = bid.copy(
                             documents = bid.documents
                                 ?.filter { document ->
                                     document.documentType == DocumentType.SUBMISSION_DOCUMENTS ||
                                         document.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
                                 }
                         )
-                }
-                bidForPublishing.convert()
+                        bidForPublishing.convert()
+                    }
+                    .toList()
             }
-            .toList()
+            AwardCriteriaDetails.MANUAL    -> {
+                activeBidsByIds.values
+                    .map { bid -> bid.convert() }
+            }
+        }
         return OpenBidsForPublishingResult(bids = bidsForPublishing)
     }
 
