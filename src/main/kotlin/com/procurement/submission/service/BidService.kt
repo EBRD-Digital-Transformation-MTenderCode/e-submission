@@ -285,12 +285,13 @@ class BidService(
 
         val bidsForPublishing = when (data.awardCriteriaDetails) {
             AwardCriteriaDetails.AUTOMATED -> {
-                val awardsByRelatedBids: Map<BidId, OpenBidsForPublishingData.Award> = data.awards
+                val awardsByRelatedBids: Set<BidId> = data.awards
                     .asSequence()
                     .filter { it.relatedBid != null }
-                    .associateBy { it.relatedBid!! }
+                    .map { it.relatedBid!! }
+                    .toSet()
 
-                val relatedBids = awardsByRelatedBids.keys
+                val relatedBids = awardsByRelatedBids
                 activeBidsByIds.asSequence()
                     .filter { (id, _) ->
                         id in relatedBids
@@ -299,8 +300,8 @@ class BidService(
                         val bidForPublishing = bid.copy(
                             documents = bid.documents
                                 ?.filter { document ->
-                                    document.documentType == DocumentType.SUBMISSION_DOCUMENTS ||
-                                        document.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
+                                    document.documentType == DocumentType.SUBMISSION_DOCUMENTS
+                                        || document.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
                                 }
                         )
                         bidForPublishing.convert()
