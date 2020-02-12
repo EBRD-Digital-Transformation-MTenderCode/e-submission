@@ -1,8 +1,8 @@
 package com.procurement.submission.infrastructure.dto.bid.opendoc.request
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import java.util.*
+import com.procurement.submission.domain.model.bid.BidId
 
 data class OpenBidDocsRequest(
-    @field:JsonProperty("bidId") @param:JsonProperty("bidId") val bidId: UUID
+    @field:JsonProperty("bidId") @param:JsonProperty("bidId") val bidId: BidId
 )
