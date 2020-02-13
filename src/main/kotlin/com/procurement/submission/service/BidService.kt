@@ -277,30 +277,24 @@ class BidService(
         context: OpenBidsForPublishingContext,
         data: OpenBidsForPublishingData
     ): OpenBidsForPublishingResult {
-        val activeBidsByIds: Map<BidId, Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+        val activeBids: List<Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
             .asSequence()
-            .filter {
-                val status = Status.fromString(it.status)
-                status == Status.PENDING
-            }
+            .filter { Status.fromString(it.status) == Status.PENDING }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
             .filter { it.statusDetails == StatusDetails.EMPTY }
-            .associateBy { BidId.fromString(it.id) }
+            .toList()
 
         val bidsForPublishing = when (data.awardCriteriaDetails) {
             AwardCriteriaDetails.AUTOMATED -> {
-                val awardsByRelatedBids: Set<BidId> = data.awards
+                val relatedBids: Set<BidId> = data.awards
                     .asSequence()
                     .filter { it.relatedBid != null }
                     .map { it.relatedBid!! }
                     .toSet()
 
-                val relatedBids = awardsByRelatedBids
-                activeBidsByIds.asSequence()
-                    .filter { (id, _) ->
-                        id in relatedBids
-                    }
-                    .map { (_, bid) ->
+                activeBids.asSequence()
+                    .filter { bid -> BidId.fromString(bid.id) in relatedBids }
+                    .map { bid ->
                         val bidForPublishing = bid.copy(
                             documents = bid.documents
                                 ?.filter { document ->
@@ -313,8 +307,7 @@ class BidService(
                     .toList()
             }
             AwardCriteriaDetails.MANUAL    -> {
-                activeBidsByIds.values
-                    .map { bid -> bid.convert() }
+                activeBids.map { bid -> bid.convert() }
             }
         }
         return OpenBidsForPublishingResult(bids = bidsForPublishing)
