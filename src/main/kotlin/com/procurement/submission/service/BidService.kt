@@ -277,51 +277,39 @@ class BidService(
         context: OpenBidsForPublishingContext,
         data: OpenBidsForPublishingData
     ): OpenBidsForPublishingResult {
-        val activeBidsByIds: Map<BidId, Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+        val activeBids: List<Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
             .asSequence()
+            .filter { Status.fromString(it.status) == Status.PENDING }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
-            .filter { it.status == Status.PENDING && it.statusDetails == StatusDetails.EMPTY }
-            .associateBy { BidId.fromString(it.id) }
+            .filter { it.statusDetails == StatusDetails.EMPTY }
+            .toList()
 
-        if (data.awardCriteriaDetails == AwardCriteriaDetails.MANUAL)
-            return OpenBidsForPublishingResult(
-                bids = activeBidsByIds.values
-                    .map { bid -> bid.convert() }
-            )
+        val bidsForPublishing = when (data.awardCriteriaDetails) {
+            AwardCriteriaDetails.AUTOMATED -> {
+                val relatedBids: Set<BidId> = data.awards
+                    .asSequence()
+                    .filter { it.relatedBid != null }
+                    .map { it.relatedBid!! }
+                    .toSet()
 
-        val awardsByRelatedBids: Map<BidId, OpenBidsForPublishingData.Award> = data.awards
-            .asSequence()
-            .filter { it.relatedBid != null }
-            .associateBy { it.relatedBid!! }
-
-        val relatedBids = awardsByRelatedBids.keys
-        val bidsForPublishing = activeBidsByIds.asSequence()
-            .filter { (id, _) ->
-                id in relatedBids
-            }
-            .map { (id, bid) ->
-                val award = awardsByRelatedBids.getValue(id)
-                val bidForPublishing = when (award.statusDetails) {
-                    AwardStatusDetails.AWAITING -> bid
-
-                    AwardStatusDetails.PENDING,
-                    AwardStatusDetails.ACTIVE,
-                    AwardStatusDetails.UNSUCCESSFUL,
-                    AwardStatusDetails.CONSIDERATION,
-                    AwardStatusDetails.EMPTY,
-                    AwardStatusDetails.NO_OFFERS_RECEIVED,
-                    AwardStatusDetails.LOT_CANCELLED ->
-                        bid.copy(
+                activeBids.asSequence()
+                    .filter { bid -> BidId.fromString(bid.id) in relatedBids }
+                    .map { bid ->
+                        val bidForPublishing = bid.copy(
                             documents = bid.documents
                                 ?.filter { document ->
-                                    document.documentType == DocumentType.SUBMISSION_DOCUMENTS ||
-                                        document.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
+                                    document.documentType == DocumentType.SUBMISSION_DOCUMENTS
+                                        || document.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
                                 }
                         )
-                }
-                bidForPublishing.convert()
+                        bidForPublishing.convert()
+                    }
+                    .toList()
             }
-            .toList()
+            AwardCriteriaDetails.MANUAL    -> {
+                activeBids.map { bid -> bid.convert() }
+            }
+        }
         return OpenBidsForPublishingResult(bids = bidsForPublishing)
     }
 
