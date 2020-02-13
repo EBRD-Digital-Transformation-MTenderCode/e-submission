@@ -279,8 +279,12 @@ class BidService(
     ): OpenBidsForPublishingResult {
         val activeBidsByIds: Map<BidId, Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
             .asSequence()
+            .filter {
+                val status = Status.fromString(it.status)
+                status == Status.PENDING
+            }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
-            .filter { it.status == Status.PENDING && it.statusDetails == StatusDetails.EMPTY }
+            .filter { it.statusDetails == StatusDetails.EMPTY }
             .associateBy { BidId.fromString(it.id) }
 
         val bidsForPublishing = when (data.awardCriteriaDetails) {
