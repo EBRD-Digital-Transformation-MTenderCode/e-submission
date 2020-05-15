@@ -118,7 +118,15 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
                                     .let { details ->
                                         OpenBidsForPublishingResponse.Bid.Tenderer.Details(
                                             typeOfSupplier = details.typeOfSupplier,
-                                            mainEconomicActivities = details.mainEconomicActivities,
+                                            mainEconomicActivities = details.mainEconomicActivities
+                                                .map { mainEconomicActivity ->
+                                                    OpenBidsForPublishingResponse.Bid.Tenderer.Details.MainEconomicActivity(
+                                                        id = mainEconomicActivity.id,
+                                                        description = mainEconomicActivity.description,
+                                                        uri = mainEconomicActivity.uri,
+                                                        scheme = mainEconomicActivity.scheme
+                                                    )
+                                                },
                                             scale = details.scale,
                                             permits = details.permits
                                                 .map { permit ->
@@ -389,7 +397,16 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                             OpenBidsForPublishingResult.Bid.Tenderer.Details(
                                 typeOfSupplier = details.typeOfSupplier
                                     ?.let { TypeOfSupplier.fromString(it) },
-                                mainEconomicActivities = details.mainEconomicActivities,
+                                mainEconomicActivities = details.mainEconomicActivities
+                                    ?.map { mainEconomicActivity ->
+                                        OpenBidsForPublishingResult.Bid.Tenderer.Details.MainEconomicActivity(
+                                            id = mainEconomicActivity.id,
+                                            description = mainEconomicActivity.description,
+                                            uri = mainEconomicActivity.uri,
+                                            scheme = mainEconomicActivity.scheme
+                                        )
+                                    }
+                                    .orEmpty(),
                                 scale = Scale.fromString(details.scale),
                                 permits = details.permits
                                     ?.map { permit ->

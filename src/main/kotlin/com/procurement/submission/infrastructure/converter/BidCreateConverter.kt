@@ -72,7 +72,14 @@ fun BidCreateRequest.toData(): BidCreateData {
                                 message = "The list of Bid.tenderers.details.mainEconomicActivities cannot be empty"
                             )
                         }
-                            ?.map { it }
+                            ?.map { mainEconomicActivity ->
+                                BidCreateData.Bid.Tenderer.Details.MainEconomicActivity(
+                                    scheme = mainEconomicActivity.scheme,
+                                    uri = mainEconomicActivity.uri,
+                                    description = mainEconomicActivity.description,
+                                    id = mainEconomicActivity.id
+                                )
+                            }
                             .orEmpty(),
                         scale = tenderer.details.scale,
                         permits = tenderer.details.permits.errorIfEmpty {
