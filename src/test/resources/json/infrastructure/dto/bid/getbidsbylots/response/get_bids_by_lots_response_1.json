@@ -77,6 +77,13 @@
           ],
           "details": {
             "scale": "sme",
+            "mainEconomicActivities": [
+              {
+                "scheme": "MD-CAEM",
+                "id": "bids[0].tenderers[0].details.mainEconomicActivities[0].id",
+                "description": "bids[0].tenderers[0].details.mainEconomicActivities[0].description"
+              }
+            ],
             "permits": [
               {
                 "scheme": "SRLE",

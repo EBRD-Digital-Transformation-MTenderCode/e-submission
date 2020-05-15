@@ -79,7 +79,11 @@
         "details": {
           "typeOfSupplier": "bid.tenderers[0].details.typeOfSupplier",
           "mainEconomicActivities": [
-            "bid.tenderers[0].details.mainEconomicActivities[0]"
+            {
+              "scheme": "MD-CAEM",
+              "id": "bids[0].tenderers[0].details.mainEconomicActivities[0].id",
+              "description": "bids[0].tenderers[0].details.mainEconomicActivities[0].description"
+            }
           ],
           "scale": "sme",
           "permits": [
