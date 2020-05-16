@@ -80,6 +80,7 @@ import com.procurement.submission.model.dto.ocds.IssuedBy
 import com.procurement.submission.model.dto.ocds.IssuedThought
 import com.procurement.submission.model.dto.ocds.LegalForm
 import com.procurement.submission.model.dto.ocds.LocalityDetails
+import com.procurement.submission.model.dto.ocds.MainEconomicActivity
 import com.procurement.submission.model.dto.ocds.OrganizationReference
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Permit
@@ -1215,7 +1216,15 @@ class BidService(
 
         return Details(
             typeOfSupplier = detailsDb.typeOfSupplier,
-            mainEconomicActivities = detailsRequest.mainEconomicActivities,
+            mainEconomicActivities = detailsRequest.mainEconomicActivities
+                .map { mainEconomicActivity ->
+                    MainEconomicActivity(
+                        id = mainEconomicActivity.id,
+                        description = mainEconomicActivity.description,
+                        uri = mainEconomicActivity.uri,
+                        scheme = mainEconomicActivity.scheme
+                    )
+                },
             scale = detailsDb.scale,
             permits = updatePermits(detailsDb.permits, detailsRequest.permits),
             bankAccounts = updateBankAccounts(detailsDb.bankAccounts, detailsRequest.bankAccounts),
@@ -1499,7 +1508,15 @@ class BidService(
                 ),
                 details = Details(
                     typeOfSupplier = tenderer.details.typeOfSupplier,
-                    mainEconomicActivities = tenderer.details.mainEconomicActivities,
+                    mainEconomicActivities = tenderer.details.mainEconomicActivities
+                        .map { mainEconomicActivity ->
+                            MainEconomicActivity(
+                                id = mainEconomicActivity.id,
+                                description = mainEconomicActivity.description,
+                                uri = mainEconomicActivity.uri,
+                                scheme = mainEconomicActivity.scheme
+                            )
+                        },
                     permits = tenderer.details.permits.map { permit ->
                         Permit(
                             id = permit.id,
@@ -1822,7 +1839,16 @@ class BidService(
                                         GetBidsByLotsResult.Bid.Tenderer.Details(
                                             typeOfSupplier = detail.typeOfSupplier
                                                 ?.let { TypeOfSupplier.fromString(it) },
-                                            mainEconomicActivities = detail.mainEconomicActivities,
+                                            mainEconomicActivities = detail.mainEconomicActivities
+                                                ?.map { mainEconomicActivity ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Details.MainEconomicActivity(
+                                                        id = mainEconomicActivity.id,
+                                                        description = mainEconomicActivity.description,
+                                                        uri = mainEconomicActivity.uri,
+                                                        scheme = mainEconomicActivity.scheme
+                                                    )
+                                                }
+                                                .orEmpty(),
                                             scale = Scale.fromString(detail.scale),
                                             permits = detail.permits
                                                 ?.map { permit ->

@@ -129,7 +129,14 @@ fun BidUpdateRequest.toData(): BidUpdateData {
                                     message = "The list of Bid.tenderers.details.mainEconomicActivities cannot be empty"
                                 )
                             }
-                                ?.map { it }
+                                ?.map { mainEconomicActivity ->
+                                    BidUpdateData.Bid.Tenderer.Details.MainEconomicActivity(
+                                        id = mainEconomicActivity.id,
+                                        description = mainEconomicActivity.description,
+                                        uri = mainEconomicActivity.uri,
+                                        scheme = mainEconomicActivity.scheme
+                                    )
+                                }
                                 .orEmpty()
                         )
                     } ,
