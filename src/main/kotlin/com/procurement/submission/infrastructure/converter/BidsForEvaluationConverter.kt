@@ -79,7 +79,15 @@ fun BidsForEvaluationResponseData.toResponse() : GetBidsForEvaluationResponse {
                         ),
                         details = GetBidsForEvaluationResponse.Bid.Tenderer.Details(
                             typeOfSupplier = tenderer.details.typeOfSupplier,
-                            mainEconomicActivities = tenderer.details.mainEconomicActivities,
+                            mainEconomicActivities = tenderer.details.mainEconomicActivities
+                                ?.map { mainEconomicActivity ->
+                                    GetBidsForEvaluationResponse.Bid.Tenderer.Details.MainEconomicActivity(
+                                        id = mainEconomicActivity.id,
+                                        description = mainEconomicActivity.description,
+                                        uri = mainEconomicActivity.uri,
+                                        scheme = mainEconomicActivity.scheme
+                                    )
+                                },
                             scale = tenderer.details.scale,
                             permits = tenderer.details.permits?.map { permit ->
                                 GetBidsForEvaluationResponse.Bid.Tenderer.Details.Permit(
@@ -280,7 +288,15 @@ fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationRespons
                         ),
                         details = BidsForEvaluationResponseData.Bid.Tenderer.Details(
                             typeOfSupplier = tenderer.details.typeOfSupplier?.let { TypeOfSupplier.fromString(it) },
-                            mainEconomicActivities = tenderer.details.mainEconomicActivities,
+                            mainEconomicActivities = tenderer.details.mainEconomicActivities
+                                ?.map { mainEconomicActivity ->
+                                    BidsForEvaluationResponseData.Bid.Tenderer.Details.MainEconomicActivity(
+                                        id = mainEconomicActivity.id,
+                                        description = mainEconomicActivity.description,
+                                        uri = mainEconomicActivity.uri,
+                                        scheme = mainEconomicActivity.scheme
+                                    )
+                                },
                             scale = Scale.fromString(tenderer.details.scale),
                             permits = tenderer.details.permits?.map { permit ->
                                 BidsForEvaluationResponseData.Bid.Tenderer.Details.Permit(

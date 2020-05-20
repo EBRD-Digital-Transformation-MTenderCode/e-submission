@@ -120,7 +120,15 @@ fun BidsAuctionResponseData.convert(): GetBidsAuctionResponse {
                                                 .let { details ->
                                                     GetBidsAuctionResponse.BidsData.Bid.Tenderer.Details(
                                                         typeOfSupplier = details.typeOfSupplier,
-                                                        mainEconomicActivities = details.mainEconomicActivities,
+                                                        mainEconomicActivities = details.mainEconomicActivities
+                                                            ?.map { mainEconomicActivity ->
+                                                                GetBidsAuctionResponse.BidsData.Bid.Tenderer.Details.MainEconomicActivity(
+                                                                    id = mainEconomicActivity.id,
+                                                                    description = mainEconomicActivity.description,
+                                                                    uri = mainEconomicActivity.uri,
+                                                                    scheme = mainEconomicActivity.scheme
+                                                                )
+                                                            },
                                                         scale = details.scale,
                                                         permits = details.permits
                                                             ?.map { permit ->
@@ -374,7 +382,15 @@ fun Bid.convert(pendingDate: LocalDateTime): BidsAuctionResponseData.BidsData.Bi
                             BidsAuctionResponseData.BidsData.Bid.Tenderer.Details(
                                 typeOfSupplier = details.typeOfSupplier
                                     ?.let { TypeOfSupplier.fromString(it) },
-                                mainEconomicActivities = details.mainEconomicActivities,
+                                mainEconomicActivities = details.mainEconomicActivities
+                                    ?.map { mainEconomicActivity ->
+                                        BidsAuctionResponseData.BidsData.Bid.Tenderer.Details.MainEconomicActivity(
+                                            id = mainEconomicActivity.id,
+                                            description = mainEconomicActivity.description,
+                                            uri = mainEconomicActivity.uri,
+                                            scheme = mainEconomicActivity.scheme
+                                        )
+                                    },
                                 scale = Scale.fromString(details.scale),
                                 permits = details.permits
                                     ?.map { permit ->

@@ -70,7 +70,7 @@ data class BidUpdateRequest(
 
             data class Details(
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>?,
+                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<MainEconomicActivity>?,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @field:JsonProperty("permits") @param:JsonProperty("permits") val permits: List<Permit>?,
@@ -81,6 +81,15 @@ data class BidUpdateRequest(
                 @JsonInclude(JsonInclude.Include.NON_NULL)
                 @field:JsonProperty("legalForm") @param:JsonProperty("legalForm") val legalForm: LegalForm?
             ) {
+                data class MainEconomicActivity(
+                    @param:JsonProperty("scheme") @field:JsonProperty("scheme") val scheme: String,
+                    @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
+                    @param:JsonProperty("description") @field:JsonProperty("description") val description: String,
+
+                    @JsonInclude(JsonInclude.Include.NON_NULL)
+                    @param:JsonProperty("uri") @field:JsonProperty("uri") val uri: String?
+                )
+
                 data class LegalForm(
                     @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
                     @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
@@ -237,9 +246,7 @@ data class BidUpdateRequest(
         data class Document(
             @field:JsonProperty("documentType") @param:JsonProperty("documentType") val documentType: DocumentType,
             @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-
-            @JsonInclude(JsonInclude.Include.NON_NULL)
-            @field:JsonProperty("title") @param:JsonProperty("title") val title: String?,
+            @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
             @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,

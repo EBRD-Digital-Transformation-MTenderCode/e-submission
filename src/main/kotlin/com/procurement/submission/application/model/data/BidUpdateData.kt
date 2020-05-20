@@ -37,11 +37,17 @@ data class BidUpdateData(
             ) : EntityBase<String>()
 
             data class Details(
-                val mainEconomicActivities: List<String>,
+                val mainEconomicActivities: List<MainEconomicActivity>,
                 val permits: List<Permit>,
                 val bankAccounts: List<BankAccount>,
                 val legalForm: LegalForm?
             ) {
+                data class MainEconomicActivity(
+                    val scheme: String,
+                    val id: String,
+                    val description: String,
+                    val uri: String?
+                )
                 data class LegalForm(
                     val scheme: String,
                     val id: String,
@@ -174,7 +180,7 @@ data class BidUpdateData(
         data class Document(
             override val id: String,
             val documentType: DocumentType,
-            val title: String?,
+            val title: String,
             val description: String?,
             val relatedLots: List<String>
         ) : EntityBase<String>()

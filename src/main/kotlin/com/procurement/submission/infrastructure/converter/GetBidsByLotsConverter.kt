@@ -85,7 +85,15 @@ fun GetBidsByLotsResult.convert() = GetBidsByLotsResponse(
                                 .let { detail ->
                                     GetBidsByLotsResponse.Bid.Tenderer.Details(
                                         typeOfSupplier = detail.typeOfSupplier,
-                                        mainEconomicActivities = detail.mainEconomicActivities,
+                                        mainEconomicActivities = detail.mainEconomicActivities
+                                            .map { mainEconomicActivity ->
+                                                GetBidsByLotsResponse.Bid.Tenderer.Details.MainEconomicActivity(
+                                                    id = mainEconomicActivity.id,
+                                                    description = mainEconomicActivity.description,
+                                                    uri = mainEconomicActivity.uri,
+                                                    scheme = mainEconomicActivity.scheme
+                                                )
+                                            },
                                         scale = detail.scale,
                                         permits = detail.permits
                                             .map { permit ->

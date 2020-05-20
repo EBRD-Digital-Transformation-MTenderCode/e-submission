@@ -175,7 +175,9 @@ data class GetBidsForEvaluationResponse(
 
             data class Details(
                 @field:JsonProperty("typeOfSupplier") @param:JsonProperty("typeOfSupplier") val typeOfSupplier: TypeOfSupplier?,
-                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<String>,
+
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @field:JsonProperty("mainEconomicActivities") @param:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<MainEconomicActivity>?,
                 @field:JsonProperty("scale") @param:JsonProperty("scale") val scale: Scale,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -187,6 +189,15 @@ data class GetBidsForEvaluationResponse(
                 @JsonInclude(JsonInclude.Include.NON_NULL)
                 @field:JsonProperty("legalForm") @param:JsonProperty("legalForm") val legalForm: LegalForm?
             ) {
+                data class MainEconomicActivity(
+                    @param:JsonProperty("scheme") @field:JsonProperty("scheme") val scheme: String,
+                    @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
+                    @param:JsonProperty("description") @field:JsonProperty("description") val description: String,
+
+                    @JsonInclude(JsonInclude.Include.NON_NULL)
+                    @param:JsonProperty("uri") @field:JsonProperty("uri") val uri: String?
+                )
+
                 data class Permit(
                     @field:JsonProperty("scheme") @param:JsonProperty("scheme") val scheme: String,
                     @field:JsonProperty("id") @param:JsonProperty("id") val id: String,

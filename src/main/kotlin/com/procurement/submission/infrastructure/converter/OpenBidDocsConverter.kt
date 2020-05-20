@@ -5,12 +5,7 @@ import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsRes
 import com.procurement.submission.infrastructure.dto.bid.opendoc.request.OpenBidDocsRequest
 import com.procurement.submission.infrastructure.dto.bid.opendoc.response.OpenBidDocsResponse
 
-fun OpenBidDocsRequest.convert() = OpenBidDocsData(nextAwardForUpdate = this.nextAwardForUpdate.let { nextAwardForUpdate ->
-    OpenBidDocsData.NextAwardForUpdate(
-        id = nextAwardForUpdate.id,
-        relatedBid = nextAwardForUpdate.relatedBid
-    )
-})
+fun OpenBidDocsRequest.convert() = OpenBidDocsData(bidId = this.bidId)
 
 fun OpenBidDocsResult.convert() = OpenBidDocsResponse(
     bid = this.bid.let { bid ->

@@ -37,6 +37,7 @@ import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
+import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.exception.ErrorType.BID_ALREADY_WITH_LOT
@@ -79,6 +80,7 @@ import com.procurement.submission.model.dto.ocds.IssuedBy
 import com.procurement.submission.model.dto.ocds.IssuedThought
 import com.procurement.submission.model.dto.ocds.LegalForm
 import com.procurement.submission.model.dto.ocds.LocalityDetails
+import com.procurement.submission.model.dto.ocds.MainEconomicActivity
 import com.procurement.submission.model.dto.ocds.OrganizationReference
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Permit
@@ -276,51 +278,39 @@ class BidService(
         context: OpenBidsForPublishingContext,
         data: OpenBidsForPublishingData
     ): OpenBidsForPublishingResult {
-        val activeBidsByIds: Map<BidId, Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+        val activeBids: List<Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
             .asSequence()
+            .filter { Status.fromString(it.status) == Status.PENDING }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
-            .filter { it.status == Status.PENDING && it.statusDetails == StatusDetails.EMPTY }
-            .associateBy { BidId.fromString(it.id) }
+            .filter { it.statusDetails == StatusDetails.EMPTY }
+            .toList()
 
-        if (data.awardCriteriaDetails == AwardCriteriaDetails.MANUAL)
-            return OpenBidsForPublishingResult(
-                bids = activeBidsByIds.values
-                    .map { bid -> bid.convert() }
-            )
+        val bidsForPublishing = when (data.awardCriteriaDetails) {
+            AwardCriteriaDetails.AUTOMATED -> {
+                val relatedBids: Set<BidId> = data.awards
+                    .asSequence()
+                    .filter { it.relatedBid != null }
+                    .map { it.relatedBid!! }
+                    .toSet()
 
-        val awardsByRelatedBids: Map<BidId, OpenBidsForPublishingData.Award> = data.awards
-            .asSequence()
-            .filter { it.relatedBid != null }
-            .associateBy { it.relatedBid!! }
-
-        val relatedBids = awardsByRelatedBids.keys
-        val bidsForPublishing = activeBidsByIds.asSequence()
-            .filter { (id, _) ->
-                id in relatedBids
-            }
-            .map { (id, bid) ->
-                val award = awardsByRelatedBids.getValue(id)
-                val bidForPublishing = when (award.statusDetails) {
-                    AwardStatusDetails.AWAITING -> bid
-
-                    AwardStatusDetails.PENDING,
-                    AwardStatusDetails.ACTIVE,
-                    AwardStatusDetails.UNSUCCESSFUL,
-                    AwardStatusDetails.CONSIDERATION,
-                    AwardStatusDetails.EMPTY,
-                    AwardStatusDetails.NO_OFFERS_RECEIVED,
-                    AwardStatusDetails.LOT_CANCELLED ->
-                        bid.copy(
+                activeBids.asSequence()
+                    .filter { bid -> BidId.fromString(bid.id) in relatedBids }
+                    .map { bid ->
+                        val bidForPublishing = bid.copy(
                             documents = bid.documents
                                 ?.filter { document ->
-                                    document.documentType == DocumentType.SUBMISSION_DOCUMENTS ||
-                                        document.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
+                                    document.documentType == DocumentType.SUBMISSION_DOCUMENTS
+                                        || document.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
                                 }
                         )
-                }
-                bidForPublishing.convert()
+                        bidForPublishing.convert()
+                    }
+                    .toList()
             }
-            .toList()
+            AwardCriteriaDetails.MANUAL    -> {
+                activeBids.map { bid -> bid.convert() }
+            }
+        }
         return OpenBidsForPublishingResult(bids = bidsForPublishing)
     }
 
@@ -440,6 +430,9 @@ class BidService(
         fun isDisqualified(status: Status, details: StatusDetails) =
             status == Status.PENDING && details == StatusDetails.DISQUALIFIED
 
+        fun predicateOfBidStatus(bid: Bid): Boolean = isValid(status = bid.status, details = bid.statusDetails)
+            || isDisqualified(status = bid.status, details = bid.statusDetails)
+
         fun Bid.updatingStatuses(): Bid = when {
             isValid(this.status, this.statusDetails) -> this.copy(
                 status = Status.VALID,
@@ -452,9 +445,7 @@ class BidService(
             else -> throw IllegalStateException("No processing for award with status: '${this.status}' and details: '${this.statusDetails}'.")
         }
 
-        val lotsIds: Set<UUID> = data.lots.asSequence()
-            .map { it.id }
-            .toSet()
+        val lotsIds: Set<LotId> = data.lots.toSetBy { it.id }
 
         val stage = getStage(context)
         val updatedBids: Map<Bid, BidEntity> = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = stage)
@@ -464,7 +455,7 @@ class BidService(
                 bid to entity
             }
             .filter { (bid, _) ->
-                bid.relatedLots.any { lotsIds.contains(UUID.fromString(it)) }
+                bid.relatedLots.any { lotsIds.contains(LotId.fromString(it)) } && predicateOfBidStatus(bid = bid)
             }
             .map { (bid, entity) ->
                 val updatedBid = bid.updatingStatuses()
@@ -481,13 +472,14 @@ class BidService(
         bidDao.saveAll(updatedBids.values)
 
         return FinalizedBidsStatusByLots(
-            bids = updatedBids.keys.map { bid ->
-                FinalizedBidsStatusByLots.Bid(
-                    id = UUID.fromString(bid.id),
-                    status = bid.status,
-                    statusDetails = bid.statusDetails
-                )
-            }
+            bids = updatedBids.keys
+                .map { bid ->
+                    FinalizedBidsStatusByLots.Bid(
+                        id = UUID.fromString(bid.id),
+                        status = bid.status,
+                        statusDetails = bid.statusDetails
+                    )
+                }
         )
     }
 
@@ -617,7 +609,7 @@ class BidService(
 
     private fun Document.updateDocument(documentDto: BidUpdateData.Bid.Document?) {
         if (documentDto != null) {
-            this.title = documentDto.title ?: this.title
+            this.title = documentDto.title
             this.description = documentDto.description ?: this.description
             this.relatedLots = documentDto.relatedLots.let { if (!it.isEmpty()) it else this.relatedLots }
         }
@@ -1224,7 +1216,15 @@ class BidService(
 
         return Details(
             typeOfSupplier = detailsDb.typeOfSupplier,
-            mainEconomicActivities = detailsRequest.mainEconomicActivities,
+            mainEconomicActivities = detailsRequest.mainEconomicActivities
+                .map { mainEconomicActivity ->
+                    MainEconomicActivity(
+                        id = mainEconomicActivity.id,
+                        description = mainEconomicActivity.description,
+                        uri = mainEconomicActivity.uri,
+                        scheme = mainEconomicActivity.scheme
+                    )
+                },
             scale = detailsDb.scale,
             permits = updatePermits(detailsDb.permits, detailsRequest.permits),
             bankAccounts = updateBankAccounts(detailsDb.bankAccounts, detailsRequest.bankAccounts),
@@ -1508,7 +1508,15 @@ class BidService(
                 ),
                 details = Details(
                     typeOfSupplier = tenderer.details.typeOfSupplier,
-                    mainEconomicActivities = tenderer.details.mainEconomicActivities,
+                    mainEconomicActivities = tenderer.details.mainEconomicActivities
+                        .map { mainEconomicActivity ->
+                            MainEconomicActivity(
+                                id = mainEconomicActivity.id,
+                                description = mainEconomicActivity.description,
+                                uri = mainEconomicActivity.uri,
+                                scheme = mainEconomicActivity.scheme
+                            )
+                        },
                     permits = tenderer.details.permits.map { permit ->
                         Permit(
                             id = permit.id,
@@ -1716,7 +1724,7 @@ class BidService(
         val bidEntity = bidDao.findByCpIdAndStageAndBidId(
             cpId = context.cpid,
             stage = context.stage,
-            bidId = data.nextAwardForUpdate.relatedBid
+            bidId = data.bidId
         )
         val bid = toObject(Bid::class.java, bidEntity.jsonData)
 
@@ -1831,7 +1839,16 @@ class BidService(
                                         GetBidsByLotsResult.Bid.Tenderer.Details(
                                             typeOfSupplier = detail.typeOfSupplier
                                                 ?.let { TypeOfSupplier.fromString(it) },
-                                            mainEconomicActivities = detail.mainEconomicActivities,
+                                            mainEconomicActivities = detail.mainEconomicActivities
+                                                ?.map { mainEconomicActivity ->
+                                                    GetBidsByLotsResult.Bid.Tenderer.Details.MainEconomicActivity(
+                                                        id = mainEconomicActivity.id,
+                                                        description = mainEconomicActivity.description,
+                                                        uri = mainEconomicActivity.uri,
+                                                        scheme = mainEconomicActivity.scheme
+                                                    )
+                                                }
+                                                .orEmpty(),
                                             scale = Scale.fromString(detail.scale),
                                             permits = detail.permits
                                                 ?.map { permit ->
