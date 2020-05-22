@@ -10,6 +10,7 @@ import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.model.dto.ocds.PersonId
 import java.time.LocalDateTime
 import java.util.*
 
@@ -195,6 +196,7 @@ data class OpenBidsForPublishingResult(
             }
 
             data class Persone(
+                val id: PersonId,
                 val title: String,
                 val name: String,
                 val identifier: Identifier,

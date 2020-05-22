@@ -20,6 +20,7 @@ import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
 import com.procurement.submission.infrastructure.bind.money.MoneySerializer
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
+import com.procurement.submission.model.dto.ocds.PersonId
 import java.time.LocalDateTime
 import java.util.*
 
@@ -262,6 +263,7 @@ data class OpenBidsForPublishingResponse(
             }
 
             data class Persone(
+                @field:JsonProperty("id") @param:JsonProperty("id") val id: PersonId,
                 @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
                 @field:JsonProperty("name") @param:JsonProperty("name") val name: String,
                 @field:JsonProperty("identifier") @param:JsonProperty("identifier") val identifier: Identifier,

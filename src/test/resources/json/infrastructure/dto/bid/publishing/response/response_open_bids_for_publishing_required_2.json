@@ -43,6 +43,7 @@
           },
           "persones": [
             {
+              "id": "scheme-id",
               "title": "bids[0].tenderers[0].persones[0].title",
               "name": "bids[0].tenderers[0].persones[0].name",
               "identifier": {

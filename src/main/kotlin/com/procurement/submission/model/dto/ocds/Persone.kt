@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 
 data class Persone  @JsonCreator constructor(
+    val id: PersonId,
     val title: String,
     val name: String,
     val identifier: Identifier,
