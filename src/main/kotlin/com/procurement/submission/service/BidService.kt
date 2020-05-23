@@ -85,6 +85,7 @@ import com.procurement.submission.model.dto.ocds.OrganizationReference
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Permit
 import com.procurement.submission.model.dto.ocds.PermitDetails
+import com.procurement.submission.model.dto.ocds.PersonId
 import com.procurement.submission.model.dto.ocds.Persone
 import com.procurement.submission.model.dto.ocds.RegionDetails
 import com.procurement.submission.model.dto.ocds.Requirement
@@ -1128,6 +1129,7 @@ class BidService(
 
     private fun Persone.updatePerson(personRequest: BidUpdateData.Bid.Tenderer.Persone): Persone {
         return Persone(
+            id = this.id,
             title = personRequest.title,
             name = personRequest.name,
             identifier = this.identifier,
@@ -1594,6 +1596,10 @@ class BidService(
                 ),
                 persones = tenderer.persones.map { person ->
                     Persone(
+                        id = PersonId.generate(
+                            scheme = person.identifier.scheme,
+                            id = person.identifier.id
+                        ),
                         title = person.title,
                         name = person.name,
                         identifier = Persone.Identifier(
@@ -1648,6 +1654,10 @@ class BidService(
     private fun List<BidUpdateData.Bid.Tenderer.Persone>.toBidEntityPersones(): List<Persone> {
         return this.map { persone ->
             Persone(
+                id = PersonId.generate(
+                    scheme = persone.identifier.scheme,
+                    id = persone.identifier.id
+                ),
                 title = persone.title,
                 name = persone.name,
                 identifier = Persone.Identifier(

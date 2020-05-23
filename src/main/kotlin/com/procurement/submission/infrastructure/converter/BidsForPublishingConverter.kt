@@ -243,6 +243,7 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
                                 persones = tenderer.persones
                                     .map { person ->
                                         OpenBidsForPublishingResponse.Bid.Tenderer.Persone(
+                                            id = person.id,
                                             title = person.title,
                                             identifier = person.identifier
                                                 .let { identifier ->
@@ -526,6 +527,7 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                     persones = tenderer.persones
                         ?.map { person ->
                             OpenBidsForPublishingResult.Bid.Tenderer.Persone(
+                                id = person.id,
                                 title = person.title,
                                 identifier = person.identifier
                                     .let { identifier ->
