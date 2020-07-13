@@ -220,7 +220,7 @@ class BidService(
         val bidsEntitiesByIds = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
             .asSequence()
             .filter { entity ->
-                Status.fromString(entity.status) == Status.PENDING
+                Status.creator(entity.status) == Status.PENDING
             }
             .associateBy { it.bidId }
 
@@ -281,7 +281,7 @@ class BidService(
     ): OpenBidsForPublishingResult {
         val activeBids: List<Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
             .asSequence()
-            .filter { Status.fromString(it.status) == Status.PENDING }
+            .filter { Status.creator(it.status) == Status.PENDING }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
             .filter { it.statusDetails == StatusDetails.EMPTY }
             .toList()
@@ -389,7 +389,7 @@ class BidService(
                 statusDetails = StatusDetails.EMPTY
             }
             entity.apply {
-                status = Status.PENDING.value
+                status = Status.PENDING.key
                 jsonData = toJson(bid)
             }
             bidDao.save(entity)
@@ -462,7 +462,7 @@ class BidService(
                 val updatedBid = bid.updatingStatuses()
 
                 val updatedEntity = entity.copy(
-                    status = updatedBid.status.value,
+                    status = updatedBid.status.key,
                     jsonData = toJson(updatedBid)
                 )
 
@@ -1023,7 +1023,7 @@ class BidService(
     }
 
     private fun isEnoughForOpening(context: GetBidsForEvaluationContext, bidsAmount: Int): Boolean {
-        return when (Countries.fromString(context.country)) {
+        return when (Countries.creator(context.country)) {
             Countries.MD -> when (context.pmd) {
                 ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                 ProcurementMethod.SV, ProcurementMethod.TEST_SV,
@@ -1437,7 +1437,7 @@ class BidService(
             cpId = cpId,
             stage = stage,
             owner = owner,
-            status = bid.status.value,
+            status = bid.status.key,
             bidId = UUID.fromString(bid.id),
             token = token,
             createdDate = createdDate,
@@ -1848,7 +1848,7 @@ class BidService(
                                     .let { detail ->
                                         GetBidsByLotsResult.Bid.Tenderer.Details(
                                             typeOfSupplier = detail.typeOfSupplier
-                                                ?.let { TypeOfSupplier.fromString(it) },
+                                                ?.let { TypeOfSupplier.creator(it) },
                                             mainEconomicActivities = detail.mainEconomicActivities
                                                 ?.map { mainEconomicActivity ->
                                                     GetBidsByLotsResult.Bid.Tenderer.Details.MainEconomicActivity(
@@ -1859,7 +1859,7 @@ class BidService(
                                                     )
                                                 }
                                                 .orEmpty(),
-                                            scale = Scale.fromString(detail.scale),
+                                            scale = Scale.creator(detail.scale),
                                             permits = detail.permits
                                                 ?.map { permit ->
                                                     GetBidsByLotsResult.Bid.Tenderer.Details.Permit(

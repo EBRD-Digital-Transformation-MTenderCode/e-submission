@@ -397,7 +397,7 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                         .let { details ->
                             OpenBidsForPublishingResult.Bid.Tenderer.Details(
                                 typeOfSupplier = details.typeOfSupplier
-                                    ?.let { TypeOfSupplier.fromString(it) },
+                                    ?.let { TypeOfSupplier.creator(it) },
                                 mainEconomicActivities = details.mainEconomicActivities
                                     ?.map { mainEconomicActivity ->
                                         OpenBidsForPublishingResult.Bid.Tenderer.Details.MainEconomicActivity(
@@ -408,7 +408,7 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                                         )
                                     }
                                     .orEmpty(),
-                                scale = Scale.fromString(details.scale),
+                                scale = Scale.creator(details.scale),
                                 permits = details.permits
                                     ?.map { permit ->
                                         OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit(

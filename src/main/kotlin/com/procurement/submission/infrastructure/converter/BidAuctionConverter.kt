@@ -381,7 +381,7 @@ fun Bid.convert(pendingDate: LocalDateTime): BidsAuctionResponseData.BidsData.Bi
                         .let { details ->
                             BidsAuctionResponseData.BidsData.Bid.Tenderer.Details(
                                 typeOfSupplier = details.typeOfSupplier
-                                    ?.let { TypeOfSupplier.fromString(it) },
+                                    ?.let { TypeOfSupplier.creator(it) },
                                 mainEconomicActivities = details.mainEconomicActivities
                                     ?.map { mainEconomicActivity ->
                                         BidsAuctionResponseData.BidsData.Bid.Tenderer.Details.MainEconomicActivity(
@@ -391,7 +391,7 @@ fun Bid.convert(pendingDate: LocalDateTime): BidsAuctionResponseData.BidsData.Bi
                                             scheme = mainEconomicActivity.scheme
                                         )
                                     },
-                                scale = Scale.fromString(details.scale),
+                                scale = Scale.creator(details.scale),
                                 permits = details.permits
                                     ?.map { permit ->
                                         BidsAuctionResponseData.BidsData.Bid.Tenderer.Details.Permit(

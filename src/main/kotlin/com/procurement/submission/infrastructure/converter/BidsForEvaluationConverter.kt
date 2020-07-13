@@ -287,7 +287,7 @@ fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationRespons
                             url = tenderer.contactPoint.url
                         ),
                         details = BidsForEvaluationResponseData.Bid.Tenderer.Details(
-                            typeOfSupplier = tenderer.details.typeOfSupplier?.let { TypeOfSupplier.fromString(it) },
+                            typeOfSupplier = tenderer.details.typeOfSupplier?.let { TypeOfSupplier.creator(it) },
                             mainEconomicActivities = tenderer.details.mainEconomicActivities
                                 ?.map { mainEconomicActivity ->
                                     BidsForEvaluationResponseData.Bid.Tenderer.Details.MainEconomicActivity(
@@ -297,7 +297,7 @@ fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationRespons
                                         scheme = mainEconomicActivity.scheme
                                     )
                                 },
-                            scale = Scale.fromString(tenderer.details.scale),
+                            scale = Scale.creator(tenderer.details.scale),
                             permits = tenderer.details.permits?.map { permit ->
                                 BidsForEvaluationResponseData.Bid.Tenderer.Details.Permit(
                                     id = permit.id,
