@@ -1,4 +1,4 @@
-package com.procurement.submission.service
+package com.procurement.submission.infrastructure.service
 
 import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.model.data.bid.auction.get.GetBidsAuctionContext
@@ -10,6 +10,9 @@ import com.procurement.submission.application.model.data.bid.open.OpenBidsForPub
 import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsData
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
+import com.procurement.submission.application.service.BidService
+import com.procurement.submission.application.service.PeriodService
+import com.procurement.submission.application.service.StatusService
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType

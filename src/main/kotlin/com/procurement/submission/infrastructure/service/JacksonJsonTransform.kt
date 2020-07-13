@@ -1,14 +1,14 @@
-package com.procurement.submission.infrastructure.web.service
+package com.procurement.submission.infrastructure.service
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.NullNode
 import com.procurement.submission.application.service.Transform
+import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.Result.Companion.failure
 import com.procurement.submission.domain.functional.Result.Companion.success
-import com.procurement.submission.domain.fail.Fail
 import java.io.IOException
 
 class JacksonJsonTransform(private val mapper: ObjectMapper) :

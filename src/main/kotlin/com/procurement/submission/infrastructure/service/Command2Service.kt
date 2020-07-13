@@ -1,12 +1,12 @@
-package com.procurement.submission.infrastructure.web.service
+package com.procurement.submission.infrastructure.service
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.application.service.Logger
+import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
+import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.response.parser.tryGetAction
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
-import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
 import org.springframework.stereotype.Service
 
 @Service

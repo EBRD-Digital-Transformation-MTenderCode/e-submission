@@ -1,4 +1,4 @@
-package com.procurement.submission.service
+package com.procurement.submission.application.service
 
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
@@ -22,7 +22,8 @@ import java.util.*
 
 @Service
 class PeriodService(private val periodDao: PeriodDao,
-                    private val rulesService: RulesService) {
+                    private val rulesService: RulesService
+) {
 
     fun periodValidation(cm: CommandMessage): ResponseDto {
         val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)

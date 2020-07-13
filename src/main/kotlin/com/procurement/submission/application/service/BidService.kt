@@ -1,4 +1,4 @@
-package com.procurement.submission.service
+package com.procurement.submission.application.service
 
 import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsData

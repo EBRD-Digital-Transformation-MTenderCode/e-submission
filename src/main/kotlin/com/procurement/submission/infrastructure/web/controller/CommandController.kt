@@ -2,12 +2,12 @@ package com.procurement.submission.infrastructure.web.controller
 
 import com.procurement.submission.exception.EnumException
 import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.infrastructure.service.CommandService
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.bpe.getEnumExceptionResponseDto
 import com.procurement.submission.model.dto.bpe.getErrorExceptionResponseDto
 import com.procurement.submission.model.dto.bpe.getExceptionResponseDto
-import com.procurement.submission.service.CommandService
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
 import org.slf4j.Logger

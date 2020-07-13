@@ -1,4 +1,4 @@
-package com.procurement.submission.infrastructure.web.service
+package com.procurement.submission.infrastructure.service
 
 import com.procurement.submission.application.service.Logger
 import org.slf4j.MDC

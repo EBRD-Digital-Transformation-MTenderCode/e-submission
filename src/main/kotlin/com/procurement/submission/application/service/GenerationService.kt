@@ -1,4 +1,4 @@
-package com.procurement.submission.service
+package com.procurement.submission.application.service
 
 import com.datastax.driver.core.utils.UUIDs
 import org.springframework.stereotype.Service
