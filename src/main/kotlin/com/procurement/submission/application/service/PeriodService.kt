@@ -3,6 +3,7 @@ package com.procurement.submission.application.service
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.domain.extension.parseLocalDateTime
+import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
@@ -13,7 +14,6 @@ import com.procurement.submission.model.dto.request.PeriodRq
 import com.procurement.submission.model.dto.request.SaveNewPeriodRq
 import com.procurement.submission.model.dto.response.CheckPeriodEndDateRs
 import com.procurement.submission.model.entity.PeriodEntity
-import com.procurement.submission.utils.toDate
 import com.procurement.submission.utils.toLocal
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service

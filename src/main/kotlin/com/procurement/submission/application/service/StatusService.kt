@@ -6,6 +6,7 @@ import com.procurement.submission.application.model.data.bid.auction.get.BidsAuc
 import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionResponseData
 import com.procurement.submission.application.model.data.bid.auction.get.GetBidsAuctionContext
 import com.procurement.submission.domain.extension.parseLocalDateTime
+import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteria
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
@@ -37,7 +38,6 @@ import com.procurement.submission.model.dto.response.FinalBid
 import com.procurement.submission.model.dto.response.GetBidsRs
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.containsAny
-import com.procurement.submission.utils.toDate
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toLocal
 import com.procurement.submission.utils.toObject

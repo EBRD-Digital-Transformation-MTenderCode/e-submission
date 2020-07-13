@@ -59,9 +59,6 @@ private object JsonMapper {
 
 /*Date utils*/
 
-fun LocalDateTime.toDate(): Date {
-    return Date.from(this.toInstant(ZoneOffset.UTC))
-}
 
 fun Date.toLocal(): LocalDateTime {
     return LocalDateTime.ofInstant(this.toInstant(), ZoneOffset.UTC)

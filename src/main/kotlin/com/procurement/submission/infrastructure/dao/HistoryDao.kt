@@ -4,10 +4,10 @@ import com.datastax.driver.core.Session
 import com.datastax.driver.core.querybuilder.QueryBuilder.eq
 import com.datastax.driver.core.querybuilder.QueryBuilder.insertInto
 import com.datastax.driver.core.querybuilder.QueryBuilder.select
+import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.entity.HistoryEntity
 import com.procurement.submission.utils.localNowUTC
-import com.procurement.submission.utils.toDate
 import com.procurement.submission.utils.toJson
 import org.springframework.stereotype.Service
 
