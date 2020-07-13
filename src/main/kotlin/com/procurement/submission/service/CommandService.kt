@@ -10,13 +10,13 @@ import com.procurement.submission.application.service.GetBidsForEvaluationContex
 import com.procurement.submission.application.service.OpenBidsForPublishingContext
 import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsContext
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
-import com.procurement.submission.dao.HistoryDao
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.converter.toData
 import com.procurement.submission.infrastructure.converter.toResponse
+import com.procurement.submission.infrastructure.dao.HistoryDao
 import com.procurement.submission.infrastructure.dto.award.ApplyEvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.bid.bidsbylots.request.GetBidsByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest

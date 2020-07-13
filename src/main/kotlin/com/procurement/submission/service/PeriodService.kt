@@ -1,8 +1,8 @@
 package com.procurement.submission.service
 
-import com.procurement.submission.dao.PeriodDao
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Period
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-
 
 @Service
 class PeriodService(private val periodDao: PeriodDao,

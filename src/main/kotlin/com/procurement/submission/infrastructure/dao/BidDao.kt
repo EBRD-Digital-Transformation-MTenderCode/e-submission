@@ -1,9 +1,11 @@
-package com.procurement.submission.dao
+package com.procurement.submission.infrastructure.dao
 
 import com.datastax.driver.core.Session
 import com.datastax.driver.core.querybuilder.Insert
 import com.datastax.driver.core.querybuilder.QueryBuilder
-import com.datastax.driver.core.querybuilder.QueryBuilder.*
+import com.datastax.driver.core.querybuilder.QueryBuilder.eq
+import com.datastax.driver.core.querybuilder.QueryBuilder.insertInto
+import com.datastax.driver.core.querybuilder.QueryBuilder.select
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.entity.BidEntity
@@ -59,15 +61,15 @@ class BidDao(private val session: Session) {
         resultSet.forEach { row ->
             entities.add(
                     BidEntity(
-                            cpId = row.getString(CP_ID),
-                            bidId = row.getUUID(BID_ID),
-                            token = row.getUUID(TOKEN),
-                            stage = row.getString(STAGE),
-                            owner = row.getString(OWNER),
-                            status = row.getString(STATUS),
-                            createdDate = row.getTimestamp(CREATED_DATE),
-                            pendingDate = row.getTimestamp(PENDING_DATE),
-                            jsonData = row.getString(JSON_DATA)))
+                        cpId = row.getString(CP_ID),
+                        bidId = row.getUUID(BID_ID),
+                        token = row.getUUID(TOKEN),
+                        stage = row.getString(STAGE),
+                        owner = row.getString(OWNER),
+                        status = row.getString(STATUS),
+                        createdDate = row.getTimestamp(CREATED_DATE),
+                        pendingDate = row.getTimestamp(PENDING_DATE),
+                        jsonData = row.getString(JSON_DATA)))
         }
         return entities
     }
@@ -83,15 +85,15 @@ class BidDao(private val session: Session) {
         val row = session.execute(query).one()
         return if (row != null)
             BidEntity(
-                    cpId = row.getString(CP_ID),
-                    bidId = row.getUUID(BID_ID),
-                    token = row.getUUID(TOKEN),
-                    stage = row.getString(STAGE),
-                    owner = row.getString(OWNER),
-                    status = row.getString(STATUS),
-                    createdDate = row.getTimestamp(CREATED_DATE),
-                    pendingDate = row.getTimestamp(PENDING_DATE),
-                    jsonData = row.getString(JSON_DATA))
+                cpId = row.getString(CP_ID),
+                bidId = row.getUUID(BID_ID),
+                token = row.getUUID(TOKEN),
+                stage = row.getString(STAGE),
+                owner = row.getString(OWNER),
+                status = row.getString(STATUS),
+                createdDate = row.getTimestamp(CREATED_DATE),
+                pendingDate = row.getTimestamp(PENDING_DATE),
+                jsonData = row.getString(JSON_DATA))
         else throw ErrorException(ErrorType.BID_NOT_FOUND)
     }
 

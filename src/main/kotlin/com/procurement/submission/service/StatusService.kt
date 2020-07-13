@@ -3,7 +3,6 @@ package com.procurement.submission.service
 import com.procurement.submission.application.model.data.BidsAuctionRequestData
 import com.procurement.submission.application.model.data.BidsAuctionResponseData
 import com.procurement.submission.application.service.GetBidsAuctionContext
-import com.procurement.submission.dao.BidDao
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteria
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
@@ -14,6 +13,7 @@ import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.BidData
 import com.procurement.submission.infrastructure.converter.convert
+import com.procurement.submission.infrastructure.dao.BidDao
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Bid
@@ -47,7 +47,8 @@ import kotlin.collections.ArrayList
 @Service
 class StatusService(private val rulesService: RulesService,
                     private val periodService: PeriodService,
-                    private val bidDao: BidDao) {
+                    private val bidDao: BidDao
+) {
 
 
     fun getBids(cm: CommandMessage): ResponseDto {

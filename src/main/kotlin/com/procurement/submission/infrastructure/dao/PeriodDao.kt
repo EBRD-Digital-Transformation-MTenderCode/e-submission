@@ -1,12 +1,13 @@
-package com.procurement.submission.dao
+package com.procurement.submission.infrastructure.dao
 
 import com.datastax.driver.core.Session
-import com.datastax.driver.core.querybuilder.QueryBuilder.*
+import com.datastax.driver.core.querybuilder.QueryBuilder.eq
+import com.datastax.driver.core.querybuilder.QueryBuilder.insertInto
+import com.datastax.driver.core.querybuilder.QueryBuilder.select
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.model.entity.PeriodEntity
 import org.springframework.stereotype.Service
-
 
 @Service
 class PeriodDao(private val session: Session) {
@@ -30,10 +31,10 @@ class PeriodDao(private val session: Session) {
         val row = session.execute(query).one()
         return if (row != null)
             PeriodEntity(
-                    cpId = row.getString(CP_ID),
-                    stage = row.getString(STAGE),
-                    startDate = row.getTimestamp(START_DATE),
-                    endDate = row.getTimestamp(END_DATE))
+                cpId = row.getString(CP_ID),
+                stage = row.getString(STAGE),
+                startDate = row.getTimestamp(START_DATE),
+                endDate = row.getTimestamp(END_DATE))
         else throw ErrorException(ErrorType.PERIOD_NOT_FOUND)
     }
 

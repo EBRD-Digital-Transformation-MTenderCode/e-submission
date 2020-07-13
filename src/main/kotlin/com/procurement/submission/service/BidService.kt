@@ -22,7 +22,6 @@ import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLo
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsData
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsResult
-import com.procurement.submission.dao.BidDao
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
@@ -57,6 +56,7 @@ import com.procurement.submission.exception.ErrorType.PERIOD_NOT_EXPIRED
 import com.procurement.submission.exception.ErrorType.RELATED_LOTS_MUST_BE_ONE_UNIT
 import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.converter.toBidsForEvaluationResponseData
+import com.procurement.submission.infrastructure.dao.BidDao
 import com.procurement.submission.lib.toSetBy
 import com.procurement.submission.model.dto.BidDetails
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
