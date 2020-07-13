@@ -24,7 +24,6 @@ import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsDat
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsResult
 import com.procurement.submission.dao.BidDao
 import com.procurement.submission.domain.model.Money
-import com.procurement.submission.domain.model.ProcurementMethod
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
@@ -32,6 +31,7 @@ import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentTyp
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.Countries
 import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails

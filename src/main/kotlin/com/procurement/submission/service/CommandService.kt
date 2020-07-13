@@ -11,7 +11,7 @@ import com.procurement.submission.application.service.OpenBidsForPublishingConte
 import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsContext
 import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
 import com.procurement.submission.dao.HistoryDao
-import com.procurement.submission.domain.model.ProcurementMethod
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.convert

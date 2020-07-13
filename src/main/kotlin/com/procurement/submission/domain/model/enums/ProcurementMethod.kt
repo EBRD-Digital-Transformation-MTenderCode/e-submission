@@ -1,4 +1,4 @@
-package com.procurement.submission.domain.model
+package com.procurement.submission.domain.model.enums
 
 import com.fasterxml.jackson.annotation.JsonValue
 import com.procurement.submission.exception.EnumException
