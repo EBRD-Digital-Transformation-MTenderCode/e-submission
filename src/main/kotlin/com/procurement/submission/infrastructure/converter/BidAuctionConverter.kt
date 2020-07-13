@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.model.data.BidsAuctionRequestData
-import com.procurement.submission.application.model.data.BidsAuctionResponseData
+import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionRequestData
+import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionResponseData
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier

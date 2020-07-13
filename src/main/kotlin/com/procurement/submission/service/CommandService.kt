@@ -1,15 +1,15 @@
 package com.procurement.submission.service
 
-import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
-import com.procurement.submission.application.service.BidCreateContext
-import com.procurement.submission.application.service.BidUpdateContext
-import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
-import com.procurement.submission.application.service.FinalBidsStatusByLotsData
-import com.procurement.submission.application.service.GetBidsAuctionContext
-import com.procurement.submission.application.service.GetBidsForEvaluationContext
-import com.procurement.submission.application.service.OpenBidsForPublishingContext
-import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsContext
-import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
+import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsContext
+import com.procurement.submission.application.model.data.bid.auction.get.GetBidsAuctionContext
+import com.procurement.submission.application.model.data.bid.create.BidCreateContext
+import com.procurement.submission.application.model.data.bid.document.open.OpenBidDocsContext
+import com.procurement.submission.application.model.data.bid.get.GetBidsForEvaluationContext
+import com.procurement.submission.application.model.data.bid.get.bylots.GetBidsByLotsContext
+import com.procurement.submission.application.model.data.bid.open.OpenBidsForPublishingContext
+import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsContext
+import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsData
+import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.exception.ErrorException
 import com.procurement.submission.exception.ErrorType
@@ -267,7 +267,10 @@ class CommandService(
                 ResponseDto(data = dataResponse)
             }
             CommandType.OPEN_BID_DOCS -> {
-                val context = OpenBidDocsContext(cpid = cm.cpid, stage = cm.stage)
+                val context = OpenBidDocsContext(
+                    cpid = cm.cpid,
+                    stage = cm.stage
+                )
                 val request = toObject(OpenBidDocsRequest::class.java, cm.data)
                 val result = bidService.openBidDocs(context = context, data = request.convert())
                 if (log.isDebugEnabled)

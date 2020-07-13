@@ -1,6 +1,6 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
+import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsData
 import com.procurement.submission.domain.extension.mapIfNotEmpty
 import com.procurement.submission.domain.extension.orThrow
 import com.procurement.submission.exception.ErrorException

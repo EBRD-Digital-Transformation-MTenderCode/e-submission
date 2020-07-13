@@ -1,8 +1,8 @@
 package com.procurement.submission.service
 
-import com.procurement.submission.application.model.data.BidsAuctionRequestData
-import com.procurement.submission.application.model.data.BidsAuctionResponseData
-import com.procurement.submission.application.service.GetBidsAuctionContext
+import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionRequestData
+import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionResponseData
+import com.procurement.submission.application.model.data.bid.auction.get.GetBidsAuctionContext
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteria
 import com.procurement.submission.domain.model.enums.AwardStatusDetails

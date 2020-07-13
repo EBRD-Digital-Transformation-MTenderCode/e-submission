@@ -1,6 +1,6 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.model.data.BidCreateData
+import com.procurement.submission.application.model.data.bid.create.BidCreateData
 import com.procurement.submission.domain.extension.errorIfEmpty
 import com.procurement.submission.domain.extension.mapIfNotEmpty
 import com.procurement.submission.domain.extension.orThrow

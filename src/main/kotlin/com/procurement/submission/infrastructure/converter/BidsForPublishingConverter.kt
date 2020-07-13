@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.model.data.OpenBidsForPublishingData
-import com.procurement.submission.application.model.data.OpenBidsForPublishingResult
+import com.procurement.submission.application.model.data.bid.open.OpenBidsForPublishingData
+import com.procurement.submission.application.model.data.bid.open.OpenBidsForPublishingResult
 import com.procurement.submission.domain.extension.mapIfNotEmpty
 import com.procurement.submission.domain.extension.orThrow
 import com.procurement.submission.domain.model.bid.BidId

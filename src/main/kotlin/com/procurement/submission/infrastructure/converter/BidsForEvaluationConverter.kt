@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.model.data.BidsForEvaluationRequestData
-import com.procurement.submission.application.model.data.BidsForEvaluationResponseData
+import com.procurement.submission.application.model.data.bid.get.BidsForEvaluationRequestData
+import com.procurement.submission.application.model.data.bid.get.BidsForEvaluationResponseData
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.model.dto.ocds.Bid
@@ -229,9 +229,9 @@ fun BidsForEvaluationResponseData.toResponse() : GetBidsForEvaluationResponse {
     )
 }
 
-fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationResponseData{
+fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationResponseData {
     return BidsForEvaluationResponseData(
-        bids = this.map {  bid ->
+        bids = this.map { bid ->
             BidsForEvaluationResponseData.Bid(
                 id = UUID.fromString(bid.id),
                 date = bid.date,

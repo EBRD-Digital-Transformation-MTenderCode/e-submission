@@ -1,27 +1,27 @@
 package com.procurement.submission.service
 
-import com.procurement.submission.application.model.data.BidCreateData
-import com.procurement.submission.application.model.data.BidUpdateData
-import com.procurement.submission.application.model.data.BidsForEvaluationRequestData
-import com.procurement.submission.application.model.data.BidsForEvaluationResponseData
-import com.procurement.submission.application.model.data.OpenBidsForPublishingData
-import com.procurement.submission.application.model.data.OpenBidsForPublishingResult
-import com.procurement.submission.application.service.ApplyEvaluatedAwardsContext
-import com.procurement.submission.application.service.ApplyEvaluatedAwardsData
-import com.procurement.submission.application.service.ApplyEvaluatedAwardsResult
-import com.procurement.submission.application.service.BidCreateContext
-import com.procurement.submission.application.service.BidUpdateContext
-import com.procurement.submission.application.service.FinalBidsStatusByLotsContext
-import com.procurement.submission.application.service.FinalBidsStatusByLotsData
-import com.procurement.submission.application.service.FinalizedBidsStatusByLots
-import com.procurement.submission.application.service.GetBidsForEvaluationContext
-import com.procurement.submission.application.service.OpenBidsForPublishingContext
-import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsContext
-import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsData
-import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsResult
-import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsContext
-import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsData
-import com.procurement.submission.application.service.bid.opendoc.OpenBidDocsResult
+import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsContext
+import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsData
+import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsResult
+import com.procurement.submission.application.model.data.bid.create.BidCreateContext
+import com.procurement.submission.application.model.data.bid.create.BidCreateData
+import com.procurement.submission.application.model.data.bid.document.open.OpenBidDocsContext
+import com.procurement.submission.application.model.data.bid.document.open.OpenBidDocsData
+import com.procurement.submission.application.model.data.bid.document.open.OpenBidDocsResult
+import com.procurement.submission.application.model.data.bid.get.BidsForEvaluationRequestData
+import com.procurement.submission.application.model.data.bid.get.BidsForEvaluationResponseData
+import com.procurement.submission.application.model.data.bid.get.GetBidsForEvaluationContext
+import com.procurement.submission.application.model.data.bid.get.bylots.GetBidsByLotsContext
+import com.procurement.submission.application.model.data.bid.get.bylots.GetBidsByLotsData
+import com.procurement.submission.application.model.data.bid.get.bylots.GetBidsByLotsResult
+import com.procurement.submission.application.model.data.bid.open.OpenBidsForPublishingContext
+import com.procurement.submission.application.model.data.bid.open.OpenBidsForPublishingData
+import com.procurement.submission.application.model.data.bid.open.OpenBidsForPublishingResult
+import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsContext
+import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsData
+import com.procurement.submission.application.model.data.bid.status.FinalizedBidsStatusByLots
+import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
+import com.procurement.submission.application.model.data.bid.update.BidUpdateData
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
@@ -312,7 +312,9 @@ class BidService(
                 activeBids.map { bid -> bid.convert() }
             }
         }
-        return OpenBidsForPublishingResult(bids = bidsForPublishing)
+        return OpenBidsForPublishingResult(
+            bids = bidsForPublishing
+        )
     }
 
     fun copyBids(cm: CommandMessage): ResponseDto {

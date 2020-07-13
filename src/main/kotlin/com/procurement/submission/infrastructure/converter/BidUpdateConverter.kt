@@ -1,6 +1,6 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.model.data.BidUpdateData
+import com.procurement.submission.application.model.data.bid.update.BidUpdateData
 import com.procurement.submission.domain.extension.errorIfEmpty
 import com.procurement.submission.domain.extension.mapIfNotEmpty
 import com.procurement.submission.domain.extension.orThrow
@@ -139,7 +139,7 @@ fun BidUpdateRequest.toData(): BidUpdateData {
                                 }
                                 .orEmpty()
                         )
-                    } ,
+                    },
                     persones = tenderer.persones.errorIfEmpty {
                         throw ErrorException(
                             error = ErrorType.EMPTY_LIST,
