@@ -58,9 +58,6 @@ private object JsonMapper {
 }
 
 /*Date utils*/
-fun String.toLocal(): LocalDateTime {
-    return LocalDateTime.parse(this, JsonMapper.dateTimeFormatter)
-}
 
 fun LocalDateTime.toDate(): Date {
     return Date.from(this.toInstant(ZoneOffset.UTC))

@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.procurement.submission.application.exception.EnumException
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.model.enums.ProcurementMethod
-import com.procurement.submission.utils.toLocal
 import java.time.LocalDateTime
 import java.util.*
 
@@ -93,7 +93,7 @@ val CommandMessage.owner: String
         )
 
 val CommandMessage.startDate: LocalDateTime
-    get() = this.context.startDate?.toLocal()
+    get() = this.context.startDate?.parseLocalDateTime()
         ?: throw ErrorException(
             error = ErrorType.CONTEXT,
             message = "Missing the 'startDate' attribute in context."

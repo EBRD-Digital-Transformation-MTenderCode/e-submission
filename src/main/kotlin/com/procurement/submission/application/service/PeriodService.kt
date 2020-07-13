@@ -2,6 +2,7 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
@@ -154,7 +155,7 @@ class PeriodService(private val periodDao: PeriodDao,
         val stage = cm.context.stage ?: throw ErrorException(
             ErrorType.CONTEXT
         )
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(
+        val dateTime = cm.context.startDate?.parseLocalDateTime() ?: throw ErrorException(
             ErrorType.CONTEXT
         )
 

@@ -5,6 +5,7 @@ import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionRequestData
 import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionResponseData
 import com.procurement.submission.application.model.data.bid.auction.get.GetBidsAuctionContext
+import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteria
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
@@ -311,7 +312,7 @@ class StatusService(private val rulesService: RulesService,
         val bidId = cm.context.id ?: throw ErrorException(
             ErrorType.CONTEXT
         )
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(
+        val dateTime = cm.context.startDate?.parseLocalDateTime() ?: throw ErrorException(
             ErrorType.CONTEXT
         )
 

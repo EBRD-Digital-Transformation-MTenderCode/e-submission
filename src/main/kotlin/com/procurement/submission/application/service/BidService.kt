@@ -39,6 +39,7 @@ import com.procurement.submission.application.model.data.bid.status.FinalBidsSta
 import com.procurement.submission.application.model.data.bid.status.FinalizedBidsStatusByLots
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
+import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
@@ -331,10 +332,10 @@ class BidService(
         val previousStage = cm.context.prevStage ?: throw ErrorException(
             CONTEXT
         )
-        val startDate = cm.context.startDate?.toLocal() ?: throw ErrorException(
+        val startDate = cm.context.startDate?.parseLocalDateTime() ?: throw ErrorException(
             CONTEXT
         )
-        val endDate = cm.context.endDate?.toLocal() ?: throw ErrorException(
+        val endDate = cm.context.endDate?.parseLocalDateTime() ?: throw ErrorException(
             CONTEXT
         )
         val lots = toObject(LotsDto::class.java, cm.data)
@@ -367,7 +368,7 @@ class BidService(
         val bidId = cm.context.id ?: throw ErrorException(
             CONTEXT
         )
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(
+        val dateTime = cm.context.startDate?.parseLocalDateTime() ?: throw ErrorException(
             CONTEXT
         )
         val dto = toObject(BidUpdateDocsRq::class.java, cm.data)
