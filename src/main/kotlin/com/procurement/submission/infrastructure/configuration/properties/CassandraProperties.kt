@@ -1,4 +1,4 @@
-package com.procurement.submission.config
+package com.procurement.submission.infrastructure.configuration.properties
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component

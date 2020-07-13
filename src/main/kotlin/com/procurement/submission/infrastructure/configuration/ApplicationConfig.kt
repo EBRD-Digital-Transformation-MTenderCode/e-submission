@@ -1,4 +1,4 @@
-package com.procurement.submission.config
+package com.procurement.submission.infrastructure.configuration
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import

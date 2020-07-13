@@ -1,8 +1,9 @@
-package com.procurement.submission.config
+package com.procurement.submission.infrastructure.configuration
 
 import com.datastax.driver.core.Cluster
 import com.datastax.driver.core.PlainTextAuthProvider
 import com.datastax.driver.core.Session
+import com.procurement.submission.infrastructure.configuration.properties.CassandraProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
