@@ -1,9 +1,9 @@
 package com.procurement.submission.application.service.bid.bidsbylots
 
 import com.procurement.submission.application.model.data.RequirementRsValue
-import com.procurement.submission.domain.model.DocumentId
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.document.DocumentId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType

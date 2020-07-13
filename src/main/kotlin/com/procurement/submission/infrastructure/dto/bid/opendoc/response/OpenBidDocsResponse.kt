@@ -2,8 +2,8 @@ package com.procurement.submission.infrastructure.dto.bid.opendoc.response
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.procurement.submission.domain.model.DocumentId
 import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.document.DocumentId
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.lot.LotId
 

@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.procurement.submission.application.model.data.RequirementRsValue
-import com.procurement.submission.domain.model.DocumentId
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.document.DocumentId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType

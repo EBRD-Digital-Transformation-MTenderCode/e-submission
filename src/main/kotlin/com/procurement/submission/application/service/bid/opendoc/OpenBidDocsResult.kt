@@ -1,7 +1,7 @@
 package com.procurement.submission.application.service.bid.opendoc
 
-import com.procurement.submission.domain.model.DocumentId
 import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.document.DocumentId
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.lot.LotId
 
