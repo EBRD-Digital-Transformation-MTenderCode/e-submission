@@ -39,6 +39,7 @@ import com.procurement.submission.application.model.data.bid.status.FinalBidsSta
 import com.procurement.submission.application.model.data.bid.status.FinalizedBidsStatusByLots
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
+import com.procurement.submission.domain.extension.nowDefaultUTC
 import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.extension.toLocal
@@ -102,7 +103,6 @@ import com.procurement.submission.model.dto.response.BidRs
 import com.procurement.submission.model.dto.response.BidsCopyRs
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.containsAny
-import com.procurement.submission.utils.localNowUTC
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
@@ -1463,7 +1463,7 @@ class BidService(
             val (entity, bid) = map
             if (bid.relatedLots.containsAny(lotsIds)) {
                 val bidCopy = bid.copy(
-                    date = localNowUTC(),
+                    date = nowDefaultUTC(),
                     status = Status.INVITED,
                     statusDetails = StatusDetails.EMPTY,
                     value = null,
@@ -1475,7 +1475,7 @@ class BidService(
                     stage = stage,
                     owner = entity.owner,
                     token = entity.token,
-                    createdDate = localNowUTC().toDate(),
+                    createdDate = nowDefaultUTC().toDate(),
                     pendingDate = null
                 )
                 bidsCopy[entityCopy] = bidCopy

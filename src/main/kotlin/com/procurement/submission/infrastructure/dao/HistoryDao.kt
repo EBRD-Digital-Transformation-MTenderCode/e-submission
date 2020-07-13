@@ -4,10 +4,10 @@ import com.datastax.driver.core.Session
 import com.datastax.driver.core.querybuilder.QueryBuilder.eq
 import com.datastax.driver.core.querybuilder.QueryBuilder.insertInto
 import com.datastax.driver.core.querybuilder.QueryBuilder.select
+import com.procurement.submission.domain.extension.nowDefaultUTC
 import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.entity.HistoryEntity
-import com.procurement.submission.utils.localNowUTC
 import com.procurement.submission.utils.toJson
 import org.springframework.stereotype.Service
 
@@ -33,7 +33,7 @@ class HistoryDao(private val session: Session) {
         val entity = HistoryEntity(
                 operationId = operationId,
                 command = command,
-                operationDate = localNowUTC().toDate(),
+                operationDate = nowDefaultUTC().toDate(),
                 jsonData = toJson(response))
 
         val insert = insertInto(HISTORY_TABLE)
