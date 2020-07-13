@@ -1,8 +1,12 @@
-package com.procurement.submission.controller
+package com.procurement.submission.infrastructure.web.controller
 
 import com.procurement.submission.exception.EnumException
 import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.model.dto.bpe.*
+import com.procurement.submission.model.dto.bpe.CommandMessage
+import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.bpe.getEnumExceptionResponseDto
+import com.procurement.submission.model.dto.bpe.getErrorExceptionResponseDto
+import com.procurement.submission.model.dto.bpe.getExceptionResponseDto
 import com.procurement.submission.service.CommandService
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
@@ -11,7 +15,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.annotation.Validated
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.ResponseBody
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 
 @Validated
 @RestController
