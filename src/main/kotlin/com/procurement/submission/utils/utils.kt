@@ -18,8 +18,6 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField
-import java.util.*
-
 
 private object JsonMapper {
 
@@ -58,11 +56,6 @@ private object JsonMapper {
 }
 
 /*Date utils*/
-
-
-fun Date.toLocal(): LocalDateTime {
-    return LocalDateTime.ofInstant(this.toInstant(), ZoneOffset.UTC)
-}
 
 fun localNowUTC(): LocalDateTime {
     return LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)

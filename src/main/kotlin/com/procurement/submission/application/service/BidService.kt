@@ -41,6 +41,7 @@ import com.procurement.submission.application.model.data.bid.update.BidUpdateCon
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
 import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.extension.toDate
+import com.procurement.submission.domain.extension.toLocal
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
@@ -103,7 +104,6 @@ import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.containsAny
 import com.procurement.submission.utils.localNowUTC
 import com.procurement.submission.utils.toJson
-import com.procurement.submission.utils.toLocal
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
