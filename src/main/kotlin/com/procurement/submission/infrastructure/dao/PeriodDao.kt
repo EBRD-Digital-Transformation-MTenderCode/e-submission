@@ -4,8 +4,8 @@ import com.datastax.driver.core.Session
 import com.datastax.driver.core.querybuilder.QueryBuilder.eq
 import com.datastax.driver.core.querybuilder.QueryBuilder.insertInto
 import com.datastax.driver.core.querybuilder.QueryBuilder.select
-import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.application.exception.ErrorException
+import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.model.entity.PeriodEntity
 import org.springframework.stereotype.Service
 

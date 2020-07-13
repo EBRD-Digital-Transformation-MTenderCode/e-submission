@@ -1,7 +1,7 @@
 package com.procurement.submission.application.service
 
-import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.application.exception.ErrorException
+import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
@@ -26,19 +26,29 @@ class PeriodService(private val periodDao: PeriodDao,
 ) {
 
     fun periodValidation(cm: CommandMessage): ResponseDto {
-        val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
-        val pmd = cm.context.pmd ?: throw ErrorException(ErrorType.CONTEXT)
+        val country = cm.context.country ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val pmd = cm.context.pmd ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
         val tenderPeriod = toObject(PeriodRq::class.java, cm.data).tenderPeriod
         val startDate = tenderPeriod.startDate
         val endDate = tenderPeriod.endDate
 
-        if (!checkInterval(country, pmd, startDate, endDate)) throw ErrorException(ErrorType.INVALID_PERIOD)
+        if (!checkInterval(country, pmd, startDate, endDate)) throw ErrorException(
+            ErrorType.INVALID_PERIOD
+        )
         return ResponseDto(data = "Period is valid.")
     }
 
     fun savePeriod(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
         val tenderPeriod = toObject(PeriodRq::class.java, cm.data).tenderPeriod
         val startDate = tenderPeriod.startDate
         val endDate = tenderPeriod.endDate
@@ -53,8 +63,12 @@ class PeriodService(private val periodDao: PeriodDao,
     }
 
     fun saveNewPeriod(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
         val dto = toObject(SaveNewPeriodRq::class.java, cm.data)
         val oldPeriod = getPeriodEntity(cpId, stage)
         val tenderInterval = ChronoUnit.SECONDS.between(oldPeriod.startDate.toLocal(), oldPeriod.endDate.toLocal())
@@ -70,32 +84,48 @@ class PeriodService(private val periodDao: PeriodDao,
     }
 
     fun getPeriod(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
 
         val entity = getPeriodEntity(cpId, stage)
         return ResponseDto(data = Period(entity.startDate.toLocal(), entity.endDate.toLocal()))
     }
 
     fun checkPeriod(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
         val dto = toObject(CheckPeriodRq::class.java, cm.data)
-        val setExtendedPeriodRq = dto.setExtendedPeriod ?: throw ErrorException(ErrorType.CONTEXT)
-        val isEnquiryPeriodChanged = dto.isEnquiryPeriodChanged ?: throw ErrorException(ErrorType.CONTEXT)
+        val setExtendedPeriodRq = dto.setExtendedPeriod ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val isEnquiryPeriodChanged = dto.isEnquiryPeriodChanged ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
         val enquiryEndDateRq = dto.enquiryPeriod.endDate
         val tenderEndDateRq = dto.tenderPeriod.endDate
 
         val periodEntity = getPeriodEntity(cpId, stage)
         val startDateDb = periodEntity.startDate.toLocal()
         val endDateDb = periodEntity.endDate.toLocal()
-        if (tenderEndDateRq < endDateDb) throw ErrorException(ErrorType.INVALID_PERIOD)
+        if (tenderEndDateRq < endDateDb) throw ErrorException(
+            ErrorType.INVALID_PERIOD
+        )
         val secBetween = ChronoUnit.SECONDS.between(startDateDb, enquiryEndDateRq)
         val eligibleTenderEndDate = endDateDb.plusSeconds(secBetween)
         //a)
         if (!setExtendedPeriodRq) {
             if (isEnquiryPeriodChanged) {
-                if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
+                if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(
+                    ErrorType.INVALID_PERIOD
+                )
                 return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDateRq, endDate = tenderEndDateRq))
             } else {
                 if (tenderEndDateRq > endDateDb) {
@@ -106,7 +136,9 @@ class PeriodService(private val periodDao: PeriodDao,
             }
         } else {
             if (tenderEndDateRq > endDateDb) {
-                if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(ErrorType.INVALID_PERIOD)
+                if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(
+                    ErrorType.INVALID_PERIOD
+                )
                 return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDateRq, endDate = tenderEndDateRq))
             } else if (tenderEndDateRq == endDateDb) {
                 return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDateRq, endDate = eligibleTenderEndDate))
@@ -116,9 +148,15 @@ class PeriodService(private val periodDao: PeriodDao,
     }
 
     fun checkEndDate(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
 
         val tenderPeriod = getPeriodEntity(cpId, stage)
         val startDate = tenderPeriod.startDate.toLocal()
@@ -139,7 +177,9 @@ class PeriodService(private val periodDao: PeriodDao,
     fun checkCurrentDateInPeriod(cpId: String, stage: String, dateTime: LocalDateTime) {
         val periodEntity = getPeriodEntity(cpId, stage)
         val isPeriodValid = (dateTime >= periodEntity.startDate.toLocal() && dateTime <= periodEntity.endDate.toLocal())
-        if (!isPeriodValid) throw ErrorException(ErrorType.INVALID_DATE)
+        if (!isPeriodValid) throw ErrorException(
+            ErrorType.INVALID_DATE
+        )
     }
 
     fun getPeriodEntity(cpId: String, stage: String): PeriodEntity {

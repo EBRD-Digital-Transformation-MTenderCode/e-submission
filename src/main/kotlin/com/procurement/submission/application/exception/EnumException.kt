@@ -1,4 +1,4 @@
-package com.procurement.submission.exception
+package com.procurement.submission.application.exception
 
 data class EnumException(private val enumType: String, val value: String, val values: String) : RuntimeException() {
 

@@ -1,5 +1,4 @@
-package com.procurement.submission.exception
-
+package com.procurement.submission.application.exception
 
 class ErrorException(error: ErrorType, message: String? = null) : RuntimeException(message) {
 

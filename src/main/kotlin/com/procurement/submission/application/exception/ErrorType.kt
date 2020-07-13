@@ -1,4 +1,4 @@
-package com.procurement.submission.exception
+package com.procurement.submission.application.exception
 
 enum class ErrorType constructor(val code: String, val message: String) {
     INVALID_JSON_TYPE("00.00", "Invalid type: "),

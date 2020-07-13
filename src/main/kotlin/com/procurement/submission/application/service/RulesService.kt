@@ -1,7 +1,7 @@
 package com.procurement.submission.application.service
 
-import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.exception.ErrorType
+import com.procurement.submission.application.exception.ErrorException
+import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.infrastructure.dao.RulesDao
 import org.springframework.stereotype.Service
 

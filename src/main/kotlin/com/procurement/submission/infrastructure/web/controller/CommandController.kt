@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.web.controller
 
-import com.procurement.submission.exception.EnumException
-import com.procurement.submission.exception.ErrorException
+import com.procurement.submission.application.exception.EnumException
+import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.infrastructure.service.CommandService
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto

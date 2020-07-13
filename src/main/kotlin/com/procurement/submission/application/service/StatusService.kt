@@ -1,5 +1,7 @@
 package com.procurement.submission.application.service
 
+import com.procurement.submission.application.exception.ErrorException
+import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionRequestData
 import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionResponseData
 import com.procurement.submission.application.model.data.bid.auction.get.GetBidsAuctionContext
@@ -9,8 +11,6 @@ import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
-import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.exception.ErrorType
 import com.procurement.submission.infrastructure.converter.BidData
 import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.dao.BidDao
@@ -52,10 +52,18 @@ class StatusService(private val rulesService: RulesService,
 
 
     fun getBids(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
-        val pmd = cm.context.pmd ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val country = cm.context.country ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val pmd = cm.context.pmd ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         val bids = HashSet<BidDto>()
@@ -157,15 +165,28 @@ class StatusService(private val rulesService: RulesService,
     }
 
     fun updateBidsByLots(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val country = cm.context.country ?: throw ErrorException(ErrorType.CONTEXT)
-        val pmd = cm.context.pmd ?: throw ErrorException(ErrorType.CONTEXT)
-        val awardCriteria = AwardCriteria.creator(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val country = cm.context.country ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val pmd = cm.context.pmd ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val awardCriteria = AwardCriteria.creator(cm.context.awardCriteria ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        )
         val dto = toObject(UpdateBidsByLotsRq::class.java, cm.data)
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
+        if (bidEntities.isEmpty()) throw ErrorException(
+            ErrorType.BID_NOT_FOUND
+        )
         val pendingBidsSet = getPendingBids(bidEntities)
         val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
         val relatedLotsFromBidsList = getRelatedLotsListFromBids(pendingBidsSet)
@@ -207,8 +228,12 @@ class StatusService(private val rulesService: RulesService,
     }
 
     fun updateBidsByAwardStatus(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
         val dto = toObject(UpdateBidsByAwardStatusRq::class.java, cm.data)
 
         val bidId = dto.bidId
@@ -245,11 +270,15 @@ class StatusService(private val rulesService: RulesService,
     }
 
     fun setFinalStatuses(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
         val stage = "EV"
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
+        if (bidEntities.isEmpty()) throw ErrorException(
+            ErrorType.BID_NOT_FOUND
+        )
         val bids = getBidsFromEntities(bidEntities)
         for (bid in bids) {
             bid.apply {
@@ -267,17 +296,33 @@ class StatusService(private val rulesService: RulesService,
     }
 
     fun bidWithdrawn(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val owner = cm.context.owner ?: throw ErrorException(ErrorType.CONTEXT)
-        val token = cm.context.token ?: throw ErrorException(ErrorType.CONTEXT)
-        val bidId = cm.context.id ?: throw ErrorException(ErrorType.CONTEXT)
-        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val owner = cm.context.owner ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val token = cm.context.token ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val bidId = cm.context.id ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val dateTime = cm.context.startDate?.toLocal() ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
 
         periodService.checkCurrentDateInPeriod(cpId, stage, dateTime)
         val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
-        if (entity.token.toString() != token) throw ErrorException(ErrorType.INVALID_TOKEN)
-        if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
+        if (entity.token.toString() != token) throw ErrorException(
+            ErrorType.INVALID_TOKEN
+        )
+        if (entity.owner != owner) throw ErrorException(
+            ErrorType.INVALID_OWNER
+        )
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
         checkStatusesBidUpdate(bid)
         bid.apply {
@@ -292,9 +337,15 @@ class StatusService(private val rulesService: RulesService,
     }
 
     fun prepareBidsCancellation(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val phase = cm.context.phase ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val phase = cm.context.phase ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
@@ -312,9 +363,15 @@ class StatusService(private val rulesService: RulesService,
     }
 
     fun bidsCancellation(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val phase = cm.context.phase ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val phase = cm.context.phase ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
@@ -333,9 +390,16 @@ class StatusService(private val rulesService: RulesService,
     }
 
     fun getDocsOfConsideredBid(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val stage = cm.context.stage ?: throw ErrorException(ErrorType.CONTEXT)
-        val awardCriteria = AwardCriteria.creator(cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT))
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val stage = cm.context.stage ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val awardCriteria = AwardCriteria.creator(cm.context.awardCriteria ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        )
         val dto = toObject(GetDocsOfConsideredBidRq::class.java, cm.data)
         return if (awardCriteria == AwardCriteria.PRICE_ONLY && dto.consideredBidId != null) {
             val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(dto.consideredBidId))
@@ -345,19 +409,31 @@ class StatusService(private val rulesService: RulesService,
     }
 
     fun checkTokenOwner(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(ErrorType.CONTEXT)
-        val owner = cm.context.owner ?: throw ErrorException(ErrorType.CONTEXT)
-        val token = cm.context.token ?: throw ErrorException(ErrorType.CONTEXT)
+        val cpId = cm.context.cpid ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val owner = cm.context.owner ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
+        val token = cm.context.token ?: throw ErrorException(
+            ErrorType.CONTEXT
+        )
         val dto = toObject(RelatedBidRq::class.java, cm.data)
         val bidIds = dto.relatedBids
         val stage = "EV"
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
+        if (bidEntities.isEmpty()) throw ErrorException(
+            ErrorType.BID_NOT_FOUND
+        )
         val tokens = bidEntities.asSequence()
                 .filter { bidIds.contains(it.bidId.toString()) }
                 .map { it.token }.toSet()
-        if (!tokens.contains(UUID.fromString(token))) throw ErrorException(ErrorType.INVALID_TOKEN)
-        if (bidEntities[0].owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
+        if (!tokens.contains(UUID.fromString(token))) throw ErrorException(
+            ErrorType.INVALID_TOKEN
+        )
+        if (bidEntities[0].owner != owner) throw ErrorException(
+            ErrorType.INVALID_OWNER
+        )
         return ResponseDto(data = "ok")
     }
 
@@ -370,8 +446,12 @@ class StatusService(private val rulesService: RulesService,
     }
 
     private fun checkStatusesBidUpdate(bid: Bid) {
-        if (bid.status != Status.PENDING && bid.status != Status.INVITED) throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
-        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
+        if (bid.status != Status.PENDING && bid.status != Status.INVITED) throw ErrorException(
+            ErrorType.INVALID_STATUSES_FOR_UPDATE
+        )
+        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(
+            ErrorType.INVALID_STATUSES_FOR_UPDATE
+        )
     }
 
     private fun getBidsFromEntities(bidEntities: List<BidEntity>): List<Bid> {
