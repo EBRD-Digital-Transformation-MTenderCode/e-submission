@@ -2,26 +2,17 @@ package com.procurement.submission.domain.model.enums
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
-import com.procurement.submission.exception.EnumException
 
-enum class TypeOfSupplier(@JsonValue val value: String) {
+enum class TypeOfSupplier(@JsonValue override val key: String) : EnumElementProvider.Key {
     COMPANY("company"),
     INDIVIDUAL("individual");
 
-    override fun toString(): String {
-        return this.value
-    }
+    override fun toString(): String = key
 
-    companion object {
-        private val elements: Map<String, TypeOfSupplier> = values().associateBy { it.value.toUpperCase() }
+    companion object : EnumElementProvider<TypeOfSupplier>(info = info()) {
 
         @JvmStatic
         @JsonCreator
-        fun fromString(value: String): TypeOfSupplier = elements[value.toUpperCase()]
-            ?: throw EnumException(
-                enumType = TypeOfSupplier::class.java.canonicalName,
-                value = value,
-                values = values().joinToString { it.value }
-            )
+        fun creator(name: String) = TypeOfSupplier.orThrow(name)
     }
 }
