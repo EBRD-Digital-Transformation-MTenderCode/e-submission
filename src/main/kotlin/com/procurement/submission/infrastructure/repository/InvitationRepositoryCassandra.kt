@@ -1,5 +1,6 @@
 package com.procurement.submission.infrastructure.repository
 
+import com.datastax.driver.core.BatchStatement
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.Session
 import com.procurement.submission.application.repository.InvitationRepository
@@ -117,4 +118,28 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
             )
         }
     )
+
+    override fun saveAll(cpid: Cpid, invitations: List<Invitation>): MaybeFail<Fail.Incident> {
+
+        val statement = BatchStatement()
+
+        invitations.forEach { invitation ->
+            val data = generateJsonData(invitation)
+                .doReturn { fail -> return MaybeFail.fail(fail) }
+
+            statement.add(
+                preparedSaveCQL.bind()
+                    .apply {
+                        setString(CPID_COLUMN, cpid.toString())
+                        setString(ID_COLUMN, invitation.id.toString())
+                        setString(JSON_DATA_COLUMN, data)
+                    }
+            )
+        }
+
+        statement.tryExecute(session)
+            .doOnError { fail -> return MaybeFail.fail(fail) }
+
+        return MaybeFail.none()
+    }
 }
