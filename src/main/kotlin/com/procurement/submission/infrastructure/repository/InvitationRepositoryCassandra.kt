@@ -22,7 +22,7 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
 
     companion object {
         private const val KEYSPACE = "ocds"
-        private const val INVITATION_TABLE = "submission_history"
+        private const val INVITATION_TABLE = "submission_invitation"
         private const val CPID_COLUMN = "cpid"
         private const val ID_COLUMN = "id"
         const val JSON_DATA_COLUMN = "json_data"
