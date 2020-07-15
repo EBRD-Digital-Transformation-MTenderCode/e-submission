@@ -21,8 +21,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class InvitationService(private val invitationRepository: InvitationRepository) {
-    fun doInvitations(params: DoInvitationsParams): Result<DoInvitationsResult?, Fail> {
 
+    fun doInvitations(params: DoInvitationsParams): Result<DoInvitationsResult?, Fail> {
         checkForMissingSubmissions(params).doOnFail { error -> return error.asFailure() }
         val submissionsByIds = params.submissions.details.associateBy { it.id }
 
