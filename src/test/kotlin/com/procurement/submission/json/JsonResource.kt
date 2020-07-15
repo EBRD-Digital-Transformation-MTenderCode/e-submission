@@ -2,26 +2,18 @@ package com.procurement.submission.json
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.procurement.submission.infrastructure.configuration.ObjectMapperConfig
 import com.procurement.submission.json.exception.JsonBindingException
 import com.procurement.submission.json.exception.JsonFileNotFoundException
 import com.procurement.submission.json.exception.JsonMappingException
 import com.procurement.submission.json.exception.JsonParsingException
-import com.procurement.submission.model.dto.databinding.IntDeserializer
-import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
-import com.procurement.submission.model.dto.databinding.JsonDateSerializer
-import com.procurement.submission.model.dto.databinding.StringsDeserializer
 import java.io.IOException
 import java.io.StringWriter
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.time.LocalDateTime
 
 typealias JSON = String
 
@@ -79,24 +71,6 @@ private object ClassPathResource {
 
 object JsonMapper {
     val mapper = ObjectMapper().apply {
-        val module = SimpleModule()
-        module.addSerializer(LocalDateTime::class.java, JsonDateSerializer())
-        module.addDeserializer(LocalDateTime::class.java, JsonDateDeserializer())
-        module.addDeserializer(String::class.java, StringsDeserializer())
-        module.addDeserializer(Int::class.java, IntDeserializer())
-        registerModule(module)
-        registerKotlinModule()
-        registerModule(extendModule())
-
-        configure(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS, true)
-        configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
-        configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        ObjectMapperConfig(this)
     }
-
-    private fun extendModule() =
-        SimpleModule().apply {
-            addDeserializer(String::class.java, StringsDeserializer())
-            addDeserializer(Int::class.java, IntDeserializer())
-        }
 }
