@@ -13,14 +13,16 @@ import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.QualificationStatusDetails
 import com.procurement.submission.domain.model.invitation.Invitation
-import com.procurement.submission.domain.model.invitation.InvitationId
 import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
 import org.springframework.stereotype.Service
 
 @Service
-class InvitationService(private val invitationRepository: InvitationRepository) {
+class InvitationService(
+    private val invitationRepository: InvitationRepository,
+    private val generationService: GenerationService
+) {
 
     fun doInvitations(params: DoInvitationsParams): Result<DoInvitationsResult?, Fail> {
         checkForMissingSubmissions(params).doOnFail { error -> return error.asFailure() }
@@ -90,7 +92,7 @@ class InvitationService(private val invitationRepository: InvitationRepository) 
         qualification: DoInvitationsParams.Qualification,
         submissionsByIds: Map<SubmissionId, DoInvitationsParams.Submissions.Detail>
     ) = Invitation(
-        id = InvitationId.generate(),
+        id = generationService.generateInvitationId(),
         status = InvitationStatus.PENDING,
         date = params.date,
         relatedQualification = qualification.id,
