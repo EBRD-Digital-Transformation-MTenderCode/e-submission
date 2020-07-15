@@ -13,12 +13,15 @@ import com.procurement.submission.json.exception.JsonFileNotFoundException
 import com.procurement.submission.json.exception.JsonMappingException
 import com.procurement.submission.json.exception.JsonParsingException
 import com.procurement.submission.model.dto.databinding.IntDeserializer
+import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
+import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import com.procurement.submission.model.dto.databinding.StringsDeserializer
 import java.io.IOException
 import java.io.StringWriter
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.LocalDateTime
 
 typealias JSON = String
 
@@ -76,6 +79,12 @@ private object ClassPathResource {
 
 object JsonMapper {
     val mapper = ObjectMapper().apply {
+        val module = SimpleModule()
+        module.addSerializer(LocalDateTime::class.java, JsonDateSerializer())
+        module.addDeserializer(LocalDateTime::class.java, JsonDateDeserializer())
+        module.addDeserializer(String::class.java, StringsDeserializer())
+        module.addDeserializer(Int::class.java, IntDeserializer())
+        registerModule(module)
         registerKotlinModule()
         registerModule(extendModule())
 
