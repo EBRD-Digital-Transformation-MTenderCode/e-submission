@@ -1,4 +1,4 @@
-package com.procurement.submission.infrastructure.configuration.properties
+package com.procurement.submission.infrastructure.configuration
 
 import com.procurement.submission.application.service.Logger
 import com.procurement.submission.infrastructure.service.CustomLogger

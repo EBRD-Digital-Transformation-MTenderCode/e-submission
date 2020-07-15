@@ -1,4 +1,4 @@
-package com.procurement.submission.infrastructure.configuration.properties
+package com.procurement.submission.infrastructure.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.procurement.submission.application.service.Transform
