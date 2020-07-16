@@ -23,9 +23,7 @@ fun DoInvitationsRequest.Submissions.convert() = DoInvitationsParams.Submissions
 
 fun DoInvitationsRequest.Submissions.Detail.convert() = DoInvitationsParams.Submissions.Detail.tryCreate(
     id = id,
-    candidates = candidates.mapResult { it.convert() }.orForwardFail { fail -> return fail }
-)
-
-fun DoInvitationsRequest.Submissions.Detail.Candidate.convert() = DoInvitationsParams.Submissions.Detail.Candidate.tryCreate(
-    id = id, name = name
+    candidates = candidates.map { candidate ->
+        DoInvitationsParams.Submissions.Detail.Candidate( id = candidate.id, name = candidate.name)
+    }
 )

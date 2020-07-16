@@ -121,16 +121,10 @@ class DoInvitationsParams private constructor(
                 }
             }
 
-            class Candidate private constructor(
+            data class Candidate(
                 val id: String,
                 val name: String
-            ) {
-                companion object {
-                    fun tryCreate(
-                        id: String, name: String
-                    ): Result<Candidate, DataErrors> = Candidate(id = id, name = name).asSuccess()
-                }
-            }
+            )
         }
     }
 }

@@ -165,10 +165,10 @@ class InvitationServiceTest {
                         DoInvitationsParams.Submissions.Detail.tryCreate(
                             id = submissionId,
                             candidates = listOf(
-                                DoInvitationsParams.Submissions.Detail.Candidate.tryCreate(
+                                DoInvitationsParams.Submissions.Detail.Candidate(
                                     id = "candidate.id",
                                     name = "candidate.name"
-                                ).get
+                                )
                             )
                         ).get
                     )
@@ -191,10 +191,10 @@ class InvitationServiceTest {
                     DoInvitationsParams.Submissions.Detail.tryCreate(
                         id = SubmissionId.generate().toString(),
                         candidates = listOf(
-                            DoInvitationsParams.Submissions.Detail.Candidate.tryCreate(
+                            DoInvitationsParams.Submissions.Detail.Candidate(
                                 id = "candidate.id",
                                 name = "candidate.name"
-                            ).get
+                            )
                         )
                     ).get
                 )
