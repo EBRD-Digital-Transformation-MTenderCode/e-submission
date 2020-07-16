@@ -55,7 +55,6 @@ class DoInvitationsParams private constructor(
         val relatedSubmission: SubmissionId
     ) {
         companion object {
-            private const val RELATED_SUBMISSION_ATTRIBUTE_NAME = "qualifications.relatedSubmission"
             private const val QUALIFICATIONS_STATUS_DETAILS_ATTRIBUTE_NAME = "qualifications.statusDetails"
             private const val QUALIFICATIONS_ID_ATTRIBUTE_NAME = "qualifications.id"
 
@@ -83,16 +82,10 @@ class DoInvitationsParams private constructor(
                     allowedEnums = allowedStatusDetails
                 ).orForwardFail { fail -> return fail }
 
-                val relatedSubmissionParsed = parseSubmissionId(
-                    value = relatedSubmission,
-                    attributeName = RELATED_SUBMISSION_ATTRIBUTE_NAME
-                )
-                    .orForwardFail { fail -> return fail }
-
                 return Qualification(
                     id = idParsed,
                     statusDetails = statusDetailsParsed,
-                    relatedSubmission = relatedSubmissionParsed
+                    relatedSubmission = SubmissionId.create(relatedSubmission)
                 ).asSuccess()
             }
         }
@@ -116,19 +109,15 @@ class DoInvitationsParams private constructor(
             val candidates: List<Candidate>
         ) {
             companion object {
-                private const val SUBMISSIONS_DETAILS_ID_ATTRIBUTE_NAME = "submissions.details.id"
                 private const val SUBMISSIONS_DETAILS_CANDIDATES_ATTRIBUTE_NAME = "submissions.details.candidates"
 
                 fun tryCreate(
                     id: String, candidates: List<Candidate>
                 ): Result<Detail, DataErrors> {
-                    val idParsed = parseSubmissionId(value = id, attributeName = SUBMISSIONS_DETAILS_ID_ATTRIBUTE_NAME)
-                        .orForwardFail { fail -> return fail }
-
                     candidates.validate(notEmptyRule(SUBMISSIONS_DETAILS_CANDIDATES_ATTRIBUTE_NAME))
                         .orForwardFail { fail -> return fail }
 
-                    return Detail(id = idParsed, candidates = candidates).asSuccess()
+                    return Detail(id = SubmissionId.create(id), candidates = candidates).asSuccess()
                 }
             }
 

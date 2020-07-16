@@ -12,7 +12,6 @@ import com.procurement.submission.domain.model.enums.EnumElementProvider
 import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
 import com.procurement.submission.domain.model.enums.QualificationStatusDetails
 import com.procurement.submission.domain.model.qualification.QualificationId
-import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.domain.model.tryOwner
 import java.time.LocalDateTime
 
@@ -84,19 +83,6 @@ fun parseOwner(value: String): Result<Owner, DataErrors.Validation.DataFormatMis
             )
         }
         .asSuccess()
-
-fun parseSubmissionId(
-    value: String, attributeName: String
-): Result<SubmissionId, DataErrors.Validation.DataMismatchToPattern> {
-    val id = SubmissionId.tryCreateOrNull(value)
-        ?: return DataErrors.Validation.DataMismatchToPattern(
-            name = attributeName,
-            pattern = SubmissionId.pattern,
-            actualValue = value
-        ).asFailure()
-
-    return id.asSuccess()
-}
 
 fun parseQualificationId(
     value: String, attributeName: String
