@@ -26,29 +26,9 @@ class InvitationService(
 
     fun doInvitations(params: DoInvitationsParams): Result<DoInvitationsResult?, Fail> {
         checkForMissingSubmissions(params).doOnFail { error -> return error.asFailure() }
-        val submissionsByIds = params.submissions.details.associateBy { it.id }
 
-        val updatedAndNewInvitations = mutableListOf<Invitation>()
-
-        params.qualifications.forEach { qualification ->
-            val linkedInvitations = getInvitationsBy(cpid = params.cpid, qualificationId = qualification.id)
-                .orForwardFail { fail -> return fail }
-
-            when (qualification.statusDetails) {
-                QualificationStatusDetails.ACTIVE -> {
-                    if (pendingInvitationAbsent(linkedInvitations)) {
-                        val createdInvitation = createInvitation(params, qualification, submissionsByIds)
-                        updatedAndNewInvitations.add(createdInvitation)
-                    }
-                }
-                QualificationStatusDetails.UNSUCCESSFUL -> {
-                    val updatedInvitations = updateInvitations(linkedInvitations)
-                    updatedAndNewInvitations.addAll(updatedInvitations)
-                }
-                QualificationStatusDetails.CONSIDERATION,
-                QualificationStatusDetails.AWAITING -> Unit
-            }
-        }
+        val updatedAndNewInvitations = getUpdatedAndNewInvitations(params)
+            .orForwardFail { fail -> return fail }
 
         if (updatedAndNewInvitations.isEmpty())
             return null.asSuccess()
@@ -71,6 +51,32 @@ class InvitationService(
                 )
             }
         ).asSuccess()
+    }
+
+    fun getUpdatedAndNewInvitations(params: DoInvitationsParams): Result<List<Invitation>, Fail> {
+        val submissionsByIds = params.submissions.details.associateBy { it.id }
+        val updatedAndNewInvitations = mutableListOf<Invitation>()
+
+        params.qualifications.forEach { qualification ->
+            val linkedInvitations = getInvitationsBy(cpid = params.cpid, qualificationId = qualification.id)
+                .orForwardFail { fail -> return fail }
+
+            when (qualification.statusDetails) {
+                QualificationStatusDetails.ACTIVE -> {
+                    if (pendingInvitationAbsent(linkedInvitations)) {
+                        val createdInvitation = createInvitation(params, qualification, submissionsByIds)
+                        updatedAndNewInvitations.add(createdInvitation)
+                    }
+                }
+                QualificationStatusDetails.UNSUCCESSFUL -> {
+                    val updatedInvitations = updateInvitations(linkedInvitations)
+                    updatedAndNewInvitations.addAll(updatedInvitations)
+                }
+                QualificationStatusDetails.CONSIDERATION,
+                QualificationStatusDetails.AWAITING -> Unit
+            }
+        }
+        return updatedAndNewInvitations.toList().asSuccess()
     }
 
     private fun updateInvitations(
