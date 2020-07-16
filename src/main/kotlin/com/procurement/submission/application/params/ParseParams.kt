@@ -10,6 +10,8 @@ import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.enums.EnumElementProvider
 import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
+import com.procurement.submission.domain.model.enums.OperationType
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.QualificationStatusDetails
 import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.tryOwner
@@ -41,6 +43,32 @@ fun parseQualificationStatusDetails(
     value: String, allowedEnums: List<QualificationStatusDetails>, attributeName: String
 ): Result<QualificationStatusDetails, DataErrors> =
     parseEnum(value = value, allowedEnums = allowedEnums, attributeName = attributeName, target = QualificationStatusDetails)
+
+fun parseOperationType(
+    value: String,
+    allowedEnums: List<OperationType>,
+    attributeName: String = "operationType"
+): Result<OperationType, DataErrors> =
+    parseEnum(value = value, allowedEnums = allowedEnums, attributeName = attributeName, target = OperationType)
+
+fun parsePmd(
+    value: String,
+    allowedEnums: List<ProcurementMethod>,
+    attributeName: String = "pmd"
+): Result<ProcurementMethod, DataErrors>
+    {
+        val allowed = allowedEnums.toSet()
+        return ProcurementMethod.orNull(value)
+            ?.takeIf { it in allowed }
+            ?.asSuccess()
+            ?: Result.failure(
+                DataErrors.Validation.UnknownValue(
+                    name = attributeName,
+                    expectedValues = allowed.map { it.name },
+                    actualValue = value
+                )
+            )
+    }
 
 private fun <T> parseEnum(
     value: String, allowedEnums: Collection<T>, attributeName: String, target: EnumElementProvider<T>
