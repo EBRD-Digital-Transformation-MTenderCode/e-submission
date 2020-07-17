@@ -4,10 +4,12 @@ import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.Ocid
 import java.time.LocalDateTime
 
-data class SetTenderPeriodParams(
+class SetTenderPeriodParams private constructor(
     val cpid: Cpid,
+    val ocid: Ocid,
     val date: LocalDateTime,
     val tender: Tender
 ) {
@@ -15,10 +17,14 @@ data class SetTenderPeriodParams(
 
         fun tryCreate(
             cpid: String,
+            ocid: String,
             date: String,
             tender: Tender
         ): Result<SetTenderPeriodParams, DataErrors> {
             val cpidParsed = parseCpid(value = cpid)
+                .orForwardFail { error -> return error }
+
+            val ocidParsed = parseOcid(value = ocid)
                 .orForwardFail { error -> return error }
 
             val dateParsed = parseDate(value = date, attributeName = "date")
@@ -26,6 +32,7 @@ data class SetTenderPeriodParams(
 
             return SetTenderPeriodParams(
                 cpid = cpidParsed,
+                ocid = ocidParsed,
                 date = dateParsed,
                 tender = tender
             ).asSuccess()
@@ -35,7 +42,7 @@ data class SetTenderPeriodParams(
     data class Tender(
         val tenderPeriod: TenderPeriod
     ) {
-        data class TenderPeriod(
+        class TenderPeriod private constructor(
             val endDate: LocalDateTime
         ) {
             companion object {
