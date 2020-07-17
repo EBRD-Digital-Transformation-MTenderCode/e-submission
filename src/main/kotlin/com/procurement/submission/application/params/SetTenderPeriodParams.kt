@@ -36,10 +36,17 @@ data class SetTenderPeriodParams(
         val tenderPeriod: TenderPeriod
     ) {
         data class TenderPeriod(
-            val endDate: String
-        ){
-            companion object{
-                fun tryCreate(): Result
+            val endDate: LocalDateTime
+        ) {
+            companion object {
+                private const val TENDER_PERIOD_END_DATE_ATTRIBUTE_NAME = "tender.tenderPeriod.endDate"
+
+                fun tryCreate(endDate: String): Result<TenderPeriod, DataErrors> {
+                    val endDateParsed = parseDate(endDate, TENDER_PERIOD_END_DATE_ATTRIBUTE_NAME)
+                        .orForwardFail { fail -> return fail }
+
+                    return TenderPeriod(endDateParsed).asSuccess()
+                }
             }
         }
     }
