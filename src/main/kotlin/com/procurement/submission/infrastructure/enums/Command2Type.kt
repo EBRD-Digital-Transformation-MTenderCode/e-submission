@@ -7,7 +7,8 @@ import com.procurement.submission.domain.model.enums.EnumElementProvider
 
 enum class Command2Type(@JsonValue override val key: String) : Action, EnumElementProvider.Key {
 
-    DO_INVITATIONS("doInvitations");
+    DO_INVITATIONS("doInvitations"),
+    VALIDATE_TENDER_PERIOD("validateTenderPeriod");
 
     override fun toString(): String = key
 
