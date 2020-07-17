@@ -1,15 +1,15 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.model.data.OpenBidsForPublishingData
-import com.procurement.submission.application.model.data.OpenBidsForPublishingResult
+import com.procurement.submission.application.exception.ErrorException
+import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.application.model.data.bid.open.OpenBidsForPublishingData
+import com.procurement.submission.application.model.data.bid.open.OpenBidsForPublishingResult
+import com.procurement.submission.domain.extension.mapIfNotEmpty
+import com.procurement.submission.domain.extension.orThrow
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.lot.LotId
-import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.exception.ErrorType
-import com.procurement.submission.lib.mapIfNotEmpty
-import com.procurement.submission.lib.orThrow
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.dto.request.OpenBidsForPublishingRequest
 import com.procurement.submission.model.dto.response.OpenBidsForPublishingResponse
@@ -397,7 +397,7 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                         .let { details ->
                             OpenBidsForPublishingResult.Bid.Tenderer.Details(
                                 typeOfSupplier = details.typeOfSupplier
-                                    ?.let { TypeOfSupplier.fromString(it) },
+                                    ?.let { TypeOfSupplier.creator(it) },
                                 mainEconomicActivities = details.mainEconomicActivities
                                     ?.map { mainEconomicActivity ->
                                         OpenBidsForPublishingResult.Bid.Tenderer.Details.MainEconomicActivity(
@@ -408,7 +408,7 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                                         )
                                     }
                                     .orEmpty(),
-                                scale = Scale.fromString(details.scale),
+                                scale = Scale.creator(details.scale),
                                 permits = details.permits
                                     ?.map { permit ->
                                         OpenBidsForPublishingResult.Bid.Tenderer.Details.Permit(

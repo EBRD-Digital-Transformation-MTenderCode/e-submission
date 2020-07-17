@@ -1,6 +1,6 @@
 package com.procurement.submission
 
-import com.procurement.submission.config.ApplicationConfig
+import com.procurement.submission.infrastructure.configuration.ApplicationConfig
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 

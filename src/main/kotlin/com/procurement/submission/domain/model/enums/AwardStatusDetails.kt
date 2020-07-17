@@ -1,9 +1,9 @@
 package com.procurement.submission.domain.model.enums
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
-import com.procurement.submission.exception.EnumException
 
-enum class AwardStatusDetails(@JsonValue val value: String) {
+enum class AwardStatusDetails(@JsonValue override val key: String) : EnumElementProvider.Key {
     PENDING("pending"),
     ACTIVE("active"),
     UNSUCCESSFUL("unsuccessful"),
@@ -13,18 +13,12 @@ enum class AwardStatusDetails(@JsonValue val value: String) {
     NO_OFFERS_RECEIVED("noOffersReceived"),
     LOT_CANCELLED("lotCancelled");
 
-    override fun toString(): String {
-        return this.value
-    }
+    override fun toString(): String = key
 
-    companion object {
-        private val elements: Map<String, AwardStatusDetails> = values().associateBy { it.value.toUpperCase() }
+    companion object : EnumElementProvider<AwardStatusDetails>(info = info()) {
 
-        fun fromString(value: String): AwardStatusDetails = elements[value.toUpperCase()]
-            ?: throw EnumException(
-                enumType = AwardStatusDetails::class.java.canonicalName,
-                value = value,
-                values = values().joinToString { it.value }
-            )
+        @JvmStatic
+        @JsonCreator
+        fun creator(name: String) = AwardStatusDetails.orThrow(name)
     }
 }
