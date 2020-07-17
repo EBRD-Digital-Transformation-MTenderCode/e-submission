@@ -35,7 +35,7 @@ class InvitationServiceTest {
 
     val invitationRepository: InvitationRepository = mock()
     val generationService: GenerationService = mock()
-    val invitationService = InvitationService(invitationRepository, generationService)
+    val invitationService = InvitationServiceImpl(invitationRepository, generationService)
 
     @Nested
     inner class DoInvitations {

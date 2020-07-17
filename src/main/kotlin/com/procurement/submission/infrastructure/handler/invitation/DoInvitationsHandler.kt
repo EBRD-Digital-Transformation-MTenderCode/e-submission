@@ -2,7 +2,7 @@ package com.procurement.submission.infrastructure.handler.invitation
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.procurement.submission.application.repository.HistoryRepository
-import com.procurement.submission.application.service.InvitationService
+import com.procurement.submission.application.service.InvitationServiceImpl
 import com.procurement.submission.application.service.Logger
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
@@ -20,7 +20,7 @@ class DoInvitationsHandler(
     logger: Logger,
     historyRepository: HistoryRepository,
     transform: Transform,
-    private val invitationService: InvitationService
+    private val invitationService: InvitationServiceImpl
 ) : AbstractHistoricalHandler2<Command2Type, DoInvitationsResult>(
     logger = logger,
     historyRepository = historyRepository,
