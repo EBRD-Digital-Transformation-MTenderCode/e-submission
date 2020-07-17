@@ -2,11 +2,11 @@ package com.procurement.submission.infrastructure.handler
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.procurement.submission.application.repository.HistoryRepository
-import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.application.service.Logger
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.Action
 import com.procurement.submission.domain.fail.Fail
+import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.infrastructure.repository.HistoryRepositoryCassandra
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
 import com.procurement.submission.infrastructure.web.api.response.ApiSuccessResponse2
@@ -14,7 +14,7 @@ import com.procurement.submission.infrastructure.web.api.response.generator.ApiR
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
 
-abstract class AbstractHistoricalHandler2<ACTION : Action, R : Any>(
+abstract class AbstractHistoricalHandler2<ACTION : Action, R>(
     private val target: Class<R>,
     private val historyRepository: HistoryRepository,
     val transform: Transform,
@@ -51,7 +51,8 @@ abstract class AbstractHistoricalHandler2<ACTION : Action, R : Any>(
         return when (val result = execute(node)) {
             is Result.Success -> {
                 val resultData = result.get
-                historyRepository.saveHistory(id.toString(), action.key, resultData)
+                if (resultData != null)
+                    historyRepository.saveHistory(id.toString(), action.key, resultData)
                 if (logger.isDebugEnabled)
                     logger.debug("${action.key} has been executed. Result: '${transform.trySerialization(result.get)}'")
 
@@ -63,6 +64,6 @@ abstract class AbstractHistoricalHandler2<ACTION : Action, R : Any>(
         }
     }
 
-    abstract fun execute(node: JsonNode): Result<R, Fail>
+    abstract fun execute(node: JsonNode): Result<R?, Fail>
 }
 

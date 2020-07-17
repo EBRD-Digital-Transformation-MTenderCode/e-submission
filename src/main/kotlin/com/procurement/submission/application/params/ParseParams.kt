@@ -3,12 +3,15 @@ package com.procurement.submission.application.params
 import com.procurement.submission.domain.extension.tryParseLocalDateTime
 import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.functional.Result
+import com.procurement.submission.domain.functional.asFailure
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.enums.EnumElementProvider
 import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
+import com.procurement.submission.domain.model.enums.QualificationStatusDetails
+import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.tryOwner
 import java.time.LocalDateTime
 
@@ -33,6 +36,11 @@ fun parseOcid(value: String): Result<Ocid, DataErrors.Validation.DataMismatchToP
                 actualValue = value
             )
         )
+
+fun parseQualificationStatusDetails(
+    value: String, allowedEnums: List<QualificationStatusDetails>, attributeName: String
+): Result<QualificationStatusDetails, DataErrors> =
+    parseEnum(value = value, allowedEnums = allowedEnums, attributeName = attributeName, target = QualificationStatusDetails)
 
 private fun <T> parseEnum(
     value: String, allowedEnums: Collection<T>, attributeName: String, target: EnumElementProvider<T>
@@ -75,3 +83,16 @@ fun parseOwner(value: String): Result<Owner, DataErrors.Validation.DataFormatMis
             )
         }
         .asSuccess()
+
+fun parseQualificationId(
+    value: String, attributeName: String
+): Result<QualificationId, DataErrors.Validation.DataMismatchToPattern> {
+    val id = QualificationId.tryCreateOrNull(value)
+        ?: return DataErrors.Validation.DataMismatchToPattern(
+            name = attributeName,
+            pattern = QualificationId.pattern,
+            actualValue = value
+        ).asFailure()
+
+    return id.asSuccess()
+}

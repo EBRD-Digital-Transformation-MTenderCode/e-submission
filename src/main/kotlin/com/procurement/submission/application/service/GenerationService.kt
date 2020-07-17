@@ -1,6 +1,7 @@
 package com.procurement.submission.application.service
 
 import com.datastax.driver.core.utils.UUIDs
+import com.procurement.submission.domain.model.invitation.InvitationId
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -26,4 +27,6 @@ class GenerationService {
     fun generateBidId(): UUID = UUID.randomUUID()
 
     fun generateRequirementResponseId(): UUID = UUID.randomUUID()
+
+    fun generateInvitationId(): InvitationId = InvitationId.generate()
 }

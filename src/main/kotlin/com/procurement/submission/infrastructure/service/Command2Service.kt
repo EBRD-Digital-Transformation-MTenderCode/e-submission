@@ -2,6 +2,8 @@ package com.procurement.submission.infrastructure.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.procurement.submission.application.service.Logger
+import com.procurement.submission.infrastructure.enums.Command2Type
+import com.procurement.submission.infrastructure.handler.invitation.DoInvitationsHandler
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.response.parser.tryGetAction
@@ -11,7 +13,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class Command2Service(
-    private val logger: Logger
+    private val logger: Logger,
+    private val doInvitationsHandler: DoInvitationsHandler
 ) {
 
     fun execute(node: JsonNode): ApiResponse2 {
@@ -33,6 +36,8 @@ class Command2Service(
                 return generateResponseOnFailure(fail = error, id = id, version = version, logger = logger)
             }
 
-        return TODO()
+        return when(action){
+            Command2Type.DO_INVITATIONS -> doInvitationsHandler.handle(node)
+        }
     }
 }

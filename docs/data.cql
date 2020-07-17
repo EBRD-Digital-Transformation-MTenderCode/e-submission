@@ -68,4 +68,11 @@ INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD'
 //60 sec (min) * 10 = 600 sec
 
 
+CREATE TABLE IF NOT EXISTS  ocds.submission_invitation(
+    cpid      text,
+    id        text,
+    json_data text,
+    primary key (cpid, id)
+);
+
 
