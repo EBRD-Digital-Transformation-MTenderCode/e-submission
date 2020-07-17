@@ -2,15 +2,20 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
 import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.extension.toLocal
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
+import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.ValidationResult
+import com.procurement.submission.domain.functional.asFailure
+import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.functional.asValidationFailure
 import com.procurement.submission.infrastructure.dao.PeriodDao
+import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Period
@@ -264,5 +269,25 @@ class PeriodService(
                 .asValidationFailure()
 
         return ValidationResult.ok()
+    }
+
+    fun setTenderPeriod(params: SetTenderPeriodParams): Result<SetTenderPeriodResult, Fail> {
+        val entity = PeriodEntity(
+            cpId = params.cpid.toString(),
+            stage = params.ocid.stage.toString(),
+            endDate = params.date.toDate(),
+            startDate = params.tender.tenderPeriod.endDate.toDate()
+        )
+        periodDao.trySave(entity = entity)
+            .doOnFail { error -> return error.asFailure() }
+
+        return SetTenderPeriodResult(
+            tender = SetTenderPeriodResult.Tender(
+                tenderPeriod = SetTenderPeriodResult.Tender.TenderPeriod(
+                    startDate = entity.startDate.toLocal(),
+                    endDate = entity.endDate.toLocal()
+                )
+            )
+        ).asSuccess()
     }
 }
