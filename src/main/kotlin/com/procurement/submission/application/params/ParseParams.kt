@@ -55,7 +55,7 @@ fun parsePmd(
     value: String,
     allowedEnums: List<ProcurementMethod>,
     attributeName: String = "pmd"
-): Result<ProcurementMethod, DataErrors>
+): Result<ProcurementMethod, DataErrors.Validation.UnknownValue>
     {
         val allowed = allowedEnums.toSet()
         return ProcurementMethod.orNull(value)
