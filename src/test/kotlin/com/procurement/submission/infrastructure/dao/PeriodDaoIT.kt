@@ -1,15 +1,20 @@
 package com.procurement.submission.infrastructure.dao
 
+import com.datastax.driver.core.BoundStatement
 import com.datastax.driver.core.Cluster
 import com.datastax.driver.core.HostDistance
 import com.datastax.driver.core.PlainTextAuthProvider
 import com.datastax.driver.core.PoolingOptions
 import com.datastax.driver.core.Session
 import com.datastax.driver.core.querybuilder.QueryBuilder
+import com.datastax.driver.core.querybuilder.QueryBuilder.eq
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.doThrow
 import com.nhaarman.mockito_kotlin.spy
+import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.domain.extension.toDate
+import com.procurement.submission.domain.functional.MaybeFail
 import com.procurement.submission.domain.model.Cpid
-import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.enums.Stage
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
@@ -17,6 +22,7 @@ import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import com.procurement.submission.model.entity.PeriodEntity
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -39,7 +45,6 @@ class PeriodDaoIT {
         private const val END_DATE_COLUMN = "end_date"
 
         private val CPID = Cpid.tryCreateOrNull("ocds-t1s2t3-MD-1565251033096")!!
-        private val OCID = Ocid.tryCreateOrNull("ocds-b3wdp1-MD-1581509539187-EV-1581509653044")!!
         private val STAGE = Stage.AC
         private val START_DATE = JsonDateDeserializer.deserialize(JsonDateSerializer.serialize(LocalDateTime.now()))
         private val END_DATE = START_DATE.plusDays(2)
@@ -79,22 +84,34 @@ class PeriodDaoIT {
     @Test
     fun trySave() {
         val expectedPeriod = stubPeriod()
-       periodDao.trySave(expectedPeriod)
+        periodDao.trySave(expectedPeriod)
 
-        val actual = periodDao.getByCpIdAndStage(cpId = expectedPeriod.cpId, stage = expectedPeriod.stage)
+        val actual = findPeriod(cpid = CPID, stage = STAGE)
 
         assertEquals(expectedPeriod, actual)
     }
 
     private fun createKeyspace() {
         session.execute(
-            "CREATE KEYSPACE ${KEYSPACE} " +
+            "CREATE KEYSPACE $KEYSPACE " +
                 "WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};"
         )
     }
 
+    @Test
+    fun findBy_executeException_fail() {
+        doThrow(RuntimeException())
+            .whenever(session)
+            .execute(any<BoundStatement>())
+
+        val expectedPeriod = stubPeriod()
+        val result = periodDao.trySave(expectedPeriod)
+
+        Assertions.assertTrue(result is MaybeFail.Fail)
+    }
+
     private fun dropKeyspace() {
-        session.execute("DROP KEYSPACE ${KEYSPACE};")
+        session.execute("DROP KEYSPACE $KEYSPACE;")
     }
 
     private fun createTable() {
@@ -106,7 +123,8 @@ class PeriodDaoIT {
                         $STAGE_COLUMN text,
                         $START_DATE_COLUMN timestamp,
                         $END_DATE_COLUMN timestamp,
-                        primary key($CPID_COLUMN, $STAGE_COLUMN);
+                        primary key($CPID_COLUMN, $STAGE_COLUMN)
+                    );
             """
         )
     }
@@ -118,15 +136,23 @@ class PeriodDaoIT {
         endDate = END_DATE.toDate()
     )
 
-    private fun insertPeriod(
-        periodEntity: PeriodEntity
-    ) {
-        val record = QueryBuilder.insertInto(KEYSPACE, PERIOD_TABLE)
-            .value(CPID_COLUMN, periodEntity.cpId)
-            .value(STAGE_COLUMN, periodEntity.stage)
-            .value(START_DATE_COLUMN, periodEntity.startDate)
-            .value(END_DATE_COLUMN, periodEntity.endDate)
+    private fun findPeriod(cpid: Cpid, stage: Stage): PeriodEntity {
+        val record = QueryBuilder.select()
+            .all()
+            .from(KEYSPACE, PERIOD_TABLE)
+            .where(eq(CPID_COLUMN, cpid.toString()))
+            .and(eq(STAGE_COLUMN, stage.toString()))
 
-        session.execute(record)
+        val row = session
+            .execute(record)
+            .one()
+
+
+        return PeriodEntity(
+            cpId = row.getString(CPID_COLUMN),
+            stage = row.getString(STAGE_COLUMN),
+            startDate = row.getTimestamp(START_DATE_COLUMN),
+            endDate = row.getTimestamp(END_DATE_COLUMN)
+        )
     }
 }
