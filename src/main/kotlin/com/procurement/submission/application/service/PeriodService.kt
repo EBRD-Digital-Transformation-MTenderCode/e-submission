@@ -275,8 +275,8 @@ class PeriodService(
         val entity = PeriodEntity(
             cpId = params.cpid.toString(),
             stage = params.ocid.stage.toString(),
-            endDate = params.date.toDate(),
-            startDate = params.tender.tenderPeriod.endDate.toDate()
+            startDate = params.date.toDate(),
+            endDate = params.tender.tenderPeriod.endDate.toDate()
         )
         periodDao.trySave(entity = entity)
             .doOnFail { error -> return error.asFailure() }
