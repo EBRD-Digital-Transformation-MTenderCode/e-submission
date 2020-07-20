@@ -34,7 +34,6 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
                       $JSON_DATA_COLUMN
                )
                VALUES(?, ?, ?)
-               IF NOT EXISTS
             """
 
         private const val FIND_BY_CPID_CQL = """
