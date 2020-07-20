@@ -27,7 +27,7 @@ class SetTenderPeriodHandler(
     target = SetTenderPeriodResult::class.java,
     transform = transform
 ) {
-    override val action: Command2Type = Command2Type.DO_INVITATIONS
+    override val action: Command2Type = Command2Type.SET_TENDER_PERIOD
 
     override fun execute(node: JsonNode): Result<SetTenderPeriodResult, Fail> {
         val params = node.tryGetParams(SetTenderPeriodRequest::class.java, transform = transform)
