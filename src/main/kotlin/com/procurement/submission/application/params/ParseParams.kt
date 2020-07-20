@@ -60,19 +60,18 @@ fun parsePmd(
     value: String,
     allowedEnums: Set<ProcurementMethod>,
     attributeName: String = "pmd"
-): Result<ProcurementMethod, DataErrors.Validation.UnknownValue> {
-    val allowed = allowedEnums.toSet()
-    return ProcurementMethod.orNull(value)
-        ?.takeIf { it in allowed }
+): Result<ProcurementMethod, DataErrors.Validation.UnknownValue> =
+    ProcurementMethod.orNull(value)
+        ?.takeIf { it in allowedEnums }
         ?.asSuccess()
         ?: Result.failure(
             DataErrors.Validation.UnknownValue(
                 name = attributeName,
-                expectedValues = allowed.map { it.name },
+                expectedValues = allowedEnums.map { it.name },
                 actualValue = value
             )
         )
-}
+
 
 private fun <T> parseEnum(
     value: String, allowedEnums: Set<T>, attributeName: String, target: EnumElementProvider<T>
