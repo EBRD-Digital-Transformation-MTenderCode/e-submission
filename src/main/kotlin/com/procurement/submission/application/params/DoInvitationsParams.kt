@@ -66,7 +66,7 @@ class DoInvitationsParams private constructor(
                         QualificationStatusDetails.AWAITING,
                         QualificationStatusDetails.CONSIDERATION -> false
                     }
-                }
+                }.toSet()
 
             fun tryCreate(
                 id: String,

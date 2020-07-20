@@ -2,9 +2,14 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.application.params.ValidateTenderPeriodParams
 import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.extension.toLocal
+import com.procurement.submission.domain.fail.Fail
+import com.procurement.submission.domain.fail.error.ValidationError
+import com.procurement.submission.domain.functional.ValidationResult
+import com.procurement.submission.domain.functional.asValidationFailure
 import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
@@ -17,13 +22,15 @@ import com.procurement.submission.model.dto.response.CheckPeriodEndDateRs
 import com.procurement.submission.model.entity.PeriodEntity
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
+import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
-class PeriodService(private val periodDao: PeriodDao,
-                    private val rulesService: RulesService
+class PeriodService(
+    private val periodDao: PeriodDao,
+    private val rulesService: RulesService
 ) {
 
     fun periodValidation(cm: CommandMessage): ResponseDto {
@@ -55,10 +62,11 @@ class PeriodService(private val periodDao: PeriodDao,
         val endDate = tenderPeriod.endDate
 
         val period = getEntity(
-                cpId = cpId,
-                stage = stage,
-                startDate = startDate.toDate(),
-                endDate = endDate.toDate())
+            cpId = cpId,
+            stage = stage,
+            startDate = startDate.toDate(),
+            endDate = endDate.toDate()
+        )
         periodDao.save(period)
         return ResponseDto(data = Period(period.startDate.toLocal(), period.endDate.toLocal()))
     }
@@ -76,10 +84,11 @@ class PeriodService(private val periodDao: PeriodDao,
         val startDate = dto.enquiryPeriod.endDate
         val endDate = startDate.plusSeconds(tenderInterval)
         val newPeriod = getEntity(
-                cpId = cpId,
-                stage = stage,
-                startDate = startDate.toDate(),
-                endDate = endDate.toDate())
+            cpId = cpId,
+            stage = stage,
+            startDate = startDate.toDate(),
+            endDate = endDate.toDate()
+        )
         periodDao.save(newPeriod)
         return ResponseDto(data = Period(startDate, endDate))
     }
@@ -127,12 +136,30 @@ class PeriodService(private val periodDao: PeriodDao,
                 if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(
                     ErrorType.INVALID_PERIOD
                 )
-                return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDateRq, endDate = tenderEndDateRq))
+                return ResponseDto(
+                    data = CheckPeriodRs(
+                        isTenderPeriodChanged = true,
+                        startDate = enquiryEndDateRq,
+                        endDate = tenderEndDateRq
+                    )
+                )
             } else {
                 if (tenderEndDateRq > endDateDb) {
-                    return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = startDateDb, endDate = tenderEndDateRq))
+                    return ResponseDto(
+                        data = CheckPeriodRs(
+                            isTenderPeriodChanged = true,
+                            startDate = startDateDb,
+                            endDate = tenderEndDateRq
+                        )
+                    )
                 } else if (tenderEndDateRq == endDateDb) {
-                    return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = false, startDate = startDateDb, endDate = endDateDb))
+                    return ResponseDto(
+                        data = CheckPeriodRs(
+                            isTenderPeriodChanged = false,
+                            startDate = startDateDb,
+                            endDate = endDateDb
+                        )
+                    )
                 }
             }
         } else {
@@ -140,9 +167,21 @@ class PeriodService(private val periodDao: PeriodDao,
                 if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(
                     ErrorType.INVALID_PERIOD
                 )
-                return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDateRq, endDate = tenderEndDateRq))
+                return ResponseDto(
+                    data = CheckPeriodRs(
+                        isTenderPeriodChanged = true,
+                        startDate = enquiryEndDateRq,
+                        endDate = tenderEndDateRq
+                    )
+                )
             } else if (tenderEndDateRq == endDateDb) {
-                return ResponseDto(data = CheckPeriodRs(isTenderPeriodChanged = true, startDate = enquiryEndDateRq, endDate = eligibleTenderEndDate))
+                return ResponseDto(
+                    data = CheckPeriodRs(
+                        isTenderPeriodChanged = true,
+                        startDate = enquiryEndDateRq,
+                        endDate = eligibleTenderEndDate
+                    )
+                )
             }
         }
         return ResponseDto(null)
@@ -168,10 +207,11 @@ class PeriodService(private val periodDao: PeriodDao,
 
     fun save(cpId: String, stage: String, startDate: LocalDateTime, endDate: LocalDateTime) {
         val period = getEntity(
-                cpId = cpId,
-                stage = stage,
-                startDate = startDate.toDate(),
-                endDate = endDate.toDate())
+            cpId = cpId,
+            stage = stage,
+            startDate = startDate.toDate(),
+            endDate = endDate.toDate()
+        )
         periodDao.save(period)
     }
 
@@ -187,24 +227,42 @@ class PeriodService(private val periodDao: PeriodDao,
         return periodDao.getByCpIdAndStage(cpId, stage)
     }
 
-    private fun checkInterval(country: String,
-                              pmd: String,
-                              startDate: LocalDateTime,
-                              endDate: LocalDateTime): Boolean {
+    private fun checkInterval(
+        country: String,
+        pmd: String,
+        startDate: LocalDateTime,
+        endDate: LocalDateTime
+    ): Boolean {
         val interval = rulesService.getInterval(country, pmd)
         val sec = ChronoUnit.SECONDS.between(startDate, endDate)
         return sec >= interval
     }
 
-    private fun getEntity(cpId: String,
-                          stage: String,
-                          startDate: Date,
-                          endDate: Date): PeriodEntity {
+    private fun getEntity(
+        cpId: String,
+        stage: String,
+        startDate: Date,
+        endDate: Date
+    ): PeriodEntity {
         return PeriodEntity(
-                cpId = cpId,
-                stage = stage,
-                startDate = startDate,
-                endDate = endDate
+            cpId = cpId,
+            stage = stage,
+            startDate = startDate,
+            endDate = endDate
         )
+    }
+
+    fun validateTenderPeriod(params: ValidateTenderPeriodParams): ValidationResult<Fail> {
+        val minimumDuration = rulesService
+            .getTenderPeriodMinimumDuration(params.country, params.pmd, params.operationType)
+            .doReturn { error -> return error.asValidationFailure() }
+
+        val periodDuration = Duration.between(params.date, params.tender.tenderPeriod.endDate)
+
+        if (periodDuration < minimumDuration)
+            return ValidationError.TenderPeriodDurationError(expectedDuration = minimumDuration)
+                .asValidationFailure()
+
+        return ValidationResult.ok()
     }
 }
