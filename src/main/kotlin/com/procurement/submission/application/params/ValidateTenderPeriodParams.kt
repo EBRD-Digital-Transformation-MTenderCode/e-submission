@@ -20,7 +20,7 @@ class ValidateTenderPeriodParams private constructor(
 ) {
     companion object {
 
-        val allowedPmd = ProcurementMethod.allowedValues
+        val allowedPmd = ProcurementMethod.values()
             .filter {
                 when (it) {
                     ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> true
@@ -34,14 +34,14 @@ class ValidateTenderPeriodParams private constructor(
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
 
                 }
-            }
+            }.toSet()
 
         val allowedOperationTypes = OperationType.allowedElements
             .filter {
                 when (it) {
                     OperationType.START_SECOND_STAGE -> true
                 }
-            }
+            }.toSet()
 
         fun tryCreate(
             cpid: String,
