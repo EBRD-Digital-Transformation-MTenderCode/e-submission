@@ -20,7 +20,7 @@ class ValidateTenderPeriodParams private constructor(
 ) {
     companion object {
 
-        val allowedPmd = ProcurementMethod.allowedValues
+        val allowedPmd = ProcurementMethod.values()
             .filter {
                 when (it) {
                     ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> true

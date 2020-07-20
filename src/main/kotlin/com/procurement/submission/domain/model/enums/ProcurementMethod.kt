@@ -28,8 +28,10 @@ enum class ProcurementMethod(@JsonValue val key: String) {
     }
 
     companion object {
-
-        val allowedValues = values()
+        val elements  = values()
+            .associateBy {
+                it.name.toUpperCase()
+            }
 
         fun fromString(name: String): ProcurementMethod = try {
             valueOf(name.toUpperCase())
@@ -41,10 +43,6 @@ enum class ProcurementMethod(@JsonValue val key: String) {
             )
         }
 
-        fun orNull(name: String): ProcurementMethod? = try {
-            allowedValues.find { it == valueOf(name) }
-        } catch (ignored: Exception) {
-            null
-        }
+        fun orNull(name: String): ProcurementMethod? = elements[name.toUpperCase()]
     }
 }
