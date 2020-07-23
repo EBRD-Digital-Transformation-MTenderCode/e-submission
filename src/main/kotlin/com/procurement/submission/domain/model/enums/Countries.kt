@@ -1,23 +1,17 @@
 package com.procurement.submission.domain.model.enums
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
-import com.procurement.submission.exception.EnumException
 
-enum class Countries(@JsonValue val value: String) {
+enum class Countries(@JsonValue override val key: String) : EnumElementProvider.Key {
     MD("MD");
 
-    override fun toString(): String {
-        return this.value
-    }
+    override fun toString(): String = key
 
-    companion object {
-        private val elements: Map<String, Countries> = values().associateBy { it.value.toUpperCase() }
+    companion object : EnumElementProvider<Countries>(info = info()) {
 
-        fun fromString(value: String): Countries = elements[value.toUpperCase()]
-            ?: throw EnumException(
-                enumType = Countries::class.java.canonicalName,
-                value = value,
-                values = values().joinToString { it.value }
-            )
+        @JvmStatic
+        @JsonCreator
+        fun creator(name: String) = Countries.orThrow(name)
     }
 }

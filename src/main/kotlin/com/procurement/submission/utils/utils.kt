@@ -12,14 +12,10 @@ import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import com.procurement.submission.model.dto.databinding.StringsDeserializer
 import java.io.IOException
-import java.time.Instant
 import java.time.LocalDateTime
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder
 import java.time.temporal.ChronoField
-import java.util.*
-
 
 private object JsonMapper {
 
@@ -55,27 +51,6 @@ private object JsonMapper {
                 .toFormatter()
     }
 
-}
-
-/*Date utils*/
-fun String.toLocal(): LocalDateTime {
-    return LocalDateTime.parse(this, JsonMapper.dateTimeFormatter)
-}
-
-fun LocalDateTime.toDate(): Date {
-    return Date.from(this.toInstant(ZoneOffset.UTC))
-}
-
-fun Date.toLocal(): LocalDateTime {
-    return LocalDateTime.ofInstant(this.toInstant(), ZoneOffset.UTC)
-}
-
-fun localNowUTC(): LocalDateTime {
-    return LocalDateTime.ofInstant(Instant.now(), ZoneOffset.UTC)
-}
-
-fun milliNowUTC(): Long {
-    return localNowUTC().toInstant(ZoneOffset.UTC).toEpochMilli()
 }
 
 /*Json utils*/

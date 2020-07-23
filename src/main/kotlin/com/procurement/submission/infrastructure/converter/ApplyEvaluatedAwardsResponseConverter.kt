@@ -1,6 +1,6 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.service.ApplyEvaluatedAwardsResult
+import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsResult
 import com.procurement.submission.infrastructure.dto.award.ApplyEvaluatedAwardsResponse
 
 fun ApplyEvaluatedAwardsResult.convert() = ApplyEvaluatedAwardsResponse(

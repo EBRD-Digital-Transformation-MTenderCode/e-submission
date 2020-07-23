@@ -2,10 +2,8 @@ package com.procurement.submission.domain.model.enums
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
-import com.procurement.submission.exception.EnumException
-import java.util.*
 
-enum class DocumentType constructor(private val value: String) {
+enum class DocumentType(@JsonValue override val key: String) : EnumElementProvider.Key {
 
     SUBMISSION_DOCUMENTS("submissionDocuments"),
     ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments"),
@@ -14,33 +12,12 @@ enum class DocumentType constructor(private val value: String) {
     QUALIFICATION_DOCUMENTS("x_qualificationDocuments"),
     TECHNICAL_DOCUMENTS("x_technicalDocuments");
 
-    override fun toString(): String {
-        return this.value
-    }
+    override fun toString(): String = key
 
-    @JsonValue
-    fun value(): String {
-        return this.value
-    }
+    companion object : EnumElementProvider<DocumentType>(info = info()) {
 
-    companion object {
-
-        private val CONSTANTS = HashMap<String, DocumentType>()
-
-        init {
-            for (c in values()) {
-                CONSTANTS[c.value] = c
-            }
-        }
-
+        @JvmStatic
         @JsonCreator
-        fun fromValue(value: String): DocumentType {
-            return CONSTANTS[value]
-                ?: throw EnumException(
-                    DocumentType::class.java.name,
-                    value,
-                    Arrays.toString(values())
-                )
-        }
+        fun creator(name: String) = DocumentType.orThrow(name)
     }
 }

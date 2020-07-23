@@ -1,11 +1,11 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.model.data.BidUpdateData
-import com.procurement.submission.exception.ErrorException
-import com.procurement.submission.exception.ErrorType
-import com.procurement.submission.lib.errorIfEmpty
-import com.procurement.submission.lib.mapIfNotEmpty
-import com.procurement.submission.lib.orThrow
+import com.procurement.submission.application.exception.ErrorException
+import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.application.model.data.bid.update.BidUpdateData
+import com.procurement.submission.domain.extension.errorIfEmpty
+import com.procurement.submission.domain.extension.mapIfNotEmpty
+import com.procurement.submission.domain.extension.orThrow
 import com.procurement.submission.model.dto.request.BidUpdateRequest
 
 fun BidUpdateRequest.toData(): BidUpdateData {
@@ -139,7 +139,7 @@ fun BidUpdateRequest.toData(): BidUpdateData {
                                 }
                                 .orEmpty()
                         )
-                    } ,
+                    },
                     persones = tenderer.persones.errorIfEmpty {
                         throw ErrorException(
                             error = ErrorType.EMPTY_LIST,

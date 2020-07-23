@@ -1,13 +1,17 @@
 package com.procurement.submission.infrastructure.converter
 
-import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsData
-import com.procurement.submission.application.service.bid.bidsbylots.GetBidsByLotsResult
+import com.procurement.submission.application.model.data.bid.get.bylots.GetBidsByLotsData
+import com.procurement.submission.application.model.data.bid.get.bylots.GetBidsByLotsResult
 import com.procurement.submission.infrastructure.dto.bid.bidsbylots.request.GetBidsByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.bidsbylots.response.GetBidsByLotsResponse
 
 fun GetBidsByLotsRequest.convert() = GetBidsByLotsData(
     lots = this.lots
-        .map { lot -> GetBidsByLotsData.Lot(id = lot.id) }
+        .map { lot ->
+            GetBidsByLotsData.Lot(
+                id = lot.id
+            )
+        }
 )
 
 fun GetBidsByLotsResult.convert() = GetBidsByLotsResponse(

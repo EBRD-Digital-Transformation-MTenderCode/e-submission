@@ -68,4 +68,46 @@ INSERT INTO ocds.submission_rules (country, pmd, parameter, value)  VALUES ('MD'
 //60 sec (min) * 10 = 600 sec
 
 
+CREATE TABLE IF NOT EXISTS  ocds.submission_invitation(
+    cpid      text,
+    id        text,
+    json_data text,
+    primary key (cpid, id)
+);
 
+DROP TABLE IF EXISTS ocds.submission_rules;
+
+CREATE TABLE IF NOT EXISTS ocds.submission_rules
+(
+    country        text,
+    pmd            text,
+    operation_type text,
+    parameter      text,
+    value          text,
+    primary key (country, pmd, operation_type, parameter)
+);
+
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'OT', 'all', 'minBids', '1');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'OT', 'all','interval', '259200');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'OT', 'all','interval_before', '172800');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'OT', 'all','unsuspend_interval', '259200');
+
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_OT', 'all','minBids', '1');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_OT', 'all','interval', '30');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_OT', 'all','interval_before', '20');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_OT', 'all','unsuspend_interval', '30');
+
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'SV', 'all','minBids', '1');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'SV', 'all','interval', '259200');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'SV', 'all','interval_before', '172800');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'SV', 'all','unsuspend_interval', '259200');
+
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','minBids', '1');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','interval', '30');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','interval_before', '20');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','unsuspend_interval', '30');
+
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','unsuspend_interval', '30');
+
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'GPA', 'startSecondStage','minTenderPeriodDuration', '864000');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_GPA', 'startSecondStage','minTenderPeriodDuration', '0');
