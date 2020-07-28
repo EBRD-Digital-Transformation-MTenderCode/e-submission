@@ -76,7 +76,8 @@ class CommandService(
                             cpid = cm.cpid,
                             owner = cm.owner,
                             stage = cm.stage,
-                            startDate = cm.startDate
+                            startDate = cm.startDate,
+                            pmd = cm.pmd
                         )
                         bidService.createBid(requestData = requestData, context = context)
                     }

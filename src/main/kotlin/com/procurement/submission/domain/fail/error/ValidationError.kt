@@ -3,6 +3,8 @@ package com.procurement.submission.domain.fail.error
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
+import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.invitation.InvitationId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import java.time.Duration
@@ -39,7 +41,13 @@ sealed class ValidationError(
     }
 
     class TenderPeriodDurationError(expectedDuration: Duration): ValidationError(
-        numberError = "1.17.2",
+        numberError = "13.4.2",
         description = "Actual tender period duration is less than '${expectedDuration.toDays()}' days."
     )
+
+    class PendingInvitationsNotFoundOnPublishInvitations(cpid: Cpid) :
+        ValidationError(
+            numberError = "13.3.1",
+            description = "Invitations in status '${InvitationStatus.PENDING}' was not found by cpid = '$cpid'"
+        )
 }

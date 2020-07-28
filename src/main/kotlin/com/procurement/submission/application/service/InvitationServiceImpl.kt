@@ -2,12 +2,15 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.params.CheckAbsenceActiveInvitationsParams
 import com.procurement.submission.application.params.DoInvitationsParams
+import com.procurement.submission.application.params.PublishInvitationsParams
 import com.procurement.submission.application.repository.InvitationRepository
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.domain.functional.MaybeFail
 import com.procurement.submission.domain.functional.Result
+import com.procurement.submission.domain.functional.Result.Companion.failure
+import com.procurement.submission.domain.functional.Result.Companion.success
 import com.procurement.submission.domain.functional.ValidationResult
 import com.procurement.submission.domain.functional.asFailure
 import com.procurement.submission.domain.functional.asSuccess
@@ -16,6 +19,8 @@ import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.invitation.Invitation
 import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
+import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
+import com.procurement.submission.infrastructure.dto.invitation.publish.convert
 import org.springframework.stereotype.Service
 
 @Service
@@ -141,5 +146,25 @@ class InvitationServiceImpl(
             ValidationResult.error(ValidationError.ActiveInvitationsFound(activeInvitationsFromDb.map { it.id }))
         else
             ValidationResult.ok()
+    }
+
+    override fun publishInvitations(params: PublishInvitationsParams): Result<PublishInvitationsResult, Fail> {
+        val pendingInvitations = invitationRepository.findBy(cpid = params.cpid)
+            .orForwardFail { error -> return error }
+            .filter { it.status == InvitationStatus.PENDING }
+
+        if (pendingInvitations.isEmpty())
+            failure(ValidationError.PendingInvitationsNotFoundOnPublishInvitations(params.cpid))
+
+        val publishedInvitations = pendingInvitations
+            .map { invitation -> invitation.copy(status = InvitationStatus.ACTIVE) }
+
+        val result = PublishInvitationsResult(
+            invitations = publishedInvitations.map { it.convert() }
+        )
+
+        invitationRepository.saveAll(params.cpid, publishedInvitations)
+
+        return success(result)
     }
 }
