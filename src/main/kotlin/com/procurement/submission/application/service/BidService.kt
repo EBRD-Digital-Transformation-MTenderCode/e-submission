@@ -539,9 +539,10 @@ class BidService(
         ProcurementMethod.NP, ProcurementMethod.TEST_NP,
         ProcurementMethod.OP, ProcurementMethod.TEST_OP -> "NP"
 
+        ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> "TP"
+
         ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-        ProcurementMethod.FA, ProcurementMethod.TEST_FA,
-        ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> throw ErrorException(
+        ProcurementMethod.FA, ProcurementMethod.TEST_FA -> throw ErrorException(
             ErrorType.INVALID_PMD
         )
     }
