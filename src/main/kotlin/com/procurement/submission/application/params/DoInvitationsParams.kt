@@ -61,8 +61,8 @@ class DoInvitationsParams private constructor(
             private val allowedStatusDetails = QualificationStatusDetails.allowedElements
                 .filter {
                     when (it) {
-                        QualificationStatusDetails.ACTIVE,
-                        QualificationStatusDetails.UNSUCCESSFUL -> true
+                        QualificationStatusDetails.ACTIVE -> true
+                        QualificationStatusDetails.UNSUCCESSFUL,
                         QualificationStatusDetails.AWAITING,
                         QualificationStatusDetails.CONSIDERATION -> false
                     }
