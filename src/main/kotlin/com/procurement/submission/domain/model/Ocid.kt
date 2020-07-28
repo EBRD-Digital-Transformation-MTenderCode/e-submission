@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStringsUpper
 import com.procurement.submission.domain.model.enums.Stage
 
-class Ocid private constructor(private val value: String) {
+class Ocid private constructor(private val value: String, val stage: Stage) {
 
     override fun equals(other: Any?): Boolean {
         return if (this !== other)
@@ -21,15 +21,18 @@ class Ocid private constructor(private val value: String) {
 
     companion object {
         private val STAGES: String
-            get() = Stage.allowedElements.keysAsStringsUpper().joinToString(separator = "|", prefix = "(", postfix = ")")
+            get() = Stage.allowedElements.keysAsStringsUpper()
+                .joinToString(separator = "|", prefix = "(", postfix = ")")
+        private const val STAGE_POSITION = 4
 
         private val regex = "^[a-z]{4}-[a-z0-9]{6}-[A-Z]{2}-[0-9]{13}-$STAGES-[0-9]{13}\$".toRegex()
 
         val pattern: String
             get() = regex.pattern
 
-        fun tryCreateOrNull(value: String): Ocid? = if (value.matches(
-                regex
-            )) Ocid(value = value) else null
+        fun tryCreateOrNull(value: String): Ocid? = if (value.matches(regex)) {
+            val stage = Stage.orNull(value.split("-")[STAGE_POSITION])!!
+            Ocid(value = value, stage = stage)
+        } else null
     }
 }

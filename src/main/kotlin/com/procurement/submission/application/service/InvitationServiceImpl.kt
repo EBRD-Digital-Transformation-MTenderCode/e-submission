@@ -65,7 +65,7 @@ class InvitationServiceImpl(
 
         val activeInvitationsFromDb = invitationRepository.findBy(cpid = params.cpid)
             .doReturn { error -> return error.asValidationFailure() }
-            .filter { it.status == InvitationStatus.ACTIVE }
+            .filter { it.status == InvitationStatus.PENDING }
 
         return if (activeInvitationsFromDb.isNotEmpty())
             ValidationResult.error(ValidationError.ActiveInvitationsFound(activeInvitationsFromDb.map { it.id }))

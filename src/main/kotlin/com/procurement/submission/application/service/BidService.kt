@@ -50,7 +50,6 @@ import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
-import com.procurement.submission.domain.model.enums.Countries
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.Scale
@@ -541,7 +540,8 @@ class BidService(
         ProcurementMethod.OP, ProcurementMethod.TEST_OP -> "NP"
 
         ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-        ProcurementMethod.FA, ProcurementMethod.TEST_FA -> throw ErrorException(
+        ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+        ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> throw ErrorException(
             ErrorType.INVALID_PMD
         )
     }
@@ -1082,34 +1082,6 @@ class BidService(
                 }
             }
         }
-    }
-
-    private fun isEnoughForOpening(context: GetBidsForEvaluationContext, bidsAmount: Int): Boolean {
-        return when (Countries.creator(context.country)) {
-            Countries.MD -> when (context.pmd) {
-                ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-                ProcurementMethod.SV, ProcurementMethod.TEST_SV,
-                ProcurementMethod.MV, ProcurementMethod.TEST_MV -> bidsAmount >= 1
-
-                ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-                ProcurementMethod.DA, ProcurementMethod.TEST_DA,
-                ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-                ProcurementMethod.FA, ProcurementMethod.TEST_FA,
-                ProcurementMethod.OP, ProcurementMethod.TEST_OP -> false
-            }
-        }
-    }
-
-    private fun updateBidRecord(
-        updatedBid: Bid,
-        bidsRecordsByIds: Map<UUID, BidEntity>
-    ): BidEntity {
-        val bidId = UUID.fromString(updatedBid.id)
-        val oldRecord = bidsRecordsByIds.get(bidId) ?: throw ErrorException(
-            error = BID_NOT_FOUND,
-            message = "Cannot find bid with id ${bidId}. Available bids : ${bidsRecordsByIds.keys}"
-        )
-        return oldRecord.copy(jsonData = toJson(updatedBid))
     }
 
     private fun updateTenderers(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<OrganizationReference> {

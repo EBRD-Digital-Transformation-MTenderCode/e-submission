@@ -10,6 +10,8 @@ import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.enums.EnumElementProvider
 import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
+import com.procurement.submission.domain.model.enums.OperationType
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.QualificationStatusDetails
 import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.tryOwner
@@ -38,26 +40,54 @@ fun parseOcid(value: String): Result<Ocid, DataErrors.Validation.DataMismatchToP
         )
 
 fun parseQualificationStatusDetails(
-    value: String, allowedEnums: List<QualificationStatusDetails>, attributeName: String
+    value: String, allowedEnums: Set<QualificationStatusDetails>, attributeName: String
 ): Result<QualificationStatusDetails, DataErrors> =
-    parseEnum(value = value, allowedEnums = allowedEnums, attributeName = attributeName, target = QualificationStatusDetails)
+    parseEnum(
+        value = value,
+        allowedEnums = allowedEnums,
+        attributeName = attributeName,
+        target = QualificationStatusDetails
+    )
 
-private fun <T> parseEnum(
-    value: String, allowedEnums: Collection<T>, attributeName: String, target: EnumElementProvider<T>
-): Result<T, DataErrors.Validation.UnknownValue> where T : Enum<T>,
-                                                       T : EnumElementProvider.Key {
-    val allowed = allowedEnums.toSet()
-    return target.orNull(value)
-        ?.takeIf { it in allowed }
+fun parseOperationType(
+    value: String,
+    allowedEnums: Set<OperationType>,
+    attributeName: String = "operationType"
+): Result<OperationType, DataErrors> =
+    parseEnum(value = value, allowedEnums = allowedEnums, attributeName = attributeName, target = OperationType)
+
+fun parsePmd(
+    value: String,
+    allowedEnums: Set<ProcurementMethod>,
+    attributeName: String = "pmd"
+): Result<ProcurementMethod, DataErrors.Validation.UnknownValue> =
+    ProcurementMethod.orNull(value)
+        ?.takeIf { it in allowedEnums }
         ?.asSuccess()
         ?: Result.failure(
             DataErrors.Validation.UnknownValue(
                 name = attributeName,
-                expectedValues = allowed.keysAsStrings(),
+                expectedValues = allowedEnums.map { it.name },
                 actualValue = value
             )
         )
-}
+
+
+private fun <T> parseEnum(
+    value: String, allowedEnums: Set<T>, attributeName: String, target: EnumElementProvider<T>
+): Result<T, DataErrors.Validation.UnknownValue> where T : Enum<T>,
+                                                       T : EnumElementProvider.Key =
+
+     target.orNull(value)
+        ?.takeIf { it in allowedEnums }
+        ?.asSuccess()
+        ?: Result.failure(
+            DataErrors.Validation.UnknownValue(
+                name = attributeName,
+                expectedValues = allowedEnums.keysAsStrings(),
+                actualValue = value
+            )
+        )
 
 fun parseDate(value: String, attributeName: String): Result<LocalDateTime, DataErrors.Validation.DataFormatMismatch> =
     value.tryParseLocalDateTime()
