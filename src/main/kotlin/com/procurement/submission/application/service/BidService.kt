@@ -5,6 +5,9 @@ import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.application.exception.ErrorType.BID_ALREADY_WITH_LOT
 import com.procurement.submission.application.exception.ErrorType.BID_NOT_FOUND
 import com.procurement.submission.application.exception.ErrorType.CONTEXT
+import com.procurement.submission.application.exception.ErrorType.ENTITY_NOT_FOUND
+import com.procurement.submission.application.exception.ErrorType.INVALID_AMOUNT
+import com.procurement.submission.application.exception.ErrorType.INVALID_CURRENCY
 import com.procurement.submission.application.exception.ErrorType.INVALID_DATE
 import com.procurement.submission.application.exception.ErrorType.INVALID_DOCS_FOR_UPDATE
 import com.procurement.submission.application.exception.ErrorType.INVALID_DOCS_ID
@@ -39,23 +42,12 @@ import com.procurement.submission.application.model.data.bid.status.FinalBidsSta
 import com.procurement.submission.application.model.data.bid.status.FinalizedBidsStatusByLots
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
-import com.procurement.submission.domain.extension.nowDefaultUTC
-import com.procurement.submission.domain.extension.parseLocalDateTime
-import com.procurement.submission.domain.extension.toDate
-import com.procurement.submission.domain.extension.toLocal
-import com.procurement.submission.domain.extension.toSetBy
+import com.procurement.submission.application.repository.InvitationRepository
+import com.procurement.submission.domain.extension.*
+import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
-import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
-import com.procurement.submission.domain.model.enums.AwardStatusDetails
-import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
-import com.procurement.submission.domain.model.enums.BusinessFunctionType
-import com.procurement.submission.domain.model.enums.DocumentType
-import com.procurement.submission.domain.model.enums.ProcurementMethod
-import com.procurement.submission.domain.model.enums.Scale
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
-import com.procurement.submission.domain.model.enums.TypeOfSupplier
+import com.procurement.submission.domain.model.enums.*
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.infrastructure.converter.convert
@@ -66,34 +58,7 @@ import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
-import com.procurement.submission.model.dto.ocds.AccountIdentification
-import com.procurement.submission.model.dto.ocds.AdditionalAccountIdentifier
-import com.procurement.submission.model.dto.ocds.Address
-import com.procurement.submission.model.dto.ocds.AddressDetails
-import com.procurement.submission.model.dto.ocds.BankAccount
-import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.dto.ocds.Bids
-import com.procurement.submission.model.dto.ocds.BusinessFunction
-import com.procurement.submission.model.dto.ocds.ContactPoint
-import com.procurement.submission.model.dto.ocds.CountryDetails
-import com.procurement.submission.model.dto.ocds.Details
-import com.procurement.submission.model.dto.ocds.Document
-import com.procurement.submission.model.dto.ocds.Identifier
-import com.procurement.submission.model.dto.ocds.IssuedBy
-import com.procurement.submission.model.dto.ocds.IssuedThought
-import com.procurement.submission.model.dto.ocds.LegalForm
-import com.procurement.submission.model.dto.ocds.LocalityDetails
-import com.procurement.submission.model.dto.ocds.MainEconomicActivity
-import com.procurement.submission.model.dto.ocds.OrganizationReference
-import com.procurement.submission.model.dto.ocds.Period
-import com.procurement.submission.model.dto.ocds.Permit
-import com.procurement.submission.model.dto.ocds.PermitDetails
-import com.procurement.submission.model.dto.ocds.PersonId
-import com.procurement.submission.model.dto.ocds.Persone
-import com.procurement.submission.model.dto.ocds.RegionDetails
-import com.procurement.submission.model.dto.ocds.Requirement
-import com.procurement.submission.model.dto.ocds.RequirementResponse
-import com.procurement.submission.model.dto.ocds.ValidityPeriod
+import com.procurement.submission.model.dto.ocds.*
 import com.procurement.submission.model.dto.request.BidUpdateDocsRq
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.LotsDto
@@ -116,7 +81,8 @@ class BidService(
     private val generationService: GenerationService,
     private val rulesService: RulesService,
     private val periodService: PeriodService,
-    private val bidDao: BidDao
+    private val bidDao: BidDao,
+    private val invitationRepository: InvitationRepository
 ) {
 
     fun createBid(requestData: BidCreateData, context: BidCreateContext): ResponseDto {
@@ -133,10 +99,8 @@ class BidService(
         checkEntitiesListUniquenessById(bid = bidRequest)           // FReq-1.2.1.6
         checkBusinessFunctionTypeOfDocumentsCreateBid(bidRequest)   // FReq-1.2.1.19
         checkOneAuthority(bid = bidRequest)                         // FReq-1.2.1.20
-        checkBusinessFunctionsPeriod(
-            bid = bidRequest,
-            requestDate = context.startDate
-        )                                                           // FReq-1.2.1.39
+        checkBusinessFunctionsPeriod(bidRequest, context.startDate) // FReq-1.2.1.39
+        checkTenderersInvitations(context.cpid, context.pmd, bidRequest.tenderers, ::getInvitedTenderers) // FReq-1.2.1.46
 
         val requirementResponses = requirementResponseIdTempToPermanent(bidRequest.requirementResponses)
 
@@ -769,6 +733,18 @@ class BidService(
             .forEach { it.validate() }
     }
 
+    fun getInvitedTenderers(cpid: Cpid): Set<String> = invitationRepository
+        .findBy(cpid)
+        .doReturn {
+            throw ErrorException(
+                error = ENTITY_NOT_FOUND,
+                message = "Cannot found invitations by cpid='${cpid}'"
+            )
+        }
+        .filter { it.status == InvitationStatus.ACTIVE }
+        .flatMap { it.tenderers }
+        .toSetBy { it.id }
+
     private fun checkTypeOfDocumentsUpdateBid(documents: List<BidUpdateData.Bid.Document>) {
         documents.forEach { document ->
             when (document.documentType) {
@@ -785,7 +761,7 @@ class BidService(
     private fun checkDocumentsIds(documents: List<BidCreateData.Bid.Document>) {
         if (documents.isNotUniqueIds())
             throw ErrorException(
-                error = INVALID_DOCS_ID,
+                error = ErrorType.INVALID_DOCS_ID,
                 message = "Some documents have the same id."
             )
     }
@@ -793,7 +769,7 @@ class BidService(
     private fun checkMoney(money: Money?) {
         money?.let {
             if (money.amount.compareTo(BigDecimal.ZERO) <= 0) throw ErrorException(
-                error = ErrorType.INVALID_AMOUNT,
+                error = INVALID_AMOUNT,
                 message = "Amount cannot be less than 0. Current value = ${money.amount}"
             )
         }
@@ -802,7 +778,7 @@ class BidService(
     private fun checkCurrency(bidMoney: Money?, lotMoney: Money) {
         bidMoney?.let {
             if (!bidMoney.currency.equals(lotMoney.currency, true)) throw ErrorException(
-                error = ErrorType.INVALID_CURRENCY,
+                error = INVALID_CURRENCY,
                 message = "Currency in bid missmatch with currency in related lot. " +
                     "Bid currency='${bidMoney.currency}', " +
                     "Lot currency='${lotMoney.currency}'. "
@@ -2099,5 +2075,44 @@ class BidService(
                 )
             }
         )
+    }
+}
+
+fun checkTenderersInvitations(
+    cpid: String,
+    pmd: ProcurementMethod,
+    tenderers: List<BidCreateData.Bid.Tenderer>,
+    getInvitations: (Cpid) -> Set<String>
+) {
+    when (pmd) {
+        ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+        ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+        ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+        ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+        ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+        ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+        ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+        ProcurementMethod.OP, ProcurementMethod.TEST_OP   -> Unit
+
+        ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> {
+            val tenderersIds = tenderers.map { it.id }
+            val parsedCpid = Cpid.tryCreateOrNull(cpid)
+                ?: throw ErrorException(
+                    error = ErrorType.INVALID_FORMAT_OF_ATTRIBUTE,
+                    message = "Cannot parse 'cpid' attribute. cpid='${cpid}'"
+                )
+            val activeInvitations = getInvitations(parsedCpid)
+            checkTenderersInvitedToTender(tenderersIds, activeInvitations)
+        }
+    }
+}
+
+fun checkTenderersInvitedToTender(bidTenderers: List<String>, activeInvitations: Set<String>) {
+    bidTenderers.forEach { id ->
+        activeInvitations.find { it == id }
+            ?: throw ErrorException(
+                error = ErrorType.RELATION_NOT_FOUND,
+                message = "Cannot found active invitation for tenderer with id='${id}'"
+            )
     }
 }

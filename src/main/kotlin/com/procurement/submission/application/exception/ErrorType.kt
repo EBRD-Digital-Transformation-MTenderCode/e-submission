@@ -38,5 +38,8 @@ enum class ErrorType constructor(val code: String, val message: String) {
     INVALID_FORMAT_TOKEN("20.09", "Invalid format the award id."),
     INVALID_TENDERER("20.10", "Invalid tenderer."),
     INVALID_AMOUNT("20.11", "Invalid amount."),
-    INVALID_CURRENCY("20.12", "Invalid amount.");
+    INVALID_CURRENCY("20.12", "Invalid amount."),
+    INVALID_FORMAT_OF_ATTRIBUTE("20.13", "Invalid attribute format."),
+    ENTITY_NOT_FOUND("20.14", "Entity not found."),
+    RELATION_NOT_FOUND("20.15", "Relation not found.");
 }
