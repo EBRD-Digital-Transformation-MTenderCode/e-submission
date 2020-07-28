@@ -41,7 +41,7 @@ sealed class ValidationError(
     }
 
     class TenderPeriodDurationError(expectedDuration: Duration): ValidationError(
-        numberError = "1.17.2",
+        numberError = "13.4.2",
         description = "Actual tender period duration is less than '${expectedDuration.toDays()}' days."
     )
 
