@@ -77,7 +77,7 @@ internal class PeriodServiceTest {
                 .thenReturn(Duration.ofSeconds(MINIMUM_DURATION).asSuccess())
             val actual = periodService.validateTenderPeriod(params).error
 
-            val expectedErrorCode = "VR.COM-1.17.2"
+            val expectedErrorCode = "VR.COM-13.4.2"
             val expectedErrorDescription = "Actual tender period duration is less than '${Duration.ofSeconds(MINIMUM_DURATION).toDays()}' days."
 
             assertEquals(expectedErrorCode, actual.code)
@@ -92,7 +92,7 @@ internal class PeriodServiceTest {
                 .thenReturn(Duration.ofSeconds(MINIMUM_DURATION).asSuccess())
             val actual = periodService.validateTenderPeriod(params).error
 
-            val expectedErrorCode = "VR.COM-1.17.2"
+            val expectedErrorCode = "VR.COM-13.4.2"
             val expectedErrorDescription = "Actual tender period duration is less than '${Duration.ofSeconds(MINIMUM_DURATION).toDays()}' days."
 
             assertEquals(expectedErrorCode, actual.code)

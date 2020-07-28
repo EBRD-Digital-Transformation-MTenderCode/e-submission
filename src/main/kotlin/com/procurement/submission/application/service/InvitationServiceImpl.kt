@@ -15,11 +15,8 @@ import com.procurement.submission.domain.functional.ValidationResult
 import com.procurement.submission.domain.functional.asFailure
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.functional.asValidationFailure
-import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.InvitationStatus
-import com.procurement.submission.domain.model.enums.QualificationStatusDetails
 import com.procurement.submission.domain.model.invitation.Invitation
-import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
 import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
@@ -35,16 +32,16 @@ class InvitationServiceImpl(
     override fun doInvitations(params: DoInvitationsParams): Result<DoInvitationsResult?, Fail> {
         checkForMissingSubmissions(params).doOnFail { error -> return error.asFailure() }
 
-        val updatedAndNewInvitations = getUpdatedAndNewInvitations(params)
+        val invitationsToSave = getInvitationsToSave(params)
             .orForwardFail { fail -> return fail }
 
-        if (updatedAndNewInvitations.isEmpty())
+        if (invitationsToSave.isEmpty())
             return null.asSuccess()
 
-        invitationRepository.saveAll(cpid = params.cpid, invitations = updatedAndNewInvitations)
+        invitationRepository.saveAll(cpid = params.cpid, invitations = invitationsToSave)
 
         return DoInvitationsResult(
-            invitations = updatedAndNewInvitations.map { invitation ->
+            invitations = invitationsToSave.map { invitation ->
                 DoInvitationsResult.Invitation(
                     id = invitation.id,
                     date = invitation.date,
@@ -60,6 +57,84 @@ class InvitationServiceImpl(
             }
         ).asSuccess()
     }
+
+    private fun checkForMissingSubmissions(params: DoInvitationsParams): MaybeFail<ValidationError.MissingSubmission> {
+        val relatedSubmissionsIds = params.qualifications.toSetBy { it.relatedSubmission }
+        val submissionsIds = params.submissions.details.toSetBy { it.id }
+
+        val missingSubmissions = relatedSubmissionsIds - submissionsIds
+
+        if (missingSubmissions.isNotEmpty())
+            return MaybeFail.fail(ValidationError.MissingSubmission(submissionIds = missingSubmissions))
+
+        return MaybeFail.none()
+    }
+
+    fun getInvitationsToSave(params: DoInvitationsParams): Result<List<Invitation>, Fail> {
+        val invitations = invitationRepository.findBy(cpid = params.cpid)
+            .orForwardFail { fail -> return fail }
+
+        return mutableListOf<Invitation>()
+            .apply {
+                addAll(getUpdatedInvitations(invitations, params))
+                addAll(getNewInvitations(invitations, params))
+            }
+            .toList()
+            .asSuccess()
+    }
+
+    private fun getUpdatedInvitations(
+        storedInvitations: List<Invitation>,
+        params: DoInvitationsParams
+    ): List<Invitation> {
+        val receivedQualifications = params.qualifications.toSetBy { it.id }
+
+        val pendingInvitations = storedInvitations.filter { it.status == InvitationStatus.PENDING }
+        val pendingInvitationsNotLinkedToQualification = pendingInvitations.filter { it.relatedQualification !in receivedQualifications }
+
+        return pendingInvitationsNotLinkedToQualification.map { it.copy(status = InvitationStatus.CANCELLED) }
+    }
+
+    private fun getNewInvitations(
+        storedInvitations: List<Invitation>,
+        params: DoInvitationsParams
+    ): List<Invitation> {
+
+        val newInvitations = mutableListOf<Invitation>()
+
+        val invitationsByQualification = storedInvitations.groupBy { it.relatedQualification }
+        val submissionsByIds = params.submissions.details.associateBy { it.id }
+
+        params.qualifications.forEach { qualification ->
+            val linkedInvitations = invitationsByQualification[qualification.id] ?: emptyList()
+
+            if (pendingInvitationAbsent(linkedInvitations)) {
+                val createdInvitation = createInvitation(params, qualification, submissionsByIds)
+                newInvitations.add(createdInvitation)
+            }
+        }
+
+        return newInvitations.toList()
+    }
+
+    private fun pendingInvitationAbsent(invitations: List<Invitation>) = invitations.none { it.status == InvitationStatus.PENDING }
+
+    private fun createInvitation(
+        params: DoInvitationsParams,
+        qualification: DoInvitationsParams.Qualification,
+        submissionsByIds: Map<SubmissionId, DoInvitationsParams.Submissions.Detail>
+    ) = Invitation(
+        id = generationService.generateInvitationId(),
+        status = InvitationStatus.PENDING,
+        date = params.date,
+        relatedQualification = qualification.id,
+        tenderers = submissionsByIds.getValue(qualification.relatedSubmission)
+            .candidates.map { candidate ->
+                Invitation.Tenderer(
+                    id = candidate.id, name = candidate.name
+                )
+            }
+    )
 
     override fun checkAbsenceActiveInvitations(params: CheckAbsenceActiveInvitationsParams): ValidationResult<Fail> {
 
@@ -91,83 +166,5 @@ class InvitationServiceImpl(
         invitationRepository.saveAll(params.cpid, publishedInvitations)
 
         return success(result)
-    }
-
-    fun getUpdatedAndNewInvitations(params: DoInvitationsParams): Result<List<Invitation>, Fail> {
-        val submissionsByIds = params.submissions.details.associateBy { it.id }
-        val updatedAndNewInvitations = mutableListOf<Invitation>()
-
-        params.qualifications.forEach { qualification ->
-            val linkedInvitations = getInvitationsBy(cpid = params.cpid, qualificationId = qualification.id)
-                .orForwardFail { fail -> return fail }
-
-            when (qualification.statusDetails) {
-                QualificationStatusDetails.ACTIVE -> {
-                    if (pendingInvitationAbsent(linkedInvitations)) {
-                        val createdInvitation = createInvitation(params, qualification, submissionsByIds)
-                        updatedAndNewInvitations.add(createdInvitation)
-                    }
-                }
-                QualificationStatusDetails.UNSUCCESSFUL -> {
-                    val updatedInvitations = updateInvitations(linkedInvitations)
-                    updatedAndNewInvitations.addAll(updatedInvitations)
-                }
-                QualificationStatusDetails.CONSIDERATION,
-                QualificationStatusDetails.AWAITING -> Unit
-            }
-        }
-        return updatedAndNewInvitations.toList().asSuccess()
-    }
-
-    private fun updateInvitations(
-        linkedInvitations: List<Invitation>
-    ): List<Invitation> {
-        val pendingInvitations = linkedInvitations.filter { it.status == InvitationStatus.PENDING }
-        return if (pendingInvitations.isNotEmpty()) {
-            val updatedInvitations = pendingInvitations.map { invitation ->
-                invitation.copy(status = InvitationStatus.CANCELLED)
-            }
-            updatedInvitations
-        } else emptyList()
-    }
-
-    private fun pendingInvitationAbsent(invitations: List<Invitation>) = invitations.none { it.status == InvitationStatus.PENDING }
-
-    private fun createInvitation(
-        params: DoInvitationsParams,
-        qualification: DoInvitationsParams.Qualification,
-        submissionsByIds: Map<SubmissionId, DoInvitationsParams.Submissions.Detail>
-    ) = Invitation(
-        id = generationService.generateInvitationId(),
-        status = InvitationStatus.PENDING,
-        date = params.date,
-        relatedQualification = qualification.id,
-        tenderers = submissionsByIds.getValue(qualification.relatedSubmission)
-            .candidates.map { candidate ->
-            Invitation.Tenderer(
-                id = candidate.id, name = candidate.name
-            )
-        }
-    )
-
-    private fun getInvitationsBy(cpid: Cpid, qualificationId: QualificationId): Result<List<Invitation>, Fail> {
-        val invitations = invitationRepository.findBy(cpid = cpid)
-            .orForwardFail { fail -> return fail }
-
-        return invitations.filter { invitation ->
-            invitation.relatedQualification == qualificationId
-        }.asSuccess()
-    }
-
-    private fun checkForMissingSubmissions(params: DoInvitationsParams): MaybeFail<ValidationError.MissingSubmission> {
-        val relatedSubmissionsIds = params.qualifications.toSetBy { it.relatedSubmission }
-        val submissionsIds = params.submissions.details.toSetBy { it.id }
-
-        val missingSubmissions = relatedSubmissionsIds - submissionsIds
-
-        if (missingSubmissions.isNotEmpty())
-            return MaybeFail.fail(ValidationError.MissingSubmission(submissionIds = missingSubmissions))
-
-        return MaybeFail.none()
     }
 }
