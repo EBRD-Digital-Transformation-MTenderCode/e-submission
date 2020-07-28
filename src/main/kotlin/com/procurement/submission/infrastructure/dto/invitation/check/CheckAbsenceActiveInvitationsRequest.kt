@@ -1,4 +1,4 @@
-package com.procurement.submission.infrastructure.dto.invitation.create
+package com.procurement.submission.infrastructure.dto.invitation.check
 
 import com.fasterxml.jackson.annotation.JsonProperty
 

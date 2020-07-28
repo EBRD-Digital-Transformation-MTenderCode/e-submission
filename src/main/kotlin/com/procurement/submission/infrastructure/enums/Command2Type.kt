@@ -10,7 +10,8 @@ enum class Command2Type(@JsonValue override val key: String) : Action, EnumEleme
     CHECK_ABSENCE_ACTIVE_INVITATIONS("checkAbsenceActiveInvitations"),
     DO_INVITATIONS("doInvitations"),
     SET_TENDER_PERIOD("setTenderPeriod"),
-    VALIDATE_TENDER_PERIOD("validateTenderPeriod");
+    VALIDATE_TENDER_PERIOD("validateTenderPeriod"),
+    PUBLISH_INVITATIONS("publishInvitations");
 
     override fun toString(): String = key
 
