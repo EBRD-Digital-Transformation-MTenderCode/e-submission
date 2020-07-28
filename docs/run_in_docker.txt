@@ -1,4 +1,0 @@
-
-mvn clean package docker:build
-
-docker push dev.docker-registry.eprocurement.systems/e-submission:18.06.1
