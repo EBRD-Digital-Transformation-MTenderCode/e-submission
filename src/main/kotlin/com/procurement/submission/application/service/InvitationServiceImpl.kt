@@ -90,7 +90,8 @@ class InvitationServiceImpl(
         val receivedQualifications = params.qualifications.toSetBy { it.id }
 
         val pendingInvitations = storedInvitations.filter { it.status == InvitationStatus.PENDING }
-        val pendingInvitationsNotLinkedToQualification = pendingInvitations.filter { it.relatedQualification !in receivedQualifications }
+        val pendingInvitationsNotLinkedToQualification =
+            pendingInvitations.filter { it.relatedQualification !in receivedQualifications }
 
         return pendingInvitationsNotLinkedToQualification.map { it.copy(status = InvitationStatus.CANCELLED) }
     }
@@ -117,7 +118,8 @@ class InvitationServiceImpl(
         return newInvitations.toList()
     }
 
-    private fun pendingInvitationAbsent(invitations: List<Invitation>) = invitations.none { it.status == InvitationStatus.PENDING }
+    private fun pendingInvitationAbsent(invitations: List<Invitation>) =
+        invitations.none { it.status == InvitationStatus.PENDING }
 
     private fun createInvitation(
         params: DoInvitationsParams,
@@ -154,7 +156,7 @@ class InvitationServiceImpl(
             .filter { it.status == InvitationStatus.PENDING }
 
         if (pendingInvitations.isEmpty())
-            failure(ValidationError.PendingInvitationsNotFoundOnPublishInvitations(params.cpid))
+            return failure(ValidationError.PendingInvitationsNotFoundOnPublishInvitations(params.cpid))
 
         val publishedInvitations = pendingInvitations
             .map { invitation -> invitation.copy(status = InvitationStatus.ACTIVE) }
