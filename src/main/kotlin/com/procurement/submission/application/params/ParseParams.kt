@@ -2,6 +2,7 @@ package com.procurement.submission.application.params
 
 import com.procurement.submission.domain.extension.tryParseLocalDateTime
 import com.procurement.submission.domain.fail.error.DataErrors
+import com.procurement.submission.domain.fail.error.DataTimeError
 import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.asFailure
 import com.procurement.submission.domain.functional.asSuccess
@@ -89,17 +90,20 @@ private fun <T> parseEnum(
             )
         )
 
-fun parseDate(value: String, attributeName: String): Result<LocalDateTime, DataErrors.Validation.DataFormatMismatch> =
+fun parseDate(value: String, attributeName: String): Result<LocalDateTime, DataErrors.Validation> =
     value.tryParseLocalDateTime()
-        .doReturn { pattern ->
-            return Result.failure(
-                DataErrors.Validation.DataFormatMismatch(
+        .mapError { fail ->
+            when (fail) {
+                is DataTimeError.InvalidFormat -> DataErrors.Validation.DataFormatMismatch(
                     name = attributeName,
                     actualValue = value,
-                    expectedFormat = pattern
+                    expectedFormat = fail.pattern
                 )
-            )
-        }.asSuccess()
+
+                is DataTimeError.InvalidDateTime ->
+                    DataErrors.Validation.InvalidDateTime(name = attributeName, actualValue = value)
+            }
+        }
 
 fun parseOwner(value: String): Result<Owner, DataErrors.Validation.DataFormatMismatch> =
     value.tryOwner()
