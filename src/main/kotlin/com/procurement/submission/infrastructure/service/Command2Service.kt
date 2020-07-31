@@ -5,7 +5,9 @@ import com.procurement.submission.application.service.Logger
 import com.procurement.submission.infrastructure.enums.Command2Type
 import com.procurement.submission.infrastructure.handler.invitation.CheckAbsenceActiveInvitationsHandler
 import com.procurement.submission.infrastructure.handler.invitation.DoInvitationsHandler
+import com.procurement.submission.infrastructure.handler.tender.period.SetTenderPeriodHandler
 import com.procurement.submission.infrastructure.handler.tender.period.ValidateTenderPeriodHandler
+import com.procurement.submission.infrastructure.handler.invitation.PublishInvitationsHandler
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.response.parser.tryGetAction
@@ -18,7 +20,9 @@ class Command2Service(
     private val logger: Logger,
     private val doInvitationsHandler: DoInvitationsHandler,
     private val checkAbsenceActiveInvitationsHandler: CheckAbsenceActiveInvitationsHandler,
-    private val validateTenderPeriodHandler: ValidateTenderPeriodHandler
+    private val validateTenderPeriodHandler: ValidateTenderPeriodHandler,
+    private val setTenderPeriodHandler: SetTenderPeriodHandler,
+    private val publishInvitationsHandler: PublishInvitationsHandler
 ) {
 
     fun execute(node: JsonNode): ApiResponse2 {
@@ -44,6 +48,8 @@ class Command2Service(
             Command2Type.DO_INVITATIONS -> doInvitationsHandler.handle(node)
             Command2Type.CHECK_ABSENCE_ACTIVE_INVITATIONS -> checkAbsenceActiveInvitationsHandler.handle(node)
             Command2Type.VALIDATE_TENDER_PERIOD -> validateTenderPeriodHandler.handle(node)
+            Command2Type.SET_TENDER_PERIOD -> setTenderPeriodHandler.handle(node)
+            Command2Type.PUBLISH_INVITATIONS -> publishInvitationsHandler.handle(node)
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.procurement.submission.infrastructure.dto.invitation.check
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.infrastructure.dto.invitation.create.CheckAbsenceActiveInvitationsRequest
 import org.junit.jupiter.api.Test
 
 class CheckAbsenceActiveInvitationsRequestTest :

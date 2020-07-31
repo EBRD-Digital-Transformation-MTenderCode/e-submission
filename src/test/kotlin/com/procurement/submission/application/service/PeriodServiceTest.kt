@@ -2,8 +2,11 @@ package com.procurement.submission.application.service
 
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
+import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
 import com.procurement.submission.domain.extension.format
+import com.procurement.submission.domain.extension.toDate
+import com.procurement.submission.domain.functional.MaybeFail
 import com.procurement.submission.domain.functional.ValidationResult
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
@@ -11,6 +14,8 @@ import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.infrastructure.dao.PeriodDao
+import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
+import com.procurement.submission.model.entity.PeriodEntity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -72,7 +77,7 @@ internal class PeriodServiceTest {
                 .thenReturn(Duration.ofSeconds(MINIMUM_DURATION).asSuccess())
             val actual = periodService.validateTenderPeriod(params).error
 
-            val expectedErrorCode = "VR.COM-1.17.2"
+            val expectedErrorCode = "VR.COM-13.4.2"
             val expectedErrorDescription = "Actual tender period duration is less than '${Duration.ofSeconds(MINIMUM_DURATION).toDays()}' days."
 
             assertEquals(expectedErrorCode, actual.code)
@@ -87,7 +92,7 @@ internal class PeriodServiceTest {
                 .thenReturn(Duration.ofSeconds(MINIMUM_DURATION).asSuccess())
             val actual = periodService.validateTenderPeriod(params).error
 
-            val expectedErrorCode = "VR.COM-1.17.2"
+            val expectedErrorCode = "VR.COM-13.4.2"
             val expectedErrorDescription = "Actual tender period duration is less than '${Duration.ofSeconds(MINIMUM_DURATION).toDays()}' days."
 
             assertEquals(expectedErrorCode, actual.code)
@@ -104,6 +109,44 @@ internal class PeriodServiceTest {
             tender = ValidateTenderPeriodParams.Tender(
                 tenderPeriod = ValidateTenderPeriodParams.Tender.TenderPeriod.tryCreate(
                     endDate = endDate.format()
+                ).get
+            )
+        ).get
+    }
+
+    @Nested
+    inner class SetTenderPeriod {
+        @Test
+        fun success() {
+            val params: SetTenderPeriodParams = getParams()
+
+            val entity = PeriodEntity(
+                cpId = CPID.toString(),
+                stage = OCID.stage.toString(),
+                startDate = params.date.toDate(),
+                endDate = params.tender.tenderPeriod.endDate.toDate()
+            )
+            whenever(periodDao.trySave(entity)).thenReturn(MaybeFail.none())
+            val actual = periodService.setTenderPeriod(params).get
+
+            val expected = SetTenderPeriodResult(
+                tender = SetTenderPeriodResult.Tender(
+                    SetTenderPeriodResult.Tender.TenderPeriod(
+                        startDate = params.date,
+                        endDate = params.tender.tenderPeriod.endDate
+                    )
+                )
+            )
+            assertEquals(expected, actual)
+        }
+
+        private fun getParams() = SetTenderPeriodParams.tryCreate(
+            cpid = CPID.toString(),
+            ocid = OCID.toString(),
+            date = DATE.format(),
+            tender = SetTenderPeriodParams.Tender(
+                tenderPeriod = SetTenderPeriodParams.Tender.TenderPeriod.tryCreate(
+                    endDate = DATE.plusDays(1).format()
                 ).get
             )
         ).get

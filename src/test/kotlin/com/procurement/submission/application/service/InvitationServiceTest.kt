@@ -1,6 +1,9 @@
 package com.procurement.submission.application.service
 
+import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
+import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.repository.InvitationRepository
@@ -41,105 +44,6 @@ class InvitationServiceTest {
     inner class DoInvitations {
 
         @Test
-        fun activeQualification_noInvitationCreatedOrUpdated_success() {
-            val params: DoInvitationsParams = getParams(QualificationStatusDetails.ACTIVE)
-
-            val invitation = stubInvitation(
-                status = InvitationStatus.PENDING,
-                relatedQualification = params.qualifications.first().id
-            )
-            val invitationsStored = listOf(invitation)
-            whenever(invitationRepository.findBy(cpid = params.cpid)).thenReturn(invitationsStored.asSuccess())
-
-            val actual = invitationService.doInvitations(params).get
-
-            assertTrue(actual == null)
-        }
-
-        @Test
-        fun unsuccessfulQualification_noInvitationCreatedOrUpdated_success() {
-            val params: DoInvitationsParams = getParams(QualificationStatusDetails.UNSUCCESSFUL)
-
-            val invitation = stubInvitation(
-                status = InvitationStatus.ACTIVE,
-                relatedQualification = params.qualifications.first().id
-            )
-            val invitationsStored = listOf(invitation)
-            whenever(invitationRepository.findBy(cpid = params.cpid)).thenReturn(invitationsStored.asSuccess())
-
-            val actual = invitationService.doInvitations(params).get
-
-            assertTrue(actual == null)
-        }
-
-        @Test
-        fun invitationUpdated_success() {
-            val params: DoInvitationsParams = getParams(QualificationStatusDetails.UNSUCCESSFUL)
-
-            val invitation = stubInvitation(
-                status = InvitationStatus.PENDING,
-                relatedQualification = params.qualifications.first().id
-            )
-            val invitationsStored = listOf(invitation)
-            whenever(invitationRepository.findBy(cpid = params.cpid)).thenReturn(invitationsStored.asSuccess())
-
-            val actual = invitationService.doInvitations(params).get
-
-            val expected = DoInvitationsResult(
-                invitations = listOf(
-                    DoInvitationsResult.Invitation(
-                        id = invitation.id,
-                        date = invitation.date,
-                        status = InvitationStatus.CANCELLED,
-                        relatedQualification = invitation.relatedQualification,
-                        tenderers = invitation.tenderers.map { tenderer ->
-                            DoInvitationsResult.Invitation.Tenderer(
-                                id = tenderer.id,
-                                name = tenderer.name
-                            )
-                        }
-                    )
-                )
-            )
-            assertEquals(expected, actual)
-        }
-
-        @Test
-        fun invitationCreated_success() {
-            val params: DoInvitationsParams = getParams(QualificationStatusDetails.ACTIVE)
-
-            val invitation = stubInvitation(
-                status = InvitationStatus.CANCELLED,
-                relatedQualification = params.qualifications.first().id
-            )
-            val invitationsStored = listOf(invitation)
-            whenever(invitationRepository.findBy(cpid = params.cpid)).thenReturn(invitationsStored.asSuccess())
-
-            val invitationId = InvitationId.generate()
-            whenever(generationService.generateInvitationId()).thenReturn(invitationId)
-
-            val actual = invitationService.doInvitations(params).get
-
-            val expected = DoInvitationsResult(
-                invitations = listOf(
-                    DoInvitationsResult.Invitation(
-                        id = invitationId,
-                        date = params.date,
-                        status = InvitationStatus.PENDING,
-                        relatedQualification = params.qualifications.first().id,
-                        tenderers = params.submissions.details.first().candidates.map { candidate ->
-                            DoInvitationsResult.Invitation.Tenderer(
-                                id = candidate.id,
-                                name = candidate.name
-                            )
-                        }
-                    )
-                )
-            )
-            assertEquals(expected, actual)
-        }
-
-        @Test
         fun missingSubmissionLinkedToQualification_fail() {
             val paramsWithWrongRelatedSubmission: DoInvitationsParams = getParamsWithWrongRelatedSubmission(
                 QualificationStatusDetails.ACTIVE
@@ -154,7 +58,104 @@ class InvitationServiceTest {
             assertEquals(expectedErrorDescription, actual.description)
         }
 
-        private fun getParams(statusDetails: QualificationStatusDetails): DoInvitationsParams {
+        @Test
+        fun linkedPendingInvitationIsPresent_nullResult() {
+            val params = getParams()
+
+            val invitation = stubInvitation(
+                status = InvitationStatus.PENDING,
+                relatedQualification = params.qualifications.first().id
+            )
+
+            whenever(invitationRepository.findBy(params.cpid)).thenReturn(listOf(invitation).asSuccess())
+
+            val actual = invitationService.doInvitations(params).get
+
+            assertTrue(actual == null)
+        }
+
+        @Test
+        fun noPendingInvitationIsPresent_newInvitationReturned() {
+            val params = getParams()
+
+            val invitation = stubInvitation(
+                status = InvitationStatus.ACTIVE,
+                relatedQualification = params.qualifications.first().id
+            )
+            whenever(invitationRepository.findBy(params.cpid)).thenReturn(listOf(invitation).asSuccess())
+
+            val invitationId = InvitationId.generate()
+            whenever(generationService.generateInvitationId()).thenReturn(invitationId)
+
+            val actual = invitationService.doInvitations(params).get
+
+            val expected = DoInvitationsResult(
+                invitations = listOf(getExpectedNewInvitation(invitationId, params))
+            )
+
+            assertEquals(expected, actual)
+            verify(invitationRepository).saveAll(eq(params.cpid), any())
+        }
+
+        @Test
+        fun unlinkedPendingInvitationIsPresent_canceledAndNewInvitationsReturned() {
+            val params = getParams()
+
+            val invitation = stubInvitation(
+                status = InvitationStatus.PENDING,
+                relatedQualification = QualificationId.generate()
+            )
+            whenever(invitationRepository.findBy(params.cpid)).thenReturn(listOf(invitation).asSuccess())
+
+            val invitationId = InvitationId.generate()
+            whenever(generationService.generateInvitationId()).thenReturn(invitationId)
+
+            val actual = invitationService.doInvitations(params).get
+
+            val expectedCanceledInvitation = getExpectedCanceledInvitation(invitation, params)
+            val expectedNewInvitation = getExpectedNewInvitation(invitationId, params)
+
+            val expected = DoInvitationsResult(listOf(expectedCanceledInvitation, expectedNewInvitation))
+
+            assertEquals(expected, actual)
+            verify(invitationRepository).saveAll(eq(params.cpid), any())
+        }
+
+        private fun getExpectedNewInvitation(
+            invitationId: InvitationId,
+            params: DoInvitationsParams
+        ): DoInvitationsResult.Invitation {
+            return DoInvitationsResult.Invitation(
+                id = invitationId,
+                date = params.date,
+                status = InvitationStatus.PENDING,
+                relatedQualification = params.qualifications.first().id,
+                tenderers = params.submissions.details.first().candidates.map { tenderer ->
+                    DoInvitationsResult.Invitation.Tenderer(
+                        id = tenderer.id,
+                        name = tenderer.name
+                    )
+                }
+            )
+        }
+
+        private fun getExpectedCanceledInvitation(
+            invitation: Invitation,
+            params: DoInvitationsParams
+        ) = DoInvitationsResult.Invitation(
+            id = invitation.id,
+            date = params.date,
+            status = InvitationStatus.CANCELLED,
+            relatedQualification = invitation.relatedQualification,
+            tenderers = invitation.tenderers.map { tenderer ->
+                DoInvitationsResult.Invitation.Tenderer(
+                    id = tenderer.id,
+                    name = tenderer.name
+                )
+            }
+        )
+
+        private fun getParams(): DoInvitationsParams {
             val submissionId = SubmissionId.generate().toString()
 
             return DoInvitationsParams.tryCreate(
@@ -176,7 +177,7 @@ class InvitationServiceTest {
                 qualifications = listOf(
                     DoInvitationsParams.Qualification.tryCreate(
                         id = QualificationId.generate().toString(),
-                        statusDetails = statusDetails.key,
+                        statusDetails = QualificationStatusDetails.ACTIVE.key,
                         relatedSubmission = submissionId
                     ).get
                 )
