@@ -12,6 +12,7 @@ import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteria
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.infrastructure.converter.BidData
@@ -19,6 +20,7 @@ import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.dao.BidDao
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.bpe.pmd
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Value
@@ -421,7 +423,21 @@ class StatusService(private val rulesService: RulesService,
         )
         val dto = toObject(RelatedBidRq::class.java, cm.data)
         val bidIds = dto.relatedBids
-        val stage = "EV"
+
+        val stage = when(cm.pmd) {
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+            ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP -> "EV"
+
+            ProcurementMethod.GPA,
+            ProcurementMethod.TEST_GPA -> "TP"
+        }
+
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
         if (bidEntities.isEmpty()) throw ErrorException(
             ErrorType.BID_NOT_FOUND
