@@ -130,12 +130,12 @@ class InvitationServiceTest {
                 date = params.date,
                 status = InvitationStatus.PENDING,
                 relatedQualification = params.qualifications.first().id,
-                tenderers = params.submissions.details.first().candidates.map { tenderer ->
+                tenderers = params.submissions?.details?.first()?.candidates?.map { tenderer ->
                     DoInvitationsResult.Invitation.Tenderer(
                         id = tenderer.id,
                         name = tenderer.name
                     )
-                }
+                }.orEmpty()
             )
         }
 
