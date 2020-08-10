@@ -60,7 +60,7 @@ class InvitationServiceImpl(
 
     private fun checkForMissingSubmissions(params: DoInvitationsParams): MaybeFail<ValidationError.MissingSubmission> {
         val relatedSubmissionsIds = params.qualifications.toSetBy { it.relatedSubmission }
-        val submissionsIds = params.submissions.details.toSetBy { it.id }
+        val submissionsIds = params.submissions?.details?.toSetBy { it.id } ?: emptySet()
 
         val missingSubmissions = relatedSubmissionsIds - submissionsIds
 
@@ -104,7 +104,7 @@ class InvitationServiceImpl(
         val newInvitations = mutableListOf<Invitation>()
 
         val invitationsByQualification = storedInvitations.groupBy { it.relatedQualification }
-        val submissionsByIds = params.submissions.details.associateBy { it.id }
+        val submissionsByIds = params.submissions?.details?.associateBy { it.id } ?: emptyMap()
 
         params.qualifications.forEach { qualification ->
             val linkedInvitations = invitationsByQualification[qualification.id] ?: emptyList()
