@@ -15,7 +15,7 @@ class DoInvitationsParams private constructor(
     val cpid: Cpid,
     val date: LocalDateTime,
     val qualifications: List<Qualification>,
-    val submissions: Submissions
+    val submissions: Submissions?
 ) {
     companion object {
         private const val QUALIFICATIONS_ATTRIBUTE_NAME = "qualifications"
@@ -24,8 +24,8 @@ class DoInvitationsParams private constructor(
         fun tryCreate(
             cpid: String,
             date: String,
-            qualifications: List<Qualification>,
-            submissions: Submissions
+            qualifications: List<Qualification>?,
+            submissions: Submissions?
         ): Result<DoInvitationsParams, DataErrors> {
             val cpidParsed = parseCpid(value = cpid)
                 .orForwardFail { fail -> return fail }
@@ -43,7 +43,7 @@ class DoInvitationsParams private constructor(
             return DoInvitationsParams(
                 cpid = cpidParsed,
                 date = dateParsed,
-                qualifications = qualifications,
+                qualifications = qualifications ?: emptyList(),
                 submissions = submissions
             ).asSuccess()
         }
