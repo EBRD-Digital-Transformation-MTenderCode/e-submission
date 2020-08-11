@@ -43,11 +43,25 @@ import com.procurement.submission.application.model.data.bid.status.FinalizedBid
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
 import com.procurement.submission.application.repository.InvitationRepository
-import com.procurement.submission.domain.extension.*
+import com.procurement.submission.domain.extension.nowDefaultUTC
+import com.procurement.submission.domain.extension.parseLocalDateTime
+import com.procurement.submission.domain.extension.toDate
+import com.procurement.submission.domain.extension.toLocal
+import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
-import com.procurement.submission.domain.model.enums.*
+import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
+import com.procurement.submission.domain.model.enums.AwardStatusDetails
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
+import com.procurement.submission.domain.model.enums.BusinessFunctionType
+import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.enums.InvitationStatus
+import com.procurement.submission.domain.model.enums.ProcurementMethod
+import com.procurement.submission.domain.model.enums.Scale
+import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.infrastructure.converter.convert
@@ -58,7 +72,34 @@ import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
-import com.procurement.submission.model.dto.ocds.*
+import com.procurement.submission.model.dto.ocds.AccountIdentification
+import com.procurement.submission.model.dto.ocds.AdditionalAccountIdentifier
+import com.procurement.submission.model.dto.ocds.Address
+import com.procurement.submission.model.dto.ocds.AddressDetails
+import com.procurement.submission.model.dto.ocds.BankAccount
+import com.procurement.submission.model.dto.ocds.Bid
+import com.procurement.submission.model.dto.ocds.Bids
+import com.procurement.submission.model.dto.ocds.BusinessFunction
+import com.procurement.submission.model.dto.ocds.ContactPoint
+import com.procurement.submission.model.dto.ocds.CountryDetails
+import com.procurement.submission.model.dto.ocds.Details
+import com.procurement.submission.model.dto.ocds.Document
+import com.procurement.submission.model.dto.ocds.Identifier
+import com.procurement.submission.model.dto.ocds.IssuedBy
+import com.procurement.submission.model.dto.ocds.IssuedThought
+import com.procurement.submission.model.dto.ocds.LegalForm
+import com.procurement.submission.model.dto.ocds.LocalityDetails
+import com.procurement.submission.model.dto.ocds.MainEconomicActivity
+import com.procurement.submission.model.dto.ocds.OrganizationReference
+import com.procurement.submission.model.dto.ocds.Period
+import com.procurement.submission.model.dto.ocds.Permit
+import com.procurement.submission.model.dto.ocds.PermitDetails
+import com.procurement.submission.model.dto.ocds.PersonId
+import com.procurement.submission.model.dto.ocds.Persone
+import com.procurement.submission.model.dto.ocds.RegionDetails
+import com.procurement.submission.model.dto.ocds.Requirement
+import com.procurement.submission.model.dto.ocds.RequirementResponse
+import com.procurement.submission.model.dto.ocds.ValidityPeriod
 import com.procurement.submission.model.dto.request.BidUpdateDocsRq
 import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.LotsDto
@@ -342,7 +383,7 @@ class BidService(
             PERIOD_NOT_EXPIRED
         )
 
-        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, "EV", UUID.fromString(bidId))
+        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
         if (entity.token.toString() != token) throw ErrorException(
             INVALID_TOKEN
         )
