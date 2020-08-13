@@ -10,4 +10,9 @@ class DoInvitationsRequestTest :
     fun fully() {
         testBindingAndMapping("json/infrastructure/dto/invitation/create/request_do_invitation_full.json")
     }
+
+    @Test
+    fun required() {
+        testBindingAndMapping("json/infrastructure/dto/invitation/create/request_do_invitation_required.json")
+    }
 }

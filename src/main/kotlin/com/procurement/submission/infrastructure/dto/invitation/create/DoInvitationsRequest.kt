@@ -1,13 +1,18 @@
 package com.procurement.submission.infrastructure.dto.invitation.create
 
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class DoInvitationsRequest(
     @param:JsonProperty("cpid") @field:JsonProperty("cpid") val cpid: String,
     @param:JsonProperty("date") @field:JsonProperty("date") val date: String,
-    @param:JsonProperty("qualifications") @field:JsonProperty("qualifications") val qualifications: List<Qualification>,
-    @param:JsonProperty("submissions") @field:JsonProperty("submissions") val submissions: Submissions
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @param:JsonProperty("qualifications") @field:JsonProperty("qualifications") val qualifications: List<Qualification>?,
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @param:JsonProperty("submissions") @field:JsonProperty("submissions") val submissions: Submissions?
 ) {
     data class Qualification(
         @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
