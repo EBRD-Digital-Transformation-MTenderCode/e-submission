@@ -540,16 +540,17 @@ class BidService(
         ProcurementMethod.SV, ProcurementMethod.TEST_SV,
         ProcurementMethod.MV, ProcurementMethod.TEST_MV -> "EV"
 
+        ProcurementMethod.CD, ProcurementMethod.TEST_CD,
         ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+        ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+        ProcurementMethod.IP, ProcurementMethod.TEST_IP,
         ProcurementMethod.NP, ProcurementMethod.TEST_NP,
         ProcurementMethod.OP, ProcurementMethod.TEST_OP -> "NP"
 
-        ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> "TP"
+        ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+        ProcurementMethod.RT, ProcurementMethod.TEST_RT -> "TP"
 
-        ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-        ProcurementMethod.FA, ProcurementMethod.TEST_FA -> throw ErrorException(
-            ErrorType.INVALID_PMD
-        )
+        ProcurementMethod.FA, ProcurementMethod.TEST_FA -> throw ErrorException(ErrorType.INVALID_PMD)
     }
 
     /**
@@ -2126,16 +2127,19 @@ fun checkTenderersInvitations(
     getInvitations: (Cpid) -> Set<String>
 ) {
     when (pmd) {
-        ProcurementMethod.MV, ProcurementMethod.TEST_MV,
-        ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-        ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-        ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+        ProcurementMethod.CD, ProcurementMethod.TEST_CD,
         ProcurementMethod.DA, ProcurementMethod.TEST_DA,
-        ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+        ProcurementMethod.DC, ProcurementMethod.TEST_DC,
         ProcurementMethod.FA, ProcurementMethod.TEST_FA,
-        ProcurementMethod.OP, ProcurementMethod.TEST_OP   -> Unit
+        ProcurementMethod.IP, ProcurementMethod.TEST_IP,
+        ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+        ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+        ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+        ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+        ProcurementMethod.SV, ProcurementMethod.TEST_SV -> Unit
 
-        ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> {
+        ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+        ProcurementMethod.RT, ProcurementMethod.TEST_RT -> {
             val tenderersIds = tenderers.map { it.id }
             val parsedCpid = Cpid.tryCreateOrNull(cpid)
                 ?: throw ErrorException(
