@@ -425,17 +425,19 @@ class StatusService(private val rulesService: RulesService,
         val bidIds = dto.relatedBids
 
         val stage = when(cm.pmd) {
-            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-            ProcurementMethod.SV, ProcurementMethod.TEST_SV,
-            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
-            ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+            ProcurementMethod.CD, ProcurementMethod.TEST_CD,
             ProcurementMethod.DA, ProcurementMethod.TEST_DA,
-            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.DC, ProcurementMethod.TEST_DC,
             ProcurementMethod.FA, ProcurementMethod.TEST_FA,
-            ProcurementMethod.OP, ProcurementMethod.TEST_OP -> "EV"
+            ProcurementMethod.IP, ProcurementMethod.TEST_IP,
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> "EV"
 
-            ProcurementMethod.GPA,
-            ProcurementMethod.TEST_GPA -> "TP"
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT -> "TP"
         }
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
