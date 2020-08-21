@@ -66,10 +66,11 @@ class CommandService(
         val response = when (cm.command) {
             CommandType.CREATE_BID -> {
                 when (cm.pmd) {
-                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
-                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
                         val request = toObject(BidCreateRequest::class.java, cm.data)
                         val requestData = request.toData()
                         val context = BidCreateContext(
@@ -82,24 +83,22 @@ class CommandService(
                         bidService.createBid(requestData = requestData, context = context)
                     }
 
-                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.CD, ProcurementMethod.TEST_CD,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.IP, ProcurementMethod.TEST_IP,
                     ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
-                        throw ErrorException(
-                            ErrorType.INVALID_PMD
-                        )
-                    }
-
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
                 }
             }
             CommandType.UPDATE_BID -> {
                 when (cm.pmd) {
-                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
-                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
                         val request = toObject(BidUpdateRequest::class.java, cm.data)
                         val requestData = request.toData()
                         val context = BidUpdateContext(
@@ -113,24 +112,22 @@ class CommandService(
                         bidService.updateBid(requestData = requestData, context = context)
                     }
 
-                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.CD, ProcurementMethod.TEST_CD,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.IP, ProcurementMethod.TEST_IP,
                     ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
-                        throw ErrorException(
-                            ErrorType.INVALID_PMD
-                        )
-                    }
-
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
                 }
             }
             CommandType.GET_BIDS_FOR_EVALUATION -> {
                 when (cm.pmd) {
-                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
-                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
                         val request = toObject(GetBidsForEvaluationRequest::class.java, cm.data)
                         val requestData = request.toData()
                         val context = GetBidsForEvaluationContext(
@@ -147,24 +144,22 @@ class CommandService(
                         return ResponseDto(data = response)
                     }
 
-                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.CD, ProcurementMethod.TEST_CD,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.IP, ProcurementMethod.TEST_IP,
                     ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
-                        throw ErrorException(
-                            ErrorType.INVALID_PMD
-                        )
-                    }
-
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
                 }
             }
             CommandType.OPEN_BIDS_FOR_PUBLISHING -> {
                 when (cm.pmd) {
-                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
-                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
                         val context = OpenBidsForPublishingContext(
                             cpid = cm.cpid,
                             stage = cm.stage
@@ -178,16 +173,13 @@ class CommandService(
                         return ResponseDto(data = response)
                     }
 
-                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.CD, ProcurementMethod.TEST_CD,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.IP, ProcurementMethod.TEST_IP,
                     ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
-                        throw ErrorException(
-                            ErrorType.INVALID_PMD
-                        )
-                    }
-
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
                 }
             }
             CommandType.COPY_BIDS -> bidService.copyBids(cm)
@@ -201,10 +193,11 @@ class CommandService(
             CommandType.GET_BIDS -> statusService.getBids(cm)
             CommandType.GET_BIDS_AUCTION -> {
                 when (cm.pmd) {
-                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-                    ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
-                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA -> {
+                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+                    ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
                         val request = toObject(GetBidsAuctionRequest::class.java, cm.data)
                         val requestData = request.convert()
                         val context = GetBidsAuctionContext(
@@ -218,16 +211,13 @@ class CommandService(
                         return ResponseDto(data = response)
                     }
 
-                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.CD, ProcurementMethod.TEST_CD,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+                    ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+                    ProcurementMethod.IP, ProcurementMethod.TEST_IP,
                     ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> {
-                        throw ErrorException(
-                            ErrorType.INVALID_PMD
-                        )
-                    }
-
+                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
                 }
             }
             CommandType.UPDATE_BIDS_BY_LOTS -> statusService.updateBidsByLots(cm)
