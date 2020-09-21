@@ -18,7 +18,7 @@ data class BidUpdateData(
 
     data class Bid(
         val tenderers: List<Tenderer>,
-        val value: Money?,
+        val value: Money,
         val documents: List<Document>,
         val requirementResponses: List<RequirementResponse>,
         val relatedLots: List<String>
