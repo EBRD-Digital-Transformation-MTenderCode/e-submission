@@ -7,6 +7,9 @@ import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitat
 fun DoInvitationsRequest.convert() = DoInvitationsParams.tryCreate(
     cpid = cpid,
     date = date,
+    country = country,
+    pmd = pmd,
+    operationType = operationType,
     submissions = submissions?.convert()?.orForwardFail { fail -> return fail },
     qualifications = qualifications?.mapResult { it.convert() }?.orForwardFail { fail -> return fail }
 )
