@@ -27,9 +27,3 @@ fun String.tryToBoolean(): Result<Boolean, Fail.Incident.Transform.Parsing> =
         this.equals("false", ignoreCase = true) -> false.asSuccess()
         else -> Fail.Incident.Transform.Parsing(className = Boolean::class.java.canonicalName).asFailure()
     }
-
-
-fun main(){
-    val n = "test".toBoolean()
-    println(n)
-}
