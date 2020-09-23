@@ -26,7 +26,8 @@ import org.springframework.stereotype.Service
 @Service
 class InvitationServiceImpl(
     private val invitationRepository: InvitationRepository,
-    private val generationService: GenerationService
+    private val generationService: GenerationService,
+    private val rulesService: RulesService
 ) : InvitationService {
 
     override fun doInvitations(params: DoInvitationsParams): Result<DoInvitationsResult?, Fail> {
@@ -39,6 +40,13 @@ class InvitationServiceImpl(
             return null.asSuccess()
 
         invitationRepository.saveAll(cpid = params.cpid, invitations = invitationsToSave)
+
+        val invitationsResponseIsNeeded = rulesService
+            .getReturnInvitationsFlag(params.country, params.pmd, params.operationType)
+            .orForwardFail { fail -> return fail }
+
+        if(!invitationsResponseIsNeeded)
+            return null.asSuccess()
 
         return DoInvitationsResult(
             invitations = invitationsToSave.map { invitation ->
