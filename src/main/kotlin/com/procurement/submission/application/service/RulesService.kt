@@ -2,6 +2,7 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.domain.extension.tryToBoolean
 import com.procurement.submission.domain.extension.tryToLong
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
@@ -74,12 +75,37 @@ class RulesService(private val rulesDao: RulesDao) {
             .asSuccess()
     }
 
+    fun getReturnInvitationsFlag(
+        country: String,
+        pmd: ProcurementMethod,
+        operationType: OperationType
+    ): Result<Boolean, Fail> {
+        val value = rulesDao
+            .tryGetValue(country, pmd, RETURN_INVITATIONS, operationType)
+            .orForwardFail { fail -> return fail }
+            ?: return ValidationError.EntityNotFound.ReturnInvitationsRule(
+                country = country,
+                pmd = pmd,
+                parameter = RETURN_INVITATIONS,
+                operationType = operationType
+            ).asFailure()
+
+        return value
+            .tryToBoolean()
+            .doReturn { incident ->
+                return Fail.Incident.Database.Parsing(VALUE_COLUMN, value, incident.exception)
+                    .asFailure()
+            }
+            .asSuccess()
+    }
+
     companion object {
         private const val PARAMETER_MIN_BIDS = "minBids"
         private const val PARAMETER_INTERVAL = "interval"
         private const val PARAMETER_UNSUSPEND_INTERVAL = "unsuspend_interval"
         private const val PARAMETER_INTERVAL_BEFORE = "interval_before"
         private const val MINIMUM_PERIOD_DURATION_PARAMETER = "minTenderPeriodDuration"
+        private const val RETURN_INVITATIONS = "returnInvitations"
 
         private const val VALUE_COLUMN = "value"
     }
