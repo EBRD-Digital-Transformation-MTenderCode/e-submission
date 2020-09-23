@@ -11,6 +11,8 @@ import com.procurement.submission.domain.extension.format
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.InvitationStatus
+import com.procurement.submission.domain.model.enums.OperationType
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.QualificationStatusDetails
 import com.procurement.submission.domain.model.invitation.Invitation
 import com.procurement.submission.domain.model.invitation.InvitationId
@@ -38,7 +40,8 @@ class InvitationServiceTest {
 
     val invitationRepository: InvitationRepository = mock()
     val generationService: GenerationService = mock()
-    val invitationService = InvitationServiceImpl(invitationRepository, generationService)
+    val rulesService: RulesService = mock()
+    val invitationService = InvitationServiceImpl(invitationRepository, generationService, rulesService)
 
     @Nested
     inner class DoInvitations {
@@ -86,6 +89,9 @@ class InvitationServiceTest {
 
             val invitationId = InvitationId.generate()
             whenever(generationService.generateInvitationId()).thenReturn(invitationId)
+            whenever(
+                rulesService.getReturnInvitationsFlag(params.country, params.pmd, params.operationType)
+            ).thenReturn(true.asSuccess())
 
             val actual = invitationService.doInvitations(params).get
 
@@ -95,6 +101,25 @@ class InvitationServiceTest {
 
             assertEquals(expected, actual)
             verify(invitationRepository).saveAll(eq(params.cpid), any())
+        }
+
+        @Test
+        fun noPendingInvitationIsPresentButInvitationsReturnFlagFalse_nullResult() {
+            val params = getParams()
+
+            val invitation = stubInvitation(
+                status = InvitationStatus.ACTIVE,
+                relatedQualification = params.qualifications.first().id
+            )
+            whenever(invitationRepository.findBy(params.cpid)).thenReturn(listOf(invitation).asSuccess())
+
+            val invitationId = InvitationId.generate()
+            whenever(generationService.generateInvitationId()).thenReturn(invitationId)
+            whenever(rulesService.getReturnInvitationsFlag(params.country,params.pmd, params.operationType)).thenReturn(false.asSuccess())
+
+            val actual = invitationService.doInvitations(params).get
+
+            assertTrue(actual == null)
         }
 
         @Test
@@ -109,6 +134,7 @@ class InvitationServiceTest {
 
             val invitationId = InvitationId.generate()
             whenever(generationService.generateInvitationId()).thenReturn(invitationId)
+            whenever(rulesService.getReturnInvitationsFlag(params.country,params.pmd, params.operationType)).thenReturn(true.asSuccess())
 
             val actual = invitationService.doInvitations(params).get
 
@@ -119,6 +145,25 @@ class InvitationServiceTest {
 
             assertEquals(expected, actual)
             verify(invitationRepository).saveAll(eq(params.cpid), any())
+        }
+
+        @Test
+        fun unlinkedPendingInvitationIsPresentButInvitationsReturnFlagFalse_nullResult() {
+            val params = getParams()
+
+            val invitation = stubInvitation(
+                status = InvitationStatus.PENDING,
+                relatedQualification = QualificationId.generate()
+            )
+            whenever(invitationRepository.findBy(params.cpid)).thenReturn(listOf(invitation).asSuccess())
+
+            val invitationId = InvitationId.generate()
+            whenever(generationService.generateInvitationId()).thenReturn(invitationId)
+            whenever(rulesService.getReturnInvitationsFlag(params.country,params.pmd, params.operationType)).thenReturn(false.asSuccess())
+
+            val actual = invitationService.doInvitations(params).get
+
+            assertTrue(actual == null)
         }
 
         private fun getExpectedNewInvitation(
@@ -161,6 +206,9 @@ class InvitationServiceTest {
             return DoInvitationsParams.tryCreate(
                 cpid = CPID.toString(),
                 date = DATE.format(),
+                country = "MD",
+                operationType = OperationType.START_SECOND_STAGE.key,
+                pmd = ProcurementMethod.GPA.name,
                 submissions = DoInvitationsParams.Submissions.tryCreate(
                     details = listOf(
                         DoInvitationsParams.Submissions.Detail.tryCreate(
@@ -187,6 +235,9 @@ class InvitationServiceTest {
         private fun getParamsWithWrongRelatedSubmission(statusDetails: QualificationStatusDetails) = DoInvitationsParams.tryCreate(
             cpid = CPID.toString(),
             date = DATE.format(),
+            country = "MD",
+            operationType = OperationType.START_SECOND_STAGE.key,
+            pmd = ProcurementMethod.GPA.name,
             submissions = DoInvitationsParams.Submissions.tryCreate(
                 details = listOf(
                     DoInvitationsParams.Submissions.Detail.tryCreate(
