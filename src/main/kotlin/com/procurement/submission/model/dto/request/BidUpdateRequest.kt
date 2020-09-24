@@ -35,8 +35,7 @@ data class BidUpdateRequest(
 
         @JsonDeserialize(using = MoneyDeserializer::class)
         @JsonSerialize(using = MoneySerializer::class)
-        @JsonInclude(JsonInclude.Include.NON_NULL)
-        @field:JsonProperty("value") @param:JsonProperty("value") val value: Money?,
+        @field:JsonProperty("value") @param:JsonProperty("value") val value: Money,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
         @field:JsonProperty("documents") @param:JsonProperty("documents") val documents: List<Document>?,

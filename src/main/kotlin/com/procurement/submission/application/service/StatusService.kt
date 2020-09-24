@@ -134,7 +134,9 @@ class StatusService(private val rulesService: RulesService,
         val bidsForResponse =  requestData.lots
             .asSequence()
             .flatMap { lot ->
-                val bids = bidsByRelatedLot[lot.id.toString()] ?: emptyList()
+                val bids = bidsByRelatedLot[lot.id.toString()]
+                    ?.filter { bid -> bid.status == Status.PENDING }
+                    ?: emptyList()
                 if (bids.size >= minNumberOfBids) {
                     bids.asSequence()
                 } else {
