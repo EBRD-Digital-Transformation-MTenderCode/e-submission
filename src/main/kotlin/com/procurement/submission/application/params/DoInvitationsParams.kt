@@ -6,6 +6,7 @@ import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.functional.validate
 import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.QualificationStatusDetails
@@ -43,11 +44,23 @@ class DoInvitationsParams private constructor(
             val dateParsed = parseDate(value = date, attributeName = DATE_ATTRIBUTE_NAME)
                 .orForwardFail { fail -> return fail }
 
-            val pmdParsed = parsePmd(value = pmd, allowedEnums = ALLOWED_PMD)
-                .orForwardFail { fail -> return fail }
+            val pmdParsed = ProcurementMethod.orNull(pmd)
+                ?: return Result.failure(
+                    DataErrors.Validation.UnknownValue(
+                        name = "pmd",
+                        expectedValues = ALLOWED_PMD.map { it.name },
+                        actualValue = pmd
+                    )
+                )
 
-            val operationTypeParsed = parseOperationType(value = operationType, allowedEnums = ALLOWED_OPERATION_TYPE)
-                .orForwardFail { fail -> return fail }
+            val operationTypeParsed = OperationType.orNull(operationType)
+                ?: return Result.failure(
+                    DataErrors.Validation.UnknownValue(
+                        name = "operationType",
+                        expectedValues = ALLOWED_OPERATION_TYPE.keysAsStrings(),
+                        actualValue = operationType
+                    )
+                )
 
             qualifications.validate(
                 notEmptyRule(
