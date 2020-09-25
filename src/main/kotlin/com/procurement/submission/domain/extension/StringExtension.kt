@@ -21,9 +21,13 @@ fun String.tryToLong(): Result<Long, Fail.Incident.Transform.Parsing> = try {
     Fail.Incident.Transform.Parsing(className = Long::class.java.canonicalName, exception = exception).asFailure()
 }
 
+private val TRUE = Result.Success(true)
+private val FALSE = Result.Success(false)
+private val BOOLEAN_PARSE_FAIL = Result.failure(Fail.Incident.Transform.Parsing(className = Boolean::class.java.canonicalName))
+
 fun String.tryToBoolean(): Result<Boolean, Fail.Incident.Transform.Parsing> =
     when {
-        this.equals("true", ignoreCase = true) -> true.asSuccess()
-        this.equals("false", ignoreCase = true) -> false.asSuccess()
-        else -> Fail.Incident.Transform.Parsing(className = Boolean::class.java.canonicalName).asFailure()
+        this.equals("true", ignoreCase = true) -> TRUE
+        this.equals("false", ignoreCase = true) -> FALSE
+        else -> BOOLEAN_PARSE_FAIL
     }
