@@ -6,6 +6,9 @@ import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.functional.validate
 import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
+import com.procurement.submission.domain.model.enums.OperationType
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.QualificationStatusDetails
 import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
@@ -14,16 +17,24 @@ import java.time.LocalDateTime
 class DoInvitationsParams private constructor(
     val cpid: Cpid,
     val date: LocalDateTime,
+    val country: String,
+    val pmd: ProcurementMethod,
+    val operationType: OperationType,
     val qualifications: List<Qualification>,
     val submissions: Submissions?
 ) {
     companion object {
         private const val QUALIFICATIONS_ATTRIBUTE_NAME = "qualifications"
         private const val DATE_ATTRIBUTE_NAME = "date"
+        private val ALLOWED_PMD = ProcurementMethod.values().toSet()
+        private val ALLOWED_OPERATION_TYPE = OperationType.values().toSet()
 
         fun tryCreate(
             cpid: String,
             date: String,
+            country: String,
+            pmd: String,
+            operationType: String,
             qualifications: List<Qualification>?,
             submissions: Submissions?
         ): Result<DoInvitationsParams, DataErrors> {
@@ -32,6 +43,24 @@ class DoInvitationsParams private constructor(
 
             val dateParsed = parseDate(value = date, attributeName = DATE_ATTRIBUTE_NAME)
                 .orForwardFail { fail -> return fail }
+
+            val pmdParsed = ProcurementMethod.orNull(pmd)
+                ?: return Result.failure(
+                    DataErrors.Validation.UnknownValue(
+                        name = "pmd",
+                        expectedValues = ALLOWED_PMD.map { it.name },
+                        actualValue = pmd
+                    )
+                )
+
+            val operationTypeParsed = OperationType.orNull(operationType)
+                ?: return Result.failure(
+                    DataErrors.Validation.UnknownValue(
+                        name = "operationType",
+                        expectedValues = ALLOWED_OPERATION_TYPE.keysAsStrings(),
+                        actualValue = operationType
+                    )
+                )
 
             qualifications.validate(
                 notEmptyRule(
@@ -43,6 +72,9 @@ class DoInvitationsParams private constructor(
             return DoInvitationsParams(
                 cpid = cpidParsed,
                 date = dateParsed,
+                country = country,
+                pmd = pmdParsed,
+                operationType = operationTypeParsed,
                 qualifications = qualifications ?: emptyList(),
                 submissions = submissions
             ).asSuccess()

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue
 
 enum class OperationType(@JsonValue override val key: String) : EnumElementProvider.Key {
 
+    QUALIFICATION_PROTOCOL("qualificationProtocol"),
     START_SECOND_STAGE("startSecondStage");
 
     override fun toString(): String = key

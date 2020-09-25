@@ -44,6 +44,7 @@ class ValidateTenderPeriodParams private constructor(
             .filter {
                 when (it) {
                     OperationType.START_SECOND_STAGE -> true
+                    OperationType.QUALIFICATION_PROTOCOL -> false
                 }
             }.toSet()
 

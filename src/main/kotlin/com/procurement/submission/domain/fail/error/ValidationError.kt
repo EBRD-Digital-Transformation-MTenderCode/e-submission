@@ -1,10 +1,10 @@
 package com.procurement.submission.domain.fail.error
 
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.model.enums.OperationType
-import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.InvitationStatus
+import com.procurement.submission.domain.model.enums.OperationType
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.invitation.InvitationId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import java.time.Duration
@@ -38,6 +38,13 @@ sealed class ValidationError(
             parameter: String,
             operationType: OperationType
         ) : EntityNotFound("Tender period rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
+
+        class ReturnInvitationsRule(
+            country: String,
+            pmd: ProcurementMethod,
+            parameter: String,
+            operationType: OperationType
+        ) : EntityNotFound("Invitations rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
     }
 
     class TenderPeriodDurationError(expectedDuration: Duration): ValidationError(

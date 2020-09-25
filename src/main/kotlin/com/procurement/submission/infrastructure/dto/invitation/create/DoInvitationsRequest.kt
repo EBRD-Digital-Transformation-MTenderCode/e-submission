@@ -7,6 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 data class DoInvitationsRequest(
     @param:JsonProperty("cpid") @field:JsonProperty("cpid") val cpid: String,
     @param:JsonProperty("date") @field:JsonProperty("date") val date: String,
+    @param:JsonProperty("country") @field:JsonProperty("country") val country: String,
+    @param:JsonProperty("pmd") @field:JsonProperty("pmd") val pmd: String,
+    @param:JsonProperty("operationType") @field:JsonProperty("operationType") val operationType: String,
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @param:JsonProperty("qualifications") @field:JsonProperty("qualifications") val qualifications: List<Qualification>?,
