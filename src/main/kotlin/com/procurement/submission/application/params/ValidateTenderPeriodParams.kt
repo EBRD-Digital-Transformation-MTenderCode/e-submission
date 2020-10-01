@@ -27,12 +27,14 @@ class ValidateTenderPeriodParams private constructor(
                     ProcurementMethod.RT, ProcurementMethod.TEST_RT -> true
 
                     ProcurementMethod.CD, ProcurementMethod.TEST_CD,
+                    ProcurementMethod.CF, ProcurementMethod.TEST_CF,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
                     ProcurementMethod.DC, ProcurementMethod.TEST_DC,
                     ProcurementMethod.FA, ProcurementMethod.TEST_FA,
                     ProcurementMethod.IP, ProcurementMethod.TEST_IP,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
                     ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+                    ProcurementMethod.OF, ProcurementMethod.TEST_OF,
                     ProcurementMethod.OP, ProcurementMethod.TEST_OP,
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
@@ -44,6 +46,7 @@ class ValidateTenderPeriodParams private constructor(
             .filter {
                 when (it) {
                     OperationType.START_SECOND_STAGE -> true
+                    OperationType.QUALIFICATION_PROTOCOL -> false
                 }
             }.toSet()
 
