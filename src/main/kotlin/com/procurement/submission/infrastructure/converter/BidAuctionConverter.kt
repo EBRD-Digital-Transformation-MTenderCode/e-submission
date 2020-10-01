@@ -52,10 +52,10 @@ fun BidsAuctionResponseData.convert(): GetBidsAuctionResponse {
                                             identifier = tenderer.identifier
                                                 .let { identifier ->
                                                     GetBidsAuctionResponse.BidsData.Bid.Tenderer.Identifier(
-                                                        id = tenderer.identifier.id,
-                                                        scheme = tenderer.identifier.scheme,
-                                                        legalName = tenderer.identifier.legalName,
-                                                        uri = tenderer.identifier.uri
+                                                        id = identifier.id,
+                                                        scheme = identifier.scheme,
+                                                        legalName = identifier.legalName,
+                                                        uri = identifier.uri
                                                     )
                                                 },
                                             additionalIdentifiers = tenderer.additionalIdentifiers
