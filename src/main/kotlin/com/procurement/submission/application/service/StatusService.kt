@@ -440,6 +440,9 @@ class StatusService(private val rulesService: RulesService,
 
             ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
             ProcurementMethod.RT, ProcurementMethod.TEST_RT -> "TP"
+
+            ProcurementMethod.OF, ProcurementMethod.TEST_OF,
+            ProcurementMethod.CF, ProcurementMethod.TEST_CF -> throw ErrorException(ErrorType.INVALID_PMD)
         }
 
         val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
