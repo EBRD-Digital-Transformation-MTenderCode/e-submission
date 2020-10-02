@@ -45,7 +45,7 @@ class InvitationServiceImpl(
             .getReturnInvitationsFlag(params.country, params.pmd, params.operationType)
             .orForwardFail { fail -> return fail }
 
-        if(!invitationsResponseIsNeeded)
+        if (!invitationsResponseIsNeeded)
             return null.asSuccess()
 
         return DoInvitationsResult(

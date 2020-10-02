@@ -43,7 +43,7 @@ sealed class ValidationError(
             country: String,
             pmd: ProcurementMethod,
             parameter: String,
-            operationType: OperationType
+            operationType: OperationType?
         ) : EntityNotFound("Invitations rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
     }
 

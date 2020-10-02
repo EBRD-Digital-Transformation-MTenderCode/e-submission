@@ -24,7 +24,7 @@ sealed class Result<out T, out E> {
     inline fun doReturn(error: (E) -> Nothing): T {
         return when (this) {
             is Success -> this.get
-            else       -> error(this.error)
+            else -> error(this.error)
         }
     }
 
