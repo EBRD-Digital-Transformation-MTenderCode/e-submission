@@ -80,15 +80,29 @@ class RulesService(private val rulesDao: RulesDao) {
         pmd: ProcurementMethod,
         operationType: OperationType
     ): Result<Boolean, Fail> {
-        val value = rulesDao
+        val databaseQueryResult = rulesDao
             .tryGetValue(country, pmd, RETURN_INVITATIONS, operationType)
-            .orForwardFail { fail -> return fail }
-            ?: return ValidationError.EntityNotFound.ReturnInvitationsRule(
-                country = country,
-                pmd = pmd,
-                parameter = RETURN_INVITATIONS,
-                operationType = operationType
-            ).asFailure()
+
+        val value =
+            if (databaseQueryResult.isFail) {
+                return Result.failure(databaseQueryResult.error)
+            } else {
+                val foundedValue = databaseQueryResult.get
+                if (foundedValue == null) {
+                    rulesDao
+                        .tryGetValue(country, pmd, RETURN_INVITATIONS)
+                        .orForwardFail { fail -> return fail }
+                        ?: return ValidationError.EntityNotFound.ReturnInvitationsRule(
+                            country = country,
+                            pmd = pmd,
+                            parameter = RETURN_INVITATIONS,
+                            operationType = operationType
+                        ).asFailure()
+                } else {
+                    foundedValue
+                }
+
+            }
 
         return value
             .tryToBoolean()
