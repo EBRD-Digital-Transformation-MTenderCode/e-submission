@@ -114,10 +114,10 @@ INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, valu
 
 
 INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','GPA','all','returnInvitations','true');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_GPA','all','returnInvivations','true');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','RT','all','returnInvivations','true');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_RT','all','returnInvivations','true');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','OF','all','returnInvivations','false');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_OF','all','returnInvivations','false');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','CF','all','returnInvivations','false');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_CF','all','returnInvivations','false');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_GPA','all','returnInvitations','true');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','RT','all','returnInvitations','true');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_RT','all','returnInvitations','true');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','OF','all','returnInvitations','false');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_OF','all','returnInvitations','false');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','CF','all','returnInvitations','false');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_CF','all','returnInvitations','false');
