@@ -39,11 +39,11 @@ class InvitationServiceImpl(
         if (invitationsToSave.isEmpty())
             return null.asSuccess()
 
-        invitationRepository.saveAll(cpid = params.cpid, invitations = invitationsToSave)
-
         val invitationsResponseIsNeeded = rulesService
             .getReturnInvitationsFlag(params.country, params.pmd, params.operationType)
             .orForwardFail { fail -> return fail }
+
+        invitationRepository.saveAll(cpid = params.cpid, invitations = invitationsToSave)
 
         if (!invitationsResponseIsNeeded)
             return null.asSuccess()
