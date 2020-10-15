@@ -100,8 +100,6 @@ internal class PeriodServiceTest {
         }
 
         private fun getParams(date: LocalDateTime, endDate: LocalDateTime) = ValidateTenderPeriodParams.tryCreate(
-            cpid = CPID.toString(),
-            ocid = OCID.toString(),
             operationType = OperationType.START_SECOND_STAGE.key,
             pmd = ProcurementMethod.GPA.name,
             country = COUNTRY,

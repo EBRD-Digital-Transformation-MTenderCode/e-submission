@@ -3,15 +3,11 @@ package com.procurement.submission.application.params
 import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.model.Cpid
-import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import java.time.LocalDateTime
 
 class ValidateTenderPeriodParams private constructor(
-    val cpid: Cpid,
-    val ocid: Ocid,
     val date: LocalDateTime,
     val country: String,
     val pmd: ProcurementMethod,
@@ -52,20 +48,12 @@ class ValidateTenderPeriodParams private constructor(
             }.toSet()
 
         fun tryCreate(
-            cpid: String,
-            ocid: String,
             date: String,
             country: String,
             pmd: String,
             operationType: String,
             tender: Tender
         ): Result<ValidateTenderPeriodParams, DataErrors> {
-            val cpidParsed = parseCpid(value = cpid)
-                .orForwardFail { error -> return error }
-
-            val ocidParsed = parseOcid(value = ocid)
-                .orForwardFail { error -> return error }
-
             val dateParsed = parseDate(value = date, attributeName = "date")
                 .orForwardFail { error -> return error }
 
@@ -76,8 +64,6 @@ class ValidateTenderPeriodParams private constructor(
                 .orForwardFail { error -> return error }
 
             return ValidateTenderPeriodParams(
-                cpid = cpidParsed,
-                ocid = ocidParsed,
                 pmd = pmdParsed,
                 date = dateParsed,
                 country = country,
