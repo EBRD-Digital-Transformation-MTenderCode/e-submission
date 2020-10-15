@@ -45,6 +45,7 @@ class ValidateTenderPeriodParams private constructor(
         val allowedOperationTypes = OperationType.allowedElements
             .filter {
                 when (it) {
+                    OperationType.CREATE_PCR,
                     OperationType.START_SECOND_STAGE -> true
                     OperationType.QUALIFICATION_PROTOCOL -> false
                 }
