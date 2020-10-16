@@ -6,8 +6,10 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.application.params.DoInvitationsParams
+import com.procurement.submission.application.params.PublishInvitationsParams
 import com.procurement.submission.application.repository.InvitationRepository
 import com.procurement.submission.domain.extension.format
+import com.procurement.submission.domain.functional.Result.Companion.success
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.InvitationStatus
@@ -19,6 +21,7 @@ import com.procurement.submission.domain.model.invitation.InvitationId
 import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
+import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -26,6 +29,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.ResolverStyle
+import java.util.*
 
 class InvitationServiceTest {
 
@@ -272,6 +276,78 @@ class InvitationServiceTest {
                     )
                 ),
                 status = status
+            )
+    }
+
+    @Nested
+    inner class PublishInvitations{
+
+        @Test
+        fun pendingAndActiveInvitationStored_returnsBoth(){
+            val params = getParams()
+            val invitations = listOf(getInvitation(InvitationStatus.ACTIVE), getInvitation(InvitationStatus.PENDING))
+            whenever(invitationRepository.findBy(cpid = params.cpid))
+                .thenReturn(success(invitations))
+            val actual = invitationService.publishInvitations(params).get.invitations
+            val expected = invitations.map {invitation ->
+                PublishInvitationsResult.Invitation(
+                    id = invitation.id,
+                    status = InvitationStatus.ACTIVE,
+                    date = invitation.date,
+                    relatedQualification = invitation.relatedQualification,
+                    tenderers = invitation.tenderers.map { tenderer ->
+                        PublishInvitationsResult.Invitation.Tenderers(
+                            id = tenderer.id,
+                            name = tenderer.name
+                        )
+                    }
+                )
+            }
+            assertTrue(actual.size == 2)
+            assertEquals(expected.toSet(), actual.toSet())
+        }
+
+        @Test
+        fun pendingAndCancelledInvitationStored_returnsUpdatedPending(){
+            val params = getParams()
+            val invitations = listOf(getInvitation(InvitationStatus.CANCELLED), getInvitation(InvitationStatus.PENDING))
+            whenever(invitationRepository.findBy(cpid = params.cpid))
+                .thenReturn(success(invitations))
+            val actual = invitationService.publishInvitations(params).get.invitations
+            val expected = invitations[1].let {invitation ->
+                PublishInvitationsResult.Invitation(
+                    id = invitation.id,
+                    status = InvitationStatus.ACTIVE,
+                    date = invitation.date,
+                    relatedQualification = invitation.relatedQualification,
+                    tenderers = invitation.tenderers.map { tenderer ->
+                        PublishInvitationsResult.Invitation.Tenderers(
+                            id = tenderer.id,
+                            name = tenderer.name
+                        )
+                    }
+                )
+            }
+            assertTrue(actual.size == 1)
+            assertEquals(expected, actual.first())
+        }
+
+        private fun getParams() = PublishInvitationsParams.tryCreate(
+            cpid = CPID.toString()
+        ).get
+
+        fun getInvitation(status: InvitationStatus) =
+            Invitation(
+                id = InvitationId.generate(),
+                status = status,
+                relatedQualification = QualificationId.generate(),
+                date = LocalDateTime.now(),
+                tenderers = listOf(
+                    Invitation.Tenderer(
+                        id = UUID.randomUUID().toString(),
+                        name = "tenderer.name"
+                    )
+                )
             )
     }
 }
