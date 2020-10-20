@@ -159,21 +159,23 @@ class InvitationServiceImpl(
     }
 
     override fun publishInvitations(params: PublishInvitationsParams): Result<PublishInvitationsResult, Fail> {
-        val pendingInvitations = invitationRepository.findBy(cpid = params.cpid)
+        val invitationsByStatus = invitationRepository.findBy(cpid = params.cpid)
             .orForwardFail { error -> return error }
-            .filter { it.status == InvitationStatus.PENDING }
+            .groupBy { it.status }
 
-        if (pendingInvitations.isEmpty())
-            return failure(ValidationError.PendingInvitationsNotFoundOnPublishInvitations(params.cpid))
+        val pendingInvitations = invitationsByStatus[InvitationStatus.PENDING]
+            ?: return failure(ValidationError.PendingInvitationsNotFoundOnPublishInvitations(params.cpid))
 
-        val publishedInvitations = pendingInvitations
+        val updatedInvitations = pendingInvitations
             .map { invitation -> invitation.copy(status = InvitationStatus.ACTIVE) }
+
+        val publishedInvitations = updatedInvitations + invitationsByStatus[InvitationStatus.ACTIVE].orEmpty()
 
         val result = PublishInvitationsResult(
             invitations = publishedInvitations.map { it.convert() }
         )
 
-        invitationRepository.saveAll(params.cpid, publishedInvitations)
+        invitationRepository.saveAll(params.cpid, updatedInvitations)
 
         return success(result)
     }
