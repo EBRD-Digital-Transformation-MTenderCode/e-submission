@@ -19,18 +19,18 @@ class ValidateTenderPeriodParams private constructor(
         val allowedPmd = ProcurementMethod.values()
             .filter {
                 when (it) {
+                    ProcurementMethod.CF, ProcurementMethod.TEST_CF,
                     ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+                    ProcurementMethod.OF, ProcurementMethod.TEST_OF,
                     ProcurementMethod.RT, ProcurementMethod.TEST_RT -> true
 
                     ProcurementMethod.CD, ProcurementMethod.TEST_CD,
-                    ProcurementMethod.CF, ProcurementMethod.TEST_CF,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
                     ProcurementMethod.DC, ProcurementMethod.TEST_DC,
                     ProcurementMethod.FA, ProcurementMethod.TEST_FA,
                     ProcurementMethod.IP, ProcurementMethod.TEST_IP,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
                     ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-                    ProcurementMethod.OF, ProcurementMethod.TEST_OF,
                     ProcurementMethod.OP, ProcurementMethod.TEST_OP,
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
