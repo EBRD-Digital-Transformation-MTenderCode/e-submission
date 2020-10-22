@@ -8,6 +8,7 @@ import com.procurement.submission.domain.model.enums.EnumElementProvider
 enum class Command2Type(@JsonValue override val key: String) : Action, EnumElementProvider.Key {
 
     CHECK_ABSENCE_ACTIVE_INVITATIONS("checkAbsenceActiveInvitations"),
+    CHECK_PERIOD("checkPeriod"),
     DO_INVITATIONS("doInvitations"),
     SET_TENDER_PERIOD("setTenderPeriod"),
     VALIDATE_TENDER_PERIOD("validateTenderPeriod"),
