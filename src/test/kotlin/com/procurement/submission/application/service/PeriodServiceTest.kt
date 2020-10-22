@@ -2,6 +2,7 @@ package com.procurement.submission.application.service
 
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
+import com.procurement.submission.application.params.CheckPeriodParams
 import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
 import com.procurement.submission.domain.extension.format
@@ -147,6 +148,129 @@ internal class PeriodServiceTest {
                     endDate = DATE.plusDays(1).format()
                 ).get
             )
+        ).get
+    }
+
+    @Nested
+    inner class CheckPeriod {
+        @Test
+        fun success() {
+            val params = getParams()
+
+            val entity = PeriodEntity(
+                cpId = CPID.toString(),
+                stage = OCID.stage.toString(),
+                startDate = params.date.minusDays(1).toDate(),
+                endDate = params.date.plusDays(1).toDate()
+            )
+            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            val actual = periodService.checkPeriod(params)
+
+            assertTrue(actual is ValidationResult.Ok)
+        }
+
+        @Test
+        fun periodNotFound_fail() {
+            val params = getParams()
+
+            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(null.asSuccess())
+            val actual = periodService.checkPeriod(params).error
+
+            val expectedErrorCode = "VR.COM-13.6.1"
+            val expectedErrorDescription = "Tender period by cpid '${params.cpid}' and ocid '${params.ocid}' not found."
+
+            assertEquals(expectedErrorCode, actual.code)
+            assertEquals(expectedErrorDescription, actual.description)
+        }
+
+        @Test
+        fun datePrecedesStartDate_fail() {
+            val params = getParams()
+
+            val entity = PeriodEntity(
+                cpId = CPID.toString(),
+                stage = OCID.stage.toString(),
+                startDate = params.date.plusSeconds(1).toDate(),
+                endDate = params.date.plusDays(1).toDate()
+            )
+
+            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            val actual = periodService.checkPeriod(params).error
+
+            val expectedErrorCode = "VR.COM-13.6.2"
+            val expectedErrorDescription = "Received date must be after stored start date."
+
+            assertEquals(expectedErrorCode, actual.code)
+            assertEquals(expectedErrorDescription, actual.description)
+        }
+
+        @Test
+        fun dateEqualsStartDate_fail() {
+            val params = getParams()
+
+            val entity = PeriodEntity(
+                cpId = CPID.toString(),
+                stage = OCID.stage.toString(),
+                startDate = params.date.toDate(),
+                endDate = params.date.plusDays(1).toDate()
+            )
+
+            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            val actual = periodService.checkPeriod(params).error
+
+            val expectedErrorCode = "VR.COM-13.6.2"
+            val expectedErrorDescription = "Received date must be after stored start date."
+
+            assertEquals(expectedErrorCode, actual.code)
+            assertEquals(expectedErrorDescription, actual.description)
+        }
+
+        @Test
+        fun dateIsAfterEndDate_fail() {
+            val params = getParams()
+
+            val entity = PeriodEntity(
+                cpId = CPID.toString(),
+                stage = OCID.stage.toString(),
+                startDate = params.date.minusSeconds(1).toDate(),
+                endDate = params.date.minusSeconds(1).toDate()
+            )
+
+            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            val actual = periodService.checkPeriod(params).error
+
+            val expectedErrorCode = "VR.COM-13.6.3"
+            val expectedErrorDescription = "Received date must precede stored end date."
+
+            assertEquals(expectedErrorCode, actual.code)
+            assertEquals(expectedErrorDescription, actual.description)
+        }
+
+        @Test
+        fun dateEqualsEndDate_fail() {
+            val params = getParams()
+
+            val entity = PeriodEntity(
+                cpId = CPID.toString(),
+                stage = OCID.stage.toString(),
+                startDate = params.date.minusSeconds(1).toDate(),
+                endDate = params.date.toDate()
+            )
+
+            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            val actual = periodService.checkPeriod(params).error
+
+            val expectedErrorCode = "VR.COM-13.6.3"
+            val expectedErrorDescription = "Received date must precede stored end date."
+
+            assertEquals(expectedErrorCode, actual.code)
+            assertEquals(expectedErrorDescription, actual.description)
+        }
+
+        private fun getParams() = CheckPeriodParams.tryCreate(
+            cpid = CPID.toString(),
+            ocid = OCID.toString(),
+            date = DATE.format()
         ).get
     }
 }
