@@ -335,7 +335,9 @@ data class GetBidsByLotsResponse(
 
         data class RequirementResponse(
             @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
-            @param:JsonProperty("title") @field:JsonProperty("title") val title: String,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @param:JsonProperty("title") @field:JsonProperty("title") val title: String?,
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
             @param:JsonProperty("description") @field:JsonProperty("description") val description: String?,
