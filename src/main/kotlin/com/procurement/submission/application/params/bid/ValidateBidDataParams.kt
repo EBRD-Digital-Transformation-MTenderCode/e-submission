@@ -237,7 +237,7 @@ data class ValidateBidDataParams(
             data class Document(
                 val id: DocumentId,
                 val title: String,
-                val description: String,
+                val description: String?,
                 val relatedLots: List<String>,
                 val documentType: DocumentType
             )
