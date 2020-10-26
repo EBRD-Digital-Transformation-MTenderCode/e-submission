@@ -35,6 +35,8 @@ data class ValidateBidDataRequest(
                 @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
                 @param:JsonProperty("name") @field:JsonProperty("name") val name: String,
                 @param:JsonProperty("identifier") @field:JsonProperty("identifier") val identifier: Identifier,
+
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @param:JsonProperty("additionalIdentifiers") @field:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
 
                 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -153,7 +155,9 @@ data class ValidateBidDataRequest(
                     @JsonInclude(JsonInclude.Include.NON_NULL)
                     @param:JsonProperty("typeOfSupplier") @field:JsonProperty("typeOfSupplier") val typeOfSupplier: String?,
 
+                    @JsonInclude(JsonInclude.Include.NON_EMPTY)
                     @param:JsonProperty("mainEconomicActivities") @field:JsonProperty("mainEconomicActivities") val mainEconomicActivities: List<MainEconomicActivity>?,
+
                     @param:JsonProperty("scale") @field:JsonProperty("scale") val scale: String,
 
                     @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -278,7 +282,9 @@ data class ValidateBidDataRequest(
             data class Document(
                 @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
                 @param:JsonProperty("title") @field:JsonProperty("title") val title: String,
-                @param:JsonProperty("description") @field:JsonProperty("description") val description: String,
+
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @param:JsonProperty("description") @field:JsonProperty("description") val description: String?,
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @param:JsonProperty("relatedLots") @field:JsonProperty("relatedLots") val relatedLots: List<String>?,
@@ -303,7 +309,9 @@ data class ValidateBidDataRequest(
     }
 
     data class Tender(
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         @param:JsonProperty("procurementMethodModalities") @field:JsonProperty("procurementMethodModalities") val procurementMethodModalities: List<String>?,
+
         @param:JsonProperty("value") @field:JsonProperty("value") val value: Value,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
