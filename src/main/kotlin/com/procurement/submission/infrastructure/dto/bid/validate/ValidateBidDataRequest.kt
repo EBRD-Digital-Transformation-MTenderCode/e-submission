@@ -2,6 +2,7 @@ package com.procurement.submission.infrastructure.dto.bid.validate
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import java.math.BigDecimal
 
 data class ValidateBidDataRequest(
     @param:JsonProperty("bids") @field:JsonProperty("bids") val bids: Bids,
@@ -26,7 +27,7 @@ data class ValidateBidDataRequest(
             @param:JsonProperty("items") @field:JsonProperty("items") val items: List<Item>?
         ) {
             data class Value(
-                @param:JsonProperty("amount") @field:JsonProperty("amount") val amount: Int,
+                @param:JsonProperty("amount") @field:JsonProperty("amount") val amount: BigDecimal,
                 @param:JsonProperty("currency") @field:JsonProperty("currency") val currency: String
             )
 
@@ -293,7 +294,7 @@ data class ValidateBidDataRequest(
                     @param:JsonProperty("value") @field:JsonProperty("value") val value: Value
                 ) {
                     data class Value(
-                        @param:JsonProperty("amount") @field:JsonProperty("amount") val amount: Int,
+                        @param:JsonProperty("amount") @field:JsonProperty("amount") val amount: BigDecimal,
                         @param:JsonProperty("currency") @field:JsonProperty("currency") val currency: String
                     )
                 }
