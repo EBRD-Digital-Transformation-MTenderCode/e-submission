@@ -713,7 +713,8 @@ class BidService(
                 DocumentType.ILLUSTRATION,
                 DocumentType.COMMERCIAL_OFFER,
                 DocumentType.QUALIFICATION_DOCUMENTS,
-                DocumentType.TECHNICAL_DOCUMENTS -> Unit
+                DocumentType.TECHNICAL_DOCUMENTS,
+                DocumentType.REGULATORY_DOCUMENT -> Unit
             }
         }
     }
@@ -809,7 +810,8 @@ class BidService(
                 DocumentType.ILLUSTRATION,
                 DocumentType.COMMERCIAL_OFFER,
                 DocumentType.QUALIFICATION_DOCUMENTS,
-                DocumentType.TECHNICAL_DOCUMENTS -> Unit
+                DocumentType.TECHNICAL_DOCUMENTS,
+                DocumentType.REGULATORY_DOCUMENT -> Unit
             }
         }
     }
