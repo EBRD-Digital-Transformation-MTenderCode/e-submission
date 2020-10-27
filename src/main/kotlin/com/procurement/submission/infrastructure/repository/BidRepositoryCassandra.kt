@@ -12,6 +12,9 @@ import com.procurement.submission.domain.functional.asFailure
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
+import com.procurement.submission.domain.model.Owner
+import com.procurement.submission.domain.model.enums.Stage
+import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.entity.BidEntityComplex
@@ -87,34 +90,34 @@ class BidRepositoryCassandra(private val session: Session, private val transform
             }
 
         return BidEntityComplex(
-            cpid = getString(CPID_COLUMN),
+            cpid = Cpid.tryCreateOrNull(getString(CPID_COLUMN))!!,
             bidId = getUUID(BID_ID_COLUMN),
             token = getUUID(TOKEN_COLUMN),
-            stage = getString(STAGE_COLUMN),
-            owner = getString(OWNER_COLUMN),
-            status = getString(STATUS_COLUMN),
+            stage = Stage.creator(getString(STAGE_COLUMN)),
+            owner = Owner.fromString(getString(OWNER_COLUMN)),
+            status = Status.creator(getString(STATUS_COLUMN)),
             createdDate = getTimestamp(CREATED_DATE_COLUMN),
             pendingDate = getTimestamp(PENDING_DATE_COLUMN),
-            jsonData = entity
+            bid = entity
         ).asSuccess()
     }
 
-    override fun saveAll(cpid: Cpid, ocid: Ocid, bidEntities: List<BidEntityComplex>): MaybeFail<Fail.Incident> {
+    override fun saveAll(bidEntities: List<BidEntityComplex>): MaybeFail<Fail.Incident> {
         val statement = BatchStatement()
 
         bidEntities.forEach { bidEntity ->
-            val data = generateJsonData(bidEntity.jsonData)
+            val data = generateJsonData(bidEntity.bid)
                 .doReturn { fail -> return MaybeFail.fail(fail) }
 
             statement.add(
                 preparedSaveCQL.bind()
                     .apply {
-                        setString(CPID_COLUMN, cpid.toString())
-                        setString(STAGE_COLUMN, ocid.stage.toString())
+                        setString(CPID_COLUMN, bidEntity.cpid.toString())
+                        setString(STAGE_COLUMN, bidEntity.stage.toString())
                         setString(BID_ID_COLUMN, bidEntity.bidId.toString())
                         setUUID(TOKEN_COLUMN, bidEntity.token)
-                        setString(OWNER_COLUMN, bidEntity.owner)
-                        setString(STATUS_COLUMN, bidEntity.status)
+                        setString(OWNER_COLUMN, bidEntity.owner.toString())
+                        setString(STATUS_COLUMN, bidEntity.status.toString())
                         setTimestamp(CREATED_DATE_COLUMN, bidEntity.createdDate)
                         setTimestamp(PENDING_DATE_COLUMN, bidEntity.pendingDate)
                         setString(JSON_DATA_COLUMN, data)

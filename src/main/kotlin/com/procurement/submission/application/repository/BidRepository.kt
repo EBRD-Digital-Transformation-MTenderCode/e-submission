@@ -9,5 +9,4 @@ import com.procurement.submission.model.entity.BidEntityComplex
 
 interface BidRepository {
     fun findBy(cpid: Cpid, ocid: Ocid): Result<List<BidEntityComplex>, Fail.Incident>
-    fun saveAll(cpid: Cpid, ocid: Ocid, bidEntities: List<BidEntityComplex>): MaybeFail<Fail.Incident>
-}
+    fun saveAll(bidEntities: List<BidEntityComplex>): MaybeFail<Fail.Incident>}
