@@ -42,12 +42,17 @@ import com.procurement.submission.application.model.data.bid.status.FinalBidsSta
 import com.procurement.submission.application.model.data.bid.status.FinalizedBidsStatusByLots
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
+import com.procurement.submission.application.params.bid.CreateBidParams
+import com.procurement.submission.application.repository.BidRepository
 import com.procurement.submission.application.repository.InvitationRepository
 import com.procurement.submission.domain.extension.nowDefaultUTC
 import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.extension.toLocal
 import com.procurement.submission.domain.extension.toSetBy
+import com.procurement.submission.domain.fail.Fail
+import com.procurement.submission.domain.functional.Result
+import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
@@ -65,8 +70,10 @@ import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.infrastructure.converter.convert
+import com.procurement.submission.infrastructure.converter.convertToCreateBidResult
 import com.procurement.submission.infrastructure.converter.toBidsForEvaluationResponseData
 import com.procurement.submission.infrastructure.dao.BidDao
+import com.procurement.submission.infrastructure.dto.bid.create.CreateBidResult
 import com.procurement.submission.model.dto.BidDetails
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
@@ -107,6 +114,7 @@ import com.procurement.submission.model.dto.response.BidCreateResponse
 import com.procurement.submission.model.dto.response.BidRs
 import com.procurement.submission.model.dto.response.BidsCopyRs
 import com.procurement.submission.model.entity.BidEntity
+import com.procurement.submission.model.entity.BidEntityComplex
 import com.procurement.submission.utils.containsAny
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
@@ -123,6 +131,7 @@ class BidService(
     private val rulesService: RulesService,
     private val periodService: PeriodService,
     private val bidDao: BidDao,
+    private val bidRepository: BidRepository,
     private val invitationRepository: InvitationRepository
 ) {
 
@@ -141,7 +150,12 @@ class BidService(
         checkBusinessFunctionTypeOfDocumentsCreateBid(bidRequest)   // FReq-1.2.1.19
         checkOneAuthority(bid = bidRequest)                         // FReq-1.2.1.20
         checkBusinessFunctionsPeriod(bidRequest, context.startDate) // FReq-1.2.1.39
-        checkTenderersInvitations(context.cpid, context.pmd, bidRequest.tenderers, ::getInvitedTenderers) // FReq-1.2.1.46
+        checkTenderersInvitations(
+            context.cpid,
+            context.pmd,
+            bidRequest.tenderers,
+            ::getInvitedTenderers
+        ) // FReq-1.2.1.46
 
         val requirementResponses = requirementResponseIdTempToPermanent(bidRequest.requirementResponses)
 
@@ -317,7 +331,7 @@ class BidService(
                     }
                     .toList()
             }
-            AwardCriteriaDetails.MANUAL    -> {
+            AwardCriteriaDetails.MANUAL -> {
                 activeBids.map { bid -> bid.convert() }
             }
         }
@@ -1817,7 +1831,7 @@ class BidService(
 
     fun getBidsByLots(context: GetBidsByLotsContext, data: GetBidsByLotsData): GetBidsByLotsResult {
         val lotsIds = data.lots
-            .toSetBy { it.id.toString()}
+            .toSetBy { it.id.toString() }
         val bids = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
             .asSequence()
             .map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }
@@ -2099,7 +2113,7 @@ class BidService(
                             GetBidsByLotsResult.Bid.RequirementResponse(
                                 id = requirementResponse.id,
                                 description = requirementResponse.description,
-                                title = requirementResponse.title,
+                                title = requirementResponse.title!!,
                                 value = requirementResponse.value,
                                 period = requirementResponse.period
                                     ?.let { period ->
@@ -2120,6 +2134,46 @@ class BidService(
             }
         )
     }
+
+    fun createBid(params: CreateBidParams): Result<CreateBidResult, Fail> {
+        val bidEntities = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid)
+            .orForwardFail { return it }
+
+        val receivedBid = params.bids.details.first()
+        val receivedTenderers = receivedBid.tenderers.toSetBy { it.id }
+
+        val bidEntityToWithdraw = bidEntities.firstOrNull { entity ->
+            val storedBidTenderers = entity.bid.tenderers.toSetBy { it.id }
+
+            storedBidTenderers == receivedTenderers
+                && entity.bid.isActive()
+        }
+
+        val updatedBidEntity = bidEntityToWithdraw?.copy(bid = bidEntityToWithdraw.bid.copy(status = Status.WITHDRAWN))
+        val createdBid = params.bids.details.first().convert(params.date)
+        val createdBidEntity = getEntity(params, createdBid)
+
+        bidRepository.saveAll(listOfNotNull(updatedBidEntity, createdBidEntity))
+
+        return createdBidEntity.bid.convertToCreateBidResult(createdBidEntity.token).asSuccess()
+    }
+
+    private fun Bid.isActive(): Boolean =
+        status == Status.PENDING &&
+            statusDetails == StatusDetails.EMPTY
+
+    fun getEntity(params: CreateBidParams, bid: Bid) = BidEntityComplex(
+        cpid = params.cpid,
+        status = bid.status,
+        bid = bid,
+        token = generationService.generateToken(),
+        bidId = UUID.fromString(bid.id),
+        createdDate = params.date.toDate(),
+        owner = params.owner,
+        pendingDate = params.date.toDate(),
+        stage = params.ocid.stage
+    )
+
 }
 
 fun checkTenderersInvitations(
