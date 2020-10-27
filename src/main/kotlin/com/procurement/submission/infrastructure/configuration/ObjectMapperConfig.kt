@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import com.procurement.submission.infrastructure.bind.amount.AmountModule
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueModule
 import com.procurement.submission.infrastructure.web.api.version.jackson.ApiVersion2Module
 import com.procurement.submission.model.dto.databinding.IntDeserializer
@@ -28,6 +29,7 @@ class ObjectMapperConfig(@Autowired objectMapper: ObjectMapper) {
         objectMapper.registerModule(module)
         objectMapper.registerModule(ApiVersion2Module())
         objectMapper.registerModule(RequirementValueModule())
+        objectMapper.registerModule(AmountModule())
         objectMapper.registerKotlinModule()
         objectMapper.configure(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS, true)
         objectMapper.configure(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS, true)
