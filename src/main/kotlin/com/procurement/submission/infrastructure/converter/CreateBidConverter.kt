@@ -122,8 +122,8 @@ private fun CreateBidRequest.Bids.Detail.RequirementResponse.Period.convert(path
     val startDate = parseDate(startDate, "$path.startDate")
         .orForwardFail { return it }
 
-    val endDate = endDate?.let { parseDate(it, "$path.endDate") }
-        ?.orForwardFail { return it }
+    val endDate = endDate.let { parseDate(it, "$path.endDate") }
+        .orForwardFail { return it }
 
     return CreateBidParams.Bids.Detail.RequirementResponse.Period(
         startDate = startDate,
@@ -145,7 +145,7 @@ private fun CreateBidRequest.Bids.Detail.Tenderer.convert(path: String): Result<
         .orEmpty()
         .map { additionalIdentifier -> additionalIdentifier.convert() }
 
-    val address = address?.convert()
+    val address = address.convert()
     val contactPoint = contactPoint.convert()
     val details = details.convert("$path.details").orForwardFail { return it }
     val identifier = identifier.convert()

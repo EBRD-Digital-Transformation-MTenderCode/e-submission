@@ -47,8 +47,7 @@ data class CreateBidRequest(
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @param:JsonProperty("additionalIdentifiers") @field:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
 
-                @JsonInclude(JsonInclude.Include.NON_NULL)
-                @param:JsonProperty("address") @field:JsonProperty("address") val address: Address?,
+                @param:JsonProperty("address") @field:JsonProperty("address") val address: Address,
 
                 @param:JsonProperty("contactPoint") @field:JsonProperty("contactPoint") val contactPoint: ContactPoint,
 
@@ -338,9 +337,7 @@ data class CreateBidRequest(
 
                 data class Period(
                     @param:JsonProperty("startDate") @field:JsonProperty("startDate") val startDate: String,
-
-                    @JsonInclude(JsonInclude.Include.NON_NULL)
-                    @param:JsonProperty("endDate") @field:JsonProperty("endDate") val endDate: String?
+                    @param:JsonProperty("endDate") @field:JsonProperty("endDate") val endDate: String
                 )
             }
         }

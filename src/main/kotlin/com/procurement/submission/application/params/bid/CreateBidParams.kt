@@ -48,7 +48,7 @@ data class CreateBidParams(
                 val name: String,
                 val identifier: Identifier,
                 val additionalIdentifiers: List<AdditionalIdentifier>,
-                val address: Address?,
+                val address: Address,
                 val contactPoint: ContactPoint,
                 val persones: List<Persone>,
                 val details: Details
@@ -284,7 +284,7 @@ data class CreateBidParams(
 
                 data class Period(
                     val startDate: LocalDateTime,
-                    val endDate: LocalDateTime?
+                    val endDate: LocalDateTime
                 )
             }
         }
