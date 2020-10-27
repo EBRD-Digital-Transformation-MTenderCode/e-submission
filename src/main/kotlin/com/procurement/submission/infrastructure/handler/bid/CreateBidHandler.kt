@@ -11,7 +11,6 @@ import com.procurement.submission.domain.functional.bind
 import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.dto.bid.create.CreateBidRequest
 import com.procurement.submission.infrastructure.dto.bid.create.CreateBidResult
-import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
 import com.procurement.submission.infrastructure.enums.Command2Type
 import com.procurement.submission.infrastructure.handler.AbstractHistoricalHandler2
 import com.procurement.submission.infrastructure.web.response.parser.tryGetParams
@@ -23,10 +22,10 @@ class CreateBidHandler(
     historyRepository: HistoryRepository,
     transform: Transform,
     private val bidService: BidService
-) : AbstractHistoricalHandler2<Command2Type, DoInvitationsResult>(
+) : AbstractHistoricalHandler2<Command2Type, CreateBidResult>(
     logger = logger,
     historyRepository = historyRepository,
-    target = DoInvitationsResult::class.java,
+    target = CreateBidResult::class.java,
     transform = transform
 ) {
     override val action: Command2Type = Command2Type.CREATE_BID
