@@ -12,6 +12,7 @@ import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.EnumElementProvider
@@ -94,6 +95,13 @@ fun parseDocumentType(
     attributeName: String
 ): Result<DocumentType, DataErrors> =
     parseEnum(value = value, allowedEnums = allowedEnums, attributeName = attributeName, target = DocumentType)
+
+fun parseBFDocumentType(
+    value: String,
+    allowedEnums: Set<BusinessFunctionDocumentType>,
+    attributeName: String
+): Result<BusinessFunctionDocumentType, DataErrors> =
+    parseEnum(value = value, allowedEnums = allowedEnums, attributeName = attributeName, target = BusinessFunctionDocumentType)
 
 fun parseTypeOfSupplier(
     value: String,
