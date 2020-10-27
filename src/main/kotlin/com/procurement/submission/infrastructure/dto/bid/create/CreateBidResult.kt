@@ -15,7 +15,6 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.item.ItemId
 import com.procurement.submission.domain.model.lot.LotId
-import com.procurement.submission.domain.model.requirement.RequirementResponseId
 import com.procurement.submission.model.dto.ocds.Amount
 import com.procurement.submission.model.dto.ocds.PersonId
 import java.time.LocalDateTime
@@ -338,7 +337,7 @@ data class CreateBidResult(
             }
 
             data class RequirementResponse(
-                @param:JsonProperty("id") @field:JsonProperty("id") val id: RequirementResponseId,
+                @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
                 @param:JsonProperty("value") @field:JsonProperty("value") val value: RequirementRsValue,
                 @param:JsonProperty("requirement") @field:JsonProperty("requirement") val requirement: Requirement,
 

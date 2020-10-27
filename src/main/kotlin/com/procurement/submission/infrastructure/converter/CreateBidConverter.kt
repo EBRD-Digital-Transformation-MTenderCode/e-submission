@@ -14,7 +14,6 @@ import com.procurement.submission.application.params.parseOwner
 import com.procurement.submission.application.params.parseParsePersonId
 import com.procurement.submission.application.params.parsePersonTitle
 import com.procurement.submission.application.params.parseRequirementId
-import com.procurement.submission.application.params.parseRequirementResponseId
 import com.procurement.submission.application.params.parseScale
 import com.procurement.submission.application.params.parseTypeOfSupplier
 import com.procurement.submission.application.params.rules.notEmptyRule
@@ -137,9 +136,6 @@ private fun CreateBidRequest.Bids.Detail.convert(path: String): Result<CreateBid
 }
 
 private fun CreateBidRequest.Bids.Detail.RequirementResponse.convert(path: String): Result<CreateBidParams.Bids.Detail.RequirementResponse, DataErrors> {
-    val id = parseRequirementResponseId(id, "$path.id")
-        .orForwardFail { return it }
-
     val requirement = requirement.convert(path)
         .orForwardFail { return it }
 
@@ -619,7 +615,7 @@ fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
     requirementResponses = requirementResponses
         .map { requirementResponse ->
             RequirementResponse(
-                id = requirementResponse.id.toString(),
+                id = requirementResponse.id,
                 value = requirementResponse.value,
                 requirement = Requirement(requirementResponse.requirement.id.toString()),
                 period = requirementResponse.period
@@ -916,7 +912,7 @@ fun Bid.convertToCreateBidResult(token: Token) = CreateBidResult(
                 requirementResponses = requirementResponses
                 ?.map { requirementResponse ->
                     CreateBidResult.Bids.Detail.RequirementResponse(
-                        id = UUID.fromString(requirementResponse.id),
+                        id = requirementResponse.id,
                         value = requirementResponse.value,
                         requirement = CreateBidResult.Bids.Detail.RequirementResponse.Requirement(
                             requirementResponse.requirement.id

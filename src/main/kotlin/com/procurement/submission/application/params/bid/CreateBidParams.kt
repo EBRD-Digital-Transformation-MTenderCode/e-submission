@@ -14,7 +14,6 @@ import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.item.ItemId
 import com.procurement.submission.domain.model.requirement.RequirementId
-import com.procurement.submission.domain.model.requirement.RequirementResponseId
 import com.procurement.submission.model.dto.ocds.Amount
 import com.procurement.submission.model.dto.ocds.PersonId
 import java.time.LocalDateTime
@@ -273,7 +272,7 @@ data class CreateBidParams(
             }
 
             data class RequirementResponse(
-                val id: RequirementResponseId,
+                val id: String,
                 val value: RequirementRsValue,
                 val requirement: Requirement,
                 val period: Period?
