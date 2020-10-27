@@ -55,11 +55,11 @@
           }
         ],
         "relatedLots": [
-          "string"
+          "9648796f-6f94-4208-983d-d934659ecfe6"
         ],
         "requirementResponses": [
           {
-            "id": "string",
+            "id": "b6f10f07-9421-404d-ba51-daea29749329",
             "value": "Unknown Type: string,number,integer,boolean",
             "requirement": {
               "id": "string"

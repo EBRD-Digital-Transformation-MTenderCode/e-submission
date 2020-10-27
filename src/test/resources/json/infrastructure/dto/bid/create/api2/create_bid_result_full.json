@@ -176,7 +176,7 @@
           }
         ],
         "relatedLots": [
-          "string"
+          "704428c1-231b-4ae3-9dd5-3ad3b739e1c6"
         ],
         "documents": [
           {
@@ -184,7 +184,7 @@
             "title": "string",
             "description": "string",
             "relatedLots": [
-              "string"
+              "d3855400-0b31-453c-b152-132bdcd612d0"
             ],
             "documentType": "illustration"
           }
@@ -202,7 +202,7 @@
         ],
         "requirementResponses": [
           {
-            "id": "string",
+            "id": "6e7fe093-ceb4-4336-8a5f-19242a1b855e",
             "value": "Unknown Type: string,number,integer,boolean",
             "requirement": {
               "id": "string"
