@@ -6,6 +6,7 @@ import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.domain.model.Token
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.document.DocumentId
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.Scale
@@ -166,7 +167,7 @@ data class CreateBidResult(
                         )
 
                         data class Document(
-                            @param:JsonProperty("documentType") @field:JsonProperty("documentType") val documentType: DocumentType,
+                            @param:JsonProperty("documentType") @field:JsonProperty("documentType") val documentType: BusinessFunctionDocumentType,
                             @param:JsonProperty("id") @field:JsonProperty("id") val id: DocumentId,
                             @param:JsonProperty("title") @field:JsonProperty("title") val title: String,
 
