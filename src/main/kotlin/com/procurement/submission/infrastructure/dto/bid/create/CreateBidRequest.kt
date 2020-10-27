@@ -3,6 +3,7 @@ package com.procurement.submission.infrastructure.dto.bid.create
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.procurement.submission.application.model.data.RequirementRsValue
 import java.math.BigDecimal
 
 data class CreateBidRequest(
@@ -324,7 +325,7 @@ data class CreateBidRequest(
 
             data class RequirementResponse(
                 @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
-                @param:JsonProperty("value") @field:JsonProperty("value") val value: String,
+                @param:JsonProperty("value") @field:JsonProperty("value") val value: RequirementRsValue,
                 @param:JsonProperty("requirement") @field:JsonProperty("requirement") val requirement: Requirement,
 
                 @JsonInclude(JsonInclude.Include.NON_NULL)
