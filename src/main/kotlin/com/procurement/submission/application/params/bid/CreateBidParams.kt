@@ -3,6 +3,7 @@ package com.procurement.submission.application.params.bid
 import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
+import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.document.DocumentId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
@@ -22,7 +23,8 @@ data class CreateBidParams(
     val cpid: Cpid,
     val ocid: Ocid,
     val bids: Bids,
-    val date: LocalDateTime
+    val date: LocalDateTime,
+    val owner: Owner
 ) {
     data class Bids(
         val details: List<Detail>

@@ -10,7 +10,8 @@ data class CreateBidRequest(
     @param:JsonProperty("cpid") @field:JsonProperty("cpid") val cpid: String,
     @param:JsonProperty("ocid") @field:JsonProperty("ocid") val ocid: String,
     @param:JsonProperty("bids") @field:JsonProperty("bids") val bids: Bids,
-    @param:JsonProperty("date") @field:JsonProperty("date") val date: String
+    @param:JsonProperty("date") @field:JsonProperty("date") val date: String,
+    @param:JsonProperty("owner") @field:JsonProperty("owner") val owner: String
 ) {
     data class Bids(
         @param:JsonProperty("details") @field:JsonProperty("details") val details: List<Detail>

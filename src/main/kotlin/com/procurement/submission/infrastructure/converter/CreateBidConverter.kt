@@ -2,6 +2,7 @@ package com.procurement.submission.infrastructure.converter
 
 import com.procurement.submission.application.params.bid.CreateBidParams
 import com.procurement.submission.application.params.parseAmount
+import com.procurement.submission.application.params.parseBFDocumentType
 import com.procurement.submission.application.params.parseBidId
 import com.procurement.submission.application.params.parseBusinessFunctionType
 import com.procurement.submission.application.params.parseCpid
@@ -9,6 +10,7 @@ import com.procurement.submission.application.params.parseDate
 import com.procurement.submission.application.params.parseDocumentType
 import com.procurement.submission.application.params.parseItemId
 import com.procurement.submission.application.params.parseOcid
+import com.procurement.submission.application.params.parseOwner
 import com.procurement.submission.application.params.parseParsePersonId
 import com.procurement.submission.application.params.parsePersonTitle
 import com.procurement.submission.application.params.parseRequirementId
@@ -22,6 +24,7 @@ import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.functional.bind
 import com.procurement.submission.domain.functional.validate
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.PersonTitle
@@ -35,12 +38,15 @@ fun CreateBidRequest.convert(): Result<CreateBidParams, DataErrors> {
     val cpid = parseCpid(cpid).orForwardFail { return it }
     val ocid = parseOcid(ocid).orForwardFail { return it }
     val date = parseDate(date, "$path.date").orForwardFail { return it }
+    val owner = parseOwner(owner).orForwardFail { return it }
+    val bids = bids.convert(path).orForwardFail { return it }
 
     return CreateBidParams(
         cpid = cpid,
         ocid = ocid,
         date = date,
-        bids = bids.convert(path).orForwardFail { return it }
+        bids = bids,
+        owner = owner
     ).asSuccess()
 }
 
@@ -219,22 +225,16 @@ private fun CreateBidRequest.Bids.Detail.Tenderer.Persone.BusinessFunction.conve
     ).asSuccess()
 }
 
-private val allowedBFDocumentType = DocumentType.allowedElements
+private val allowedBFDocumentType = BusinessFunctionDocumentType.allowedElements
     .filter {
         when (it) {
-            DocumentType.REGULATORY_DOCUMENT -> true
-            DocumentType.TECHNICAL_DOCUMENTS,
-            DocumentType.SUBMISSION_DOCUMENTS,
-            DocumentType.QUALIFICATION_DOCUMENTS,
-            DocumentType.ILLUSTRATION,
-            DocumentType.ELIGIBILITY_DOCUMENTS,
-            DocumentType.COMMERCIAL_OFFER -> false
+            BusinessFunctionDocumentType.REGULATORY_DOCUMENT -> true
         }
     }
     .toSet()
 
 private fun CreateBidRequest.Bids.Detail.Tenderer.Persone.BusinessFunction.Document.convert(path: String): Result<CreateBidParams.Bids.Detail.Tenderer.Persone.BusinessFunction.Document, DataErrors> {
-    val documentType = parseDocumentType(documentType, allowedBFDocumentType, "$path.documentType")
+    val documentType = parseBFDocumentType(documentType, allowedBFDocumentType, "$path.documentType")
         .orForwardFail { return it }
 
     return CreateBidParams.Bids.Detail.Tenderer.Persone.BusinessFunction.Document(
@@ -505,7 +505,6 @@ private val allowedBidDocumentType = DocumentType.allowedElements
             DocumentType.QUALIFICATION_DOCUMENTS,
             DocumentType.SUBMISSION_DOCUMENTS,
             DocumentType.TECHNICAL_DOCUMENTS -> true
-            DocumentType.REGULATORY_DOCUMENT -> false
         }
     }.toSet()
 
