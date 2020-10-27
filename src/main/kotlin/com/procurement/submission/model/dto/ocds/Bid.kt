@@ -37,5 +37,5 @@ data class Bid @JsonCreator constructor(
         val requirementResponses: List<RequirementResponse>?,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        var items: List<Item>?
+        var items: List<Item>? = null
 )
