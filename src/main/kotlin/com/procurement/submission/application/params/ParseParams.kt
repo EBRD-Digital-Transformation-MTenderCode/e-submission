@@ -25,8 +25,11 @@ import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.item.ItemId
 import com.procurement.submission.domain.model.qualification.QualificationId
+import com.procurement.submission.domain.model.requirement.RequirementId
+import com.procurement.submission.domain.model.requirement.RequirementResponseId
 import com.procurement.submission.domain.model.tryOwner
 import com.procurement.submission.model.dto.ocds.Amount
+import com.procurement.submission.model.dto.ocds.PersonId
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
@@ -208,6 +211,41 @@ fun parseItemId(
             actualValue = value
         ).asFailure()
     else ItemId.create(value).asSuccess()
+
+fun parseRequirementResponseId(
+    value: String, attributeName: String
+): Result<RequirementResponseId, DataErrors.Validation.DataMismatchToPattern> {
+    val id = value.tryUUID().doReturn {
+        return DataErrors.Validation.DataMismatchToPattern(
+            name = attributeName,
+            pattern = UUID_PATTERN,
+            actualValue = value
+        ).asFailure()
+    }
+    return id.asSuccess()
+}
+
+fun parseRequirementId(
+    value: String, attributeName: String
+): Result<RequirementId, DataErrors.Validation.DataMismatchToPattern> {
+    val id = value.tryUUID().doReturn {
+        return DataErrors.Validation.DataMismatchToPattern(
+            name = attributeName,
+            pattern = UUID_PATTERN,
+            actualValue = value
+        ).asFailure()
+    }
+    return id.asSuccess()
+}
+
+fun parseParsePersonId(
+    value: String, attributeName: String
+): Result<PersonId, DataErrors.Validation.EmptyString> {
+    val id = PersonId.parse(value) ?:
+        return DataErrors.Validation.EmptyString(name = attributeName).asFailure()
+
+    return id.asSuccess()
+}
 
 fun parseAmount(
     value: BigDecimal, attributeName: String
