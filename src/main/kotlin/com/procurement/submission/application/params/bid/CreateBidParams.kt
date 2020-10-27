@@ -5,6 +5,7 @@ import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.document.DocumentId
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.PersonTitle
@@ -130,7 +131,7 @@ data class CreateBidParams(
                         )
 
                         data class Document(
-                            val documentType: DocumentType,
+                            val documentType: BusinessFunctionDocumentType,
                             val id: DocumentId,
                             val title: String,
                             val description: String?
