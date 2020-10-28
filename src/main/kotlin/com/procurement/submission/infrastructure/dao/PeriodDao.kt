@@ -8,6 +8,10 @@ import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.functional.MaybeFail
+import com.procurement.submission.domain.functional.Result
+import com.procurement.submission.domain.functional.asSuccess
+import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.enums.Stage
 import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
 import com.procurement.submission.model.entity.PeriodEntity
 import org.springframework.stereotype.Service
@@ -31,9 +35,18 @@ class PeriodDao(private val session: Session) {
                       $END_DATE_COLUMN)
                   VALUES ( ?, ?, ?, ? )
             """
+
+        private const val GET_CQL = """
+               SELECT $START_DATE_COLUMN,
+                      $END_DATE_COLUMN
+                 FROM $KEYSPACE.$PERIOD_TABLE
+                WHERE $CPID_COLUMN=?
+                  AND $STAGE_COLUMN=?
+            """
     }
 
     private val preparedSaveCQL = session.prepare(SAVE_CQL)
+    private val preparedGetCQL = session.prepare(GET_CQL)
 
     fun save(entity: PeriodEntity) {
         val insert =
@@ -73,5 +86,25 @@ class PeriodDao(private val session: Session) {
             .doOnError { error -> return MaybeFail.fail(error) }
 
         return MaybeFail.none()
+    }
+
+    fun tryGetBy(cpid: Cpid, stage: Stage): Result<PeriodEntity?, Fail.Incident.Database.Interaction> {
+        val query = preparedGetCQL.bind()
+            .apply {
+                setString(CPID_COLUMN, cpid.toString())
+                setString(STAGE_COLUMN, stage.key)
+            }
+
+        return query.tryExecute(session)
+            .orForwardFail { fail -> return fail }
+            .one()
+            ?.let {
+                PeriodEntity(
+                    cpId = cpid.toString(),
+                    stage = stage.key,
+                    startDate = it.getTimestamp(START_DATE_COLUMN),
+                    endDate = it.getTimestamp(END_DATE_COLUMN)
+                )
+            }.asSuccess()
     }
 }

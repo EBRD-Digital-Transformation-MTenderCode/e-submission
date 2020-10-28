@@ -154,7 +154,7 @@ private fun <T> parseEnum(
             )
         )
 
-fun parseDate(value: String, attributeName: String): Result<LocalDateTime, DataErrors.Validation> =
+fun parseDate(value: String, attributeName: String = "date"): Result<LocalDateTime, DataErrors.Validation> =
     value.tryParseLocalDateTime()
         .mapError { fail ->
             when (fail) {
