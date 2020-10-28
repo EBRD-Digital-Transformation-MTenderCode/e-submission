@@ -167,9 +167,6 @@
             "value": "Unknown Type: string,number,integer,boolean",
             "requirement": {
               "id": "string"
-            },
-            "period": {
-              "startDate": "2020-10-26T18:11:40Z"
             }
           }
         ]
