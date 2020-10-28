@@ -38,7 +38,9 @@ class BidRepositoryCassandra(private val session: Session, private val transform
         private const val JSON_DATA_COLUMN = "json_data"
 
         private const val FIND_BY_CQL = """
-               SELECT $BID_ID_COLUMN,
+               SELECT $CPID_COLUMN,
+                      $STAGE_COLUMN,
+                      $BID_ID_COLUMN,
                       $TOKEN_COLUMN,
                       $OWNER_COLUMN,
                       $STATUS_COLUMN,
@@ -114,7 +116,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
                     .apply {
                         setString(CPID_COLUMN, bidEntity.cpid.toString())
                         setString(STAGE_COLUMN, bidEntity.stage.toString())
-                        setString(BID_ID_COLUMN, bidEntity.bidId.toString())
+                        setUUID(BID_ID_COLUMN, bidEntity.bidId)
                         setUUID(TOKEN_COLUMN, bidEntity.token)
                         setString(OWNER_COLUMN, bidEntity.owner.toString())
                         setString(STATUS_COLUMN, bidEntity.status.toString())
