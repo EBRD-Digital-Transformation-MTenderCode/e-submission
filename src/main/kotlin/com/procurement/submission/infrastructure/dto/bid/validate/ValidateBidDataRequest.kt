@@ -38,9 +38,7 @@ data class ValidateBidDataRequest(
 
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @param:JsonProperty("additionalIdentifiers") @field:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
-
-                @JsonInclude(JsonInclude.Include.NON_NULL)
-                @param:JsonProperty("address") @field:JsonProperty("address") val address: Address?,
+                @param:JsonProperty("address") @field:JsonProperty("address") val address: Address,
 
                 @param:JsonProperty("contactPoint") @field:JsonProperty("contactPoint") val contactPoint: ContactPoint,
 

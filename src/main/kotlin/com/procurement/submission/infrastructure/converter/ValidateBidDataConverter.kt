@@ -126,7 +126,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.convert(path: String): R
         .orEmpty()
         .map { additionalIdentifier -> additionalIdentifier.convert() }
 
-    val address = address?.convert()
+    val address = address.convert()
     val contactPoint = contactPoint.convert()
     val details = details.convert("$path.details").orForwardFail { return it }
     val identifier = identifier.convert()
