@@ -2,6 +2,7 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.application.params.CheckPeriodParams
 import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
 import com.procurement.submission.domain.extension.parseLocalDateTime
@@ -289,5 +290,19 @@ class PeriodService(
                 )
             )
         ).asSuccess()
+    }
+
+    fun checkPeriod(params: CheckPeriodParams): ValidationResult<Fail>{
+        val tenderPeriod = periodDao.tryGetBy(params.cpid, params.ocid.stage)
+            .doReturn { error -> return error.asValidationFailure() }
+            ?: return ValidationError.TenderPeriodNotFound(params.cpid, params.ocid).asValidationFailure()
+
+        if (!params.date.isAfter(tenderPeriod.startDate.toLocal()))
+            return ValidationError.ReceivedDatePrecedesStoredStartDate().asValidationFailure()
+
+        if (!params.date.isBefore(tenderPeriod.endDate.toLocal()))
+            return ValidationError.ReceivedDateIsAfterStoredEndDate().asValidationFailure()
+
+        return ValidationResult.ok()
     }
 }

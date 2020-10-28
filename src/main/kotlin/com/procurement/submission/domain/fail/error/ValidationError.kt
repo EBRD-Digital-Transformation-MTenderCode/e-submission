@@ -2,6 +2,7 @@ package com.procurement.submission.domain.fail.error
 
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.OperationType
@@ -58,6 +59,24 @@ sealed class ValidationError(
         ValidationError(
             numberError = "13.3.1",
             description = "Invitations in status '${InvitationStatus.PENDING}' was not found by cpid = '$cpid'"
+        )
+
+    class TenderPeriodNotFound(cpid: Cpid, ocid: Ocid) :
+        ValidationError(
+            numberError = "13.6.1",
+            description = "Tender period by cpid '$cpid' and ocid '$ocid' not found."
+        )
+
+    class ReceivedDatePrecedesStoredStartDate() :
+        ValidationError(
+            numberError = "13.6.2",
+            description = "Received date must be after stored start date."
+        )
+
+    class ReceivedDateIsAfterStoredEndDate() :
+        ValidationError(
+            numberError = "13.6.3",
+            description = "Received date must precede stored end date."
         )
 
     class MissingBidValue(bidId: BidId) :

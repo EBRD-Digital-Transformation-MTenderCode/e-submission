@@ -82,7 +82,7 @@ class PeriodDaoIT {
     }
 
     @Test
-    fun trySave() {
+    fun trySave_success() {
         val expectedPeriod = stubPeriod()
         periodDao.trySave(expectedPeriod)
 
@@ -99,7 +99,7 @@ class PeriodDaoIT {
     }
 
     @Test
-    fun findBy_executeException_fail() {
+    fun trySave_executeException_fail() {
         doThrow(RuntimeException())
             .whenever(session)
             .execute(any<BoundStatement>())
@@ -108,6 +108,15 @@ class PeriodDaoIT {
         val result = periodDao.trySave(expectedPeriod)
 
         Assertions.assertTrue(result is MaybeFail.Fail)
+    }
+
+    @Test
+    fun tryFindBy_success() {
+        val expectedPeriod = stubPeriod()
+        periodDao.trySave(expectedPeriod)
+        val actual = periodDao.tryGetBy(CPID, STAGE).get
+
+        assertEquals(expectedPeriod, actual)
     }
 
     private fun dropKeyspace() {

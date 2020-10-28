@@ -7,6 +7,7 @@ import com.procurement.submission.infrastructure.handler.bid.ValidateBidDataHand
 import com.procurement.submission.infrastructure.handler.invitation.CheckAbsenceActiveInvitationsHandler
 import com.procurement.submission.infrastructure.handler.invitation.DoInvitationsHandler
 import com.procurement.submission.infrastructure.handler.invitation.PublishInvitationsHandler
+import com.procurement.submission.infrastructure.handler.tender.period.CheckPeriodHandler
 import com.procurement.submission.infrastructure.handler.tender.period.SetTenderPeriodHandler
 import com.procurement.submission.infrastructure.handler.tender.period.ValidateTenderPeriodHandler
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
@@ -24,7 +25,8 @@ class Command2Service(
     private val validateBidDataHandler: ValidateBidDataHandler,
     private val validateTenderPeriodHandler: ValidateTenderPeriodHandler,
     private val setTenderPeriodHandler: SetTenderPeriodHandler,
-    private val publishInvitationsHandler: PublishInvitationsHandler
+    private val publishInvitationsHandler: PublishInvitationsHandler,
+    private val checkPeriodHandler: CheckPeriodHandler
 ) {
 
     fun execute(node: JsonNode): ApiResponse2 {
@@ -53,6 +55,7 @@ class Command2Service(
             Command2Type.VALIDATE_TENDER_PERIOD -> validateTenderPeriodHandler.handle(node)
             Command2Type.SET_TENDER_PERIOD -> setTenderPeriodHandler.handle(node)
             Command2Type.PUBLISH_INVITATIONS -> publishInvitationsHandler.handle(node)
+            Command2Type.CHECK_PERIOD -> checkPeriodHandler.handle(node)
         }
     }
 }
