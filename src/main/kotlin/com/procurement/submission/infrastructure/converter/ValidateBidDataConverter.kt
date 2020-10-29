@@ -2,6 +2,7 @@ package com.procurement.submission.infrastructure.converter
 
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
 import com.procurement.submission.application.params.parseAmount
+import com.procurement.submission.application.params.parseBFDocumentType
 import com.procurement.submission.application.params.parseBidId
 import com.procurement.submission.application.params.parseBusinessFunctionType
 import com.procurement.submission.application.params.parseDate
@@ -18,6 +19,7 @@ import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.functional.bind
 import com.procurement.submission.domain.functional.validate
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.PersonTitle
@@ -207,22 +209,16 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction
     ).asSuccess()
 }
 
-private val allowedBFDocumentType = DocumentType.allowedElements
+private val allowedBFDocumentType = BusinessFunctionDocumentType.allowedElements
     .filter {
         when (it) {
-            DocumentType.REGULATORY_DOCUMENT -> true
-            DocumentType.TECHNICAL_DOCUMENTS,
-            DocumentType.SUBMISSION_DOCUMENTS,
-            DocumentType.QUALIFICATION_DOCUMENTS,
-            DocumentType.ILLUSTRATION,
-            DocumentType.ELIGIBILITY_DOCUMENTS,
-            DocumentType.COMMERCIAL_OFFER    -> false
+            BusinessFunctionDocumentType.REGULATORY_DOCUMENT -> true
         }
     }
     .toSet()
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction.Document.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction.Document, DataErrors> {
-    val documentType = parseDocumentType(documentType, allowedBFDocumentType, "$path.documentType")
+    val documentType = parseBFDocumentType(documentType, allowedBFDocumentType, "$path.documentType")
         .orForwardFail { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction.Document(
@@ -490,7 +486,6 @@ private val allowedBidDocumentType = DocumentType.allowedElements
             DocumentType.QUALIFICATION_DOCUMENTS,
             DocumentType.SUBMISSION_DOCUMENTS,
             DocumentType.TECHNICAL_DOCUMENTS -> true
-            DocumentType.REGULATORY_DOCUMENT -> false
         }
     }.toSet()
 

@@ -2,6 +2,7 @@ package com.procurement.submission.application.params.bid
 
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.document.DocumentId
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.PersonTitle
@@ -119,7 +120,7 @@ data class ValidateBidDataParams(
                         )
 
                         data class Document(
-                            val documentType: DocumentType,
+                            val documentType: BusinessFunctionDocumentType,
                             val id: String,
                             val title: String,
                             val description: String?
