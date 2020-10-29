@@ -114,6 +114,8 @@ class BidRepositoryIT {
                     Item(
                         id = ItemId.generate(),
                         unit = Item.Unit(
+                            id = "id",
+                            name = "name",
                             value = Value(
                                 amount = BigDecimal.ONE.setScale(Amount.AVAILABLE_SCALE),
                                 currency = "value.currency"
