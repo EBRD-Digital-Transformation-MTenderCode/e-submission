@@ -6,9 +6,13 @@ import com.procurement.submission.application.service.checkTenderersInvitations
 import com.procurement.submission.application.service.checkTenderersInvitedToTender
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.ProcurementMethod
-import junit.framework.Assert.assertEquals
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertThrows
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CreateBidTest {

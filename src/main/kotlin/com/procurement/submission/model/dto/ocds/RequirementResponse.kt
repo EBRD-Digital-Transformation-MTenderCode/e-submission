@@ -11,7 +11,9 @@ import com.procurement.submission.infrastructure.bind.criteria.RequirementValueS
 
 data class RequirementResponse @JsonCreator constructor(
     val id: String,
-    val title: String,
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonProperty("title") @param:JsonProperty("title") val title: String?,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val description: String?,
