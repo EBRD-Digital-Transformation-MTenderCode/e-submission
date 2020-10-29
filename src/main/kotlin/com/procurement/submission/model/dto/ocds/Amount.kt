@@ -14,7 +14,7 @@ class Amount private constructor(val value: BigDecimal) : Serializable {
 
     companion object {
         private val CLASS_NAME = Amount::class.qualifiedName!!
-        private const val AVAILABLE_SCALE = 2
+        const val AVAILABLE_SCALE = 2
 
         operator fun invoke(value: String): Amount = tryCreate(value)
             .orThrow { error -> throw IllegalArgumentException(error.message) }

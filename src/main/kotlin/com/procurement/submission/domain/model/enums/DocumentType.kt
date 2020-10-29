@@ -9,7 +9,6 @@ enum class DocumentType(@JsonValue override val key: String) : EnumElementProvid
     ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments"),
     ILLUSTRATION("illustration"),
     QUALIFICATION_DOCUMENTS("x_qualificationDocuments"),
-    REGULATORY_DOCUMENT("regulatoryDocument"),
     SUBMISSION_DOCUMENTS("submissionDocuments"),
     TECHNICAL_DOCUMENTS("x_technicalDocuments");
 

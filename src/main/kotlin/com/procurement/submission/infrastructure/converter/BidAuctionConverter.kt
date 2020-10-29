@@ -565,7 +565,7 @@ fun Bid.convert(pendingDate: LocalDateTime): BidsAuctionResponseData.BidsData.Bi
                 BidsAuctionResponseData.BidsData.Bid.RequirementResponse(
                     id = RequirementResponseId.fromString(requirementResponse.id),
                     description = requirementResponse.description,
-                    title = requirementResponse.title,
+                    title = requirementResponse.title!!,
                     value = requirementResponse.value,
                     period = requirementResponse.period
                         ?.let { period ->

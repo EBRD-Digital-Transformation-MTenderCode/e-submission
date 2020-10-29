@@ -9,6 +9,7 @@ enum class Command2Type(@JsonValue override val key: String) : Action, EnumEleme
 
     CHECK_ABSENCE_ACTIVE_INVITATIONS("checkAbsenceActiveInvitations"),
     CHECK_PERIOD("checkPeriod"),
+    CREATE_BID("createBid"),
     DO_INVITATIONS("doInvitations"),
     SET_TENDER_PERIOD("setTenderPeriod"),
     VALIDATE_BID_DATA("validateBidData"),

@@ -29,4 +29,6 @@ class GenerationService {
     fun generateRequirementResponseId(): UUID = UUID.randomUUID()
 
     fun generateInvitationId(): InvitationId = InvitationId.generate()
+
+    fun generateToken(): UUID = UUID.randomUUID()
 }
