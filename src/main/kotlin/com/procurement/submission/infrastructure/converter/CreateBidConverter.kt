@@ -586,6 +586,8 @@ private fun CreateBidRequest.Bids.Detail.Item.Unit.convert(path: String): Result
         .orForwardFail { return it }
 
     return CreateBidParams.Bids.Detail.Item.Unit(
+        id = id,
+        name = name,
         value = value
     ).asSuccess()
 }
@@ -880,6 +882,8 @@ fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
                 id = item.id,
                 unit = item.unit.let { unit ->
                     Item.Unit(
+                        id = unit.id,
+                        name = unit.name,
                         value = unit.value
                             .let { value ->
                                 Value(
@@ -1180,6 +1184,8 @@ fun Bid.convertToCreateBidResult(token: Token) = CreateBidResult(
                         id = item.id,
                         unit = item.unit.let { unit ->
                             CreateBidResult.Bids.Detail.Item.Unit(
+                                id = unit.id,
+                                name = unit.name,
                                 value = unit.value
                                     .let { value ->
                                         CreateBidResult.Bids.Detail.Item.Unit.Value(

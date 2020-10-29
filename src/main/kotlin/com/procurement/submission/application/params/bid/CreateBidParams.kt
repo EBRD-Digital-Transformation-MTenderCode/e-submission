@@ -262,6 +262,8 @@ data class CreateBidParams(
                 val unit: Unit
             ) {
                 data class Unit(
+                    val id: String,
+                    val name: String,
                     val value: Value
                 ) {
                     data class Value(
