@@ -10,6 +10,8 @@ import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentTyp
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.Scale
+import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueDeserializer
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueSerializer
@@ -17,8 +19,6 @@ import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
 import com.procurement.submission.infrastructure.bind.money.MoneySerializer
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
 import java.time.LocalDateTime
 import java.util.*
 
@@ -326,7 +326,9 @@ data class GetBidsForEvaluationResponse(
 
         data class RequirementResponse(
             @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
-            @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @field:JsonProperty("title") @param:JsonProperty("title") val title: String?,
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
             @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,

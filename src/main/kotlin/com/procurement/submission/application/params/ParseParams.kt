@@ -12,9 +12,9 @@ import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.bid.BidId
-import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.EnumElementProvider
 import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
 import com.procurement.submission.domain.model.enums.OperationType
@@ -250,7 +250,7 @@ fun parseParsePersonId(
     value: String, attributeName: String
 ): Result<PersonId, DataErrors.Validation.EmptyString> {
     val id = PersonId.parse(value) ?:
-        return DataErrors.Validation.EmptyString(name = attributeName).asFailure()
+    return DataErrors.Validation.EmptyString(name = attributeName).asFailure()
 
     return id.asSuccess()
 }

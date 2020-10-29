@@ -3,10 +3,12 @@ package com.procurement.submission.domain.fail.error
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.invitation.InvitationId
+import com.procurement.submission.domain.model.item.ItemId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import java.time.Duration
 
@@ -75,5 +77,95 @@ sealed class ValidationError(
         ValidationError(
             numberError = "13.6.3",
             description = "Received date must precede stored end date."
+        )
+
+    class MissingBidValue(bidId: BidId) :
+        ValidationError(
+            numberError = "13.7.1",
+            description = "Value of bid details '$bidId' is missing.",
+            entityId = bidId.toString()
+        )
+
+    class InvalidBidAmount(bidId: BidId) :
+        ValidationError(
+            numberError = "13.7.2",
+            description = "Value of bid '$bidId' must contain amount greater than zero.",
+            entityId = bidId.toString()
+        )
+
+    class InvalidBidCurrency(bidId: BidId) :
+        ValidationError(
+            numberError = "13.7.3",
+            description = "Bid '$bidId' currency must be identical to tender currency.",
+            entityId = bidId.toString()
+        )
+
+    class DuplicateTenderers(tendererId: String) :
+        ValidationError(
+            numberError = "13.7.4",
+            description = "Tenderer '$tendererId' contains duplicate.",
+            entityId = tendererId
+        )
+
+    class DuplicatePersonBusinessFunctions(personId: String, businessFunctionId: String) :
+        ValidationError(
+            numberError = "13.7.5",
+            description = "Person '$personId' contains duplicate business function '$businessFunctionId'."
+        )
+
+    class DuplicatePersonDocuments(personId: String, documentId: String) :
+        ValidationError(
+            numberError = "13.7.6",
+            description = "Person '$personId' contains duplicate business function document '$documentId'."
+        )
+
+    class DuplicateDocuments(bidId: BidId, documentId: String) :
+        ValidationError(
+            numberError = "13.7.7",
+            description = "Bid '$bidId' contains duplicate document '$documentId'."
+        )
+
+    class InvalidRelatedLots() :
+        ValidationError(
+            numberError = "13.7.8",
+            description = "Related lots in bids' documents must equal related lots in bids."
+        )
+
+    class MissingItems() :
+        ValidationError(
+            numberError = "13.7.9",
+            description = "Bid items are missing."
+        )
+
+    class DuplicateItems(bidId: BidId, intemId: ItemId) :
+        ValidationError(
+            numberError = "13.7.10",
+            description = "Bid '$bidId' contains duplicate item '$intemId'."
+        )
+
+    class InvalidItems() :
+        ValidationError(
+            numberError = "13.7.11",
+            description = "Bid items must equal tender items."
+        )
+
+    class InvalidItemAmount(itemId: ItemId) :
+        ValidationError(
+            numberError = "13.7.12",
+            description = "Value of item '$itemId' must contain amount greater than zero.",
+            entityId = itemId.toString()
+        )
+
+    class InvalidItemCurrency(itemId: ItemId) :
+        ValidationError(
+            numberError = "13.7.13",
+            description = "Item '$itemId' currency must be identical to tender currency.",
+            entityId = itemId.toString()
+        )
+
+    class InvalidUnits() :
+        ValidationError(
+            numberError = "13.7.14",
+            description = "Bid unit ids must equal tender unit ids."
         )
 }

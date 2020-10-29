@@ -13,7 +13,7 @@ data class RequirementResponse @JsonCreator constructor(
     val id: String,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    val title: String?,
+    @field:JsonProperty("title") @param:JsonProperty("title") val title: String?,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val description: String?,

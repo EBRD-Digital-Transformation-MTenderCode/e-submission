@@ -12,6 +12,7 @@ enum class Command2Type(@JsonValue override val key: String) : Action, EnumEleme
     CREATE_BID("createBid"),
     DO_INVITATIONS("doInvitations"),
     SET_TENDER_PERIOD("setTenderPeriod"),
+    VALIDATE_BID_DATA("validateBidData"),
     VALIDATE_TENDER_PERIOD("validateTenderPeriod"),
     PUBLISH_INVITATIONS("publishInvitations");
 
