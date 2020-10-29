@@ -295,6 +295,7 @@ data class ValidateBidDataRequest(
                 @param:JsonProperty("unit") @field:JsonProperty("unit") val unit: Unit
             ) {
                 data class Unit(
+                    @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
                     @param:JsonProperty("value") @field:JsonProperty("value") val value: Value
                 ) {
                     data class Value(
@@ -320,7 +321,12 @@ data class ValidateBidDataRequest(
         )
 
         data class Item(
-            @param:JsonProperty("id") @field:JsonProperty("id") val id: String
-        )
+            @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
+            @param:JsonProperty("unit") @field:JsonProperty("unit") val unit: Unit
+        ) {
+            data class Unit(
+                @param:JsonProperty("id") @field:JsonProperty("id") val id: String
+            )
+        }
     }
 }

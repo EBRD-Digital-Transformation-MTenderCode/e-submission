@@ -73,8 +73,11 @@ private fun ValidateBidDataRequest.Tender.Item.convert(path: String): Result<Val
     val id = parseItemId(id, "$path.item")
         .orForwardFail { return it }
 
+    val unit = ValidateBidDataParams.Tender.Item.Unit(unit.id)
+
     return ValidateBidDataParams.Tender.Item(
-        id = id
+        id = id,
+        unit = unit
     ).asSuccess()
 }
 
@@ -537,6 +540,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Item.Unit.convert(path: String): 
         .orForwardFail { return it }
 
     return ValidateBidDataParams.Bids.Detail.Item.Unit(
+        id = id,
         value = value
     ).asSuccess()
 }

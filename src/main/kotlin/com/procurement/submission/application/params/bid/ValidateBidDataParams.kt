@@ -247,6 +247,7 @@ data class ValidateBidDataParams(
                 val unit: Unit
             ) {
                 data class Unit(
+                    val id: String,
                     val value: Value
                 ) {
                     data class Value(
@@ -268,7 +269,12 @@ data class ValidateBidDataParams(
         )
 
         data class Item(
-            val id: ItemId
-        )
+            val id: ItemId,
+            val unit: Unit
+        ) {
+            data class Unit(
+                val id: String
+            )
+        }
     }
 }
