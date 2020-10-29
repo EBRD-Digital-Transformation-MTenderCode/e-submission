@@ -2247,6 +2247,7 @@ class BidService(
 
             checkBidAndTenderItemsEquality(bid, params).doOnError { return it.asValidationFailure() }
             checkItemValue(bid, params).doOnError { return it.asValidationFailure() }
+            checkBidAndTenderUnitEquality(bid, params).doOnError { return it.asValidationFailure() }
         }
 
         return ValidationResult.ok()
@@ -2276,6 +2277,18 @@ class BidService(
         val tenderItems = params.tender.items.toSetBy { it.id }
         if (bidItems != tenderItems)
             return ValidationError.InvalidItems().asValidationFailure()
+
+        return ValidationResult.ok()
+    }
+
+    private fun checkBidAndTenderUnitEquality(
+        bid: ValidateBidDataParams.Bids.Detail,
+        params: ValidateBidDataParams
+    ): ValidationResult<Fail> {
+        val bidUnits = bid.items.toSetBy { it.unit.id }
+        val tenderUnits = params.tender.items.toSetBy { it.unit.id }
+        if (bidUnits != tenderUnits)
+            return ValidationError.InvalidUnits().asValidationFailure()
 
         return ValidationResult.ok()
     }

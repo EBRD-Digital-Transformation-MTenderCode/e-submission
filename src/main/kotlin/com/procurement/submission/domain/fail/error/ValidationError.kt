@@ -162,4 +162,10 @@ sealed class ValidationError(
             description = "Item '$itemId' currency must be identical to tender currency.",
             entityId = itemId.toString()
         )
+
+    class InvalidUnits() :
+        ValidationError(
+            numberError = "13.7.14",
+            description = "Bid unit ids must equal tender unit ids."
+        )
 }
