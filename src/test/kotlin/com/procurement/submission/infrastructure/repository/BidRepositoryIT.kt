@@ -188,10 +188,10 @@ class BidRepositoryIT {
     }
 
     @Test
-    fun findBy_InvitationsNotFound_success() {
-        val actualInvitations = bidRepository.findBy(cpid = CPID, ocid = OCID).get
+    fun findBy_notFound_success() {
+        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get
 
-        assertTrue(actualInvitations.isEmpty())
+        assertTrue(actualBids.isEmpty())
     }
 
     @Test
