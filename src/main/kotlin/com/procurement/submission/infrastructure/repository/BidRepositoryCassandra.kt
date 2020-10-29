@@ -26,7 +26,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
 
     companion object {
         private const val KEYSPACE = "ocds"
-        private const val BID_TABLE = "submission_invitation"
+        private const val BID_TABLE = "submission_bid"
         private const val CPID_COLUMN = "cp_id"
         private const val STAGE_COLUMN = "stage"
         private const val BID_ID_COLUMN = "bid_id"
