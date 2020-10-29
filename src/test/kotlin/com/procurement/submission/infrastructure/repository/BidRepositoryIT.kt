@@ -61,7 +61,7 @@ class BidRepositoryIT {
         private val OCID = Ocid.tryCreateOrNull("ocds-b3wdp1-MD-1580458690892-EV-1580458791896")!!
 
         private const val KEYSPACE = "ocds"
-        private const val BID_TABLE = "submission_invitation"
+        private const val BID_TABLE = "submission_bid"
         private const val CPID_COLUMN = "cp_id"
         private const val STAGE_COLUMN = "stage"
         private const val BID_ID_COLUMN = "bid_id"
