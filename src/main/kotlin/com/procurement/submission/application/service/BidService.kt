@@ -2119,7 +2119,7 @@ class BidService(
                             GetBidsByLotsResult.Bid.RequirementResponse(
                                 id = requirementResponse.id,
                                 description = requirementResponse.description,
-                                title = requirementResponse.title!!,
+                                title = requirementResponse.title,
                                 value = requirementResponse.value,
                                 period = requirementResponse.period
                                     ?.let { period ->
