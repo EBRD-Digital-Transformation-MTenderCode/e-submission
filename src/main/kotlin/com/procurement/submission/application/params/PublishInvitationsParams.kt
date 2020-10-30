@@ -4,17 +4,33 @@ import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.enums.OperationType
 
 class PublishInvitationsParams private constructor(
-    val cpid: Cpid
+    val cpid: Cpid,
+    val operationType: OperationType
 ) {
     companion object {
 
-        fun tryCreate(cpid: String): Result<PublishInvitationsParams, DataErrors> {
+        val allowedOperationTypes = OperationType.allowedElements
+            .filter {
+                when (it) {
+                    OperationType.CREATE_PCR,
+                    OperationType.START_SECOND_STAGE -> true
+
+                    OperationType.QUALIFICATION_PROTOCOL,
+                    OperationType.SUBMIT_BID_IN_PCR -> false
+                }
+            }.toSet()
+
+        fun tryCreate(cpid: String, operationType: String): Result<PublishInvitationsParams, DataErrors> {
             val cpidParsed = parseCpid(value = cpid)
                 .orForwardFail { fail -> return fail }
 
-            return PublishInvitationsParams(cpid = cpidParsed)
+            val operationTypeParsed = parseOperationType(operationType, allowedOperationTypes)
+                .orForwardFail { fail -> return fail }
+
+            return PublishInvitationsParams(cpid = cpidParsed, operationType = operationTypeParsed)
                 .asSuccess()
         }
     }
