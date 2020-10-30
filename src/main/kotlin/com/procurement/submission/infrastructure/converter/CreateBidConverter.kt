@@ -605,7 +605,7 @@ private fun CreateBidRequest.Bids.Detail.Item.Unit.Value.convert(path: String): 
 fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
     id = id.toString(),
     status = Status.PENDING,
-    statusDetails = StatusDetails.WITHDRAWN,
+    statusDetails = StatusDetails.EMPTY,
     date = date,
     value = value
         ?.let { value ->
