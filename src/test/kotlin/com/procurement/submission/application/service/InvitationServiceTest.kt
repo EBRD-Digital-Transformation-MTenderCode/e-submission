@@ -6,8 +6,10 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.application.params.DoInvitationsParams
+import com.procurement.submission.application.params.PublishInvitationsParams
 import com.procurement.submission.application.repository.InvitationRepository
 import com.procurement.submission.domain.extension.format
+import com.procurement.submission.domain.functional.Result.Companion.success
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.InvitationStatus
@@ -19,6 +21,7 @@ import com.procurement.submission.domain.model.invitation.InvitationId
 import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
+import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -26,11 +29,13 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.ResolverStyle
+import java.util.*
 
 class InvitationServiceTest {
 
     companion object {
         private val CPID = Cpid.tryCreateOrNull("ocds-t1s2t3-MD-1565251033096")!!
+        private val OPERATION_TYPE = OperationType.CREATE_PCR
 
         private const val FORMAT_PATTERN = "uuuu-MM-dd'T'HH:mm:ss'Z'"
         private val FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(FORMAT_PATTERN)
@@ -55,7 +60,8 @@ class InvitationServiceTest {
             val actual = invitationService.doInvitations(paramsWithWrongRelatedSubmission).error
 
             val expectedErrorCode = "VR.COM-13.1.2"
-            val expectedErrorDescription = "Missing submission(s) by id(s) '${paramsWithWrongRelatedSubmission.qualifications.first().relatedSubmission}'."
+            val expectedErrorDescription =
+                "Missing submission(s) by id(s) '${paramsWithWrongRelatedSubmission.qualifications.first().relatedSubmission}'."
 
             assertEquals(expectedErrorCode, actual.code)
             assertEquals(expectedErrorDescription, actual.description)
@@ -115,7 +121,13 @@ class InvitationServiceTest {
 
             val invitationId = InvitationId.generate()
             whenever(generationService.generateInvitationId()).thenReturn(invitationId)
-            whenever(rulesService.getReturnInvitationsFlag(params.country,params.pmd, params.operationType)).thenReturn(false.asSuccess())
+            whenever(
+                rulesService.getReturnInvitationsFlag(
+                    params.country,
+                    params.pmd,
+                    params.operationType
+                )
+            ).thenReturn(false.asSuccess())
 
             val actual = invitationService.doInvitations(params).get
 
@@ -134,7 +146,13 @@ class InvitationServiceTest {
 
             val invitationId = InvitationId.generate()
             whenever(generationService.generateInvitationId()).thenReturn(invitationId)
-            whenever(rulesService.getReturnInvitationsFlag(params.country,params.pmd, params.operationType)).thenReturn(true.asSuccess())
+            whenever(
+                rulesService.getReturnInvitationsFlag(
+                    params.country,
+                    params.pmd,
+                    params.operationType
+                )
+            ).thenReturn(true.asSuccess())
 
             val actual = invitationService.doInvitations(params).get
 
@@ -159,7 +177,13 @@ class InvitationServiceTest {
 
             val invitationId = InvitationId.generate()
             whenever(generationService.generateInvitationId()).thenReturn(invitationId)
-            whenever(rulesService.getReturnInvitationsFlag(params.country,params.pmd, params.operationType)).thenReturn(false.asSuccess())
+            whenever(
+                rulesService.getReturnInvitationsFlag(
+                    params.country,
+                    params.pmd,
+                    params.operationType
+                )
+            ).thenReturn(false.asSuccess())
 
             val actual = invitationService.doInvitations(params).get
 
@@ -232,33 +256,34 @@ class InvitationServiceTest {
             ).get
         }
 
-        private fun getParamsWithWrongRelatedSubmission(statusDetails: QualificationStatusDetails) = DoInvitationsParams.tryCreate(
-            cpid = CPID.toString(),
-            date = DATE.format(),
-            country = "MD",
-            operationType = OperationType.START_SECOND_STAGE.key,
-            pmd = ProcurementMethod.GPA.name,
-            submissions = DoInvitationsParams.Submissions.tryCreate(
-                details = listOf(
-                    DoInvitationsParams.Submissions.Detail.tryCreate(
-                        id = SubmissionId.generate().toString(),
-                        candidates = listOf(
-                            DoInvitationsParams.Submissions.Detail.Candidate(
-                                id = "candidate.id",
-                                name = "candidate.name"
+        private fun getParamsWithWrongRelatedSubmission(statusDetails: QualificationStatusDetails) =
+            DoInvitationsParams.tryCreate(
+                cpid = CPID.toString(),
+                date = DATE.format(),
+                country = "MD",
+                operationType = OperationType.START_SECOND_STAGE.key,
+                pmd = ProcurementMethod.GPA.name,
+                submissions = DoInvitationsParams.Submissions.tryCreate(
+                    details = listOf(
+                        DoInvitationsParams.Submissions.Detail.tryCreate(
+                            id = SubmissionId.generate().toString(),
+                            candidates = listOf(
+                                DoInvitationsParams.Submissions.Detail.Candidate(
+                                    id = "candidate.id",
+                                    name = "candidate.name"
+                                )
                             )
-                        )
+                        ).get
+                    )
+                ).get,
+                qualifications = listOf(
+                    DoInvitationsParams.Qualification.tryCreate(
+                        id = QualificationId.generate().toString(),
+                        statusDetails = statusDetails.key,
+                        relatedSubmission = SubmissionId.generate().toString()
                     ).get
                 )
-            ).get,
-            qualifications = listOf(
-                DoInvitationsParams.Qualification.tryCreate(
-                    id = QualificationId.generate().toString(),
-                    statusDetails = statusDetails.key,
-                    relatedSubmission = SubmissionId.generate().toString()
-                ).get
-            )
-        ).get
+            ).get
 
         private fun stubInvitation(status: InvitationStatus, relatedQualification: QualificationId) =
             Invitation(
@@ -272,6 +297,77 @@ class InvitationServiceTest {
                     )
                 ),
                 status = status
+            )
+    }
+
+    @Nested
+    inner class PublishInvitations {
+
+        @Test
+        fun pendingAndActiveInvitationStored_returnsBoth() {
+            val params = getParams()
+            val invitations = listOf(getInvitation(InvitationStatus.ACTIVE), getInvitation(InvitationStatus.PENDING))
+            whenever(invitationRepository.findBy(cpid = params.cpid))
+                .thenReturn(success(invitations))
+            val actual = invitationService.publishInvitations(params).get.invitations
+            val expected = invitations.map { invitation ->
+                PublishInvitationsResult.Invitation(
+                    id = invitation.id,
+                    status = InvitationStatus.ACTIVE,
+                    date = invitation.date,
+                    relatedQualification = invitation.relatedQualification,
+                    tenderers = invitation.tenderers.map { tenderer ->
+                        PublishInvitationsResult.Invitation.Tenderers(
+                            id = tenderer.id,
+                            name = tenderer.name
+                        )
+                    }
+                )
+            }
+            assertTrue(actual.size == 2)
+            assertEquals(expected.toSet(), actual.toSet())
+        }
+
+        @Test
+        fun pendingAndCancelledInvitationStored_returnsUpdatedPending() {
+            val params = getParams()
+            val invitations = listOf(getInvitation(InvitationStatus.CANCELLED), getInvitation(InvitationStatus.PENDING))
+            whenever(invitationRepository.findBy(cpid = params.cpid))
+                .thenReturn(success(invitations))
+            val actual = invitationService.publishInvitations(params).get.invitations
+            val expected = invitations[1].let { invitation ->
+                PublishInvitationsResult.Invitation(
+                    id = invitation.id,
+                    status = InvitationStatus.ACTIVE,
+                    date = invitation.date,
+                    relatedQualification = invitation.relatedQualification,
+                    tenderers = invitation.tenderers.map { tenderer ->
+                        PublishInvitationsResult.Invitation.Tenderers(
+                            id = tenderer.id,
+                            name = tenderer.name
+                        )
+                    }
+                )
+            }
+            assertTrue(actual.size == 1)
+            assertEquals(expected, actual.first())
+        }
+
+        private fun getParams() =
+            PublishInvitationsParams.tryCreate(cpid = CPID.toString(), operationType = OPERATION_TYPE.key).get
+
+        fun getInvitation(status: InvitationStatus) =
+            Invitation(
+                id = InvitationId.generate(),
+                status = status,
+                relatedQualification = QualificationId.generate(),
+                date = LocalDateTime.now(),
+                tenderers = listOf(
+                    Invitation.Tenderer(
+                        id = UUID.randomUUID().toString(),
+                        name = "tenderer.name"
+                    )
+                )
             )
     }
 }
