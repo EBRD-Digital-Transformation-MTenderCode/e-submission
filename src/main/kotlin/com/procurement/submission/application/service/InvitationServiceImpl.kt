@@ -16,6 +16,7 @@ import com.procurement.submission.domain.functional.asFailure
 import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.functional.asValidationFailure
 import com.procurement.submission.domain.model.enums.InvitationStatus
+import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.invitation.Invitation
 import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
@@ -163,8 +164,8 @@ class InvitationServiceImpl(
             .orForwardFail { error -> return error }
             .groupBy { it.status }
 
-        val pendingInvitations = invitationsByStatus[InvitationStatus.PENDING]
-            ?: return failure(ValidationError.PendingInvitationsNotFoundOnPublishInvitations(params.cpid))
+        val pendingInvitations = checkAndGetPendingInvitations(invitationsByStatus, params)
+            .orForwardFail { error -> return error }
 
         val updatedInvitations = pendingInvitations
             .map { invitation -> invitation.copy(status = InvitationStatus.ACTIVE) }
@@ -178,5 +179,23 @@ class InvitationServiceImpl(
         invitationRepository.saveAll(params.cpid, updatedInvitations)
 
         return success(result)
+    }
+
+    private fun checkAndGetPendingInvitations(
+        invitationsByStatus: Map<InvitationStatus, List<Invitation>>,
+        params: PublishInvitationsParams
+    ): Result<List<Invitation>, ValidationError.PendingInvitationsNotFoundOnPublishInvitations> {
+        val pendingInvitations = invitationsByStatus[InvitationStatus.PENDING].orEmpty()
+
+        when (params.operationType) {
+            OperationType.START_SECOND_STAGE ->
+                if (pendingInvitations.isEmpty())
+                    return failure(ValidationError.PendingInvitationsNotFoundOnPublishInvitations(params.cpid))
+            OperationType.SUBMIT_BID_IN_PCR,
+            OperationType.QUALIFICATION_PROTOCOL,
+            OperationType.CREATE_PCR -> Unit
+        }
+
+        return pendingInvitations.asSuccess()
     }
 }
