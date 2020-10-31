@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonValue
 
 enum class DocumentType(@JsonValue override val key: String) : EnumElementProvider.Key {
 
-    SUBMISSION_DOCUMENTS("submissionDocuments"),
+    COMMERCIAL_OFFER("x_commercialOffer"),
     ELIGIBILITY_DOCUMENTS("x_eligibilityDocuments"),
     ILLUSTRATION("illustration"),
-    COMMERCIAL_OFFER("x_commercialOffer"),
     QUALIFICATION_DOCUMENTS("x_qualificationDocuments"),
+    SUBMISSION_DOCUMENTS("submissionDocuments"),
     TECHNICAL_DOCUMENTS("x_technicalDocuments");
 
     override fun toString(): String = key

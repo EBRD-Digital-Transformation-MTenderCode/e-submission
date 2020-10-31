@@ -3,15 +3,11 @@ package com.procurement.submission.application.params
 import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.model.Cpid
-import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import java.time.LocalDateTime
 
 class ValidateTenderPeriodParams private constructor(
-    val cpid: Cpid,
-    val ocid: Ocid,
     val date: LocalDateTime,
     val country: String,
     val pmd: ProcurementMethod,
@@ -23,18 +19,18 @@ class ValidateTenderPeriodParams private constructor(
         val allowedPmd = ProcurementMethod.values()
             .filter {
                 when (it) {
+                    ProcurementMethod.CF, ProcurementMethod.TEST_CF,
                     ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+                    ProcurementMethod.OF, ProcurementMethod.TEST_OF,
                     ProcurementMethod.RT, ProcurementMethod.TEST_RT -> true
 
                     ProcurementMethod.CD, ProcurementMethod.TEST_CD,
-                    ProcurementMethod.CF, ProcurementMethod.TEST_CF,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
                     ProcurementMethod.DC, ProcurementMethod.TEST_DC,
                     ProcurementMethod.FA, ProcurementMethod.TEST_FA,
                     ProcurementMethod.IP, ProcurementMethod.TEST_IP,
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
                     ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-                    ProcurementMethod.OF, ProcurementMethod.TEST_OF,
                     ProcurementMethod.OP, ProcurementMethod.TEST_OP,
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
@@ -45,26 +41,20 @@ class ValidateTenderPeriodParams private constructor(
         val allowedOperationTypes = OperationType.allowedElements
             .filter {
                 when (it) {
+                    OperationType.CREATE_PCR,
                     OperationType.START_SECOND_STAGE -> true
-                    OperationType.QUALIFICATION_PROTOCOL -> false
+                    OperationType.QUALIFICATION_PROTOCOL,
+                    OperationType.SUBMIT_BID_IN_PCR -> false
                 }
             }.toSet()
 
         fun tryCreate(
-            cpid: String,
-            ocid: String,
             date: String,
             country: String,
             pmd: String,
             operationType: String,
             tender: Tender
         ): Result<ValidateTenderPeriodParams, DataErrors> {
-            val cpidParsed = parseCpid(value = cpid)
-                .orForwardFail { error -> return error }
-
-            val ocidParsed = parseOcid(value = ocid)
-                .orForwardFail { error -> return error }
-
             val dateParsed = parseDate(value = date, attributeName = "date")
                 .orForwardFail { error -> return error }
 
@@ -75,8 +65,6 @@ class ValidateTenderPeriodParams private constructor(
                 .orForwardFail { error -> return error }
 
             return ValidateTenderPeriodParams(
-                cpid = cpidParsed,
-                ocid = ocidParsed,
                 pmd = pmdParsed,
                 date = dateParsed,
                 country = country,

@@ -4,8 +4,6 @@ package com.procurement.submission.infrastructure.dto.tender.period
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class ValidateTenderPeriodRequest(
-    @param:JsonProperty("cpid") @field:JsonProperty("cpid") val cpid: String,
-    @param:JsonProperty("ocid") @field:JsonProperty("ocid") val ocid: String,
     @param:JsonProperty("date") @field:JsonProperty("date") val date: String,
     @param:JsonProperty("country") @field:JsonProperty("country") val country: String,
     @param:JsonProperty("pmd") @field:JsonProperty("pmd") val pmd: String,
