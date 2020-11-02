@@ -2168,17 +2168,38 @@ class BidService(
         return ValidationResult.ok()
     }
 
-    private fun checkTenderers(params: ValidateBidDataParams): ValidationResult<Fail.Error> {
+    private fun checkTenderers(params: ValidateBidDataParams): ValidationResult<Fail> {
         val tenderers = params.bids.details.first().tenderers
         val duplicateTenderer = tenderers.getDuplicate { it.id }
         if (duplicateTenderer != null)
             return ValidationError.DuplicateTenderers(duplicateTenderer.id).asValidationFailure()
+
+        checkForActiveInvitations(params)
+            .doOnError { return it.asValidationFailure() }
 
         checkForDuplicatePersonBusinessFunctions(tenderers)
             .doOnError { return it.asValidationFailure() }
 
         checkForDuplicatePersonDocuments(tenderers)
             .doOnError { return it.asValidationFailure() }
+
+        return ValidationResult.ok()
+    }
+
+    private fun checkForActiveInvitations(params: ValidateBidDataParams): ValidationResult<Fail> {
+        val activeInvitations = invitationRepository.findBy(params.cpid)
+            .doReturn { return it.asValidationFailure() }
+            .filter { invitation -> invitation.status == InvitationStatus.ACTIVE }
+
+        val groupsOfTenderers = activeInvitations
+            .asSequence()
+            .map { invitation -> invitation.tenderers.toSetBy { it.id } }
+            .toSet()
+
+        val receivedTenderers = params.bids.details.first().tenderers.toSetBy { it.id }
+
+        if (receivedTenderers !in groupsOfTenderers)
+            return ValidationError.ActiveInvitationNotFound().asValidationFailure()
 
         return ValidationResult.ok()
     }
