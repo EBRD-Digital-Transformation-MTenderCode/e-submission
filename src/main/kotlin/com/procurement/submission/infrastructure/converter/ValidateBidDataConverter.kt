@@ -5,6 +5,7 @@ import com.procurement.submission.application.params.parseAmount
 import com.procurement.submission.application.params.parseBFDocumentType
 import com.procurement.submission.application.params.parseBidId
 import com.procurement.submission.application.params.parseBusinessFunctionType
+import com.procurement.submission.application.params.parseCpid
 import com.procurement.submission.application.params.parseDate
 import com.procurement.submission.application.params.parseDocumentType
 import com.procurement.submission.application.params.parseItemId
@@ -30,9 +31,11 @@ import com.procurement.submission.infrastructure.dto.bid.validate.ValidateBidDat
 
 fun ValidateBidDataRequest.convert(): Result<ValidateBidDataParams, DataErrors> {
     val path = "bids"
+
     return ValidateBidDataParams(
         bids = bids.convert(path).orForwardFail { return it },
-        tender = tender.convert(path).orForwardFail { return it }
+        tender = tender.convert(path).orForwardFail { return it },
+        cpid = parseCpid(cpid).orForwardFail { return it }
     ).asSuccess()
 }
 
