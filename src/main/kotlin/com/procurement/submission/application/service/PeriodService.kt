@@ -2,6 +2,8 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodContext
+import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodResult
 import com.procurement.submission.application.params.CheckPeriodParams
 import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
@@ -292,7 +294,7 @@ class PeriodService(
         ).asSuccess()
     }
 
-    fun checkPeriod(params: CheckPeriodParams): ValidationResult<Fail>{
+    fun checkPeriod(params: CheckPeriodParams): ValidationResult<Fail> {
         val tenderPeriod = periodDao.tryGetBy(params.cpid, params.ocid.stage)
             .doReturn { error -> return error.asValidationFailure() }
             ?: return ValidationError.TenderPeriodNotFound(params.cpid, params.ocid).asValidationFailure()
@@ -304,5 +306,22 @@ class PeriodService(
             return ValidationError.ReceivedDateIsAfterStoredEndDate().asValidationFailure()
 
         return ValidationResult.ok()
+    }
+
+    fun extendTenderPeriod(context: ExtendTenderPeriodContext): ExtendTenderPeriodResult {
+        val tenderPeriod = periodDao.getByCpIdAndStage(context.cpid, context.stage)
+        val extensionAfterUnsuspended = rulesService.getExtensionAfterUnsuspended(context.country, context.pmd)
+
+        val newEndDate = context.startDate.plusSeconds(extensionAfterUnsuspended.seconds).toDate()
+        val updatedTenderPeriod = tenderPeriod.copy(endDate = newEndDate)
+
+        periodDao.save(updatedTenderPeriod)
+
+        return ExtendTenderPeriodResult(
+            ExtendTenderPeriodResult.TenderPeriod(
+                startDate = updatedTenderPeriod.startDate.toLocal(),
+                endDate = updatedTenderPeriod.endDate.toLocal()
+            )
+        )
     }
 }
