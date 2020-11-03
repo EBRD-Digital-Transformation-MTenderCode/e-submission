@@ -2,6 +2,8 @@ package com.procurement.submission.application.service
 
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
+import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodContext
+import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodResult
 import com.procurement.submission.application.params.CheckPeriodParams
 import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
@@ -14,6 +16,7 @@ import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
+import com.procurement.submission.domain.model.enums.Stage
 import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
 import com.procurement.submission.model.entity.PeriodEntity
@@ -32,6 +35,9 @@ internal class PeriodServiceTest {
         val CPID = Cpid.tryCreateOrNull("ocds-b3wdp1-MD-1580458690892") ?: throw RuntimeException()
         val OCID = Ocid.tryCreateOrNull("ocds-b3wdp1-MD-1580458690892-EV-1580458791896") ?: throw RuntimeException()
         private const val COUNTRY = "MD"
+        private val STAGE = Stage.AC
+        private val PMD = ProcurementMethod.CF
+
         private const val FORMAT_PATTERN = "uuuu-MM-dd'T'HH:mm:ss'Z'"
         private val FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(FORMAT_PATTERN)
             .withResolverStyle(ResolverStyle.STRICT)
@@ -272,5 +278,42 @@ internal class PeriodServiceTest {
             ocid = OCID.toString(),
             date = DATE.format()
         ).get
+    }
+
+    @Nested
+    inner class ExtendTenderPeriod {
+        @Test
+        fun success() {
+            val context = getContext()
+
+            val entity = PeriodEntity(
+                cpId = CPID.toString(),
+                stage = OCID.stage.toString(),
+                startDate = DATE.plusDays(1).toDate(),
+                endDate = DATE.plusDays(2).toDate()
+            )
+            whenever(periodDao.getByCpIdAndStage(cpId = context.cpid, stage = context.stage)).thenReturn(entity)
+            whenever(rulesService.getExtensionAfterUnsuspended(country = context.country, pmd = context.pmd)).thenReturn(
+                Duration.ofSeconds(Duration.ofDays(10).seconds))
+
+            val actual = periodService.extendTenderPeriod(context)
+            val expected = ExtendTenderPeriodResult(
+                ExtendTenderPeriodResult.TenderPeriod(
+                    startDate = LocalDateTime.parse("2020-02-11T08:49:55Z", FORMATTER),
+                    endDate = LocalDateTime.parse("2020-02-20T08:49:55Z", FORMATTER)
+                )
+            )
+
+            assertEquals(expected, actual)
+        }
+
+
+        private fun getContext() = ExtendTenderPeriodContext(
+            cpid = CPID.toString(),
+            stage = STAGE.toString(),
+            startDate = DATE,
+            pmd = PMD,
+            country = COUNTRY
+        )
     }
 }
