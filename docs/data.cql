@@ -121,3 +121,8 @@ INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) V
 INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_OF','all','returnInvitations','false');
 INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','CF','all','returnInvitations','false');
 INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_CF','all','returnInvitations','false');
+
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','OF','all','extensionAfterUnsuspended','1000');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_OF','all','extensionAfterUnsuspended','1000');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','CF','all','extensionAfterUnsuspended','1000');
+INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_CF','all','extensionAfterUnsuspended','1000');
