@@ -134,7 +134,8 @@ enum class CommandType(private val value: String) {
     GET_BIDS_FOR_EVALUATION("getBidsForEvaluation"),
     OPEN_BIDS_FOR_PUBLISHING("openBidsForPublishing"),
     OPEN_BID_DOCS("openBidDocs"),
-    GET_BIDS_BY_LOTS("getBidsByLots");
+    GET_BIDS_BY_LOTS("getBidsByLots"),
+    EXTEND_TENDER_PERIOD("extendTenderPeriod");
 
     @JsonValue
     fun value(): String {

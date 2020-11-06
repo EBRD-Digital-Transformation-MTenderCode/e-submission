@@ -113,6 +113,13 @@ class RulesService(private val rulesDao: RulesDao) {
             .asSuccess()
     }
 
+    fun getExtensionAfterUnsuspended(country: String, pmd: ProcurementMethod): Duration {
+        return rulesDao.getValue(country, pmd.name, EXTENSION_AFTER_UNSUSPENDED)
+            ?.toLongOrNull()
+            ?.let { Duration.ofSeconds(it) }
+            ?: throw ErrorException(ErrorType.EXTENSION_AFTER_UNSUSPENDED_RULES_NOT_FOUND)
+    }
+
     companion object {
         private const val PARAMETER_MIN_BIDS = "minBids"
         private const val PARAMETER_INTERVAL = "interval"
@@ -120,6 +127,7 @@ class RulesService(private val rulesDao: RulesDao) {
         private const val PARAMETER_INTERVAL_BEFORE = "interval_before"
         private const val MINIMUM_PERIOD_DURATION_PARAMETER = "minTenderPeriodDuration"
         private const val RETURN_INVITATIONS = "returnInvitations"
+        private const val EXTENSION_AFTER_UNSUSPENDED = "extensionAfterUnsuspended"
 
         private const val VALUE_COLUMN = "value"
     }

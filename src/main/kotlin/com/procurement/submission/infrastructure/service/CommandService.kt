@@ -12,6 +12,7 @@ import com.procurement.submission.application.model.data.bid.open.OpenBidsForPub
 import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsData
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
+import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodContext
 import com.procurement.submission.application.service.BidService
 import com.procurement.submission.application.service.PeriodService
 import com.procurement.submission.application.service.StatusService
@@ -308,6 +309,23 @@ class CommandService(
                 val result = bidService.getBidsByLots(context = context, data = request.convert())
                 if (log.isDebugEnabled)
                     log.debug("Bids are gotten. Result: ${toJson(result)}")
+                val response = result.convert()
+                if (log.isDebugEnabled)
+                    log.debug("Bids are gotten. Response: ${toJson(response)}")
+                ResponseDto(data = response)
+            }
+            CommandType.EXTEND_TENDER_PERIOD -> {
+                val context = ExtendTenderPeriodContext(
+                    cpid = cm.cpid,
+                    stage = cm.stage,
+                    startDate = cm.startDate,
+                    country = cm.country,
+                    pmd = cm.pmd
+                )
+                val result = periodService.extendTenderPeriod(context)
+                if (log.isDebugEnabled)
+                    log.debug("Bids are gotten. Result: ${toJson(result)}")
+
                 val response = result.convert()
                 if (log.isDebugEnabled)
                     log.debug("Bids are gotten. Response: ${toJson(response)}")
