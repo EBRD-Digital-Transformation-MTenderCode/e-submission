@@ -168,4 +168,10 @@ sealed class ValidationError(
             numberError = "13.7.14",
             description = "Bid unit ids must equal tender unit ids."
         )
+
+    class ActiveInvitationNotFound() :
+        ValidationError(
+            numberError = "13.7.15",
+            description = "Active invitation by received group of tenderers not found."
+        )
 }

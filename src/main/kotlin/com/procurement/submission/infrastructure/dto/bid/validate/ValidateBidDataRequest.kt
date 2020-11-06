@@ -6,8 +6,9 @@ import java.math.BigDecimal
 
 data class ValidateBidDataRequest(
     @param:JsonProperty("bids") @field:JsonProperty("bids") val bids: Bids,
-    @param:JsonProperty("tender") @field:JsonProperty("tender") val tender: Tender
-) {
+    @param:JsonProperty("tender") @field:JsonProperty("tender") val tender: Tender,
+    @param:JsonProperty("cpid") @field:JsonProperty("cpid") val cpid: String
+    ) {
     data class Bids(
         @param:JsonProperty("details") @field:JsonProperty("details") val details: List<Detail>
     ) {

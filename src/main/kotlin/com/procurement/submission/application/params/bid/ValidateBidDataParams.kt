@@ -1,5 +1,6 @@
 package com.procurement.submission.application.params.bid
 
+import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.document.DocumentId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
@@ -15,7 +16,8 @@ import java.time.LocalDateTime
 
 data class ValidateBidDataParams(
     val bids: Bids,
-    val tender: Tender
+    val tender: Tender,
+    val cpid: Cpid
 ) {
     data class Bids constructor(
         val details: List<Detail>
