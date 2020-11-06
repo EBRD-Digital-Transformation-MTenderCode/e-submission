@@ -311,8 +311,7 @@ class PeriodService(
     fun extendTenderPeriod(context: ExtendTenderPeriodContext): ExtendTenderPeriodResult {
         val tenderPeriod = periodDao.getByCpIdAndStage(context.cpid, context.stage)
         val extensionAfterUnsuspended = rulesService.getExtensionAfterUnsuspended(context.country, context.pmd)
-
-        val newEndDate = context.startDate.plusSeconds(extensionAfterUnsuspended.seconds).toDate()
+        val newEndDate = context.startDate.plus(extensionAfterUnsuspended).toDate()
         val updatedTenderPeriod = tenderPeriod.copy(endDate = newEndDate)
 
         periodDao.save(updatedTenderPeriod)
