@@ -7,6 +7,7 @@ import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.infrastructure.configuration.properties.GlobalProperties2
+import com.procurement.submission.infrastructure.model.CommandId
 import com.procurement.submission.infrastructure.web.api.response.ApiErrorResponse2
 import com.procurement.submission.infrastructure.web.api.response.ApiIncidentResponse2
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
@@ -15,13 +16,10 @@ import java.util.*
 
 object ApiResponse2Generator {
 
-    private val NaN: UUID
-        get() = UUID(0, 0)
-
     fun generateResponseOnFailure(
         fail: Fail,
         version: ApiVersion2 = GlobalProperties2.App.apiVersion,
-        id: UUID = NaN,
+        id: CommandId,
         logger: Logger
     ): ApiResponse2 {
         fail.logging(logger)
@@ -39,7 +37,7 @@ object ApiResponse2Generator {
         }
     }
 
-    private fun generateDataErrorResponse(dataError: DataErrors.Validation, version: ApiVersion2, id: UUID) =
+    private fun generateDataErrorResponse(dataError: DataErrors.Validation, version: ApiVersion2, id: CommandId) =
         ApiErrorResponse2(
             version = version,
             id = id,
@@ -54,7 +52,7 @@ object ApiResponse2Generator {
             )
         )
 
-    private fun generateValidationErrorResponse(validationError: ValidationError, version: ApiVersion2, id: UUID) =
+    private fun generateValidationErrorResponse(validationError: ValidationError, version: ApiVersion2, id: CommandId) =
         ApiErrorResponse2(
             version = version,
             id = id,
@@ -71,7 +69,7 @@ object ApiResponse2Generator {
             )
         )
 
-    private fun generateErrorResponse(version: ApiVersion2, id: UUID, error: Fail.Error) =
+    private fun generateErrorResponse(version: ApiVersion2, id: CommandId, error: Fail.Error) =
         ApiErrorResponse2(
             version = version,
             id = id,
@@ -83,7 +81,7 @@ object ApiResponse2Generator {
             )
         )
 
-    private fun generateIncidentResponse(incident: Fail.Incident, version: ApiVersion2, id: UUID) =
+    private fun generateIncidentResponse(incident: Fail.Incident, version: ApiVersion2, id: CommandId) =
         ApiIncidentResponse2(
             version = version,
             id = id,

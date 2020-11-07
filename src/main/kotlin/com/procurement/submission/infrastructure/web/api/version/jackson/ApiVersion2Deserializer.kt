@@ -9,14 +9,12 @@ import java.io.IOException
 
 class ApiVersion2Deserializer : JsonDeserializer<ApiVersion2>() {
     companion object {
-        fun deserialize(text: String) = ApiVersion2.valueOf(
-            text
-        )
+        fun deserialize(text: String) = ApiVersion2.orThrow(text) {
+            IllegalAccessException("Invalid format of the api version. Expected: '${ApiVersion2.pattern}', actual: '$text'.")
+        }
     }
 
     @Throws(IOException::class, JsonProcessingException::class)
     override fun deserialize(jsonParser: JsonParser, deserializationContext: DeserializationContext): ApiVersion2 =
-        deserialize(
-            jsonParser.text
-        )
+        deserialize(jsonParser.text)
 }

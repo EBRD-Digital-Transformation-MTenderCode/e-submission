@@ -2,33 +2,33 @@ package com.procurement.submission.infrastructure.web.response.parser
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.procurement.submission.application.service.Transform
-import com.procurement.submission.domain.extension.tryUUID
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.BadRequest
 import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.infrastructure.enums.Command2Type
+import com.procurement.submission.infrastructure.model.CommandId
 import com.procurement.submission.infrastructure.web.api.version.ApiVersion2
 import com.procurement.submission.infrastructure.web.extension.tryGetAttribute
 import com.procurement.submission.infrastructure.web.extension.tryGetAttributeAsEnum
 import com.procurement.submission.infrastructure.web.extension.tryGetTextAttribute
 import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asFailure
+import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.lib.functional.flatMap
 import java.util.*
 
 fun JsonNode.tryGetVersion(): Result<ApiVersion2, DataErrors> {
     val name = "version"
-    return tryGetTextAttribute(name).flatMap {
-        when (val result = ApiVersion2.tryValueOf(it)) {
-            is Result.Success -> result
-            is Result.Failure -> Result.failure(
-                DataErrors.Validation.DataFormatMismatch(
+    return tryGetTextAttribute(name)
+        .flatMap { version ->
+            ApiVersion2.orNull(version)
+                ?.asSuccess<ApiVersion2, DataErrors>()
+                ?: DataErrors.Validation.DataFormatMismatch(
                     name = name,
-                    expectedFormat = "00.00.00",
-                    actualValue = it
-                )
-            )
+                    expectedFormat = ApiVersion2.pattern,
+                    actualValue = version
+                ).asFailure()
         }
-    }
 }
 
 fun JsonNode.tryGetAction(): Result<Command2Type, DataErrors> =
@@ -54,22 +54,7 @@ fun <T : Any> JsonNode.tryGetData(target: Class<T>, transform: Transform): Resul
         )
     }
 
-fun JsonNode.tryGetId(): Result<UUID, DataErrors> {
-    val name = "id"
-    return tryGetTextAttribute(name)
-        .flatMap {
-            when (val result = it.tryUUID()) {
-                is Result.Success -> result
-                is Result.Failure -> Result.failure(
-                    DataErrors.Validation.DataFormatMismatch(
-                        name = name,
-                        actualValue = it,
-                        expectedFormat = "uuid"
-                    )
-                )
-            }
-        }
-}
+fun JsonNode.tryGetId(): Result<CommandId, DataErrors> = tryGetTextAttribute("id").map { CommandId(it) }
 
 fun String.tryGetNode(transform: Transform): Result<JsonNode, BadRequest> =
     when (val result = transform.tryParse(this)) {

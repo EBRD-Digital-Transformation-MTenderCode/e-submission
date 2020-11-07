@@ -11,13 +11,13 @@ import com.procurement.submission.infrastructure.handler.invitation.PublishInvit
 import com.procurement.submission.infrastructure.handler.tender.period.CheckPeriodHandler
 import com.procurement.submission.infrastructure.handler.tender.period.SetTenderPeriodHandler
 import com.procurement.submission.infrastructure.handler.tender.period.ValidateTenderPeriodHandler
+import com.procurement.submission.infrastructure.model.CommandId
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.response.parser.tryGetAction
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 class Command2Service(
@@ -36,13 +36,18 @@ class Command2Service(
 
         val version = node.tryGetVersion()
             .onFailure {
-                val id = node.tryGetId().getOrElse(UUID(0, 0))
+                val id = node.tryGetId().getOrElse(CommandId.NaN)
                 return generateResponseOnFailure(fail = it.reason, logger = logger, id = id)
             }
 
         val id = node.tryGetId()
             .onFailure {
-                return generateResponseOnFailure(fail = it.reason, version = version, logger = logger)
+                return generateResponseOnFailure(
+                    fail = it.reason,
+                    version = version,
+                    id = CommandId.NaN,
+                    logger = logger
+                )
             }
 
         val action = node.tryGetAction()

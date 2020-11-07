@@ -4,11 +4,11 @@ import com.procurement.submission.application.service.Logger
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.infrastructure.configuration.properties.GlobalProperties2
+import com.procurement.submission.infrastructure.model.CommandId
 import com.procurement.submission.infrastructure.service.Command2Service
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.api.version.ApiVersion2
-import com.procurement.submission.infrastructure.web.response.parser.NaN
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetNode
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.util.*
 
 @RestController
 @RequestMapping("/command2")
@@ -34,16 +33,22 @@ class Command2Controller(
             logger.debug("RECEIVED COMMAND: '$requestBody'.")
 
         val node = requestBody.tryGetNode(transform)
-            .onFailure { return generateResponseEntityOnFailure(fail = it.reason) }
+            .onFailure { return generateResponseEntityOnFailure(fail = it.reason, id = CommandId.NaN) }
 
         val version = node.tryGetVersion()
             .onFailure {
-                val id = node.tryGetId().getOrElse(UUID(0, 0))
+                val id = node.tryGetId().getOrElse(CommandId.NaN)
                 return generateResponseEntityOnFailure(fail = it.reason, id = id)
             }
 
         val id = node.tryGetId()
-            .onFailure { return generateResponseEntityOnFailure(fail = it.reason, version = version) }
+            .onFailure {
+                return generateResponseEntityOnFailure(
+                    fail = it.reason,
+                    version = version,
+                    id = CommandId.NaN
+                )
+            }
 
         val response =
             command2Service.execute(node)
@@ -56,7 +61,7 @@ class Command2Controller(
     }
 
     private fun generateResponseEntityOnFailure(
-        fail: Fail, version: ApiVersion2 = GlobalProperties2.App.apiVersion, id: UUID = NaN
+        fail: Fail, version: ApiVersion2 = GlobalProperties2.App.apiVersion, id: CommandId
     ): ResponseEntity<ApiResponse2> {
         val response = generateResponseOnFailure(
             fail = fail, id = id, version = version, logger = logger
