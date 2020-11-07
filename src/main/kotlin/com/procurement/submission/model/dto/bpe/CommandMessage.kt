@@ -7,8 +7,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.procurement.submission.application.exception.EnumException
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.domain.Action
 import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.model.enums.ProcurementMethod
+import com.procurement.submission.infrastructure.model.CommandId
 import java.time.LocalDateTime
 import java.util.*
 
@@ -22,27 +24,33 @@ data class CommandMessage @JsonCreator constructor(
 )
 
 data class Context @JsonCreator constructor(
-        val operationId: String?,
-        val requestId: String?,
-        val cpid: String?,
-        val ocid: String?,
-        val stage: String?,
-        val prevStage: String?,
-        val processType: String?,
-        val operationType: String?,
-        val phase: String?,
-        val owner: String?,
-        val country: String?,
-        val language: String?,
-        val pmd: String?,
-        val token: String?,
-        val access: String?,
-        val startDate: String?,
-        val endDate: String?,
-        val id: String?,
-        val awardCriteria: String?
+    val operationId: String?,
+    val requestId: String?,
+    val cpid: String?,
+    val ocid: String?,
+    val stage: String?,
+    val prevStage: String?,
+    val processType: String?,
+    val operationType: String?,
+    val phase: String?,
+    val owner: String?,
+    val country: String?,
+    val language: String?,
+    val pmd: String?,
+    val token: String?,
+    val access: String?,
+    val startDate: String?,
+    val endDate: String?,
+    val id: String?,
+    val awardCriteria: String?
 
 )
+
+val CommandMessage.commandId: CommandId
+    get() = CommandId(this.id)
+
+val CommandMessage.action: Action
+    get() = this.command
 
 val CommandMessage.token: UUID
     get() = this.context.token?.let { id ->
@@ -106,8 +114,7 @@ val CommandMessage.country: String
             message = "Missing the 'country' attribute in context."
         )
 
-
-enum class CommandType(private val value: String) {
+enum class CommandType(override val key: String) : Action {
     CREATE_BID("createBid"),
     UPDATE_BID("updateBid"),
     UPDATE_BID_DOCS("updateBidDocs"),
@@ -138,12 +145,10 @@ enum class CommandType(private val value: String) {
     EXTEND_TENDER_PERIOD("extendTenderPeriod");
 
     @JsonValue
-    fun value(): String {
-        return this.value
-    }
+    fun value(): String = this.key
 
     override fun toString(): String {
-        return this.value
+        return this.key
     }
 }
 

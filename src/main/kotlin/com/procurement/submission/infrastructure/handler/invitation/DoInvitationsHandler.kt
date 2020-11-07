@@ -1,7 +1,6 @@
 package com.procurement.submission.infrastructure.handler.invitation
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.procurement.submission.application.repository.HistoryRepository
 import com.procurement.submission.application.service.InvitationServiceImpl
 import com.procurement.submission.application.service.Logger
 import com.procurement.submission.application.service.Transform
@@ -11,6 +10,7 @@ import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitat
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
 import com.procurement.submission.infrastructure.enums.Command2Type
 import com.procurement.submission.infrastructure.handler.AbstractHistoricalHandler2
+import com.procurement.submission.infrastructure.handler.HistoryRepository
 import com.procurement.submission.infrastructure.web.response.parser.tryGetParams
 import com.procurement.submission.lib.functional.Result
 import org.springframework.stereotype.Component

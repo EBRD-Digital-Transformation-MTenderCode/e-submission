@@ -16,19 +16,23 @@ import com.procurement.submission.application.model.data.tender.period.ExtendTen
 import com.procurement.submission.application.service.BidService
 import com.procurement.submission.application.service.PeriodService
 import com.procurement.submission.application.service.StatusService
+import com.procurement.submission.domain.extension.nowDefaultUTC
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.converter.toData
 import com.procurement.submission.infrastructure.converter.toResponse
-import com.procurement.submission.infrastructure.dao.HistoryDao
 import com.procurement.submission.infrastructure.dto.award.ApplyEvaluatedAwardsRequest
 import com.procurement.submission.infrastructure.dto.bid.bidsbylots.request.GetBidsByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.request.FinalBidsStatusByLotsRequest
 import com.procurement.submission.infrastructure.dto.bid.finalize.response.FinalBidsStatusByLotsResponse
 import com.procurement.submission.infrastructure.dto.bid.opendoc.request.OpenBidDocsRequest
+import com.procurement.submission.infrastructure.handler.HistoryRepository
+import com.procurement.submission.infrastructure.repository.history.model.HistoryEntity
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.CommandType
 import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.bpe.action
+import com.procurement.submission.model.dto.bpe.commandId
 import com.procurement.submission.model.dto.bpe.country
 import com.procurement.submission.model.dto.bpe.cpid
 import com.procurement.submission.model.dto.bpe.ctxId
@@ -49,7 +53,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class CommandService(
-    private val historyDao: HistoryDao,
+    private val historyDao: HistoryRepository,
     private val bidService: BidService,
     private val periodService: PeriodService,
     private val statusService: StatusService
@@ -60,9 +64,12 @@ class CommandService(
     }
 
     fun execute(cm: CommandMessage): ResponseDto {
-        var historyEntity = historyDao.getHistory(cm.id, cm.command.value())
-        if (historyEntity != null) {
-            return toObject(ResponseDto::class.java, historyEntity.jsonData)
+        val history = historyDao.getHistory(cm.commandId)
+            .onFailure {
+                throw RuntimeException("Error of loading history. ${it.reason.description}", it.reason.exception)
+            }
+        if (history != null) {
+            return toObject(ResponseDto::class.java, history)
         }
         val response = when (cm.command) {
             CommandType.CREATE_BID -> {
@@ -332,7 +339,16 @@ class CommandService(
                 ResponseDto(data = response)
             }
         }
-        historyEntity = historyDao.saveHistory(cm.id, cm.command.value(), response)
-        return toObject(ResponseDto::class.java, historyEntity.jsonData)
+        val historyEntity = HistoryEntity(
+            commandId = cm.commandId,
+            action = cm.action,
+            date = nowDefaultUTC(),
+            data = toJson(response)
+        )
+        historyDao.saveHistory(historyEntity)
+            .doOnError {
+                log.error("Error of save history. ${it.description}", it.exception)
+            }
+        return toObject(ResponseDto::class.java, historyEntity.data)
     }
 }
