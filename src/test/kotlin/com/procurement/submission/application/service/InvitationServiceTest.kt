@@ -18,6 +18,8 @@ import com.procurement.submission.domain.model.invitation.Invitation
 import com.procurement.submission.domain.model.invitation.InvitationId
 import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
+import com.procurement.submission.failure
+import com.procurement.submission.get
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
 import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
 import com.procurement.submission.lib.functional.Result.Companion.success
@@ -57,7 +59,7 @@ class InvitationServiceTest {
                 QualificationStatusDetails.ACTIVE
             )
 
-            val actual = invitationService.doInvitations(paramsWithWrongRelatedSubmission).error
+            val actual = invitationService.doInvitations(paramsWithWrongRelatedSubmission).failure()
 
             val expectedErrorCode = "VR.COM-13.1.2"
             val expectedErrorDescription =
@@ -78,7 +80,7 @@ class InvitationServiceTest {
 
             whenever(invitationRepository.findBy(params.cpid)).thenReturn(listOf(invitation).asSuccess())
 
-            val actual = invitationService.doInvitations(params).get
+            val actual = invitationService.doInvitations(params).get()
 
             assertTrue(actual == null)
         }
@@ -99,7 +101,7 @@ class InvitationServiceTest {
                 rulesService.getReturnInvitationsFlag(params.country, params.pmd, params.operationType)
             ).thenReturn(true.asSuccess())
 
-            val actual = invitationService.doInvitations(params).get
+            val actual = invitationService.doInvitations(params).get()
 
             val expected = DoInvitationsResult(
                 invitations = listOf(getExpectedNewInvitation(invitationId, params))
@@ -129,7 +131,7 @@ class InvitationServiceTest {
                 )
             ).thenReturn(false.asSuccess())
 
-            val actual = invitationService.doInvitations(params).get
+            val actual = invitationService.doInvitations(params).get()
 
             assertTrue(actual == null)
         }
@@ -154,7 +156,7 @@ class InvitationServiceTest {
                 )
             ).thenReturn(true.asSuccess())
 
-            val actual = invitationService.doInvitations(params).get
+            val actual = invitationService.doInvitations(params).get()
 
             val expectedCanceledInvitation = getExpectedCanceledInvitation(invitation, params)
             val expectedNewInvitation = getExpectedNewInvitation(invitationId, params)
@@ -185,7 +187,7 @@ class InvitationServiceTest {
                 )
             ).thenReturn(false.asSuccess())
 
-            val actual = invitationService.doInvitations(params).get
+            val actual = invitationService.doInvitations(params).get()
 
             assertTrue(actual == null)
         }
@@ -243,17 +245,17 @@ class InvitationServiceTest {
                                     name = "candidate.name"
                                 )
                             )
-                        ).get
+                        ).get()
                     )
-                ).get,
+                ).get(),
                 qualifications = listOf(
                     DoInvitationsParams.Qualification.tryCreate(
                         id = QualificationId.generate().toString(),
                         statusDetails = QualificationStatusDetails.ACTIVE.key,
                         relatedSubmission = submissionId
-                    ).get
+                    ).get()
                 )
-            ).get
+            ).get()
         }
 
         private fun getParamsWithWrongRelatedSubmission(statusDetails: QualificationStatusDetails) =
@@ -273,17 +275,17 @@ class InvitationServiceTest {
                                     name = "candidate.name"
                                 )
                             )
-                        ).get
+                        ).get()
                     )
-                ).get,
+                ).get(),
                 qualifications = listOf(
                     DoInvitationsParams.Qualification.tryCreate(
                         id = QualificationId.generate().toString(),
                         statusDetails = statusDetails.key,
                         relatedSubmission = SubmissionId.generate().toString()
-                    ).get
+                    ).get()
                 )
-            ).get
+            ).get()
 
         private fun stubInvitation(status: InvitationStatus, relatedQualification: QualificationId) =
             Invitation(
@@ -309,7 +311,7 @@ class InvitationServiceTest {
             val invitations = listOf(getInvitation(InvitationStatus.ACTIVE), getInvitation(InvitationStatus.PENDING))
             whenever(invitationRepository.findBy(cpid = params.cpid))
                 .thenReturn(success(invitations))
-            val actual = invitationService.publishInvitations(params).get.invitations
+            val actual = invitationService.publishInvitations(params).get().invitations
             val expected = invitations.map { invitation ->
                 PublishInvitationsResult.Invitation(
                     id = invitation.id,
@@ -334,7 +336,7 @@ class InvitationServiceTest {
             val invitations = listOf(getInvitation(InvitationStatus.CANCELLED), getInvitation(InvitationStatus.PENDING))
             whenever(invitationRepository.findBy(cpid = params.cpid))
                 .thenReturn(success(invitations))
-            val actual = invitationService.publishInvitations(params).get.invitations
+            val actual = invitationService.publishInvitations(params).get().invitations
             val expected = invitations[1].let { invitation ->
                 PublishInvitationsResult.Invitation(
                     id = invitation.id,
@@ -354,7 +356,7 @@ class InvitationServiceTest {
         }
 
         private fun getParams() =
-            PublishInvitationsParams.tryCreate(cpid = CPID.toString(), operationType = OPERATION_TYPE.key).get
+            PublishInvitationsParams.tryCreate(cpid = CPID.toString(), operationType = OPERATION_TYPE.key).get()
 
         fun getInvitation(status: InvitationStatus) =
             Invitation(

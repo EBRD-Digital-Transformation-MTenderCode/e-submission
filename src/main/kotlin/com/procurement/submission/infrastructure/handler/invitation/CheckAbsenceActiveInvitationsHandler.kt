@@ -10,7 +10,7 @@ import com.procurement.submission.infrastructure.dto.invitation.check.CheckAbsen
 import com.procurement.submission.infrastructure.enums.Command2Type
 import com.procurement.submission.infrastructure.handler.AbstractValidationHandler2
 import com.procurement.submission.infrastructure.web.response.parser.tryGetParams
-import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.Validated
 import org.springframework.stereotype.Component
 
 @Component
@@ -22,11 +22,11 @@ class CheckAbsenceActiveInvitationsHandler(
 
     override val action: Command2Type = Command2Type.CHECK_ABSENCE_ACTIVE_INVITATIONS
 
-    override fun execute(node: JsonNode): ValidationResult<Fail> {
+    override fun execute(node: JsonNode): Validated<Fail> {
         val params = node.tryGetParams(CheckAbsenceActiveInvitationsRequest::class.java, transform = transform)
-            .onFailure { return ValidationResult.error(it.reason) }
+            .onFailure { return Validated.error(it.reason) }
             .convert()
-            .onFailure { return ValidationResult.error(it.reason) }
+            .onFailure { return Validated.error(it.reason) }
 
         return invitationService.checkAbsenceActiveInvitations(params)
     }

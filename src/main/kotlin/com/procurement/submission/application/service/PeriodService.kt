@@ -15,10 +15,10 @@ import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
 import com.procurement.submission.lib.functional.Result
-import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
-import com.procurement.submission.lib.functional.asValidationFailure
+import com.procurement.submission.lib.functional.asValidationError
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.ocds.Period
@@ -260,18 +260,18 @@ class PeriodService(
         )
     }
 
-    fun validateTenderPeriod(params: ValidateTenderPeriodParams): ValidationResult<Fail> {
+    fun validateTenderPeriod(params: ValidateTenderPeriodParams): Validated<Fail> {
         val minimumDuration = rulesService
             .getTenderPeriodMinimumDuration(params.country, params.pmd, params.operationType)
-            .onFailure { return it.reason.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
 
         val periodDuration = Duration.between(params.date, params.tender.tenderPeriod.endDate)
 
         if (periodDuration < minimumDuration)
             return ValidationError.TenderPeriodDurationError(expectedDuration = minimumDuration)
-                .asValidationFailure()
+                .asValidationError()
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     fun setTenderPeriod(params: SetTenderPeriodParams): Result<SetTenderPeriodResult, Fail> {
@@ -294,18 +294,18 @@ class PeriodService(
         ).asSuccess()
     }
 
-    fun checkPeriod(params: CheckPeriodParams): ValidationResult<Fail> {
+    fun checkPeriod(params: CheckPeriodParams): Validated<Fail> {
         val tenderPeriod = periodDao.tryGetBy(params.cpid, params.ocid.stage)
-            .onFailure { return it.reason.asValidationFailure() }
-            ?: return ValidationError.TenderPeriodNotFound(params.cpid, params.ocid).asValidationFailure()
+            .onFailure { return it.reason.asValidationError() }
+            ?: return ValidationError.TenderPeriodNotFound(params.cpid, params.ocid).asValidationError()
 
         if (!params.date.isAfter(tenderPeriod.startDate.toLocal()))
-            return ValidationError.ReceivedDatePrecedesStoredStartDate().asValidationFailure()
+            return ValidationError.ReceivedDatePrecedesStoredStartDate().asValidationError()
 
         if (!params.date.isBefore(tenderPeriod.endDate.toLocal()))
-            return ValidationError.ReceivedDateIsAfterStoredEndDate().asValidationFailure()
+            return ValidationError.ReceivedDateIsAfterStoredEndDate().asValidationError()
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     fun extendTenderPeriod(context: ExtendTenderPeriodContext): ExtendTenderPeriodResult {

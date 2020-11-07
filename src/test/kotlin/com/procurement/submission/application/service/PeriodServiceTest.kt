@@ -17,7 +17,8 @@ import com.procurement.submission.domain.model.enums.Stage
 import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
 import com.procurement.submission.lib.functional.MaybeFail
-import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.model.entity.PeriodEntity
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -61,7 +62,7 @@ internal class PeriodServiceTest {
                 .thenReturn(Duration.ofSeconds(MINIMUM_DURATION).asSuccess())
             val actual = periodService.validateTenderPeriod(params)
 
-            assertTrue(actual is ValidationResult.Ok)
+            assertTrue(actual is Validated.Ok)
         }
 
         @Test
@@ -72,7 +73,7 @@ internal class PeriodServiceTest {
                 .thenReturn(Duration.ofSeconds(MINIMUM_DURATION).asSuccess())
             val actual = periodService.validateTenderPeriod(params)
 
-            assertTrue(actual is ValidationResult.Ok)
+            assertTrue(actual is Validated.Ok)
         }
 
         @Test
@@ -82,10 +83,11 @@ internal class PeriodServiceTest {
             val params: ValidateTenderPeriodParams = getParams(date = DATE, endDate = endDate)
             whenever(rulesService.getTenderPeriodMinimumDuration(params.country, params.pmd, params.operationType))
                 .thenReturn(Duration.ofSeconds(MINIMUM_DURATION).asSuccess())
-            val actual = periodService.validateTenderPeriod(params).error
+            val actual = periodService.validateTenderPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.4.2"
-            val expectedErrorDescription = "Actual tender period duration is less than '${Duration.ofSeconds(MINIMUM_DURATION).toDays()}' days."
+            val expectedErrorDescription =
+                "Actual tender period duration is less than '${Duration.ofSeconds(MINIMUM_DURATION).toDays()}' days."
 
             assertEquals(expectedErrorCode, actual.code)
             assertEquals(expectedErrorDescription, actual.description)
@@ -97,10 +99,11 @@ internal class PeriodServiceTest {
             val params: ValidateTenderPeriodParams = getParams(date = DATE, endDate = endDate)
             whenever(rulesService.getTenderPeriodMinimumDuration(params.country, params.pmd, params.operationType))
                 .thenReturn(Duration.ofSeconds(MINIMUM_DURATION).asSuccess())
-            val actual = periodService.validateTenderPeriod(params).error
+            val actual = periodService.validateTenderPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.4.2"
-            val expectedErrorDescription = "Actual tender period duration is less than '${Duration.ofSeconds(MINIMUM_DURATION).toDays()}' days."
+            val expectedErrorDescription =
+                "Actual tender period duration is less than '${Duration.ofSeconds(MINIMUM_DURATION).toDays()}' days."
 
             assertEquals(expectedErrorCode, actual.code)
             assertEquals(expectedErrorDescription, actual.description)
@@ -114,9 +117,9 @@ internal class PeriodServiceTest {
             tender = ValidateTenderPeriodParams.Tender(
                 tenderPeriod = ValidateTenderPeriodParams.Tender.TenderPeriod.tryCreate(
                     endDate = endDate.format()
-                ).get
+                ).get()
             )
-        ).get
+        ).get()
     }
 
     @Nested
@@ -132,7 +135,7 @@ internal class PeriodServiceTest {
                 endDate = params.tender.tenderPeriod.endDate.toDate()
             )
             whenever(periodDao.trySave(entity)).thenReturn(MaybeFail.none())
-            val actual = periodService.setTenderPeriod(params).get
+            val actual = periodService.setTenderPeriod(params).get()
 
             val expected = SetTenderPeriodResult(
                 tender = SetTenderPeriodResult.Tender(
@@ -152,9 +155,9 @@ internal class PeriodServiceTest {
             tender = SetTenderPeriodParams.Tender(
                 tenderPeriod = SetTenderPeriodParams.Tender.TenderPeriod.tryCreate(
                     endDate = DATE.plusDays(1).format()
-                ).get
+                ).get()
             )
-        ).get
+        ).get()
     }
 
     @Nested
@@ -172,7 +175,7 @@ internal class PeriodServiceTest {
             whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
             val actual = periodService.checkPeriod(params)
 
-            assertTrue(actual is ValidationResult.Ok)
+            assertTrue(actual is Validated.Ok)
         }
 
         @Test
@@ -180,7 +183,7 @@ internal class PeriodServiceTest {
             val params = getParams()
 
             whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(null.asSuccess())
-            val actual = periodService.checkPeriod(params).error
+            val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.1"
             val expectedErrorDescription = "Tender period by cpid '${params.cpid}' and ocid '${params.ocid}' not found."
@@ -201,7 +204,7 @@ internal class PeriodServiceTest {
             )
 
             whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
-            val actual = periodService.checkPeriod(params).error
+            val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.2"
             val expectedErrorDescription = "Received date must be after stored start date."
@@ -222,7 +225,7 @@ internal class PeriodServiceTest {
             )
 
             whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
-            val actual = periodService.checkPeriod(params).error
+            val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.2"
             val expectedErrorDescription = "Received date must be after stored start date."
@@ -243,7 +246,7 @@ internal class PeriodServiceTest {
             )
 
             whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
-            val actual = periodService.checkPeriod(params).error
+            val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.3"
             val expectedErrorDescription = "Received date must precede stored end date."
@@ -264,7 +267,7 @@ internal class PeriodServiceTest {
             )
 
             whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
-            val actual = periodService.checkPeriod(params).error
+            val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.3"
             val expectedErrorDescription = "Received date must precede stored end date."
@@ -277,7 +280,7 @@ internal class PeriodServiceTest {
             cpid = CPID.toString(),
             ocid = OCID.toString(),
             date = DATE.format()
-        ).get
+        ).get()
     }
 
     @Nested
@@ -293,8 +296,14 @@ internal class PeriodServiceTest {
                 endDate = DATE.plusDays(2).toDate()
             )
             whenever(periodDao.getByCpIdAndStage(cpId = context.cpid, stage = context.stage)).thenReturn(entity)
-            whenever(rulesService.getExtensionAfterUnsuspended(country = context.country, pmd = context.pmd)).thenReturn(
-                Duration.ofSeconds(Duration.ofDays(10).seconds))
+            whenever(
+                rulesService.getExtensionAfterUnsuspended(
+                    country = context.country,
+                    pmd = context.pmd
+                )
+            ).thenReturn(
+                Duration.ofSeconds(Duration.ofDays(10).seconds)
+            )
 
             val actual = periodService.extendTenderPeriod(context)
             val expected = ExtendTenderPeriodResult(
@@ -307,7 +316,6 @@ internal class PeriodServiceTest {
             assertEquals(expected, actual)
         }
 
-
         private fun getContext() = ExtendTenderPeriodContext(
             cpid = CPID.toString(),
             stage = STAGE.toString(),
@@ -315,5 +323,15 @@ internal class PeriodServiceTest {
             pmd = PMD,
             country = COUNTRY
         )
+    }
+
+    fun <T, E> Result<T, E>.get(): T = when (this) {
+        is Result.Success -> this.value
+        is Result.Failure -> throw IllegalArgumentException("Result is not success.")
+    }
+
+    fun <E> Validated<E>.error(): E = when (this) {
+        is Validated.Ok -> throw IllegalArgumentException("Validated is not error.")
+        is Validated.Error -> this.reason
     }
 }

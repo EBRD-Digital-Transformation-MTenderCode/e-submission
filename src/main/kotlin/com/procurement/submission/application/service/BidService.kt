@@ -77,9 +77,9 @@ import com.procurement.submission.infrastructure.converter.toBidsForEvaluationRe
 import com.procurement.submission.infrastructure.dao.BidDao
 import com.procurement.submission.infrastructure.dto.bid.create.CreateBidResult
 import com.procurement.submission.lib.functional.Result
-import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asSuccess
-import com.procurement.submission.lib.functional.asValidationFailure
+import com.procurement.submission.lib.functional.asValidationError
 import com.procurement.submission.model.dto.BidDetails
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
@@ -2141,54 +2141,54 @@ class BidService(
         )
     }
 
-    fun validateBidData(params: ValidateBidDataParams): ValidationResult<Fail> {
-        checkBidsValue(params).doOnError { return it.asValidationFailure() }
-        checkTenderers(params).doOnError { return it.asValidationFailure() }
-        checkDocuments(params).doOnError { return it.asValidationFailure() }
-        checkItems(params).doOnError { return it.asValidationFailure() }
+    fun validateBidData(params: ValidateBidDataParams): Validated<Fail> {
+        checkBidsValue(params).onFailure { return it.reason.asValidationError() }
+        checkTenderers(params).onFailure { return it.reason.asValidationError() }
+        checkDocuments(params).onFailure { return it.reason.asValidationError() }
+        checkItems(params).onFailure { return it.reason.asValidationError() }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkBidsValue(params: ValidateBidDataParams): ValidationResult<Fail.Error> {
+    private fun checkBidsValue(params: ValidateBidDataParams): Validated<Fail.Error> {
         val requiresElectronicCatalogue = params.tender.procurementMethodModalities
             .any { it == ProcurementMethodModalities.REQUIRES_ELECTRONIC_CATALOGUE }
 
         if (!requiresElectronicCatalogue) {
             val bid = params.bids.details.first()
-            val value = bid.value ?: return ValidationError.MissingBidValue(bid.id).asValidationFailure()
+            val value = bid.value ?: return ValidationError.MissingBidValue(bid.id).asValidationError()
 
             if (value.amount.value <= BigDecimal.ZERO)
-                return ValidationError.InvalidBidAmount(bid.id).asValidationFailure()
+                return ValidationError.InvalidBidAmount(bid.id).asValidationError()
 
             if (value.currency != params.tender.value.currency)
-                return ValidationError.InvalidBidCurrency(bid.id).asValidationFailure()
+                return ValidationError.InvalidBidCurrency(bid.id).asValidationError()
         }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkTenderers(params: ValidateBidDataParams): ValidationResult<Fail> {
+    private fun checkTenderers(params: ValidateBidDataParams): Validated<Fail> {
         val tenderers = params.bids.details.first().tenderers
         val duplicateTenderer = tenderers.getDuplicate { it.id }
         if (duplicateTenderer != null)
-            return ValidationError.DuplicateTenderers(duplicateTenderer.id).asValidationFailure()
+            return ValidationError.DuplicateTenderers(duplicateTenderer.id).asValidationError()
 
         checkForActiveInvitations(params)
-            .doOnError { return it.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
 
         checkForDuplicatePersonBusinessFunctions(tenderers)
-            .doOnError { return it.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
 
         checkForDuplicatePersonDocuments(tenderers)
-            .doOnError { return it.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkForActiveInvitations(params: ValidateBidDataParams): ValidationResult<Fail> {
+    private fun checkForActiveInvitations(params: ValidateBidDataParams): Validated<Fail> {
         val activeInvitations = invitationRepository.findBy(params.cpid)
-            .onFailure { return it.reason.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
             .filter { invitation -> invitation.status == InvitationStatus.ACTIVE }
 
         val groupsOfTenderers = activeInvitations
@@ -2199,12 +2199,12 @@ class BidService(
         val receivedTenderers = params.bids.details.first().tenderers.toSetBy { it.id }
 
         if (receivedTenderers !in groupsOfTenderers)
-            return ValidationError.ActiveInvitationNotFound().asValidationFailure()
+            return ValidationError.ActiveInvitationNotFound().asValidationError()
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkForDuplicatePersonDocuments(tenderers: List<ValidateBidDataParams.Bids.Detail.Tenderer>): ValidationResult<Fail.Error> {
+    private fun checkForDuplicatePersonDocuments(tenderers: List<ValidateBidDataParams.Bids.Detail.Tenderer>): Validated<Fail.Error> {
         tenderers.flatMap { tenderer -> tenderer.persones }
             .map { person ->
                 val duplicateDocuments = person.businessFunctions
@@ -2213,52 +2213,52 @@ class BidService(
 
                 if (duplicateDocuments != null)
                     return ValidationError.DuplicatePersonDocuments(person.id, duplicateDocuments.id)
-                        .asValidationFailure()
+                        .asValidationError()
             }
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkForDuplicatePersonBusinessFunctions(tenderers: List<ValidateBidDataParams.Bids.Detail.Tenderer>): ValidationResult<Fail.Error> {
+    private fun checkForDuplicatePersonBusinessFunctions(tenderers: List<ValidateBidDataParams.Bids.Detail.Tenderer>): Validated<Fail.Error> {
         tenderers.flatMap { tenderer -> tenderer.persones }
             .map { person ->
                 val duplicateBusinessFunction = person.businessFunctions.getDuplicate { it.id }
                 if (duplicateBusinessFunction != null)
                     return ValidationError.DuplicatePersonBusinessFunctions(person.id, duplicateBusinessFunction.id)
-                        .asValidationFailure()
+                        .asValidationError()
             }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkDocuments(params: ValidateBidDataParams): ValidationResult<Fail.Error> {
+    private fun checkDocuments(params: ValidateBidDataParams): Validated<Fail.Error> {
         val bid = params.bids.details.first()
-        checkForDuplicateBidDocument(bid).doOnError { return it.asValidationFailure() }
-        checkRelatedLots(bid).doOnError { return it.asValidationFailure() }
+        checkForDuplicateBidDocument(bid).onFailure { return it.reason.asValidationError() }
+        checkRelatedLots(bid).onFailure { return it.reason.asValidationError() }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkForDuplicateBidDocument(bid: ValidateBidDataParams.Bids.Detail): ValidationResult<Fail.Error> {
+    private fun checkForDuplicateBidDocument(bid: ValidateBidDataParams.Bids.Detail): Validated<Fail.Error> {
         val documents = bid.documents
 
         if (documents.isNotEmpty()) {
             val duplicateDocument = documents.getDuplicate { it.id }
             if (duplicateDocument != null)
-                return ValidationError.DuplicateDocuments(bid.id, duplicateDocument.id).asValidationFailure()
+                return ValidationError.DuplicateDocuments(bid.id, duplicateDocument.id).asValidationError()
         }
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkRelatedLots(bid: ValidateBidDataParams.Bids.Detail): ValidationResult<Fail.Error> {
+    private fun checkRelatedLots(bid: ValidateBidDataParams.Bids.Detail): Validated<Fail.Error> {
         val documentsRelatedLots = bid.documents.flatMap { it.relatedLots }.toSet()
         if (documentsRelatedLots.isNotEmpty()) {
             if (documentsRelatedLots != bid.relatedLots.toSet())
-                return ValidationError.InvalidRelatedLots().asValidationFailure()
+                return ValidationError.InvalidRelatedLots().asValidationError()
         }
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkItems(params: ValidateBidDataParams): ValidationResult<Fail> {
+    private fun checkItems(params: ValidateBidDataParams): Validated<Fail> {
         val requiresElectronicCatalogue = params.tender.procurementMethodModalities
             .any { it == ProcurementMethodModalities.REQUIRES_ELECTRONIC_CATALOGUE }
 
@@ -2266,58 +2266,58 @@ class BidService(
             val bid = params.bids.details.first()
 
             if (bid.items.isEmpty())
-                return ValidationError.MissingItems().asValidationFailure()
+                return ValidationError.MissingItems().asValidationError()
 
             val duplicateItem = bid.items.getDuplicate { it.id }
             if (duplicateItem != null)
-                return ValidationError.DuplicateItems(bid.id, duplicateItem.id).asValidationFailure()
+                return ValidationError.DuplicateItems(bid.id, duplicateItem.id).asValidationError()
 
-            checkBidAndTenderItemsEquality(bid, params).doOnError { return it.asValidationFailure() }
-            checkItemValue(bid, params).doOnError { return it.asValidationFailure() }
-            checkBidAndTenderUnitEquality(bid, params).doOnError { return it.asValidationFailure() }
+            checkBidAndTenderItemsEquality(bid, params).onFailure { return it.reason.asValidationError() }
+            checkItemValue(bid, params).onFailure { return it.reason.asValidationError() }
+            checkBidAndTenderUnitEquality(bid, params).onFailure { return it.reason.asValidationError() }
         }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     private fun checkItemValue(
         bid: ValidateBidDataParams.Bids.Detail,
         params: ValidateBidDataParams
-    ): ValidationResult<Fail> {
+    ): Validated<Fail> {
         bid.items.map { item ->
             val value = item.unit.value
             if (value.amount.value <= BigDecimal.ZERO)
-                return ValidationError.InvalidItemAmount(item.id).asValidationFailure()
+                return ValidationError.InvalidItemAmount(item.id).asValidationError()
 
             if (value.currency != params.tender.value.currency)
-                return ValidationError.InvalidItemCurrency(item.id).asValidationFailure()
+                return ValidationError.InvalidItemCurrency(item.id).asValidationError()
         }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     private fun checkBidAndTenderItemsEquality(
         bid: ValidateBidDataParams.Bids.Detail,
         params: ValidateBidDataParams
-    ): ValidationResult<Fail> {
+    ): Validated<Fail> {
         val bidItems = bid.items.toSetBy { it.id }
         val tenderItems = params.tender.items.toSetBy { it.id }
         if (bidItems != tenderItems)
-            return ValidationError.InvalidItems().asValidationFailure()
+            return ValidationError.InvalidItems().asValidationError()
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     private fun checkBidAndTenderUnitEquality(
         bid: ValidateBidDataParams.Bids.Detail,
         params: ValidateBidDataParams
-    ): ValidationResult<Fail> {
+    ): Validated<Fail> {
         val bidUnits = bid.items.toSetBy { it.unit.id }
         val tenderUnits = params.tender.items.toSetBy { it.unit.id }
         if (bidUnits != tenderUnits)
-            return ValidationError.InvalidUnits().asValidationFailure()
+            return ValidationError.InvalidUnits().asValidationError()
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     fun createBid(params: CreateBidParams): Result<CreateBidResult, Fail> {

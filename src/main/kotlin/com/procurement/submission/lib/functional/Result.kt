@@ -12,8 +12,8 @@ sealed class Result<out T, out E> {
     abstract val isSuccess: Boolean
     abstract val isFailure: Boolean
 
-    abstract val get: T
-    abstract val error: E
+//    abstract val get: T
+//    abstract val error: E
 
     inline fun doOnError(block: (E) -> Unit): Result<T, E> = when (this) {
         is Success<T> -> this
@@ -78,9 +78,9 @@ sealed class Result<out T, out E> {
     class Success<out T> internal constructor(val value: T) : Result<T, Nothing>() {
         override val isSuccess: Boolean = true
         override val isFailure: Boolean = false
-        override val get: T = value
+/*        override val get: T = value
         override val error: Nothing
-            get() = throw NoSuchElementException("The result does not contain an error.")
+            get() = throw NoSuchElementException("The result does not contain an error.")*/
 
         override fun toString(): String = "Success($value)"
     }
@@ -88,26 +88,23 @@ sealed class Result<out T, out E> {
     class Failure<out E> internal constructor(val reason: E) : Result<Nothing, E>() {
         override val isSuccess: Boolean = false
         override val isFailure: Boolean = true
-        override val get: Nothing
+        /*override val get: Nothing
             get() = throw NoSuchElementException("The result does not contain a value.")
-        override val error: E = reason
+        override val error: E = reason*/
 
         override fun toString(): String = "Failure($reason)"
     }
 }
 
-infix fun <T, E> T.validate(rule: ValidationRule<T, E>): Result<T, E> = when (val result = rule.test(this)) {
-    is ValidationResult.Ok -> Result.success(this)
-    is ValidationResult.Fail -> Result.failure(result.error)
+infix fun <T, E> T.validate(rule: ValidationRule<T, E>): Result<T, E> {
+    rule.test(this).onFailure { return it.reason.asFailure() }
+    return this.asSuccess()
 }
 
 infix fun <T, E> Result<T, E>.validate(rule: ValidationRule<T, E>): Result<T, E> = when (this) {
-    is Result.Success -> {
-        val result = rule.test(value)
-        if (result.isError)
-            Result.failure(result.error)
-        else
-            Result.success(value)
+    is Result.Success -> when (val result = rule.test(value)) {
+        is Validated.Ok -> this
+        is Validated.Error -> result.reason.asFailure()
     }
     is Result.Failure -> this
 }

@@ -13,6 +13,7 @@ import com.nhaarman.mockito_kotlin.spy
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
+import com.procurement.submission.get
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
 import com.procurement.submission.lib.functional.Result
@@ -95,14 +96,14 @@ class RulesDaoIT {
     fun tryGetValue_success() {
         val value = "10"
         insertRule(COUNTRY, PMD, PARAMETER, OPERATION_TYPE, value)
-        val actual = rulesDao.tryGetValue(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get
+        val actual = rulesDao.tryGetValue(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get()
 
         assertEquals(value, actual)
     }
 
     @Test
     fun tryGetValue_noValueFound_success() {
-        val actual = rulesDao.tryGetValue(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get
+        val actual = rulesDao.tryGetValue(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get()
 
         assertTrue(actual == null)
     }

@@ -9,7 +9,7 @@ import com.procurement.submission.infrastructure.web.api.response.ApiSuccessResp
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
-import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.Validated
 import java.util.*
 
 abstract class AbstractValidationHandler2<ACTION : Action, E : Fail>(
@@ -28,17 +28,15 @@ abstract class AbstractValidationHandler2<ACTION : Action, E : Fail>(
                 return generateResponseOnFailure(fail = it.reason, version = version, logger = logger)
             }
 
-        return when (val result = execute(node)) {
-            is ValidationResult.Ok -> {
-                if (logger.isDebugEnabled)
-                    logger.debug("${action.key} has been executed.")
-                ApiSuccessResponse2(version = version, id = id)
+        execute(node)
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, version = version, id = id, logger = logger)
             }
-            is ValidationResult.Fail -> generateResponseOnFailure(
-                fail = result.error, version = version, id = id, logger = logger
-            )
-        }
+
+        if (logger.isDebugEnabled)
+            logger.debug("${action.key} has been executed.")
+        return ApiSuccessResponse2(version = version, id = id)
     }
 
-    abstract fun execute(node: JsonNode): ValidationResult<E>
+    abstract fun execute(node: JsonNode): Validated<E>
 }

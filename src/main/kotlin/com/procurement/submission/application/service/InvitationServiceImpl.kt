@@ -18,10 +18,10 @@ import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Result.Companion.failure
 import com.procurement.submission.lib.functional.Result.Companion.success
-import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
-import com.procurement.submission.lib.functional.asValidationFailure
+import com.procurement.submission.lib.functional.asValidationError
 import org.springframework.stereotype.Service
 
 @Service
@@ -147,16 +147,16 @@ class InvitationServiceImpl(
             }
     )
 
-    override fun checkAbsenceActiveInvitations(params: CheckAbsenceActiveInvitationsParams): ValidationResult<Fail> {
+    override fun checkAbsenceActiveInvitations(params: CheckAbsenceActiveInvitationsParams): Validated<Fail> {
 
         val activeInvitationsFromDb = invitationRepository.findBy(cpid = params.cpid)
-            .onFailure { error -> return error.reason.asValidationFailure() }
+            .onFailure { error -> return error.reason.asValidationError() }
             .filter { it.status == InvitationStatus.PENDING }
 
         return if (activeInvitationsFromDb.isNotEmpty())
-            ValidationResult.error(ValidationError.ActiveInvitationsFound(activeInvitationsFromDb.map { it.id }))
+            Validated.error(ValidationError.ActiveInvitationsFound(activeInvitationsFromDb.map { it.id }))
         else
-            ValidationResult.ok()
+            Validated.ok()
     }
 
     override fun publishInvitations(params: PublishInvitationsParams): Result<PublishInvitationsResult, Fail> {

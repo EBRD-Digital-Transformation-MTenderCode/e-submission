@@ -83,7 +83,7 @@ class PeriodDao(private val session: Session) {
                 setTimestamp(END_DATE_COLUMN, entity.endDate)
             }
         query.tryExecute(session)
-            .doOnError { error -> return MaybeFail.fail(error) }
+            .onFailure { return MaybeFail.fail(it.reason) }
 
         return MaybeFail.none()
     }

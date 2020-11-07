@@ -27,6 +27,8 @@ import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.item.ItemId
+import com.procurement.submission.failure
+import com.procurement.submission.get
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
@@ -182,14 +184,14 @@ class BidRepositoryIT {
 
         val expectedBids = listOf(expectedBid)
 
-        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get
+        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
 
         assertEquals(expectedBids, actualBids)
     }
 
     @Test
     fun findBy_notFound_success() {
-        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get
+        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
 
         assertTrue(actualBids.isEmpty())
     }
@@ -200,7 +202,7 @@ class BidRepositoryIT {
             .whenever(session)
             .execute(any<BoundStatement>())
 
-        val expected = bidRepository.findBy(cpid = CPID, ocid = OCID).error
+        val expected = bidRepository.findBy(cpid = CPID, ocid = OCID).failure()
 
         assertTrue(expected is Fail.Incident.Database.Interaction)
     }
@@ -210,7 +212,7 @@ class BidRepositoryIT {
         val bid = stubBidEntity()
         val expectedBids = listOf(bid)
         bidRepository.saveAll(expectedBids)
-        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get
+        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
 
         assertEquals(expectedBids, actualBids)
     }
@@ -261,7 +263,7 @@ class BidRepositoryIT {
     }
 
     private fun insertBid(bidEntity: BidEntityComplex) {
-        val jsonData = transform.trySerialization(bidEntity.bid).get
+        val jsonData = transform.trySerialization(bidEntity.bid).get()
         val record = QueryBuilder.insertInto(KEYSPACE, BID_TABLE)
             .value(CPID_COLUMN, bidEntity.cpid.toString())
             .value(STAGE_COLUMN, bidEntity.stage.toString())

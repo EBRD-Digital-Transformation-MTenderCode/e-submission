@@ -86,8 +86,7 @@ class HistoryRepositoryCassandra(private val session: Session, private val trans
                 setString(JSON_DATA, entity.jsonData)
             }
 
-        insert.tryExecute(session)
-            .doOnError { error -> return Result.failure(error) }
+        insert.tryExecute(session).onFailure { return it }
 
         return entity.asSuccess()
     }

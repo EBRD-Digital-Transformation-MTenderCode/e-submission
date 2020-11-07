@@ -128,15 +128,14 @@ class BidRepositoryCassandra(private val session: Session, private val transform
         }
 
         statement.tryExecute(session)
-            .doOnError { fail -> return MaybeFail.fail(fail) }
+            .onFailure { return MaybeFail.fail(it.reason) }
 
         return MaybeFail.none()
     }
 
     private fun generateJsonData(bid: Bid): Result<String, Fail.Incident> =
         transform.trySerialization(bid)
-            .doOnError { error ->
-                return Fail.Incident.Database.DatabaseParsing(exception = error.exception)
-                    .asFailure()
+            .mapFailure {
+                Fail.Incident.Database.DatabaseParsing(exception = it.exception)
             }
 }

@@ -15,6 +15,7 @@ import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.Stage
+import com.procurement.submission.get
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
 import com.procurement.submission.lib.functional.MaybeFail
@@ -114,7 +115,7 @@ class PeriodDaoIT {
     fun tryFindBy_success() {
         val expectedPeriod = stubPeriod()
         periodDao.trySave(expectedPeriod)
-        val actual = periodDao.tryGetBy(CPID, STAGE).get
+        val actual = periodDao.tryGetBy(CPID, STAGE).get()
 
         assertEquals(expectedPeriod, actual)
     }

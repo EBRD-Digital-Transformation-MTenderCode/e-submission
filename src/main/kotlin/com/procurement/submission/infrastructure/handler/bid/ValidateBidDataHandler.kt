@@ -10,8 +10,8 @@ import com.procurement.submission.infrastructure.dto.bid.validate.ValidateBidDat
 import com.procurement.submission.infrastructure.enums.Command2Type
 import com.procurement.submission.infrastructure.handler.AbstractValidationHandler2
 import com.procurement.submission.infrastructure.web.response.parser.tryGetParams
-import com.procurement.submission.lib.functional.ValidationResult
-import com.procurement.submission.lib.functional.asValidationFailure
+import com.procurement.submission.lib.functional.Validated
+import com.procurement.submission.lib.functional.asValidationError
 import com.procurement.submission.lib.functional.flatMap
 import org.springframework.stereotype.Component
 
@@ -25,10 +25,10 @@ class ValidateBidDataHandler(
 ) {
     override val action: Command2Type = Command2Type.VALIDATE_BID_DATA
 
-    override fun execute(node: JsonNode): ValidationResult<Fail> {
+    override fun execute(node: JsonNode): Validated<Fail> {
         val params = node.tryGetParams(ValidateBidDataRequest::class.java, transform = transform)
             .flatMap { it.convert() }
-            .onFailure { return it.reason.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
 
         return bidService.validateBidData(params)
     }

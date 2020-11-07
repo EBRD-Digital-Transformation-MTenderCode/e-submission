@@ -3,7 +3,7 @@ package com.procurement.submission.domain.fail
 import com.procurement.submission.application.service.Logger
 import com.procurement.submission.domain.model.enums.EnumElementProvider
 import com.procurement.submission.lib.functional.Result
-import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.Validated
 
 sealed class Fail {
 
@@ -17,7 +17,7 @@ sealed class Fail {
     abstract class Error(val prefix: String) : Fail() {
         companion object {
             fun <T, E : Error> E.toResult(): Result<T, E> = Result.failure(this)
-            fun <E : Error> E.toValidationResult(): ValidationResult<E> = ValidationResult.error(this)
+            fun <E : Error> E.toValidationResult(): Validated<E> = Validated.error(this)
         }
 
         override fun logging(logger: Logger) {

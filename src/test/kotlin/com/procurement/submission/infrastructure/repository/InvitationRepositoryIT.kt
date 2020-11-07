@@ -20,6 +20,8 @@ import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.invitation.Invitation
 import com.procurement.submission.domain.model.invitation.InvitationId
 import com.procurement.submission.domain.model.qualification.QualificationId
+import com.procurement.submission.failure
+import com.procurement.submission.get
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
@@ -100,7 +102,7 @@ class InvitationRepositoryIT {
 
         val expectedInvitations = setOf(expectedInvitationFirst, expectedInvitationSecond)
 
-        val actualInvitations = invitationRepository.findBy(cpid = CPID).get
+        val actualInvitations = invitationRepository.findBy(cpid = CPID).get()
 
         assertEquals(expectedInvitations, actualInvitations.toSet())
         assertTrue(actualInvitations.size == 2)
@@ -108,7 +110,7 @@ class InvitationRepositoryIT {
 
     @Test
     fun findBy_InvitationsNotFound_success() {
-        val actualInvitations = invitationRepository.findBy(cpid = CPID).get
+        val actualInvitations = invitationRepository.findBy(cpid = CPID).get()
 
         assertTrue(actualInvitations.isEmpty())
     }
@@ -119,7 +121,7 @@ class InvitationRepositoryIT {
             .whenever(session)
             .execute(any<BoundStatement>())
 
-        val expected = invitationRepository.findBy(cpid = CPID).error
+        val expected = invitationRepository.findBy(cpid = CPID).failure()
 
         assertTrue(expected is Fail.Incident.Database.Interaction)
     }
@@ -129,7 +131,7 @@ class InvitationRepositoryIT {
         val invitation = stubInvitation()
         invitationRepository.save(cpid = CPID, invitation = invitation)
 
-        val actualInvitation = invitationRepository.findBy(cpid = CPID).get.first()
+        val actualInvitation = invitationRepository.findBy(cpid = CPID).get().first()
 
         assertEquals(invitation, actualInvitation)
     }
@@ -152,7 +154,7 @@ class InvitationRepositoryIT {
         val invitationSecond = stubInvitation()
         val expectedInvitations = listOf(invitationFirst, invitationSecond)
         invitationRepository.saveAll(cpid = CPID, invitations = expectedInvitations)
-        val actualInvitations = invitationRepository.findBy(cpid = CPID).get
+        val actualInvitations = invitationRepository.findBy(cpid = CPID).get()
 
         assertEquals(expectedInvitations.toSet(), actualInvitations.toSet())
         assertTrue(actualInvitations.size == 2)
@@ -198,7 +200,7 @@ class InvitationRepositoryIT {
     }
 
     private fun insertInvitation(cpid: Cpid, invitation: Invitation) {
-        val jsonData = transform.trySerialization(convert(invitation)).get
+        val jsonData = transform.trySerialization(convert(invitation)).get()
         val record = QueryBuilder.insertInto(KEYSPACE, INVITATION_TABLE)
             .value(CPID_COLUMN, cpid.toString())
             .value(ID_COLUMN, invitation.id.toString())

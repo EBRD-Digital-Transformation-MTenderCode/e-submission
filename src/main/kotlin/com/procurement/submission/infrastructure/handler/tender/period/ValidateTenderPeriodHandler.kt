@@ -10,8 +10,8 @@ import com.procurement.submission.infrastructure.dto.tender.period.ValidateTende
 import com.procurement.submission.infrastructure.enums.Command2Type
 import com.procurement.submission.infrastructure.handler.AbstractValidationHandler2
 import com.procurement.submission.infrastructure.web.response.parser.tryGetParams
-import com.procurement.submission.lib.functional.ValidationResult
-import com.procurement.submission.lib.functional.asValidationFailure
+import com.procurement.submission.lib.functional.Validated
+import com.procurement.submission.lib.functional.asValidationError
 import org.springframework.stereotype.Component
 
 @Component
@@ -24,11 +24,11 @@ class ValidateTenderPeriodHandler(
 ) {
     override val action: Command2Type = Command2Type.VALIDATE_TENDER_PERIOD
 
-    override fun execute(node: JsonNode): ValidationResult<Fail> {
+    override fun execute(node: JsonNode): Validated<Fail> {
         val params = node.tryGetParams(ValidateTenderPeriodRequest::class.java, transform = transform)
-            .onFailure { return it.reason.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
             .convert()
-            .onFailure { return it.reason.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
 
         return periodService.validateTenderPeriod(params)
     }

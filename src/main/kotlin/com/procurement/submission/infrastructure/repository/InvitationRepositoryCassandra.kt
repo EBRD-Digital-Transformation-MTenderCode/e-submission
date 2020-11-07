@@ -91,7 +91,7 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
             }
 
         statements.tryExecute(session)
-            .doOnError { fail -> return MaybeFail.fail(fail) }
+            .onFailure { return MaybeFail.fail(it.reason) }
 
         return MaybeFail.none()
     }
@@ -99,9 +99,8 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
     private fun generateJsonData(invitation: Invitation): Result<String, Fail.Incident> {
         val entity = convert(invitation)
         return transform.trySerialization(entity)
-            .doOnError { error ->
-                return Fail.Incident.Database.DatabaseParsing(exception = error.exception)
-                    .asFailure()
+            .mapFailure {
+                Fail.Incident.Database.DatabaseParsing(exception = it.exception)
             }
     }
 
@@ -136,8 +135,7 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
             )
         }
 
-        statement.tryExecute(session)
-            .doOnError { fail -> return MaybeFail.fail(fail) }
+        statement.tryExecute(session).onFailure { return MaybeFail.fail(it.reason) }
 
         return MaybeFail.none()
     }
