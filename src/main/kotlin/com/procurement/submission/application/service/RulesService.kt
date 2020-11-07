@@ -6,12 +6,12 @@ import com.procurement.submission.domain.extension.tryToBoolean
 import com.procurement.submission.domain.extension.tryToLong
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asFailure
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.infrastructure.dao.RulesDao
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asFailure
+import com.procurement.submission.lib.functional.asSuccess
 import org.springframework.stereotype.Service
 import java.time.Duration
 

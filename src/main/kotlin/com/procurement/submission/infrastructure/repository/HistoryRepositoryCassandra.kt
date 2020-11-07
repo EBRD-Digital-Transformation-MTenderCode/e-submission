@@ -3,12 +3,12 @@ package com.procurement.submission.infrastructure.repository
 import com.datastax.driver.core.Session
 import com.procurement.submission.application.repository.HistoryRepository
 import com.procurement.submission.application.service.Transform
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.extension.nowDefaultUTC
 import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.model.entity.HistoryEntity
 import org.springframework.stereotype.Repository
 

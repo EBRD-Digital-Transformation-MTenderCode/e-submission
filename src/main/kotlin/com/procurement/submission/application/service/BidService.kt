@@ -54,10 +54,6 @@ import com.procurement.submission.domain.extension.toLocal
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.ValidationResult
-import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.functional.asValidationFailure
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
@@ -80,6 +76,10 @@ import com.procurement.submission.infrastructure.converter.convertToCreateBidRes
 import com.procurement.submission.infrastructure.converter.toBidsForEvaluationResponseData
 import com.procurement.submission.infrastructure.dao.BidDao
 import com.procurement.submission.infrastructure.dto.bid.create.CreateBidResult
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.asSuccess
+import com.procurement.submission.lib.functional.asValidationFailure
 import com.procurement.submission.model.dto.BidDetails
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs

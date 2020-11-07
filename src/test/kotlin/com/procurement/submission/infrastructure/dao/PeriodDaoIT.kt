@@ -13,11 +13,11 @@ import com.nhaarman.mockito_kotlin.doThrow
 import com.nhaarman.mockito_kotlin.spy
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.domain.extension.toDate
-import com.procurement.submission.domain.functional.MaybeFail
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.Stage
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
+import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import com.procurement.submission.model.entity.PeriodEntity

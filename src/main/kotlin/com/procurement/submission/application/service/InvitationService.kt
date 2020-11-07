@@ -4,10 +4,10 @@ import com.procurement.submission.application.params.CheckAbsenceActiveInvitatio
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.ValidationResult
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
 import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.ValidationResult
 
 interface InvitationService {
 

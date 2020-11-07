@@ -1,7 +1,7 @@
 package com.procurement.submission.domain.extension
 
-import com.procurement.submission.domain.functional.Option
-import com.procurement.submission.domain.functional.Result
+import com.procurement.submission.lib.functional.Option
+import com.procurement.submission.lib.functional.Result
 
 inline fun <T, V> Collection<T>.uniqueBy(selector: (T) -> V): Boolean {
     val unique = HashSet<V>()

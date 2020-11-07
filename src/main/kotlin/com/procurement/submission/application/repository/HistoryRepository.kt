@@ -1,7 +1,7 @@
 package com.procurement.submission.application.repository
 
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.functional.Result
+import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.model.entity.HistoryEntity
 
 interface HistoryRepository {

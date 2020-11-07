@@ -1,9 +1,9 @@
 package com.procurement.submission.domain.extension
 
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asFailure
-import com.procurement.submission.domain.functional.asSuccess
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asFailure
+import com.procurement.submission.lib.functional.asSuccess
 import java.util.*
 
 fun String.tryUUID(): Result<UUID, Fail.Incident.Transform.Parsing> =

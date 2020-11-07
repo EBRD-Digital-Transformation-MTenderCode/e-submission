@@ -2,8 +2,8 @@ package com.procurement.submission.application.params.rules
 
 import com.procurement.submission.domain.extension.getDuplicate
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.ValidationResult
-import com.procurement.submission.domain.functional.ValidationRule
+import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.ValidationRule
 
 fun <T : Collection<Any>?> noDuplicatesRule(attributeName: String): ValidationRule<T, DataErrors.Validation> =
     ValidationRule { received: T ->

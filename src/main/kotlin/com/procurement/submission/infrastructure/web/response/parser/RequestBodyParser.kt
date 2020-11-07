@@ -3,16 +3,16 @@ package com.procurement.submission.infrastructure.web.response.parser
 import com.fasterxml.jackson.databind.JsonNode
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.extension.tryUUID
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.bind
-import com.procurement.submission.infrastructure.web.api.version.ApiVersion2
-import com.procurement.submission.infrastructure.enums.Command2Type
-import com.procurement.submission.infrastructure.web.extension.tryGetAttributeAsEnum
-import com.procurement.submission.infrastructure.web.extension.tryGetTextAttribute
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.BadRequest
 import com.procurement.submission.domain.fail.error.DataErrors
+import com.procurement.submission.infrastructure.enums.Command2Type
+import com.procurement.submission.infrastructure.web.api.version.ApiVersion2
 import com.procurement.submission.infrastructure.web.extension.tryGetAttribute
+import com.procurement.submission.infrastructure.web.extension.tryGetAttributeAsEnum
+import com.procurement.submission.infrastructure.web.extension.tryGetTextAttribute
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.bind
 import java.util.*
 
 fun JsonNode.tryGetVersion(): Result<ApiVersion2, DataErrors> {

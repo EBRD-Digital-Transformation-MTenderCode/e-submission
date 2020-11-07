@@ -1,10 +1,10 @@
 package com.procurement.submission.application.params
 
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
 import java.time.LocalDateTime
 
 class CheckPeriodParams private constructor(

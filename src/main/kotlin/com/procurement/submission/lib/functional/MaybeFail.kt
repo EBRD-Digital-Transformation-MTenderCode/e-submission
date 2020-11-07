@@ -1,4 +1,4 @@
-package com.procurement.submission.domain.functional
+package com.procurement.submission.lib.functional
 
 sealed class MaybeFail<out E> {
 

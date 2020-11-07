@@ -1,4 +1,4 @@
-package com.procurement.submission.domain.functional
+package com.procurement.submission.lib.functional
 
 fun <T, E> T.asSuccess(): Result<T, E> = Result.success(this)
 fun <T, E> E.asFailure(): Result<T, E> = Result.failure(this)

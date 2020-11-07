@@ -5,12 +5,12 @@ import com.procurement.submission.application.service.InvitationServiceImpl
 import com.procurement.submission.application.service.Logger
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.functional.ValidationResult
 import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.dto.invitation.check.CheckAbsenceActiveInvitationsRequest
 import com.procurement.submission.infrastructure.enums.Command2Type
 import com.procurement.submission.infrastructure.handler.AbstractValidationHandler2
 import com.procurement.submission.infrastructure.web.response.parser.tryGetParams
+import com.procurement.submission.lib.functional.ValidationResult
 import org.springframework.stereotype.Component
 
 @Component

@@ -2,8 +2,8 @@ package com.procurement.submission.utils
 
 import com.procurement.submission.domain.fail.Fail.Error.Companion.toValidationResult
 import com.procurement.submission.domain.fail.error.DomainErrors
-import com.procurement.submission.domain.functional.ValidationResult
-import com.procurement.submission.domain.functional.ValidationRule
+import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.ValidationRule
 import java.math.BigDecimal
 
 fun scaleValidationRule(className: String, availableScale: Int) =

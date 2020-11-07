@@ -2,9 +2,6 @@ package com.procurement.submission.application.params
 
 import com.procurement.submission.application.params.rules.notEmptyRule
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.functional.validate
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
 import com.procurement.submission.domain.model.enums.OperationType
@@ -12,6 +9,9 @@ import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.QualificationStatusDetails
 import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
+import com.procurement.submission.lib.functional.validate
 import java.time.LocalDateTime
 
 class DoInvitationsParams private constructor(

@@ -2,11 +2,11 @@ package com.procurement.submission.infrastructure.dao
 
 import com.datastax.driver.core.Session
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
 import org.springframework.stereotype.Service
 
 @Service

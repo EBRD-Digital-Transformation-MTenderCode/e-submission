@@ -19,10 +19,6 @@ import com.procurement.submission.application.params.parseTypeOfSupplier
 import com.procurement.submission.application.params.rules.notEmptyRule
 import com.procurement.submission.domain.extension.mapResult
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.functional.bind
-import com.procurement.submission.domain.functional.validate
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.Token
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
@@ -35,6 +31,10 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.infrastructure.dto.bid.create.CreateBidRequest
 import com.procurement.submission.infrastructure.dto.bid.create.CreateBidResult
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
+import com.procurement.submission.lib.functional.bind
+import com.procurement.submission.lib.functional.validate
 import com.procurement.submission.model.dto.ocds.AccountIdentification
 import com.procurement.submission.model.dto.ocds.AdditionalAccountIdentifier
 import com.procurement.submission.model.dto.ocds.Address

@@ -1,6 +1,6 @@
 package com.procurement.submission.infrastructure.web.api.version
 
-import com.procurement.submission.domain.functional.Result
+import com.procurement.submission.lib.functional.Result
 
 data class ApiVersion2(val major: Int, val minor: Int, val patch: Int) {
     companion object {

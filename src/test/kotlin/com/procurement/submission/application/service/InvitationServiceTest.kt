@@ -9,8 +9,6 @@ import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
 import com.procurement.submission.application.repository.InvitationRepository
 import com.procurement.submission.domain.extension.format
-import com.procurement.submission.domain.functional.Result.Companion.success
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.OperationType
@@ -22,6 +20,8 @@ import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
 import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
+import com.procurement.submission.lib.functional.Result.Companion.success
+import com.procurement.submission.lib.functional.asSuccess
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested

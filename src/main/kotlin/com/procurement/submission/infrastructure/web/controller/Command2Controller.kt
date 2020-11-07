@@ -3,7 +3,6 @@ package com.procurement.submission.infrastructure.web.controller
 import com.procurement.submission.application.service.Logger
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.infrastructure.configuration.properties.GlobalProperties2
 import com.procurement.submission.infrastructure.service.Command2Service
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
@@ -13,6 +12,7 @@ import com.procurement.submission.infrastructure.web.response.parser.NaN
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetNode
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
+import com.procurement.submission.lib.functional.Result
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping

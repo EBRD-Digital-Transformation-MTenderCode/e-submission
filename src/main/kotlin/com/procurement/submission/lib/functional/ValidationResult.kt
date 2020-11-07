@@ -1,5 +1,4 @@
-package com.procurement.submission.domain.functional
-
+package com.procurement.submission.lib.functional
 
 fun <E> E.asValidationFailure(): ValidationResult<E> = ValidationResult.error(this)
 

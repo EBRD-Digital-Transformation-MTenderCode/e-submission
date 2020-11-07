@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.JsonNodeType
 import com.fasterxml.jackson.databind.node.NullNode
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.Result.Companion.failure
-import com.procurement.submission.domain.functional.Result.Companion.success
-import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.functional.bind
 import com.procurement.submission.domain.model.enums.EnumElementProvider
 import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.Result.Companion.failure
+import com.procurement.submission.lib.functional.Result.Companion.success
+import com.procurement.submission.lib.functional.asSuccess
+import com.procurement.submission.lib.functional.bind
 import java.math.BigDecimal
 
 fun JsonNode.getOrNull(name: String): JsonNode? = if (this.has(name)) this.get(name) else null

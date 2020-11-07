@@ -6,13 +6,13 @@ import com.procurement.submission.application.service.Logger
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.Action
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.infrastructure.repository.HistoryRepositoryCassandra
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
 import com.procurement.submission.infrastructure.web.api.response.ApiSuccessResponse2
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
+import com.procurement.submission.lib.functional.Result
 
 abstract class AbstractHistoricalHandler2<ACTION : Action, R>(
     private val target: Class<R>,

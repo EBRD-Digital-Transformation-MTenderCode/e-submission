@@ -7,14 +7,6 @@ import com.procurement.submission.application.repository.InvitationRepository
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
-import com.procurement.submission.domain.functional.MaybeFail
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.Result.Companion.failure
-import com.procurement.submission.domain.functional.Result.Companion.success
-import com.procurement.submission.domain.functional.ValidationResult
-import com.procurement.submission.domain.functional.asFailure
-import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.functional.asValidationFailure
 import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.invitation.Invitation
@@ -22,6 +14,14 @@ import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
 import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
 import com.procurement.submission.infrastructure.dto.invitation.publish.convert
+import com.procurement.submission.lib.functional.MaybeFail
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.Result.Companion.failure
+import com.procurement.submission.lib.functional.Result.Companion.success
+import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.asFailure
+import com.procurement.submission.lib.functional.asSuccess
+import com.procurement.submission.lib.functional.asValidationFailure
 import org.springframework.stereotype.Service
 
 @Service

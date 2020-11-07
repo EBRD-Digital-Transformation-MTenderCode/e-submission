@@ -9,9 +9,6 @@ import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
 import com.procurement.submission.domain.extension.format
 import com.procurement.submission.domain.extension.toDate
-import com.procurement.submission.domain.functional.MaybeFail
-import com.procurement.submission.domain.functional.ValidationResult
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.enums.OperationType
@@ -19,6 +16,9 @@ import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.Stage
 import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
+import com.procurement.submission.lib.functional.MaybeFail
+import com.procurement.submission.lib.functional.ValidationResult
+import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.model.entity.PeriodEntity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

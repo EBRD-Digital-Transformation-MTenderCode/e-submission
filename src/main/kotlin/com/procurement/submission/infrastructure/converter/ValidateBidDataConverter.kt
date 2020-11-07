@@ -16,10 +16,6 @@ import com.procurement.submission.application.params.parseTypeOfSupplier
 import com.procurement.submission.application.params.rules.notEmptyRule
 import com.procurement.submission.domain.extension.mapResult
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.functional.bind
-import com.procurement.submission.domain.functional.validate
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
@@ -28,6 +24,10 @@ import com.procurement.submission.domain.model.enums.ProcurementMethodModalities
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.infrastructure.dto.bid.validate.ValidateBidDataRequest
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
+import com.procurement.submission.lib.functional.bind
+import com.procurement.submission.lib.functional.validate
 
 fun ValidateBidDataRequest.convert(): Result<ValidateBidDataParams, DataErrors> {
     val path = "bids"

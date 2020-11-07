@@ -1,4 +1,4 @@
-package com.procurement.submission.domain.functional
+package com.procurement.submission.lib.functional
 
 inline fun <T, E> validationRule(crossinline block: (value: T) -> ValidationResult<E>) = ValidationRule.invoke(block)
 

@@ -1,9 +1,9 @@
 package com.procurement.submission.domain.fail
 
 import com.procurement.submission.application.service.Logger
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.ValidationResult
 import com.procurement.submission.domain.model.enums.EnumElementProvider
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.ValidationResult
 
 sealed class Fail {
 
