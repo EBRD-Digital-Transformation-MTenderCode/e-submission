@@ -10,7 +10,7 @@ fun ValidateTenderPeriodRequest.convert() = ValidateTenderPeriodParams.tryCreate
     date = date,
     tender = ValidateTenderPeriodParams.Tender(
         tenderPeriod = tender.tenderPeriod.convert()
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
     )
 )
 

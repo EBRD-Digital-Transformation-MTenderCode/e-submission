@@ -24,9 +24,9 @@ class CheckPeriodHandler(
 
     override fun execute(node: JsonNode): ValidationResult<Fail> {
         val params = node.tryGetParams(CheckPeriodRequest::class.java, transform = transform)
-            .doReturn { fail -> return ValidationResult.error(fail) }
+            .onFailure { return ValidationResult.error(it.reason) }
             .convert()
-            .doReturn { fail -> return ValidationResult.error(fail) }
+            .onFailure { return ValidationResult.error(it.reason) }
 
         return periodService.checkPeriod(params)
     }

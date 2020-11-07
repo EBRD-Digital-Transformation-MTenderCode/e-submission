@@ -57,8 +57,7 @@ class HistoryRepositoryCassandra(private val session: Session, private val trans
             }
 
         return query.tryExecute(session)
-            .doOnError { error -> return Result.failure(error) }
-            .get
+            .onFailure { return it }
             .one()
             ?.let { row ->
                 HistoryEntity(
@@ -76,7 +75,7 @@ class HistoryRepositoryCassandra(private val session: Session, private val trans
             operationId = operationId,
             command = command,
             operationDate = nowDefaultUTC().toDate(),
-            jsonData = transform.trySerialization(result).orForwardFail { fail -> return fail }
+            jsonData = transform.trySerialization(result).onFailure { return it }
         )
 
         val insert = preparedSaveHistoryCQL.bind()

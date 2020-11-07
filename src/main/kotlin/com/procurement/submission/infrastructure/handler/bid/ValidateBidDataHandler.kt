@@ -12,7 +12,7 @@ import com.procurement.submission.infrastructure.handler.AbstractValidationHandl
 import com.procurement.submission.infrastructure.web.response.parser.tryGetParams
 import com.procurement.submission.lib.functional.ValidationResult
 import com.procurement.submission.lib.functional.asValidationFailure
-import com.procurement.submission.lib.functional.bind
+import com.procurement.submission.lib.functional.flatMap
 import org.springframework.stereotype.Component
 
 @Component
@@ -27,8 +27,8 @@ class ValidateBidDataHandler(
 
     override fun execute(node: JsonNode): ValidationResult<Fail> {
         val params = node.tryGetParams(ValidateBidDataRequest::class.java, transform = transform)
-            .bind { it.convert() }
-            .doReturn { error -> return error.asValidationFailure() }
+            .flatMap { it.convert() }
+            .onFailure { return it.reason.asValidationFailure() }
 
         return bidService.validateBidData(params)
     }

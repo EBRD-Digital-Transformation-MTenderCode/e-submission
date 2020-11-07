@@ -39,10 +39,10 @@ class DoInvitationsParams private constructor(
             submissions: Submissions?
         ): Result<DoInvitationsParams, DataErrors> {
             val cpidParsed = parseCpid(value = cpid)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             val dateParsed = parseDate(value = date, attributeName = DATE_ATTRIBUTE_NAME)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             val pmdParsed = ProcurementMethod.orNull(pmd)
                 ?: return Result.failure(
@@ -67,7 +67,7 @@ class DoInvitationsParams private constructor(
                     QUALIFICATIONS_ATTRIBUTE_NAME
                 )
             )
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             return DoInvitationsParams(
                 cpid = cpidParsed,
@@ -106,13 +106,13 @@ class DoInvitationsParams private constructor(
                 relatedSubmission: String
             ): Result<Qualification, DataErrors> {
                 val idParsed = parseQualificationId(value = id, attributeName = QUALIFICATIONS_ID_ATTRIBUTE_NAME)
-                    .orForwardFail { fail -> return fail }
+                    .onFailure { return it }
 
                 val statusDetailsParsed = parseQualificationStatusDetails(
                     value = statusDetails,
                     attributeName = QUALIFICATIONS_STATUS_DETAILS_ATTRIBUTE_NAME,
                     allowedEnums = allowedStatusDetails
-                ).orForwardFail { fail -> return fail }
+                ).onFailure { return it }
 
                 return Qualification(
                     id = idParsed,
@@ -131,7 +131,7 @@ class DoInvitationsParams private constructor(
 
             fun tryCreate(details: List<Detail>): Result<Submissions, DataErrors> {
                 details.validate(notEmptyRule(SUBMISSIONS_DETAILS_ATTRIBUTE_NAME))
-                    .orForwardFail { fail -> return fail }
+                    .onFailure { return it }
                 return Submissions(details).asSuccess()
             }
         }
@@ -147,7 +147,7 @@ class DoInvitationsParams private constructor(
                     id: String, candidates: List<Candidate>
                 ): Result<Detail, DataErrors> {
                     candidates.validate(notEmptyRule(SUBMISSIONS_DETAILS_CANDIDATES_ATTRIBUTE_NAME))
-                        .orForwardFail { fail -> return fail }
+                        .onFailure { return it }
 
                     return Detail(id = SubmissionId.create(id), candidates = candidates).asSuccess()
                 }

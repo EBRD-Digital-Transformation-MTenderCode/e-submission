@@ -10,7 +10,7 @@ class CheckAbsenceActiveInvitationsParams private constructor(val cpid: Cpid) {
     companion object {
         fun tryCreate(cpid: String): Result<CheckAbsenceActiveInvitationsParams, DataErrors> {
             val cpidParsed = parseCpid(value = cpid)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             return CheckAbsenceActiveInvitationsParams(cpidParsed)
                 .asSuccess()

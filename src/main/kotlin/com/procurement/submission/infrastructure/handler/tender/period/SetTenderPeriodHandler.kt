@@ -31,9 +31,9 @@ class SetTenderPeriodHandler(
 
     override fun execute(node: JsonNode): Result<SetTenderPeriodResult, Fail> {
         val params = node.tryGetParams(SetTenderPeriodRequest::class.java, transform = transform)
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
             .convert()
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
 
         return periodService.setTenderPeriod(params)
     }

@@ -12,12 +12,12 @@ import com.procurement.submission.infrastructure.web.extension.tryGetAttribute
 import com.procurement.submission.infrastructure.web.extension.tryGetAttributeAsEnum
 import com.procurement.submission.infrastructure.web.extension.tryGetTextAttribute
 import com.procurement.submission.lib.functional.Result
-import com.procurement.submission.lib.functional.bind
+import com.procurement.submission.lib.functional.flatMap
 import java.util.*
 
 fun JsonNode.tryGetVersion(): Result<ApiVersion2, DataErrors> {
     val name = "version"
-    return tryGetTextAttribute(name).bind {
+    return tryGetTextAttribute(name).flatMap {
         when (val result = ApiVersion2.tryValueOf(it)) {
             is Result.Success -> result
             is Result.Failure -> Result.failure(
@@ -36,7 +36,7 @@ fun JsonNode.tryGetAction(): Result<Command2Type, DataErrors> =
 
 fun <T : Any> JsonNode.tryGetParams(target: Class<T>, transform: Transform): Result<T, Fail.Error> {
     val name = "params"
-    return tryGetAttribute(name).bind {
+    return tryGetAttribute(name).flatMap {
         when (val result = transform.tryMapping(it, target)) {
             is Result.Success -> result
             is Result.Failure -> Result.failure(
@@ -57,7 +57,7 @@ fun <T : Any> JsonNode.tryGetData(target: Class<T>, transform: Transform): Resul
 fun JsonNode.tryGetId(): Result<UUID, DataErrors> {
     val name = "id"
     return tryGetTextAttribute(name)
-        .bind {
+        .flatMap {
             when (val result = it.tryUUID()) {
                 is Result.Success -> result
                 is Result.Failure -> Result.failure(

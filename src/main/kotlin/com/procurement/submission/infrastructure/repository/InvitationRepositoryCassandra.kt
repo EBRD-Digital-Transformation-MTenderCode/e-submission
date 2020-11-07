@@ -53,16 +53,16 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
             }
 
         return query.tryExecute(session)
-            .orForwardFail { fail -> return fail }
-            .map { row -> row.convert().orForwardFail { fail -> return fail } }
+            .onFailure { return it }
+            .map { row -> row.convert().onFailure { return it } }
             .asSuccess()
     }
 
     private fun Row.convert(): Result<Invitation, Fail.Incident> {
         val data = getString(JSON_DATA_COLUMN)
         val entity = transform.tryDeserialization(value = data, target = InvitationEntity::class.java)
-            .doReturn { fail ->
-                return Fail.Incident.Database.DatabaseParsing(exception = fail.exception).asFailure()
+            .onFailure {
+                return Fail.Incident.Database.DatabaseParsing(exception = it.reason.exception).asFailure()
             }
 
         return Invitation(
@@ -81,7 +81,7 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
 
     override fun save(cpid: Cpid, invitation: Invitation): MaybeFail<Fail.Incident> {
         val data = generateJsonData(invitation)
-            .doReturn { fail -> return MaybeFail.fail(fail) }
+            .onFailure { return MaybeFail.fail(it.reason) }
 
         val statements = preparedSaveCQL.bind()
             .apply {
@@ -124,7 +124,7 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
 
         invitations.forEach { invitation ->
             val data = generateJsonData(invitation)
-                .doReturn { fail -> return MaybeFail.fail(fail) }
+                .onFailure { return MaybeFail.fail(it.reason) }
 
             statement.add(
                 preparedSaveCQL.bind()

@@ -31,9 +31,9 @@ class PublishInvitationsHandler(
 
     override fun execute(node: JsonNode): Result<PublishInvitationsResult, Fail> {
         val params = node.tryGetParams(PublishInvitationsRequest::class.java, transform = transform)
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
             .convert()
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
 
         return invitationService.publishInvitations(params)
     }

@@ -96,7 +96,7 @@ class PeriodDao(private val session: Session) {
             }
 
         return query.tryExecute(session)
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
             .one()
             ?.let {
                 PeriodEntity(

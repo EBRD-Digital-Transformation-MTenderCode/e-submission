@@ -799,7 +799,7 @@ class BidService(
 
     fun getInvitedTenderers(cpid: Cpid): Set<String> = invitationRepository
         .findBy(cpid)
-        .doReturn {
+        .onFailure {
             throw ErrorException(
                 error = ENTITY_NOT_FOUND,
                 message = "Cannot found invitations by cpid='${cpid}'"
@@ -2188,7 +2188,7 @@ class BidService(
 
     private fun checkForActiveInvitations(params: ValidateBidDataParams): ValidationResult<Fail> {
         val activeInvitations = invitationRepository.findBy(params.cpid)
-            .doReturn { return it.asValidationFailure() }
+            .onFailure { return it.reason.asValidationFailure() }
             .filter { invitation -> invitation.status == InvitationStatus.ACTIVE }
 
         val groupsOfTenderers = activeInvitations
@@ -2322,7 +2322,7 @@ class BidService(
 
     fun createBid(params: CreateBidParams): Result<CreateBidResult, Fail> {
         val bidEntities = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid)
-            .orForwardFail { return it }
+            .onFailure { return it }
 
         val receivedBid = params.bids.details.first()
         val receivedTenderers = receivedBid.tenderers.toSetBy { it.id }

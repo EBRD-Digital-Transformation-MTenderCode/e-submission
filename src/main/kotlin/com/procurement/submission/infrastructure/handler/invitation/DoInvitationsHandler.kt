@@ -31,9 +31,9 @@ class DoInvitationsHandler(
 
     override fun execute(node: JsonNode): Result<DoInvitationsResult?, Fail> {
         val params = node.tryGetParams(DoInvitationsRequest::class.java, transform = transform)
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
             .convert()
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
 
         return invitationService.doInvitations(params)
     }

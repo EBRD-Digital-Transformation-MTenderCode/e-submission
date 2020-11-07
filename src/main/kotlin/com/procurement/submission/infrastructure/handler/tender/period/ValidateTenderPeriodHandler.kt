@@ -26,9 +26,9 @@ class ValidateTenderPeriodHandler(
 
     override fun execute(node: JsonNode): ValidationResult<Fail> {
         val params = node.tryGetParams(ValidateTenderPeriodRequest::class.java, transform = transform)
-            .doReturn { error -> return error.asValidationFailure() }
+            .onFailure { return it.reason.asValidationFailure() }
             .convert()
-            .doReturn { error -> return error.asValidationFailure() }
+            .onFailure { return it.reason.asValidationFailure() }
 
         return periodService.validateTenderPeriod(params)
     }

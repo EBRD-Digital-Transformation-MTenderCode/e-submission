@@ -26,16 +26,16 @@ import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.infrastructure.dto.bid.validate.ValidateBidDataRequest
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asSuccess
-import com.procurement.submission.lib.functional.bind
+import com.procurement.submission.lib.functional.flatMap
 import com.procurement.submission.lib.functional.validate
 
 fun ValidateBidDataRequest.convert(): Result<ValidateBidDataParams, DataErrors> {
     val path = "bids"
 
     return ValidateBidDataParams(
-        bids = bids.convert(path).orForwardFail { return it },
-        tender = tender.convert(path).orForwardFail { return it },
-        cpid = parseCpid(cpid).orForwardFail { return it }
+        bids = bids.convert(path).onFailure { return it },
+        tender = tender.convert(path).onFailure { return it },
+        cpid = parseCpid(cpid).onFailure { return it }
     ).asSuccess()
 }
 
@@ -49,22 +49,23 @@ private val allowedProcurementMethodModalities = ProcurementMethodModalities.all
     .toSet()
 
 private fun ValidateBidDataRequest.Tender.convert(path: String): Result<ValidateBidDataParams.Tender, DataErrors> {
-    val procurementMethodModalities = procurementMethodModalities.validate(notEmptyRule("$path.procurementMethodModalities"))
-        .bind {
-            it.orEmpty()
-                .mapResult { procurementMethodModality ->
-                    parseProcurementMethodModalities(
-                        value = procurementMethodModality,
-                        allowedEnums = allowedProcurementMethodModalities,
-                        attributeName = "$path.procurementMethodModalities"
-                    )
-                }
-        }
-        .orForwardFail { return it }
+    val procurementMethodModalities =
+        procurementMethodModalities.validate(notEmptyRule("$path.procurementMethodModalities"))
+            .flatMap {
+                it.orEmpty()
+                    .mapResult { procurementMethodModality ->
+                        parseProcurementMethodModalities(
+                            value = procurementMethodModality,
+                            allowedEnums = allowedProcurementMethodModalities,
+                            attributeName = "$path.procurementMethodModalities"
+                        )
+                    }
+            }
+            .onFailure { return it }
 
     val items = items.validate(notEmptyRule("$path.items"))
-        .bind { it.orEmpty().mapResult { item -> item.convert("$path.items") } }
-        .orForwardFail { return it }
+        .flatMap { it.orEmpty().mapResult { item -> item.convert("$path.items") } }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Tender(
         procurementMethodModalities = procurementMethodModalities,
@@ -76,7 +77,7 @@ private fun ValidateBidDataRequest.Tender.convert(path: String): Result<Validate
 
 private fun ValidateBidDataRequest.Tender.Item.convert(path: String): Result<ValidateBidDataParams.Tender.Item, DataErrors> {
     val id = parseItemId(id, "$path.item")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     val unit = ValidateBidDataParams.Tender.Item.Unit(unit.id)
 
@@ -88,8 +89,8 @@ private fun ValidateBidDataRequest.Tender.Item.convert(path: String): Result<Val
 
 private fun ValidateBidDataRequest.Bids.convert(path: String): Result<ValidateBidDataParams.Bids, DataErrors> {
     val details = details.validate(notEmptyRule("$path.details"))
-        .bind { it.mapResult { detail -> detail.convert("$path.details") } }
-        .orForwardFail { return it }
+        .flatMap { it.mapResult { detail -> detail.convert("$path.details") } }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids(
         details = details
@@ -98,25 +99,25 @@ private fun ValidateBidDataRequest.Bids.convert(path: String): Result<ValidateBi
 
 private fun ValidateBidDataRequest.Bids.Detail.convert(path: String): Result<ValidateBidDataParams.Bids.Detail, DataErrors> {
     val id = parseBidId(id, "$path.id")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     val items = items.validate(notEmptyRule("$path.items"))
-        .bind { it.orEmpty().mapResult { item -> item.convert("$path.items") } }
-        .orForwardFail { return it }
+        .flatMap { it.orEmpty().mapResult { item -> item.convert("$path.items") } }
+        .onFailure { return it }
 
     val relatedLots = relatedLots.validate(notEmptyRule("$path.relatedLots"))
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     val value = value?.convert("$path.value")
-        ?.orForwardFail { return it }
+        ?.onFailure { return it }
 
     val documents = documents.validate(notEmptyRule("$path.documents"))
-        .bind { it.orEmpty().mapResult { document -> document.convert("$path.documents") } }
-        .orForwardFail { return it }
+        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents") } }
+        .onFailure { return it }
 
     val tenderers = tenderers.validate(notEmptyRule("$path.tenderers"))
-        .bind { it.mapResult { tenderer -> tenderer.convert("$path.tenderers") } }
-        .orForwardFail { return it }
+        .flatMap { it.mapResult { tenderer -> tenderer.convert("$path.tenderers") } }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail(
         id = id,
@@ -130,18 +131,18 @@ private fun ValidateBidDataRequest.Bids.Detail.convert(path: String): Result<Val
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer, DataErrors> {
     val additionalIdentifiers = additionalIdentifiers.validate(notEmptyRule("$path.additionalIdentifiers"))
-        .orForwardFail { return it }
+        .onFailure { return it }
         .orEmpty()
         .map { additionalIdentifier -> additionalIdentifier.convert() }
 
     val address = address.convert()
     val contactPoint = contactPoint.convert()
-    val details = details.convert("$path.details").orForwardFail { return it }
+    val details = details.convert("$path.details").onFailure { return it }
     val identifier = identifier.convert()
 
     val persones = persones.validate(notEmptyRule("$path.persones"))
-        .bind { it.orEmpty().mapResult { person -> person.convert("$path.persones") } }
-        .orForwardFail { return it }
+        .flatMap { it.orEmpty().mapResult { person -> person.convert("$path.persones") } }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer(
         id = id,
@@ -168,13 +169,13 @@ private val allowedPersonTitles = PersonTitle.allowedElements
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone, DataErrors> {
 
     val title = parsePersonTitle(title, allowedPersonTitles, "$path.title")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     val identifier = identifier.convert()
 
     val businessFunctions = businessFunctions.validate(notEmptyRule("$path.businessFunctions"))
-        .bind { it.mapResult { businessFunction -> businessFunction.convert("$path.businessFunctions") } }
-        .orForwardFail { return it }
+        .flatMap { it.mapResult { businessFunction -> businessFunction.convert("$path.businessFunctions") } }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Persone(
         id = id,
@@ -195,13 +196,13 @@ private val allowedBusinessFunctionType = BusinessFunctionType.allowedElements
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction, DataErrors> {
     val documents = documents.validate(notEmptyRule("$path.documents"))
-        .bind { it.orEmpty().mapResult { document -> document.convert("$path.documents") } }
-        .orForwardFail { return it }
+        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents") } }
+        .onFailure { return it }
 
     val type = parseBusinessFunctionType(type, allowedBusinessFunctionType, "$path.type")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
-    val period = period.convert("$path.period").orForwardFail { return it }
+    val period = period.convert("$path.period").onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction(
         id = id,
@@ -222,7 +223,7 @@ private val allowedBFDocumentType = BusinessFunctionDocumentType.allowedElements
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction.Document.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction.Document, DataErrors> {
     val documentType = parseBFDocumentType(documentType, allowedBFDocumentType, "$path.documentType")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction.Document(
         id = id,
@@ -234,7 +235,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction.Period.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction.Period, DataErrors> {
     val startDate = parseDate(startDate, "$path.startDate")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction.Period(
         startDate = startDate
@@ -279,26 +280,26 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.convert(path: St
     val typeOfSupplier = typeOfSupplier?.let {
         parseTypeOfSupplier(
             it, allowedTypeOfSupplier, "$path.typeOfSupplier"
-        ).orForwardFail { return it }
+        ).onFailure { return it }
     }
 
     val bankAccounts = bankAccounts.validate(notEmptyRule("$path.bankAccounts"))
-        .bind { it.orEmpty().mapResult { bankAccount -> bankAccount.convert("$path.bankAccounts") } }
-        .orForwardFail { return it }
+        .flatMap { it.orEmpty().mapResult { bankAccount -> bankAccount.convert("$path.bankAccounts") } }
+        .onFailure { return it }
 
     val legalForm = legalForm?.convert()
 
     val mainEconomicActivities = mainEconomicActivities.validate(notEmptyRule("$path.mainEconomicActivities"))
-        .orForwardFail { return it }
+        .onFailure { return it }
         .orEmpty()
         .map { mainEconomicActivity -> mainEconomicActivity.convert() }
 
     val permits = permits.validate(notEmptyRule("$path.permits"))
-        .bind { it.orEmpty().mapResult { permit -> permit.convert("$path.permits") } }
-        .orForwardFail { return it }
+        .flatMap { it.orEmpty().mapResult { permit -> permit.convert("$path.permits") } }
+        .onFailure { return it }
 
     val scale = parseScale(scale, allowedScales, "$path.scale")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Details(
         typeOfSupplier = typeOfSupplier,
@@ -312,7 +313,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.convert(path: St
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit, DataErrors> {
     val permitDetails = permitDetails.convert("$path.permitDetails")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit(
         id = id,
@@ -326,7 +327,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDet
     val issuedBy = issuedBy.convert()
     val issuedThought = issuedThought.convert()
     val validityPeriod = validityPeriod.convert("$path.validityPeriod")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails(
         issuedBy = issuedBy,
@@ -337,11 +338,11 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDet
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.ValidityPeriod.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.ValidityPeriod, DataErrors> {
     val startDate = parseDate(value = startDate, attributeName = "$path.startDate")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     val endDate = endDate?.let {
         parseDate(value = it, attributeName = "$path.endDate")
-            .orForwardFail { return it }
+            .onFailure { return it }
     }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.ValidityPeriod(
@@ -365,8 +366,9 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.conv
     val address = address.convert()
     val accountIdentification = accountIdentification.convert()
 
-    val additionalAccountIdentifiers = additionalAccountIdentifiers.validate(notEmptyRule("$path.additionalAccountIdentifiers"))
-        .orForwardFail { return it }
+    val additionalAccountIdentifiers =
+        additionalAccountIdentifiers.validate(notEmptyRule("$path.additionalAccountIdentifiers"))
+            .onFailure { return it }
         .orEmpty()
         .map { bankAccount -> bankAccount.convert() }
 
@@ -494,11 +496,11 @@ private val allowedBidDocumentType = DocumentType.allowedElements
 
 private fun ValidateBidDataRequest.Bids.Detail.Document.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Document, DataErrors> {
     val relatedLots = relatedLots.validate(notEmptyRule("$path.relatedLots"))
-        .orForwardFail { return it }
+        .onFailure { return it }
         .orEmpty()
 
     val documentType = parseDocumentType(documentType, allowedBidDocumentType, "$path.documentType")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Document(
         id = id,
@@ -511,7 +513,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Document.convert(path: String): R
 
 private fun ValidateBidDataRequest.Bids.Detail.Value.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Value, DataErrors> {
     val amount = parseAmount(amount, "$path.amount")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Value(
         currency = currency,
@@ -522,10 +524,10 @@ private fun ValidateBidDataRequest.Bids.Detail.Value.convert(path: String): Resu
 private fun ValidateBidDataRequest.Bids.Detail.Item.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Item, DataErrors> {
 
     val id = parseItemId(id, "$path.id")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     val unit = unit.convert("$path.unit")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Item(
         id = id,
@@ -535,7 +537,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Item.convert(path: String): Resul
 
 private fun ValidateBidDataRequest.Bids.Detail.Item.Unit.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Item.Unit, DataErrors> {
     val value = value.convert("$path.value")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Item.Unit(
         id = id,
@@ -545,7 +547,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Item.Unit.convert(path: String): 
 
 private fun ValidateBidDataRequest.Bids.Detail.Item.Unit.Value.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Item.Unit.Value, DataErrors> {
     val amount = parseAmount(amount, "$path.value")
-        .orForwardFail { return it }
+        .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Item.Unit.Value(
         amount = amount,

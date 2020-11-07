@@ -263,7 +263,7 @@ class PeriodService(
     fun validateTenderPeriod(params: ValidateTenderPeriodParams): ValidationResult<Fail> {
         val minimumDuration = rulesService
             .getTenderPeriodMinimumDuration(params.country, params.pmd, params.operationType)
-            .doReturn { error -> return error.asValidationFailure() }
+            .onFailure { return it.reason.asValidationFailure() }
 
         val periodDuration = Duration.between(params.date, params.tender.tenderPeriod.endDate)
 
@@ -296,7 +296,7 @@ class PeriodService(
 
     fun checkPeriod(params: CheckPeriodParams): ValidationResult<Fail> {
         val tenderPeriod = periodDao.tryGetBy(params.cpid, params.ocid.stage)
-            .doReturn { error -> return error.asValidationFailure() }
+            .onFailure { return it.reason.asValidationFailure() }
             ?: return ValidationError.TenderPeriodNotFound(params.cpid, params.ocid).asValidationFailure()
 
         if (!params.date.isAfter(tenderPeriod.startDate.toLocal()))

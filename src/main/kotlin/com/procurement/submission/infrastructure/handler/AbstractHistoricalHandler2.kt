@@ -13,6 +13,7 @@ import com.procurement.submission.infrastructure.web.api.response.generator.ApiR
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
 import com.procurement.submission.lib.functional.Result
+import java.util.*
 
 abstract class AbstractHistoricalHandler2<ACTION : Action, R>(
     private val target: Class<R>,
@@ -22,23 +23,29 @@ abstract class AbstractHistoricalHandler2<ACTION : Action, R>(
 ) : Handler<ACTION, ApiResponse2> {
 
     override fun handle(node: JsonNode): ApiResponse2 {
-        val id = node.tryGetId().get
-        val version = node.tryGetVersion().get
+        val version = node.tryGetVersion()
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, id = UUID(0, 0), logger = logger)
+            }
+        val id = node.tryGetId()
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, version = version, id = UUID(0, 0), logger = logger)
+            }
 
         val history = historyRepository.getHistory(id.toString(), action.key)
-            .doOnError { error ->
-                return generateResponseOnFailure(
-                    fail = error, version = version, id = id, logger = logger
-                )
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, version = version, id = id, logger = logger)
             }
-            .get
+
         if (history != null) {
             val data = history.jsonData
             val result = transform.tryDeserialization(value = data, target = target)
-                .doReturn { incident ->
+                .onFailure { incident ->
                     return generateResponseOnFailure(
                         fail = Fail.Incident.Database.Parsing(
-                            column = HistoryRepositoryCassandra.JSON_DATA, value = data, exception = incident.exception
+                            column = HistoryRepositoryCassandra.JSON_DATA,
+                            value = data,
+                            exception = incident.reason.exception
                         ),
                         id = id,
                         version = version,
@@ -48,20 +55,18 @@ abstract class AbstractHistoricalHandler2<ACTION : Action, R>(
             return ApiSuccessResponse2(version = version, id = id, result = result)
         }
 
-        return when (val result = execute(node)) {
-            is Result.Success -> {
-                val resultData = result.get
-                if (resultData != null)
-                    historyRepository.saveHistory(id.toString(), action.key, resultData)
-                if (logger.isDebugEnabled)
-                    logger.debug("${action.key} has been executed. Result: '${transform.trySerialization(result.get)}'")
-
-                ApiSuccessResponse2(version = version, id = id, result = resultData)
+        return execute(node)
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, version = version, id = id, logger = logger)
             }
-            is Result.Failure -> generateResponseOnFailure(
-                fail = result.error, version = version, id = id, logger = logger
-            )
-        }
+            .let { result ->
+                if (result != null)
+                    historyRepository.saveHistory(id.toString(), action.key, result)
+                if (logger.isDebugEnabled)
+                    logger.debug("${action.key} has been executed. Result: '${transform.trySerialization(result)}'")
+
+                ApiSuccessResponse2(version = version, id = id, result = result)
+            }
     }
 
     abstract fun execute(node: JsonNode): Result<R?, Fail>

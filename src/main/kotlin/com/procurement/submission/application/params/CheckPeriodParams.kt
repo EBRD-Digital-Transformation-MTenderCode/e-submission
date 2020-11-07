@@ -20,13 +20,13 @@ class CheckPeriodParams private constructor(
             date: String
         ): Result<CheckPeriodParams, DataErrors> {
             val cpidParsed = parseCpid(value = cpid)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             val ocidParsed = parseOcid(value = ocid)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             val dateParsed = parseDate(value = date)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             return CheckPeriodParams(cpidParsed, ocidParsed, dateParsed).asSuccess()
         }

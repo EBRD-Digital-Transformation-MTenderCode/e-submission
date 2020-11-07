@@ -10,8 +10,8 @@ fun DoInvitationsRequest.convert() = DoInvitationsParams.tryCreate(
     country = country,
     pmd = pmd,
     operationType = operationType,
-    submissions = submissions?.convert()?.orForwardFail { fail -> return fail },
-    qualifications = qualifications?.mapResult { it.convert() }?.orForwardFail { fail -> return fail }
+    submissions = submissions?.convert()?.onFailure { return it },
+    qualifications = qualifications?.mapResult { it.convert() }?.onFailure { return it }
 )
 
 fun DoInvitationsRequest.Qualification.convert() = DoInvitationsParams.Qualification.tryCreate(
@@ -21,7 +21,7 @@ fun DoInvitationsRequest.Qualification.convert() = DoInvitationsParams.Qualifica
 )
 
 fun DoInvitationsRequest.Submissions.convert() = DoInvitationsParams.Submissions.tryCreate(
-    details = details.mapResult { it.convert() }.orForwardFail { fail -> return fail }
+    details = details.mapResult { it.convert() }.onFailure { return it }
 )
 
 fun DoInvitationsRequest.Submissions.Detail.convert() = DoInvitationsParams.Submissions.Detail.tryCreate(

@@ -13,7 +13,7 @@ import com.procurement.submission.infrastructure.enums.Command2Type
 import com.procurement.submission.infrastructure.handler.AbstractHistoricalHandler2
 import com.procurement.submission.infrastructure.web.response.parser.tryGetParams
 import com.procurement.submission.lib.functional.Result
-import com.procurement.submission.lib.functional.bind
+import com.procurement.submission.lib.functional.flatMap
 import org.springframework.stereotype.Component
 
 @Component
@@ -32,8 +32,8 @@ class CreateBidHandler(
 
     override fun execute(node: JsonNode): Result<CreateBidResult, Fail> {
         val params = node.tryGetParams(CreateBidRequest::class.java, transform = transform)
-            .bind { it.convert() }
-            .orForwardFail { error -> return error }
+            .flatMap { it.convert() }
+            .onFailure { return it }
 
         return bidService.createBid(params)
     }

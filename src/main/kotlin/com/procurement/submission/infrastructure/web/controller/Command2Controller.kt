@@ -12,7 +12,6 @@ import com.procurement.submission.infrastructure.web.response.parser.NaN
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetNode
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
-import com.procurement.submission.lib.functional.Result
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -35,23 +34,16 @@ class Command2Controller(
             logger.debug("RECEIVED COMMAND: '$requestBody'.")
 
         val node = requestBody.tryGetNode(transform)
-            .doReturn { error -> return generateResponseEntityOnFailure(fail = error) }
+            .onFailure { return generateResponseEntityOnFailure(fail = it.reason) }
 
-        val version = when (val versionResult = node.tryGetVersion()) {
-            is Result.Success -> versionResult.get
-            is Result.Failure -> {
-                return when (val idResult = node.tryGetId()) {
-                    is Result.Success -> generateResponseEntityOnFailure(
-                        fail = versionResult.error,
-                        id = idResult.get
-                    )
-                    is Result.Failure -> generateResponseEntityOnFailure(fail = versionResult.error)
-                }
+        val version = node.tryGetVersion()
+            .onFailure {
+                val id = node.tryGetId().getOrElse(UUID(0, 0))
+                return generateResponseEntityOnFailure(fail = it.reason, id = id)
             }
-        }
 
         val id = node.tryGetId()
-            .doReturn { error -> return generateResponseEntityOnFailure(fail = error, version = version) }
+            .onFailure { return generateResponseEntityOnFailure(fail = it.reason, version = version) }
 
         val response =
             command2Service.execute(node)

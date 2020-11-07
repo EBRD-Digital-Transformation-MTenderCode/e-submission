@@ -1,7 +1,7 @@
 package com.procurement.submission.domain.extension
 
-import com.procurement.submission.lib.functional.Option
 import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
 
 inline fun <T, V> Collection<T>.uniqueBy(selector: (T) -> V): Boolean {
     val unique = HashSet<V>()
@@ -30,30 +30,15 @@ inline fun <T, C : Collection<T>> C?.orElse(defaultBuilder: () -> C): C = this ?
 inline fun <T, reified C : Collection<T>, E : RuntimeException> C?.orThrow(exceptionBuilder: () -> E): C =
     this ?: throw exceptionBuilder()
 
-fun <T, R, E> List<T>?.mapOptionalResult(block: (T) -> Result<R, E>): Result<Option<List<R>>, E> {
-    if (this == null)
-        return Result.success(Option.none())
-
-    val r = mutableListOf<R>()
-    for (element in this) {
-        when (val result = block(element)) {
-            is Result.Success -> r.add(result.get)
-            is Result.Failure -> return result
+fun <T, R, E> List<T>.mapResult(block: (T) -> Result<R, E>): Result<List<R>, E> = mutableListOf<R>()
+    .apply {
+        for (element in this@mapResult) {
+            block(element)
+                .onFailure { return it }
+                .also { add(it) }
         }
     }
-    return Result.success(Option.pure(r))
-}
-
-fun <T, R, E> List<T>.mapResult(block: (T) -> Result<R, E>): Result<List<R>, E> {
-    val r = mutableListOf<R>()
-    for (element in this) {
-        when (val result = block(element)) {
-            is Result.Success -> r.add(result.get)
-            is Result.Failure -> return result
-        }
-    }
-    return Result.success(r)
-}
+    .asSuccess()
 
 fun <T> T?.toListOrEmpty(): List<T> = if (this != null) listOf(this) else emptyList()
 

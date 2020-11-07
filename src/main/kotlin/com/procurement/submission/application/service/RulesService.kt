@@ -57,7 +57,7 @@ class RulesService(private val rulesDao: RulesDao) {
     ): Result<Duration, Fail> {
         val value = rulesDao
             .tryGetValue(country, pmd, MINIMUM_PERIOD_DURATION_PARAMETER, operationType)
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
             ?: return ValidationError.EntityNotFound.TenderPeriodRule(
                 country = country,
                 pmd = pmd,
@@ -67,8 +67,8 @@ class RulesService(private val rulesDao: RulesDao) {
 
         return value
             .tryToLong()
-            .doReturn { incident ->
-                return Fail.Incident.Database.Parsing(VALUE_COLUMN, value, incident.exception)
+            .onFailure { incident ->
+                return Fail.Incident.Database.Parsing(VALUE_COLUMN, value, incident.reason.exception)
                     .asFailure()
             }
             .let { Duration.ofSeconds(it) }
@@ -83,31 +83,23 @@ class RulesService(private val rulesDao: RulesDao) {
         val databaseQueryResult = rulesDao
             .tryGetValue(country, pmd, RETURN_INVITATIONS, operationType)
 
-        val value =
-            if (databaseQueryResult.isFail) {
-                return Result.failure(databaseQueryResult.error)
-            } else {
-                val foundedValue = databaseQueryResult.get
-                if (foundedValue == null) {
-                    rulesDao
-                        .tryGetValue(country, pmd, RETURN_INVITATIONS)
-                        .orForwardFail { fail -> return fail }
-                        ?: return ValidationError.EntityNotFound.ReturnInvitationsRule(
-                            country = country,
-                            pmd = pmd,
-                            parameter = RETURN_INVITATIONS,
-                            operationType = operationType
-                        ).asFailure()
-                } else {
-                    foundedValue
-                }
-
+        val value = databaseQueryResult.onFailure { return it }
+            .let { foundedValue ->
+                foundedValue
+                    ?: rulesDao.tryGetValue(country, pmd, RETURN_INVITATIONS)
+                        .onFailure { return it }
+                    ?: return ValidationError.EntityNotFound.ReturnInvitationsRule(
+                        country = country,
+                        pmd = pmd,
+                        parameter = RETURN_INVITATIONS,
+                        operationType = operationType
+                    ).asFailure()
             }
 
         return value
             .tryToBoolean()
-            .doReturn { incident ->
-                return Fail.Incident.Database.Parsing(VALUE_COLUMN, value, incident.exception)
+            .onFailure { incident ->
+                return Fail.Incident.Database.Parsing(VALUE_COLUMN, value, incident.reason.exception)
                     .asFailure()
             }
             .asSuccess()

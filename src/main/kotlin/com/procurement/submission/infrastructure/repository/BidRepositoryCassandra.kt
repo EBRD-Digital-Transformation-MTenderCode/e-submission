@@ -79,16 +79,16 @@ class BidRepositoryCassandra(private val session: Session, private val transform
             }
 
         return query.tryExecute(session)
-            .orForwardFail { fail -> return fail }
-            .map { row -> row.convert().orForwardFail { fail -> return fail } }
+            .onFailure { return it }
+            .map { row -> row.convert().onFailure { return it } }
             .asSuccess()
     }
 
     private fun Row.convert(): Result<BidEntityComplex, Fail.Incident> {
         val data = getString(JSON_DATA_COLUMN)
         val entity = transform.tryDeserialization(value = data, target = Bid::class.java)
-            .doReturn { fail ->
-                return Fail.Incident.Database.DatabaseParsing(exception = fail.exception).asFailure()
+            .onFailure {
+                return Fail.Incident.Database.DatabaseParsing(exception = it.reason.exception).asFailure()
             }
 
         return BidEntityComplex(
@@ -109,7 +109,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
 
         bidEntities.forEach { bidEntity ->
             val data = generateJsonData(bidEntity.bid)
-                .doReturn { fail -> return MaybeFail.fail(fail) }
+                .onFailure { return MaybeFail.fail(it.reason) }
 
             statement.add(
                 preparedSaveCQL.bind()

@@ -35,14 +35,14 @@ class InvitationServiceImpl(
         checkForMissingSubmissions(params).doOnFail { error -> return error.asFailure() }
 
         val invitationsToSave = getInvitationsToSave(params)
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
 
         if (invitationsToSave.isEmpty())
             return null.asSuccess()
 
         val invitationsResponseIsNeeded = rulesService
             .getReturnInvitationsFlag(params.country, params.pmd, params.operationType)
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
 
         invitationRepository.saveAll(cpid = params.cpid, invitations = invitationsToSave)
 
@@ -81,7 +81,7 @@ class InvitationServiceImpl(
 
     fun getInvitationsToSave(params: DoInvitationsParams): Result<List<Invitation>, Fail> {
         val invitations = invitationRepository.findBy(cpid = params.cpid)
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
 
         return mutableListOf<Invitation>()
             .apply {
@@ -150,7 +150,7 @@ class InvitationServiceImpl(
     override fun checkAbsenceActiveInvitations(params: CheckAbsenceActiveInvitationsParams): ValidationResult<Fail> {
 
         val activeInvitationsFromDb = invitationRepository.findBy(cpid = params.cpid)
-            .doReturn { error -> return error.asValidationFailure() }
+            .onFailure { error -> return error.reason.asValidationFailure() }
             .filter { it.status == InvitationStatus.PENDING }
 
         return if (activeInvitationsFromDb.isNotEmpty())
@@ -161,11 +161,11 @@ class InvitationServiceImpl(
 
     override fun publishInvitations(params: PublishInvitationsParams): Result<PublishInvitationsResult, Fail> {
         val invitationsByStatus = invitationRepository.findBy(cpid = params.cpid)
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
             .groupBy { it.status }
 
         val pendingInvitations = checkAndGetPendingInvitations(invitationsByStatus, params)
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
 
         val updatedInvitations = pendingInvitations
             .map { invitation -> invitation.copy(status = InvitationStatus.ACTIVE) }

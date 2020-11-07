@@ -25,10 +25,10 @@ class PublishInvitationsParams private constructor(
 
         fun tryCreate(cpid: String, operationType: String): Result<PublishInvitationsParams, DataErrors> {
             val cpidParsed = parseCpid(value = cpid)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             val operationTypeParsed = parseOperationType(operationType, allowedOperationTypes)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             return PublishInvitationsParams(cpid = cpidParsed, operationType = operationTypeParsed)
                 .asSuccess()

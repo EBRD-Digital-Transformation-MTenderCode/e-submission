@@ -3,8 +3,8 @@ package com.procurement.submission.infrastructure.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.procurement.submission.application.service.Logger
 import com.procurement.submission.infrastructure.enums.Command2Type
-import com.procurement.submission.infrastructure.handler.bid.ValidateBidDataHandler
 import com.procurement.submission.infrastructure.handler.bid.CreateBidHandler
+import com.procurement.submission.infrastructure.handler.bid.ValidateBidDataHandler
 import com.procurement.submission.infrastructure.handler.invitation.CheckAbsenceActiveInvitationsHandler
 import com.procurement.submission.infrastructure.handler.invitation.DoInvitationsHandler
 import com.procurement.submission.infrastructure.handler.invitation.PublishInvitationsHandler
@@ -17,6 +17,7 @@ import com.procurement.submission.infrastructure.web.response.parser.tryGetActio
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class Command2Service(
@@ -34,23 +35,22 @@ class Command2Service(
     fun execute(node: JsonNode): ApiResponse2 {
 
         val version = node.tryGetVersion()
-            .doReturn { versionFail ->
-                val id = node.tryGetId()
-                    .doReturn { idFail -> return generateResponseOnFailure(fail = idFail, logger = logger) }
-                return generateResponseOnFailure(fail = versionFail, logger = logger, id = id)
+            .onFailure {
+                val id = node.tryGetId().getOrElse(UUID(0, 0))
+                return generateResponseOnFailure(fail = it.reason, logger = logger, id = id)
             }
 
         val id = node.tryGetId()
-            .doReturn { fail ->
-                return generateResponseOnFailure(fail = fail, version = version, logger = logger)
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, version = version, logger = logger)
             }
 
         val action = node.tryGetAction()
-            .doReturn { error ->
-                return generateResponseOnFailure(fail = error, id = id, version = version, logger = logger)
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, id = id, version = version, logger = logger)
             }
 
-        return when(action){
+        return when (action) {
             Command2Type.DO_INVITATIONS -> doInvitationsHandler.handle(node)
             Command2Type.CHECK_ABSENCE_ACTIVE_INVITATIONS -> checkAbsenceActiveInvitationsHandler.handle(node)
             Command2Type.CREATE_BID -> createBidHandler.handle(node)

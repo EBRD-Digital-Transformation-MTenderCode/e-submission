@@ -10,7 +10,7 @@ fun SetTenderPeriodRequest.convert() = SetTenderPeriodParams.tryCreate(
     tender = SetTenderPeriodParams.Tender(
         tenderPeriod = tender.tenderPeriod
             .convert()
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
     )
 )
 

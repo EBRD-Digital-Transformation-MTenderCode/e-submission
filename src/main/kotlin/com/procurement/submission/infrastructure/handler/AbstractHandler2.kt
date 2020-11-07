@@ -11,6 +11,7 @@ import com.procurement.submission.infrastructure.web.api.response.generator.ApiR
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
 import com.procurement.submission.lib.functional.Result
+import java.util.*
 
 abstract class AbstractHandler2<ACTION : Action, R>(
     val transform: Transform,
@@ -18,10 +19,28 @@ abstract class AbstractHandler2<ACTION : Action, R>(
 ) : Handler<ACTION, ApiResponse2> {
 
     override fun handle(node: JsonNode): ApiResponse2 {
-        val id = node.tryGetId().get
-        val version = node.tryGetVersion().get
+        val version = node.tryGetVersion()
+            .onFailure {
+                val id = node.tryGetId().getOrElse(UUID(0, 0))
+                return generateResponseOnFailure(fail = it.reason, logger = logger, id = id)
+            }
 
-        return when (val result = execute(node)) {
+        val id = node.tryGetId()
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, version = version, logger = logger)
+            }
+
+        execute(node)
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, version = version, id = id, logger = logger)
+            }
+            .let { result ->
+                if (logger.isDebugEnabled)
+                    logger.debug("${action.key} has been executed. Result: '${transform.trySerialization(result)}'")
+                return ApiSuccessResponse2(version = version, id = id, result = result)
+            }
+
+/*        return when (val result = execute(node)) {
             is Result.Success -> {
                 if (logger.isDebugEnabled)
                     logger.debug("${action.key} has been executed. Result: '${transform.trySerialization(result.get)}'")
@@ -37,7 +56,7 @@ abstract class AbstractHandler2<ACTION : Action, R>(
                 id = id,
                 logger = logger
             )
-        }
+        }*/
     }
 
     abstract fun execute(node: JsonNode): Result<R, Fail>

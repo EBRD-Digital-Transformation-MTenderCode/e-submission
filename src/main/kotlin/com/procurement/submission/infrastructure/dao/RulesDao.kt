@@ -64,7 +64,7 @@ class RulesDao(private val session: Session) {
             }
 
         return query.tryExecute(session)
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
             .one()
             ?.getString(VALUE_COLUMN)
             .asSuccess()
