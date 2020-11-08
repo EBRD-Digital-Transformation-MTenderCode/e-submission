@@ -45,7 +45,7 @@ import com.procurement.submission.application.model.data.bid.update.BidUpdateDat
 import com.procurement.submission.application.params.bid.CreateBidParams
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
 import com.procurement.submission.application.repository.BidRepository
-import com.procurement.submission.application.repository.InvitationRepository
+import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.getDuplicate
 import com.procurement.submission.domain.extension.nowDefaultUTC
 import com.procurement.submission.domain.extension.toDate

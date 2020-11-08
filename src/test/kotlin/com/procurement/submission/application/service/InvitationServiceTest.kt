@@ -7,7 +7,7 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
-import com.procurement.submission.application.repository.InvitationRepository
+import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.format
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.enums.InvitationStatus

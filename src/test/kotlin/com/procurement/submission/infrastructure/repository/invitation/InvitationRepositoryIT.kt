@@ -1,4 +1,4 @@
-package com.procurement.submission.infrastructure.repository
+package com.procurement.submission.infrastructure.repository.invitation
 
 import com.datastax.driver.core.BatchStatement
 import com.datastax.driver.core.BoundStatement
@@ -12,7 +12,7 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.doThrow
 import com.nhaarman.mockito_kotlin.spy
 import com.nhaarman.mockito_kotlin.whenever
-import com.procurement.submission.application.repository.InvitationRepository
+import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
@@ -24,6 +24,7 @@ import com.procurement.submission.failure
 import com.procurement.submission.get
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
+import com.procurement.submission.infrastructure.repository.Database
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import com.procurement.submission.model.entity.InvitationEntity
@@ -44,12 +45,6 @@ class InvitationRepositoryIT {
 
     companion object {
         private val CPID = Cpid.tryCreateOrNull("ocds-t1s2t3-MD-1565251033096")!!
-
-        private const val KEYSPACE = "ocds"
-        private const val INVITATION_TABLE = "submission_invitation"
-        private const val CPID_COLUMN = "cpid"
-        private const val ID_COLUMN = "id"
-        const val JSON_DATA_COLUMN = "json_data"
 
         private val DATE = JsonDateDeserializer.deserialize(JsonDateSerializer.serialize(LocalDateTime.now()))
     }
@@ -176,24 +171,24 @@ class InvitationRepositoryIT {
 
     private fun createKeyspace() {
         session.execute(
-            "CREATE KEYSPACE $KEYSPACE " +
+            "CREATE KEYSPACE ${Database.KEYSPACE} " +
                 "WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};"
         )
     }
 
     private fun dropKeyspace() {
-        session.execute("DROP KEYSPACE $KEYSPACE;")
+        session.execute("DROP KEYSPACE ${Database.KEYSPACE};")
     }
 
     private fun createTable() {
         session.execute(
             """
-                CREATE TABLE IF NOT EXISTS $KEYSPACE.$INVITATION_TABLE
+                CREATE TABLE IF NOT EXISTS ${Database.KEYSPACE}.${Database.Invitation.TABLE}
                     (
-                        $CPID_COLUMN text,
-                        $ID_COLUMN text,
-                        $JSON_DATA_COLUMN text,
-                        primary key($CPID_COLUMN, $ID_COLUMN)
+                        ${Database.Invitation.CPID}      TEXT,
+                        ${Database.Invitation.ID}        TEXT,
+                        ${Database.Invitation.JSON_DATA} TEXT,
+                        PRIMARY KEY(${Database.Invitation.CPID}, ${Database.Invitation.ID})
                     );
             """
         )
@@ -201,10 +196,10 @@ class InvitationRepositoryIT {
 
     private fun insertInvitation(cpid: Cpid, invitation: Invitation) {
         val jsonData = transform.trySerialization(convert(invitation)).get()
-        val record = QueryBuilder.insertInto(KEYSPACE, INVITATION_TABLE)
-            .value(CPID_COLUMN, cpid.toString())
-            .value(ID_COLUMN, invitation.id.toString())
-            .value(JSON_DATA_COLUMN, jsonData)
+        val record = QueryBuilder.insertInto(Database.KEYSPACE, Database.Invitation.TABLE)
+            .value(Database.Invitation.CPID, cpid.toString())
+            .value(Database.Invitation.ID, invitation.id.toString())
+            .value(Database.Invitation.JSON_DATA, jsonData)
         session.execute(record)
     }
 

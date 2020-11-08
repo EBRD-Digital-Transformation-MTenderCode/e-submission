@@ -40,4 +40,11 @@ object Database {
         const val PARAMETER = "parameter"
         const val VALUE = "value"
     }
+
+    object Invitation {
+        const val TABLE = "invitations"
+        const val CPID = "cpid"
+        const val ID = "id"
+        const val JSON_DATA = "json_data"
+    }
 }

@@ -3,7 +3,7 @@ package com.procurement.submission.application.service
 import com.procurement.submission.application.params.CheckAbsenceActiveInvitationsParams
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
-import com.procurement.submission.application.repository.InvitationRepository
+import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError

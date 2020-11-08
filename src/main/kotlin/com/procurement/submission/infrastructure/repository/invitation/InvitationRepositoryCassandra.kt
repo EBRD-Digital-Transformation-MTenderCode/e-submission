@@ -1,14 +1,15 @@
-package com.procurement.submission.infrastructure.repository
+package com.procurement.submission.infrastructure.repository.invitation
 
 import com.datastax.driver.core.BatchStatement
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.Session
-import com.procurement.submission.application.repository.InvitationRepository
+import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.invitation.Invitation
 import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
+import com.procurement.submission.infrastructure.repository.Database
 import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asFailure
@@ -21,25 +22,21 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
     InvitationRepository {
 
     companion object {
-        private const val KEYSPACE = "ocds"
-        private const val INVITATION_TABLE = "submission_invitation"
-        private const val CPID_COLUMN = "cpid"
-        private const val ID_COLUMN = "id"
-        const val JSON_DATA_COLUMN = "json_data"
 
         private const val SAVE_CQL = """
-               INSERT INTO $KEYSPACE.$INVITATION_TABLE(
-                      $CPID_COLUMN,
-                      $ID_COLUMN,
-                      $JSON_DATA_COLUMN
+               INSERT INTO ${Database.KEYSPACE}.${Database.Invitation.TABLE}
+               (
+                      ${Database.Invitation.CPID},
+                      ${Database.Invitation.ID},
+                      ${Database.Invitation.JSON_DATA}
                )
                VALUES(?, ?, ?)
             """
 
         private const val FIND_BY_CPID_CQL = """
-               SELECT $JSON_DATA_COLUMN
-                 FROM $KEYSPACE.$INVITATION_TABLE
-                WHERE $CPID_COLUMN=?
+               SELECT ${Database.Invitation.JSON_DATA}
+                 FROM ${Database.KEYSPACE}.${Database.Invitation.TABLE}
+                WHERE ${Database.Invitation.CPID}=?
             """
     }
 
@@ -49,7 +46,7 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
     override fun findBy(cpid: Cpid): Result<List<Invitation>, Fail.Incident> {
         val query = preparedFindByCpidCQL.bind()
             .apply {
-                setString(CPID_COLUMN, cpid.toString())
+                setString(Database.Invitation.CPID, cpid.toString())
             }
 
         return query.tryExecute(session)
@@ -59,7 +56,7 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
     }
 
     private fun Row.convert(): Result<Invitation, Fail.Incident> {
-        val data = getString(JSON_DATA_COLUMN)
+        val data = getString(Database.Invitation.JSON_DATA)
         val entity = transform.tryDeserialization(value = data, target = InvitationEntity::class.java)
             .onFailure {
                 return Fail.Incident.Database.DatabaseParsing(exception = it.reason.exception).asFailure()
@@ -70,12 +67,13 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
             date = entity.date,
             status = entity.status,
             relatedQualification = entity.relatedQualification,
-            tenderers = entity.tenderers.map { tenderer ->
-                Invitation.Tenderer(
-                    id = tenderer.id,
-                    name = tenderer.name
-                )
-            }
+            tenderers = entity.tenderers
+                .map { tenderer ->
+                    Invitation.Tenderer(
+                        id = tenderer.id,
+                        name = tenderer.name
+                    )
+                }
         ).asSuccess()
     }
 
@@ -85,9 +83,9 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
 
         val statements = preparedSaveCQL.bind()
             .apply {
-                setString(CPID_COLUMN, cpid.toString())
-                setString(ID_COLUMN, invitation.id.toString())
-                setString(JSON_DATA_COLUMN, data)
+                setString(Database.Invitation.CPID, cpid.toString())
+                setString(Database.Invitation.ID, invitation.id.toString())
+                setString(Database.Invitation.JSON_DATA, data)
             }
 
         statements.tryExecute(session)
@@ -109,12 +107,13 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
         date = invitation.date,
         status = invitation.status,
         relatedQualification = invitation.relatedQualification,
-        tenderers = invitation.tenderers.map { tenderer ->
-            InvitationEntity.Tenderer(
-                id = tenderer.id,
-                name = tenderer.name
-            )
-        }
+        tenderers = invitation.tenderers
+            .map { tenderer ->
+                InvitationEntity.Tenderer(
+                    id = tenderer.id,
+                    name = tenderer.name
+                )
+            }
     )
 
     override fun saveAll(cpid: Cpid, invitations: List<Invitation>): MaybeFail<Fail.Incident> {
@@ -128,9 +127,9 @@ class InvitationRepositoryCassandra(private val session: Session, private val tr
             statement.add(
                 preparedSaveCQL.bind()
                     .apply {
-                        setString(CPID_COLUMN, cpid.toString())
-                        setString(ID_COLUMN, invitation.id.toString())
-                        setString(JSON_DATA_COLUMN, data)
+                        setString(Database.Invitation.CPID, cpid.toString())
+                        setString(Database.Invitation.ID, invitation.id.toString())
+                        setString(Database.Invitation.JSON_DATA, data)
                     }
             )
         }
