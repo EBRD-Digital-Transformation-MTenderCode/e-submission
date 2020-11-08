@@ -7,20 +7,19 @@ import com.procurement.submission.application.model.data.tender.period.ExtendTen
 import com.procurement.submission.application.params.CheckPeriodParams
 import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
+import com.procurement.submission.application.repository.period.PeriodRepository
+import com.procurement.submission.application.repository.period.model.PeriodEntity
 import com.procurement.submission.domain.extension.format
-import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.Stage
-import com.procurement.submission.infrastructure.dao.PeriodDao
 import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
 import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asSuccess
-import com.procurement.submission.model.entity.PeriodEntity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
@@ -47,7 +46,7 @@ internal class PeriodServiceTest {
     }
 
     val rulesService: RulesService = mock()
-    val periodDao: PeriodDao = mock()
+    val periodDao: PeriodRepository = mock()
     val periodService = PeriodService(periodDao, rulesService)
 
     @Nested
@@ -129,12 +128,12 @@ internal class PeriodServiceTest {
             val params: SetTenderPeriodParams = getParams()
 
             val entity = PeriodEntity(
-                cpId = CPID.toString(),
-                stage = OCID.stage.toString(),
-                startDate = params.date.toDate(),
-                endDate = params.tender.tenderPeriod.endDate.toDate()
+                cpid = CPID,
+                ocid = OCID,
+                startDate = params.date,
+                endDate = params.tender.tenderPeriod.endDate
             )
-            whenever(periodDao.trySave(entity)).thenReturn(MaybeFail.none())
+            whenever(periodDao.save(entity)).thenReturn(MaybeFail.none())
             val actual = periodService.setTenderPeriod(params).get()
 
             val expected = SetTenderPeriodResult(
@@ -167,12 +166,12 @@ internal class PeriodServiceTest {
             val params = getParams()
 
             val entity = PeriodEntity(
-                cpId = CPID.toString(),
-                stage = OCID.stage.toString(),
-                startDate = params.date.minusDays(1).toDate(),
-                endDate = params.date.plusDays(1).toDate()
+                cpid = CPID,
+                ocid = OCID,
+                startDate = params.date.minusDays(1),
+                endDate = params.date.plusDays(1)
             )
-            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            whenever(periodDao.find(cpid = params.cpid, ocid = params.ocid)).thenReturn(entity.asSuccess())
             val actual = periodService.checkPeriod(params)
 
             assertTrue(actual is Validated.Ok)
@@ -182,7 +181,7 @@ internal class PeriodServiceTest {
         fun periodNotFound_fail() {
             val params = getParams()
 
-            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(null.asSuccess())
+            whenever(periodDao.find(cpid = params.cpid, ocid = params.ocid)).thenReturn(null.asSuccess())
             val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.1"
@@ -197,13 +196,13 @@ internal class PeriodServiceTest {
             val params = getParams()
 
             val entity = PeriodEntity(
-                cpId = CPID.toString(),
-                stage = OCID.stage.toString(),
-                startDate = params.date.plusSeconds(1).toDate(),
-                endDate = params.date.plusDays(1).toDate()
+                cpid = CPID,
+                ocid = OCID,
+                startDate = params.date.plusSeconds(1),
+                endDate = params.date.plusDays(1)
             )
 
-            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            whenever(periodDao.find(cpid = params.cpid, ocid = params.ocid)).thenReturn(entity.asSuccess())
             val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.2"
@@ -218,13 +217,13 @@ internal class PeriodServiceTest {
             val params = getParams()
 
             val entity = PeriodEntity(
-                cpId = CPID.toString(),
-                stage = OCID.stage.toString(),
-                startDate = params.date.toDate(),
-                endDate = params.date.plusDays(1).toDate()
+                cpid = CPID,
+                ocid = OCID,
+                startDate = params.date,
+                endDate = params.date.plusDays(1)
             )
 
-            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            whenever(periodDao.find(cpid = params.cpid, ocid = params.ocid)).thenReturn(entity.asSuccess())
             val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.2"
@@ -239,13 +238,13 @@ internal class PeriodServiceTest {
             val params = getParams()
 
             val entity = PeriodEntity(
-                cpId = CPID.toString(),
-                stage = OCID.stage.toString(),
-                startDate = params.date.minusSeconds(1).toDate(),
-                endDate = params.date.minusSeconds(1).toDate()
+                cpid = CPID,
+                ocid = OCID,
+                startDate = params.date.minusSeconds(1),
+                endDate = params.date.minusSeconds(1)
             )
 
-            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            whenever(periodDao.find(cpid = params.cpid, ocid = params.ocid)).thenReturn(entity.asSuccess())
             val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.3"
@@ -260,13 +259,13 @@ internal class PeriodServiceTest {
             val params = getParams()
 
             val entity = PeriodEntity(
-                cpId = CPID.toString(),
-                stage = OCID.stage.toString(),
-                startDate = params.date.minusSeconds(1).toDate(),
-                endDate = params.date.toDate()
+                cpid = CPID,
+                ocid = OCID,
+                startDate = params.date.minusSeconds(1),
+                endDate = params.date
             )
 
-            whenever(periodDao.tryGetBy(cpid = params.cpid, stage = params.ocid.stage)).thenReturn(entity.asSuccess())
+            whenever(periodDao.find(cpid = params.cpid, ocid = params.ocid)).thenReturn(entity.asSuccess())
             val actual = periodService.checkPeriod(params).error()
 
             val expectedErrorCode = "VR.COM-13.6.3"
@@ -290,12 +289,12 @@ internal class PeriodServiceTest {
             val context = getContext()
 
             val entity = PeriodEntity(
-                cpId = CPID.toString(),
-                stage = OCID.stage.toString(),
-                startDate = DATE.plusDays(1).toDate(),
-                endDate = DATE.plusDays(2).toDate()
+                cpid = CPID,
+                ocid = OCID,
+                startDate = DATE.plusDays(1),
+                endDate = DATE.plusDays(2)
             )
-            whenever(periodDao.getByCpIdAndStage(cpId = context.cpid, stage = context.stage)).thenReturn(entity)
+            whenever(periodDao.find(cpid = context.cpid, ocid = context.ocid)).thenReturn(entity.asSuccess())
             whenever(
                 rulesService.getExtensionAfterUnsuspended(
                     country = context.country,
@@ -317,7 +316,8 @@ internal class PeriodServiceTest {
         }
 
         private fun getContext() = ExtendTenderPeriodContext(
-            cpid = CPID.toString(),
+            cpid = CPID,
+            ocid = OCID,
             stage = STAGE.toString(),
             startDate = DATE,
             pmd = PMD,

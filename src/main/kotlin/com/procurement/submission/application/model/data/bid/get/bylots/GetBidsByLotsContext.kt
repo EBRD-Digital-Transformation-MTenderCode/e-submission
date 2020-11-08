@@ -1,6 +1,8 @@
 package com.procurement.submission.application.model.data.bid.get.bylots
 
+import com.procurement.submission.domain.model.Cpid
+
 class GetBidsByLotsContext(
-    val cpid: String,
+    val cpid: Cpid,
     val stage: String
 )

@@ -9,6 +9,8 @@ import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.domain.Action
 import com.procurement.submission.domain.extension.parseLocalDateTime
+import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.infrastructure.model.CommandId
 import java.time.LocalDateTime
@@ -64,11 +66,32 @@ val CommandMessage.token: UUID
         message = "Missing the 'token' attribute in context."
     )
 
-val CommandMessage.cpid: String
+val CommandMessage.cpid: Cpid
     get() = this.context.cpid
+        ?.let {
+            Cpid.tryCreateOrNull(it)
+                ?: throw ErrorException(
+                    error = ErrorType.INVALID_FORMAT_OF_ATTRIBUTE,
+                    message = "Cannot parse 'cpid' attribute '${it}'."
+                )
+        }
         ?: throw ErrorException(
             error = ErrorType.CONTEXT,
             message = "Missing the 'cpid' attribute in context."
+        )
+
+val CommandMessage.ocid: Ocid
+    get() = this.context.ocid
+        ?.let {
+            Ocid.tryCreateOrNull(it)
+                ?: throw ErrorException(
+                    error = ErrorType.INVALID_FORMAT_OF_ATTRIBUTE,
+                    message = "Cannot parse 'ocid' attribute '${it}'."
+                )
+        }
+        ?: throw ErrorException(
+            error = ErrorType.CONTEXT,
+            message = "Missing the 'ocid' attribute in context."
         )
 
 val CommandMessage.ctxId: String
@@ -83,6 +106,13 @@ val CommandMessage.stage: String
         ?: throw ErrorException(
             error = ErrorType.CONTEXT,
             message = "Missing the 'stage' attribute in context."
+        )
+
+val CommandMessage.prevStage: String
+    get() = this.context.prevStage
+        ?: throw ErrorException(
+            error = ErrorType.CONTEXT,
+            message = "Missing the 'prevStage' attribute in context."
         )
 
 val CommandMessage.pmd: ProcurementMethod
@@ -100,11 +130,25 @@ val CommandMessage.owner: String
             message = "Missing the 'owner' attribute in context."
         )
 
+val CommandMessage.phase: String
+    get() = this.context.phase
+        ?: throw ErrorException(
+            error = ErrorType.CONTEXT,
+            message = "Missing the 'phase' attribute in context."
+        )
+
 val CommandMessage.startDate: LocalDateTime
     get() = this.context.startDate?.parseLocalDateTime()
         ?: throw ErrorException(
             error = ErrorType.CONTEXT,
             message = "Missing the 'startDate' attribute in context."
+        )
+
+val CommandMessage.endDate: LocalDateTime
+    get() = this.context.endDate?.parseLocalDateTime()
+        ?: throw ErrorException(
+            error = ErrorType.CONTEXT,
+            message = "Missing the 'endDate' attribute in context."
         )
 
 val CommandMessage.country: String

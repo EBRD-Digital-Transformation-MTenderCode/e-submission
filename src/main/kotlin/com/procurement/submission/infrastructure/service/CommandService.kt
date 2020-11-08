@@ -36,6 +36,7 @@ import com.procurement.submission.model.dto.bpe.commandId
 import com.procurement.submission.model.dto.bpe.country
 import com.procurement.submission.model.dto.bpe.cpid
 import com.procurement.submission.model.dto.bpe.ctxId
+import com.procurement.submission.model.dto.bpe.ocid
 import com.procurement.submission.model.dto.bpe.owner
 import com.procurement.submission.model.dto.bpe.pmd
 import com.procurement.submission.model.dto.bpe.stage
@@ -85,6 +86,7 @@ class CommandService(
                         val requestData = request.toData()
                         val context = BidCreateContext(
                             cpid = cm.cpid,
+                            ocid = cm.ocid,
                             owner = cm.owner,
                             stage = cm.stage,
                             startDate = cm.startDate,
@@ -116,6 +118,7 @@ class CommandService(
                         val context = BidUpdateContext(
                             id = cm.ctxId,
                             cpid = cm.cpid,
+                            ocid = cm.ocid,
                             owner = cm.owner,
                             stage = cm.stage,
                             token = cm.token,
@@ -324,6 +327,7 @@ class CommandService(
             CommandType.EXTEND_TENDER_PERIOD -> {
                 val context = ExtendTenderPeriodContext(
                     cpid = cm.cpid,
+                    ocid = cm.ocid,
                     stage = cm.stage,
                     startDate = cm.startDate,
                     country = cm.country,

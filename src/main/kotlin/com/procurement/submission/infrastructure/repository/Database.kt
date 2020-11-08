@@ -23,4 +23,12 @@ object Database {
         const val PENDING_DATE = "pending_date"
         const val JSON_DATA = "json_data"
     }
+
+    object Period {
+        const val TABLE = "periods"
+        const val CPID = "cpid"
+        const val OCID = "ocid"
+        const val START_DATE = "start_date"
+        const val END_DATE = "end_date"
+    }
 }

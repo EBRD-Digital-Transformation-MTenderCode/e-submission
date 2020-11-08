@@ -48,9 +48,7 @@ import com.procurement.submission.application.repository.BidRepository
 import com.procurement.submission.application.repository.InvitationRepository
 import com.procurement.submission.domain.extension.getDuplicate
 import com.procurement.submission.domain.extension.nowDefaultUTC
-import com.procurement.submission.domain.extension.parseLocalDateTime
 import com.procurement.submission.domain.extension.toDate
-import com.procurement.submission.domain.extension.toLocal
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
@@ -85,6 +83,15 @@ import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
 import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.model.dto.bpe.cpid
+import com.procurement.submission.model.dto.bpe.ctxId
+import com.procurement.submission.model.dto.bpe.endDate
+import com.procurement.submission.model.dto.bpe.ocid
+import com.procurement.submission.model.dto.bpe.owner
+import com.procurement.submission.model.dto.bpe.prevStage
+import com.procurement.submission.model.dto.bpe.stage
+import com.procurement.submission.model.dto.bpe.startDate
+import com.procurement.submission.model.dto.bpe.token
 import com.procurement.submission.model.dto.ocds.AccountIdentification
 import com.procurement.submission.model.dto.ocds.AdditionalAccountIdentifier
 import com.procurement.submission.model.dto.ocds.Address
@@ -144,7 +151,7 @@ class BidService(
     fun createBid(requestData: BidCreateData, context: BidCreateContext): ResponseDto {
 
         val bidRequest = requestData.bid
-        periodService.checkCurrentDateInPeriod(context.cpid, context.stage, context.startDate)
+        periodService.checkCurrentDateInPeriod(context.cpid, context.ocid, context.startDate)
         checkRelatedLotsInDocuments(bidRequest)
         isOneRelatedLot(bidRequest)
         checkTypeOfDocumentsCreateBid(bidRequest.documents)
@@ -178,7 +185,7 @@ class BidService(
         )
         val entity = getEntity(
             bid = bid,
-            cpId = context.cpid,
+            cpId = context.cpid.toString(),
             stage = context.stage,
             owner = context.owner,
             token = generationService.generateRandomUUID(),
@@ -197,9 +204,9 @@ class BidService(
         val bidId = context.id
         val bidRequest = requestData.bid
 
-        periodService.checkCurrentDateInPeriod(context.cpid, context.stage, context.startDate)
+        periodService.checkCurrentDateInPeriod(context.cpid, context.ocid, context.startDate)
 
-        val entity = bidDao.findByCpIdAndStageAndBidId(context.cpid, context.stage, UUID.fromString(bidId))
+        val entity = bidDao.findByCpIdAndStageAndBidId(context.cpid.toString(), context.stage, UUID.fromString(bidId))
         if (entity.token != context.token) throw ErrorException(
             INVALID_TOKEN
         )
@@ -246,7 +253,7 @@ class BidService(
         requestData: BidsForEvaluationRequestData,
         context: GetBidsForEvaluationContext
     ): BidsForEvaluationResponseData {
-        val bidsEntitiesByIds = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+        val bidsEntitiesByIds = bidDao.findAllByCpIdAndStage(context.cpid.toString(), context.stage)
             .asSequence()
             .filter { entity ->
                 Status.creator(entity.status) == Status.PENDING
@@ -308,7 +315,7 @@ class BidService(
         context: OpenBidsForPublishingContext,
         data: OpenBidsForPublishingData
     ): OpenBidsForPublishingResult {
-        val activeBids: List<Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+        val activeBids: List<Bid> = bidDao.findAllByCpIdAndStage(context.cpid.toString(), context.stage)
             .asSequence()
             .filter { Status.creator(it.status) == Status.PENDING }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
@@ -347,28 +354,18 @@ class BidService(
     }
 
     fun copyBids(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            CONTEXT
-        )
-        val previousStage = cm.context.prevStage ?: throw ErrorException(
-            CONTEXT
-        )
-        val startDate = cm.context.startDate?.parseLocalDateTime() ?: throw ErrorException(
-            CONTEXT
-        )
-        val endDate = cm.context.endDate?.parseLocalDateTime() ?: throw ErrorException(
-            CONTEXT
-        )
+        val cpid = cm.cpid
+        val ocid = cm.ocid
+        val stage = cm.stage
+        val previousStage = cm.prevStage
+        val startDate = cm.startDate
+        val endDate = cm.endDate
         val lots = toObject(LotsDto::class.java, cm.data)
 
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, previousStage)
-        if (bidEntities.isEmpty()) throw ErrorException(
-            BID_NOT_FOUND
-        )
-        periodService.save(cpId, stage, startDate, endDate)
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpid.toString(), previousStage)
+        if (bidEntities.isEmpty())
+            throw ErrorException(BID_NOT_FOUND)
+        periodService.save(cpid, ocid, startDate, endDate)
         val mapValidEntityBid = getBidsForNewStageMap(bidEntities, lots)
         val mapCopyEntityBid = getBidsCopyMap(lots, mapValidEntityBid, stage)
         bidDao.saveAll(mapCopyEntityBid.keys.toList())
@@ -377,39 +374,24 @@ class BidService(
     }
 
     fun updateBidDocs(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            CONTEXT
-        )
-        val token = cm.context.token ?: throw ErrorException(
-            CONTEXT
-        )
-        val owner = cm.context.owner ?: throw ErrorException(
-            CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            CONTEXT
-        )
-        val bidId = cm.context.id ?: throw ErrorException(
-            CONTEXT
-        )
-        val dateTime = cm.context.startDate?.parseLocalDateTime() ?: throw ErrorException(
-            CONTEXT
-        )
+        val cpid = cm.cpid
+        val ocid = cm.ocid
+        val token = cm.token
+        val owner = cm.owner
+        val stage = cm.stage
+        val bidId = cm.ctxId
+        val dateTime = cm.startDate
         val dto = toObject(BidUpdateDocsRq::class.java, cm.data)
         val documentsDto = dto.bid.documents
         //VR-4.8.1
-        val period = periodService.getPeriodEntity(cpId, stage)
-        if (dateTime <= period.endDate.toLocal()) throw ErrorException(
+        val period = periodService.getPeriodEntity(cpid, ocid)
+        if (dateTime <= period.endDate) throw ErrorException(
             PERIOD_NOT_EXPIRED
         )
 
-        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
-        if (entity.token.toString() != token) throw ErrorException(
-            INVALID_TOKEN
-        )
-        if (entity.owner != owner) throw ErrorException(
-            INVALID_OWNER
-        )
+        val entity = bidDao.findByCpIdAndStageAndBidId(cpid.toString(), stage, UUID.fromString(bidId))
+        if (entity.token != token) throw ErrorException(INVALID_TOKEN)
+        if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
         //VR-4.8.4
         if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID)
@@ -520,17 +502,18 @@ class BidService(
         val lotsIds: Set<LotId> = data.lots.toSetBy { it.id }
 
         val stage = getStage(context)
-        val updatedBids: Map<Bid, BidEntity> = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = stage)
-            .asSequence()
-            .map { entity ->
-                val bid = toObject(Bid::class.java, entity.jsonData)
-                bid to entity
-            }
-            .filter { (bid, _) ->
-                bid.relatedLots.any { lotsIds.contains(LotId.fromString(it)) } && predicateOfBidStatus(bid = bid)
-            }
-            .map { (bid, entity) ->
-                val updatedBid = bid.updatingStatuses()
+        val updatedBids: Map<Bid, BidEntity> =
+            bidDao.findAllByCpIdAndStage(cpId = context.cpid.toString(), stage = stage)
+                .asSequence()
+                .map { entity ->
+                    val bid = toObject(Bid::class.java, entity.jsonData)
+                    bid to entity
+                }
+                .filter { (bid, _) ->
+                    bid.relatedLots.any { lotsIds.contains(LotId.fromString(it)) } && predicateOfBidStatus(bid = bid)
+                }
+                .map { (bid, entity) ->
+                    val updatedBid = bid.updatingStatuses()
 
                 val updatedEntity = entity.copy(
                     status = updatedBid.status.key,
@@ -597,17 +580,18 @@ class BidService(
             it.relatedBid to it.statusDetails
         }
 
-        val updatedBidEntitiesByBid = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
-            .asSequence()
-            .filter { entity ->
-                entity.bidId in relatedBidsByStatuses
-            }
-            .map { entity ->
-                val statusDetails = relatedBidsByStatuses.getValue(entity.bidId)
-                val updatedBid: Bid = toObject(Bid::class.java, entity.jsonData)
-                    .updateStatusDetails(statusDetails)
-                val updatedEntity: BidEntity = entity.copy(jsonData = toJson(updatedBid))
-                updatedBid to updatedEntity
+        val updatedBidEntitiesByBid =
+            bidDao.findAllByCpIdAndStage(cpId = context.cpid.toString(), stage = context.stage)
+                .asSequence()
+                .filter { entity ->
+                    entity.bidId in relatedBidsByStatuses
+                }
+                .map { entity ->
+                    val statusDetails = relatedBidsByStatuses.getValue(entity.bidId)
+                    val updatedBid: Bid = toObject(Bid::class.java, entity.jsonData)
+                        .updateStatusDetails(statusDetails)
+                    val updatedEntity: BidEntity = entity.copy(jsonData = toJson(updatedBid))
+                    updatedBid to updatedEntity
             }
             .toMap()
 
@@ -1431,8 +1415,8 @@ class BidService(
         return bidEntities.asSequence().map { toObject(Bid::class.java, it.jsonData) }.toList()
     }
 
-    private fun checkTenderers(cpId: String, stage: String, bidDto: BidCreateData.Bid) {
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+    private fun checkTenderers(cpid: Cpid, stage: String, bidDto: BidCreateData.Bid) {
+        val bidEntities = bidDao.findAllByCpIdAndStage(cpid.toString(), stage)
         if (bidEntities.isNotEmpty()) {
             val receivedRelatedLots = bidDto.relatedLots.toSet()
             val idsReceivedTenderers = bidDto.tenderers.toSetBy { it.id }
@@ -1809,7 +1793,7 @@ class BidService(
 
     fun openBidDocs(context: OpenBidDocsContext, data: OpenBidDocsData): OpenBidDocsResult {
         val bidEntity = bidDao.findByCpIdAndStageAndBidId(
-            cpId = context.cpid,
+            cpId = context.cpid.toString(),
             stage = context.stage,
             bidId = data.bidId
         )
@@ -1838,7 +1822,7 @@ class BidService(
     fun getBidsByLots(context: GetBidsByLotsContext, data: GetBidsByLotsData): GetBidsByLotsResult {
         val lotsIds = data.lots
             .toSetBy { it.id.toString() }
-        val bids = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
+        val bids = bidDao.findAllByCpIdAndStage(cpId = context.cpid.toString(), stage = context.stage)
             .asSequence()
             .map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }
             .filter { bid ->
@@ -2362,7 +2346,7 @@ class BidService(
 }
 
 fun checkTenderersInvitations(
-    cpid: String,
+    cpid: Cpid,
     pmd: ProcurementMethod,
     tenderers: List<BidCreateData.Bid.Tenderer>,
     getInvitations: (Cpid) -> Set<String>
@@ -2384,12 +2368,7 @@ fun checkTenderersInvitations(
         ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
         ProcurementMethod.RT, ProcurementMethod.TEST_RT -> {
             val tenderersIds = tenderers.map { it.id }
-            val parsedCpid = Cpid.tryCreateOrNull(cpid)
-                ?: throw ErrorException(
-                    error = ErrorType.INVALID_FORMAT_OF_ATTRIBUTE,
-                    message = "Cannot parse 'cpid' attribute. cpid='${cpid}'"
-                )
-            val activeInvitations = getInvitations(parsedCpid)
+            val activeInvitations = getInvitations(cpid)
             checkTenderersInvitedToTender(tenderersIds, activeInvitations)
         }
     }
