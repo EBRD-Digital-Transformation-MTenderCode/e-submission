@@ -31,4 +31,13 @@ object Database {
         const val START_DATE = "start_date"
         const val END_DATE = "end_date"
     }
+
+    object Rules {
+        const val TABLE = "rules"
+        const val COUNTRY = "country"
+        const val PMD = "pmd"
+        const val OPERATION_TYPE = "operation_type"
+        const val PARAMETER = "parameter"
+        const val VALUE = "value"
+    }
 }

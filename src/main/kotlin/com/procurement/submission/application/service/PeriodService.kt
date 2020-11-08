@@ -38,7 +38,6 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Duration.between
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
 
 @Service
 class PeriodService(
@@ -219,8 +218,8 @@ class PeriodService(
         startDate: LocalDateTime,
         endDate: LocalDateTime
     ): Boolean {
-        val interval = rulesService.getInterval(country, pmd.toString())
-        val sec = ChronoUnit.SECONDS.between(startDate, endDate) //TODO
+        val interval = rulesService.getInterval(country, pmd)
+        val sec = between(startDate, endDate)
         return sec >= interval
     }
 

@@ -1,4 +1,4 @@
-package com.procurement.submission.infrastructure.dao
+package com.procurement.submission.infrastructure.repository.rule
 
 import com.datastax.driver.core.BoundStatement
 import com.datastax.driver.core.Cluster
@@ -11,11 +11,13 @@ import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.doThrow
 import com.nhaarman.mockito_kotlin.spy
 import com.nhaarman.mockito_kotlin.whenever
+import com.procurement.submission.application.repository.rule.RuleRepository
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.get
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
+import com.procurement.submission.infrastructure.repository.Database
 import com.procurement.submission.lib.functional.Result
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,16 +31,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 
 @ExtendWith(SpringExtension::class)
 @ContextConfiguration(classes = [DatabaseTestConfiguration::class])
-class RulesDaoIT {
+class RuleRepositoryIT {
     companion object {
-        private const val RULES_TABLE = "submission_rules"
-        private const val KEYSPACE = "ocds"
-        private const val COUNTRY_COLUMN = "country"
-        private const val PMD_COLUMN = "pmd"
-        private const val OPERATION_TYPE_COLUMN = "operation_type"
-        private const val PARAMETER_COLUMN = "parameter"
-        private const val VALUE_COLUMN = "value"
-
         private const val PARAMETER = "someParameter"
         private const val COUNTRY = "MD"
         private val PMD = ProcurementMethod.GPA
@@ -49,7 +43,7 @@ class RulesDaoIT {
     private lateinit var container: CassandraTestContainer
 
     private lateinit var session: Session
-    private lateinit var rulesDao: RulesDao
+    private lateinit var ruleRepository: RuleRepository
 
     @BeforeEach
     fun init() {
@@ -68,7 +62,7 @@ class RulesDaoIT {
         createKeyspace()
         createTable()
 
-        rulesDao = RulesDao(session)
+        ruleRepository = CassandraRuleRepository(session)
     }
 
     @AfterEach
@@ -80,14 +74,14 @@ class RulesDaoIT {
     fun getValue_success() {
         val value = "10"
         insertRule(COUNTRY, PMD, PARAMETER, OPERATION_TYPE, value)
-        val actual = rulesDao.getValue(COUNTRY, PMD.name, PARAMETER, OPERATION_TYPE.key)
+        val actual = ruleRepository.find(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get()
 
         assertEquals(value, actual)
     }
 
     @Test
     fun getValue_noValueFound_success() {
-        val actual = rulesDao.getValue(COUNTRY, PMD.name, PARAMETER, OPERATION_TYPE.key)
+        val actual = ruleRepository.find(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get()
 
         assertTrue(actual == null)
     }
@@ -96,14 +90,14 @@ class RulesDaoIT {
     fun tryGetValue_success() {
         val value = "10"
         insertRule(COUNTRY, PMD, PARAMETER, OPERATION_TYPE, value)
-        val actual = rulesDao.tryGetValue(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get()
+        val actual = ruleRepository.find(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get()
 
         assertEquals(value, actual)
     }
 
     @Test
     fun tryGetValue_noValueFound_success() {
-        val actual = rulesDao.tryGetValue(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get()
+        val actual = ruleRepository.find(COUNTRY, PMD, PARAMETER, OPERATION_TYPE).get()
 
         assertTrue(actual == null)
     }
@@ -114,33 +108,33 @@ class RulesDaoIT {
             .whenever(session)
             .execute(any<BoundStatement>())
 
-        val expected = rulesDao.tryGetValue(COUNTRY, PMD, PARAMETER, OPERATION_TYPE)
+        val expected = ruleRepository.find(COUNTRY, PMD, PARAMETER, OPERATION_TYPE)
 
         assertTrue(expected is Result.Failure)
     }
 
     private fun createKeyspace() {
         session.execute(
-            "CREATE KEYSPACE ${KEYSPACE} " +
+            "CREATE KEYSPACE ${Database.KEYSPACE} " +
                 "WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};"
         )
     }
 
     private fun dropKeyspace() {
-        session.execute("DROP KEYSPACE ${KEYSPACE};")
+        session.execute("DROP KEYSPACE ${Database.KEYSPACE};")
     }
 
     private fun createTable() {
         session.execute(
             """
-                CREATE TABLE IF NOT EXISTS ${KEYSPACE}.${RULES_TABLE}
+                CREATE TABLE IF NOT EXISTS ${Database.KEYSPACE}.${Database.Rules.TABLE}
                     (
-                        $COUNTRY_COLUMN        text,
-                        $PMD_COLUMN            text,
-                        $OPERATION_TYPE_COLUMN text,
-                        $PARAMETER_COLUMN      text,
-                        $VALUE_COLUMN          text,
-                        primary key ($COUNTRY_COLUMN, $PMD_COLUMN, $OPERATION_TYPE_COLUMN, $PARAMETER_COLUMN)
+                        ${Database.Rules.COUNTRY}        TEXT,
+                        ${Database.Rules.PMD}            TEXT,
+                        ${Database.Rules.OPERATION_TYPE} TEXT,
+                        ${Database.Rules.PARAMETER}      TEXT,
+                        ${Database.Rules.VALUE}          TEXT,
+                        PRIMARY KEY (${Database.Rules.COUNTRY}, ${Database.Rules.PMD}, ${Database.Rules.OPERATION_TYPE}, ${Database.Rules.PARAMETER})
                     );
             """
         )
@@ -153,13 +147,12 @@ class RulesDaoIT {
         operationType: OperationType,
         value: String
     ) {
-        val record = QueryBuilder.insertInto(KEYSPACE, RULES_TABLE)
-            .value(COUNTRY_COLUMN, country)
-            .value(PMD_COLUMN, pmd.name)
-            .value(OPERATION_TYPE_COLUMN, operationType.toString())
-            .value(PARAMETER_COLUMN, parameter)
-            .value(VALUE_COLUMN, value)
-
+        val record = QueryBuilder.insertInto(Database.KEYSPACE, Database.Rules.TABLE)
+            .value(Database.Rules.COUNTRY, country)
+            .value(Database.Rules.PMD, pmd.name)
+            .value(Database.Rules.OPERATION_TYPE, operationType.toString())
+            .value(Database.Rules.PARAMETER, parameter)
+            .value(Database.Rules.VALUE, value)
 
         session.execute(record)
     }

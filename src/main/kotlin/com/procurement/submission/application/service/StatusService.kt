@@ -72,7 +72,7 @@ class StatusService(private val rulesService: RulesService,
         val bids = HashSet<BidDto>()
         if (bidEntities.isNotEmpty()) {
             val pendingBidsSet = getPendingBids(bidEntities)
-            val minNumberOfBids = rulesService.getRulesMinBids(country, pmd.key)
+            val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
             val relatedLotsFromBidsList = getRelatedLotsListFromBids(pendingBidsSet)
             val uniqueLotsMap = getUniqueLotsMap(relatedLotsFromBidsList)
             val successfulLotsSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
@@ -130,8 +130,8 @@ class StatusService(private val rulesService: RulesService,
 
         // FReq-1.4.1.2
         val notEnoughForOpeningBids = mutableSetOf<Bid>()
-        val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd.name)
-        val bidsForResponse =  requestData.lots
+        val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd)
+        val bidsForResponse = requestData.lots
             .asSequence()
             .flatMap { lot ->
                 val bids = bidsByRelatedLot[lot.id.toString()]
@@ -183,7 +183,7 @@ class StatusService(private val rulesService: RulesService,
         val bidEntities = bidDao.findAllByCpIdAndStage(cpid.toString(), stage)
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val pendingBidsSet = getPendingBids(bidEntities)
-        val minNumberOfBids = rulesService.getRulesMinBids(country, pmd.key)
+        val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
         val relatedLotsFromBidsList = getRelatedLotsListFromBids(pendingBidsSet)
         val uniqueLotsMap = getUniqueLotsMap(relatedLotsFromBidsList)
         val successfulLotsByRuleSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)

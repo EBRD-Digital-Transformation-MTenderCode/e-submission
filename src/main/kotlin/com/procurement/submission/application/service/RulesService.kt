@@ -2,13 +2,13 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.application.repository.rule.RuleRepository
 import com.procurement.submission.domain.extension.tryToBoolean
 import com.procurement.submission.domain.extension.tryToLong
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
-import com.procurement.submission.infrastructure.dao.RulesDao
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
@@ -16,47 +16,39 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 
 @Service
-class RulesService(private val rulesDao: RulesDao) {
+class RulesService(private val ruleRepository: RuleRepository) {
 
-    fun getInterval(country: String, pmd: String): Long {
-        return rulesDao.getValue(
-            country, pmd,
-            PARAMETER_INTERVAL
-        )?.toLongOrNull()
+    fun getInterval(country: String, pmd: ProcurementMethod): Duration =
+        ruleRepository.find(country, pmd, PARAMETER_INTERVAL)
+            .onFailure { throw it.reason.exception }
+            ?.let { Duration.ofSeconds(it.toLong()) }
             ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
-    }
 
-    fun getUnsuspendInterval(country: String, pmd: String): Long {
-        return rulesDao.getValue(
-            country, pmd,
-            PARAMETER_UNSUSPEND_INTERVAL
-        )?.toLongOrNull()
+    fun getUnsuspendInterval(country: String, pmd: ProcurementMethod): Duration =
+        ruleRepository.find(country, pmd, PARAMETER_UNSUSPEND_INTERVAL)
+            .onFailure { throw it.reason.exception }
+            ?.let { Duration.ofSeconds(it.toLong()) }
             ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
-    }
 
-    fun getIntervalBefore(country: String, pmd: String): Long {
-        return rulesDao.getValue(
-            country, pmd,
-            PARAMETER_INTERVAL_BEFORE
-        )?.toLongOrNull()
+    fun getIntervalBefore(country: String, pmd: ProcurementMethod): Duration =
+        ruleRepository.find(country, pmd, PARAMETER_INTERVAL_BEFORE)
+            .onFailure { throw it.reason.exception }
+            ?.let { Duration.ofSeconds(it.toLong()) }
             ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
-    }
 
-    fun getRulesMinBids(country: String, pmd: String): Int {
-        return rulesDao.getValue(
-            country, pmd,
-            PARAMETER_MIN_BIDS
-        )?.toIntOrNull()
+    fun getRulesMinBids(country: String, pmd: ProcurementMethod): Int =
+        ruleRepository.find(country, pmd, PARAMETER_MIN_BIDS)
+            .onFailure { throw it.reason.exception }
+            ?.toInt()
             ?: throw ErrorException(ErrorType.BIDS_RULES_NOT_FOUND)
-    }
 
     fun getTenderPeriodMinimumDuration(
         country: String,
         pmd: ProcurementMethod,
         operationType: OperationType
     ): Result<Duration, Fail> {
-        val value = rulesDao
-            .tryGetValue(country, pmd, MINIMUM_PERIOD_DURATION_PARAMETER, operationType)
+        val value = ruleRepository
+            .find(country, pmd, MINIMUM_PERIOD_DURATION_PARAMETER, operationType)
             .onFailure { return it }
             ?: return ValidationError.EntityNotFound.TenderPeriodRule(
                 country = country,
@@ -80,13 +72,13 @@ class RulesService(private val rulesDao: RulesDao) {
         pmd: ProcurementMethod,
         operationType: OperationType
     ): Result<Boolean, Fail> {
-        val databaseQueryResult = rulesDao
-            .tryGetValue(country, pmd, RETURN_INVITATIONS, operationType)
+        val databaseQueryResult = ruleRepository
+            .find(country, pmd, RETURN_INVITATIONS, operationType)
 
         val value = databaseQueryResult.onFailure { return it }
             .let { foundedValue ->
                 foundedValue
-                    ?: rulesDao.tryGetValue(country, pmd, RETURN_INVITATIONS)
+                    ?: ruleRepository.find(country, pmd, RETURN_INVITATIONS)
                         .onFailure { return it }
                     ?: return ValidationError.EntityNotFound.ReturnInvitationsRule(
                         country = country,
@@ -106,9 +98,9 @@ class RulesService(private val rulesDao: RulesDao) {
     }
 
     fun getExtensionAfterUnsuspended(country: String, pmd: ProcurementMethod): Duration {
-        return rulesDao.getValue(country, pmd.name, EXTENSION_AFTER_UNSUSPENDED)
-            ?.toLongOrNull()
-            ?.let { Duration.ofSeconds(it) }
+        return ruleRepository.find(country, pmd, EXTENSION_AFTER_UNSUSPENDED)
+            .onFailure { throw it.reason.exception }
+            ?.let { Duration.ofSeconds(it.toLong()) }
             ?: throw ErrorException(ErrorType.EXTENSION_AFTER_UNSUSPENDED_RULES_NOT_FOUND)
     }
 

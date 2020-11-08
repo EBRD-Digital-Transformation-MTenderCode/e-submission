@@ -276,7 +276,7 @@ class BidService(
             }
             .groupBy(keySelector = { it.first }, valueTransform = { it.second })
 
-        val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd.name)
+        val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd)
         val bidsForEvaluation = requestData.lots
             .asSequence()
             .flatMap { lot ->
