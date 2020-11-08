@@ -10,4 +10,17 @@ object Database {
         const val COMMAND_DATE = "command_date"
         const val JSON_DATA = "json_data"
     }
+
+    object Bids {
+        const val TABLE = "bids"
+        const val CPID = "cpid"
+        const val OCID = "ocid"
+        const val ID = "id"
+        const val OWNER = "owner"
+        const val TOKEN = "token_entity"
+        const val STATUS = "status"
+        const val CREATED_DATE = "created_date"
+        const val PENDING_DATE = "pending_date"
+        const val JSON_DATA = "json_data"
+    }
 }

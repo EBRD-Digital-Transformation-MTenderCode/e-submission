@@ -15,7 +15,6 @@ import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.application.repository.BidRepository
 import com.procurement.submission.application.service.Transform
-import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Money
@@ -31,6 +30,7 @@ import com.procurement.submission.failure
 import com.procurement.submission.get
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
+import com.procurement.submission.infrastructure.extension.cassandra.toCassandraTimestamp
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import com.procurement.submission.model.dto.ocds.Amount
@@ -44,6 +44,8 @@ import com.procurement.submission.model.dto.ocds.Value
 import com.procurement.submission.model.entity.BidEntityComplex
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -61,24 +63,12 @@ class BidRepositoryIT {
     companion object {
         private val CPID = Cpid.tryCreateOrNull("ocds-t1s2t3-MD-1565251033096")!!
         private val OCID = Ocid.tryCreateOrNull("ocds-b3wdp1-MD-1580458690892-EV-1580458791896")!!
-
-        private const val KEYSPACE = "ocds"
-        private const val BID_TABLE = "submission_bid"
-        private const val CPID_COLUMN = "cp_id"
-        private const val STAGE_COLUMN = "stage"
-        private const val BID_ID_COLUMN = "bid_id"
-        private const val TOKEN_COLUMN = "token_entity"
-        private const val OWNER_COLUMN = "owner"
-        private const val STATUS_COLUMN = "status"
-        private const val CREATED_DATE_COLUMN = "created_date"
-        private const val PENDING_DATE_COLUMN = "pending_date"
-        private const val JSON_DATA_COLUMN = "json_data"
-
+        private val BID_ID = BidId.fromString("01560099-db9f-45e1-a53e-3b7fe43fd9d4")
         private val DATE = JsonDateDeserializer.deserialize(JsonDateSerializer.serialize(LocalDateTime.now()))
 
         private fun stubBid() =
             Bid(
-                id = "id",
+                id = BID_ID.toString(),
                 status = Status.PENDING,
                 statusDetails = StatusDetails.WITHDRAWN,
                 date = DATE,
@@ -99,8 +89,7 @@ class BidRepositoryIT {
                         title = null,
                         description = null
                     )
-                )
-                ,
+                ),
                 tenderers = emptyList(),
                 relatedLots = listOf("relatedLots"),
                 documents = listOf(
@@ -132,11 +121,11 @@ class BidRepositoryIT {
         private fun stubBidEntity() =
             BidEntityComplex(
                 cpid = CPID,
-                stage = OCID.stage,
-                pendingDate = DATE.toDate(),
-                createdDate = DATE.toDate(),
+                ocid = OCID,
+                pendingDate = null,
+                createdDate = DATE,
                 owner = Owner.randomUUID(),
-                bidId = BidId.randomUUID(),
+                bidId = BID_ID,
                 token = Token.randomUUID(),
                 status = Status.PENDING,
                 bid = stubBid()
@@ -208,17 +197,69 @@ class BidRepositoryIT {
     }
 
     @Test
-    fun saveAll_success() {
+    fun findById_success() {
+        val expectedBid = stubBidEntity()
+        insertBid(expectedBid)
+
+        val actualBid = bidRepository.findBy(cpid = CPID, ocid = OCID, id = BID_ID).get()
+
+        assertNotNull(actualBid)
+        assertEquals(expectedBid, actualBid)
+    }
+
+    @Test
+    fun findById_notFound_success() {
+        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID, id = BID_ID).get()
+
+        assertNull(actualBids)
+    }
+
+    @Test
+    fun findById_executeException_fail() {
+        doThrow(RuntimeException())
+            .whenever(session)
+            .execute(any<BoundStatement>())
+
+        val expected = bidRepository.findBy(cpid = CPID, ocid = OCID, id = BID_ID).failure()
+
+        assertTrue(expected is Fail.Incident.Database.Interaction)
+    }
+
+    @Test
+    fun save_success() {
+        val expectedBid = stubBidEntity()
+        bidRepository.saveNew(expectedBid)
+        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
+
+        assertTrue(actualBids.size == 1)
+        assertEquals(expectedBid, actualBids[0])
+    }
+
+    @Test
+    fun save_executeException_fail() {
+        val expectedBid = stubBidEntity()
+
+        doThrow(RuntimeException())
+            .whenever(session)
+            .execute(any<BoundStatement>())
+
+        val actual = bidRepository.saveNew(expectedBid).error
+
+        assertTrue(actual is Fail.Incident.Database.Interaction)
+    }
+
+    @Test
+    fun saveNewAll_success() {
         val bid = stubBidEntity()
         val expectedBids = listOf(bid)
-        bidRepository.saveAll(expectedBids)
+        bidRepository.saveNew(expectedBids)
         val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
 
         assertEquals(expectedBids, actualBids)
     }
 
     @Test
-    fun saveAll_executeException_fail() {
+    fun saveNewAll_executeException_fail() {
         val bid = stubBidEntity()
         val expectedBids = listOf(bid)
 
@@ -226,37 +267,37 @@ class BidRepositoryIT {
             .whenever(session)
             .execute(any<BatchStatement>())
 
-        val expected = bidRepository.saveAll(expectedBids).error
+        val expected = bidRepository.saveNew(expectedBids).error
 
         assertTrue(expected is Fail.Incident.Database.Interaction)
     }
 
     private fun createKeyspace() {
         session.execute(
-            "CREATE KEYSPACE $KEYSPACE " +
+            "CREATE KEYSPACE ${Database.KEYSPACE} " +
                 "WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};"
         )
     }
 
     private fun dropKeyspace() {
-        session.execute("DROP KEYSPACE $KEYSPACE;")
+        session.execute("DROP KEYSPACE ${Database.KEYSPACE};")
     }
 
     private fun createTable() {
         session.execute(
             """
-                CREATE TABLE IF NOT EXISTS $KEYSPACE.$BID_TABLE
+                CREATE TABLE IF NOT EXISTS ${Database.KEYSPACE}.${Database.Bids.TABLE}
                     (
-                        $CPID_COLUMN text,
-                        $STAGE_COLUMN text,
-                        $OWNER_COLUMN text,
-                        $BID_ID_COLUMN uuid,
-                        $TOKEN_COLUMN uuid,
-                        $STATUS_COLUMN text,
-                        $CREATED_DATE_COLUMN timestamp,
-                        $PENDING_DATE_COLUMN timestamp,
-                        $JSON_DATA_COLUMN text,
-                        primary key($CPID_COLUMN, $STAGE_COLUMN, $BID_ID_COLUMN)
+                        ${Database.Bids.CPID} TEXT,
+                        ${Database.Bids.OCID} TEXT,
+                        ${Database.Bids.ID} TEXT,
+                        ${Database.Bids.OWNER} TEXT,
+                        ${Database.Bids.TOKEN} TEXT,
+                        ${Database.Bids.STATUS} TEXT,
+                        ${Database.Bids.CREATED_DATE} TIMESTAMP,
+                        ${Database.Bids.PENDING_DATE} TIMESTAMP,
+                        ${Database.Bids.JSON_DATA} TEXT,
+                        PRIMARY KEY(${Database.Bids.CPID}, ${Database.Bids.OCID}, ${Database.Bids.ID})
                     );
             """
         )
@@ -264,20 +305,16 @@ class BidRepositoryIT {
 
     private fun insertBid(bidEntity: BidEntityComplex) {
         val jsonData = transform.trySerialization(bidEntity.bid).get()
-        val record = QueryBuilder.insertInto(KEYSPACE, BID_TABLE)
-            .value(CPID_COLUMN, bidEntity.cpid.toString())
-            .value(STAGE_COLUMN, bidEntity.stage.toString())
-            .value(OWNER_COLUMN, bidEntity.owner.toString())
-            .value(BID_ID_COLUMN, bidEntity.bidId)
-            .value(TOKEN_COLUMN, bidEntity.token)
-            .value(STATUS_COLUMN, bidEntity.status.toString())
-            .value(CREATED_DATE_COLUMN, bidEntity.createdDate)
-            .value(PENDING_DATE_COLUMN, bidEntity.pendingDate)
-            .value(JSON_DATA_COLUMN, jsonData)
+        val record = QueryBuilder.insertInto(Database.KEYSPACE, Database.Bids.TABLE)
+            .value(Database.Bids.CPID, bidEntity.cpid.toString())
+            .value(Database.Bids.OCID, bidEntity.ocid.toString())
+            .value(Database.Bids.OWNER, bidEntity.owner.toString())
+            .value(Database.Bids.ID, bidEntity.bidId.toString())
+            .value(Database.Bids.TOKEN, bidEntity.token.toString())
+            .value(Database.Bids.STATUS, bidEntity.status.toString())
+            .value(Database.Bids.CREATED_DATE, bidEntity.createdDate.toCassandraTimestamp())
+            .value(Database.Bids.PENDING_DATE, bidEntity.pendingDate?.toCassandraTimestamp())
+            .value(Database.Bids.JSON_DATA, jsonData)
         session.execute(record)
     }
-
-
 }
-
-

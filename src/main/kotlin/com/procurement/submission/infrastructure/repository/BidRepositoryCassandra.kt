@@ -1,6 +1,7 @@
 package com.procurement.submission.infrastructure.repository
 
 import com.datastax.driver.core.BatchStatement
+import com.datastax.driver.core.BoundStatement
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.Session
 import com.procurement.submission.application.repository.BidRepository
@@ -9,8 +10,11 @@ import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
-import com.procurement.submission.domain.model.enums.Stage
+import com.procurement.submission.domain.model.Token
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.infrastructure.extension.cassandra.toCassandraTimestamp
+import com.procurement.submission.infrastructure.extension.cassandra.toLocalDateTime
 import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
 import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.lib.functional.Result
@@ -25,57 +29,63 @@ class BidRepositoryCassandra(private val session: Session, private val transform
     BidRepository {
 
     companion object {
-        private const val KEYSPACE = "ocds"
-        private const val BID_TABLE = "submission_bid"
-        private const val CPID_COLUMN = "cp_id"
-        private const val STAGE_COLUMN = "stage"
-        private const val BID_ID_COLUMN = "bid_id"
-        private const val TOKEN_COLUMN = "token_entity"
-        private const val OWNER_COLUMN = "owner"
-        private const val STATUS_COLUMN = "status"
-        private const val CREATED_DATE_COLUMN = "created_date"
-        private const val PENDING_DATE_COLUMN = "pending_date"
-        private const val JSON_DATA_COLUMN = "json_data"
 
         private const val FIND_BY_CQL = """
-               SELECT $CPID_COLUMN,
-                      $STAGE_COLUMN,
-                      $BID_ID_COLUMN,
-                      $TOKEN_COLUMN,
-                      $OWNER_COLUMN,
-                      $STATUS_COLUMN,
-                      $CREATED_DATE_COLUMN,
-                      $PENDING_DATE_COLUMN,
-                      $JSON_DATA_COLUMN
-                 FROM $KEYSPACE.$BID_TABLE
-                WHERE $CPID_COLUMN=?
-                  AND $STAGE_COLUMN=?
+               SELECT ${Database.Bids.CPID},
+                      ${Database.Bids.OCID},
+                      ${Database.Bids.ID},
+                      ${Database.Bids.TOKEN},
+                      ${Database.Bids.OWNER},
+                      ${Database.Bids.STATUS},
+                      ${Database.Bids.CREATED_DATE},
+                      ${Database.Bids.PENDING_DATE},
+                      ${Database.Bids.JSON_DATA}
+                 FROM ${Database.KEYSPACE}.${Database.Bids.TABLE}
+                WHERE ${Database.Bids.CPID}=?
+                  AND ${Database.Bids.OCID}=?
+            """
+
+        private const val FIND_BY_ID_CQL = """
+               SELECT ${Database.Bids.CPID},
+                      ${Database.Bids.OCID},
+                      ${Database.Bids.ID},
+                      ${Database.Bids.TOKEN},
+                      ${Database.Bids.OWNER},
+                      ${Database.Bids.STATUS},
+                      ${Database.Bids.CREATED_DATE},
+                      ${Database.Bids.PENDING_DATE},
+                      ${Database.Bids.JSON_DATA}
+                 FROM ${Database.KEYSPACE}.${Database.Bids.TABLE}
+                WHERE ${Database.Bids.CPID}=?
+                  AND ${Database.Bids.OCID}=?
+                  AND ${Database.Bids.ID}=?
             """
 
         private const val SAVE_CQL = """
-               INSERT INTO $KEYSPACE.$BID_TABLE(
-                      $CPID_COLUMN,
-                      $STAGE_COLUMN,
-                      $BID_ID_COLUMN,
-                      $TOKEN_COLUMN,
-                      $OWNER_COLUMN,
-                      $STATUS_COLUMN,
-                      $CREATED_DATE_COLUMN,
-                      $PENDING_DATE_COLUMN,
-                      $JSON_DATA_COLUMN
+               INSERT INTO ${Database.KEYSPACE}.${Database.Bids.TABLE}(
+                      ${Database.Bids.CPID},
+                      ${Database.Bids.OCID},
+                      ${Database.Bids.ID},
+                      ${Database.Bids.TOKEN},
+                      ${Database.Bids.OWNER},
+                      ${Database.Bids.STATUS},
+                      ${Database.Bids.CREATED_DATE},
+                      ${Database.Bids.PENDING_DATE},
+                      ${Database.Bids.JSON_DATA}
                )
                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
             """
     }
 
     private val preparedFindByCQL = session.prepare(FIND_BY_CQL)
+    private val preparedFindByIdCQL = session.prepare(FIND_BY_ID_CQL)
     private val preparedSaveCQL = session.prepare(SAVE_CQL)
 
     override fun findBy(cpid: Cpid, ocid: Ocid): Result<List<BidEntityComplex>, Fail.Incident> {
         val query = preparedFindByCQL.bind()
             .apply {
-                setString(CPID_COLUMN, cpid.toString())
-                setString(STAGE_COLUMN, ocid.stage.toString())
+                setString(Database.Bids.CPID, cpid.toString())
+                setString(Database.Bids.OCID, ocid.toString())
             }
 
         return query.tryExecute(session)
@@ -84,53 +94,84 @@ class BidRepositoryCassandra(private val session: Session, private val transform
             .asSuccess()
     }
 
+    override fun findBy(cpid: Cpid, ocid: Ocid, id: BidId): Result<BidEntityComplex?, Fail.Incident> {
+        val query = preparedFindByIdCQL.bind()
+            .apply {
+                setString(Database.Bids.CPID, cpid.toString())
+                setString(Database.Bids.OCID, ocid.toString())
+                setString(Database.Bids.ID, id.toString())
+            }
+
+        return query.tryExecute(session)
+            .onFailure { return it }
+            .one()
+            ?.let { row ->
+                row.convert().onFailure { return it }
+            }
+            .asSuccess()
+    }
+
     private fun Row.convert(): Result<BidEntityComplex, Fail.Incident> {
-        val data = getString(JSON_DATA_COLUMN)
+        val data = getString(Database.Bids.JSON_DATA)
         val entity = transform.tryDeserialization(value = data, target = Bid::class.java)
             .onFailure {
                 return Fail.Incident.Database.DatabaseParsing(exception = it.reason.exception).asFailure()
             }
 
         return BidEntityComplex(
-            cpid = Cpid.tryCreateOrNull(getString(CPID_COLUMN))!!,
-            bidId = getUUID(BID_ID_COLUMN),
-            token = getUUID(TOKEN_COLUMN),
-            stage = Stage.creator(getString(STAGE_COLUMN)),
-            owner = Owner.fromString(getString(OWNER_COLUMN)),
-            status = Status.creator(getString(STATUS_COLUMN)),
-            createdDate = getTimestamp(CREATED_DATE_COLUMN),
-            pendingDate = getTimestamp(PENDING_DATE_COLUMN),
+            cpid = Cpid.tryCreateOrNull(getString(Database.Bids.CPID))!!,
+            ocid = Ocid.tryCreateOrNull(getString(Database.Bids.OCID))!!,
+            bidId = BidId.fromString(getString(Database.Bids.ID)),
+            token = Token.fromString(getString(Database.Bids.TOKEN)),
+            owner = Owner.fromString(getString(Database.Bids.OWNER)),
+            status = Status.creator(getString(Database.Bids.STATUS)),
+            createdDate = getTimestamp(Database.Bids.CREATED_DATE).toLocalDateTime(),
+            pendingDate = getTimestamp(Database.Bids.PENDING_DATE)?.toLocalDateTime(),
             bid = entity
         ).asSuccess()
     }
 
-    override fun saveAll(bidEntities: List<BidEntityComplex>): MaybeFail<Fail.Incident> {
-        val statement = BatchStatement()
-
-        bidEntities.forEach { bidEntity ->
-            val data = generateJsonData(bidEntity.bid)
-                .onFailure { return MaybeFail.fail(it.reason) }
-
-            statement.add(
-                preparedSaveCQL.bind()
-                    .apply {
-                        setString(CPID_COLUMN, bidEntity.cpid.toString())
-                        setString(STAGE_COLUMN, bidEntity.stage.toString())
-                        setUUID(BID_ID_COLUMN, bidEntity.bidId)
-                        setUUID(TOKEN_COLUMN, bidEntity.token)
-                        setString(OWNER_COLUMN, bidEntity.owner.toString())
-                        setString(STATUS_COLUMN, bidEntity.status.toString())
-                        setTimestamp(CREATED_DATE_COLUMN, bidEntity.createdDate)
-                        setTimestamp(PENDING_DATE_COLUMN, bidEntity.pendingDate)
-                        setString(JSON_DATA_COLUMN, data)
-                    }
-            )
-        }
-
-        statement.tryExecute(session)
+    override fun saveNew(bidEntity: BidEntityComplex): MaybeFail<Fail.Incident> {
+        buildStatement(bidEntity)
+            .onFailure { return MaybeFail.fail(it.reason) }
+            .tryExecute(session)
             .onFailure { return MaybeFail.fail(it.reason) }
 
         return MaybeFail.none()
+    }
+
+    override fun saveNew(bidEntities: List<BidEntityComplex>): MaybeFail<Fail.Incident> {
+        val batchStatement = BatchStatement()
+
+        bidEntities.forEach { bidEntity ->
+            val statement = buildStatement(bidEntity)
+                .onFailure { return MaybeFail.fail(it.reason) }
+            batchStatement.add(statement)
+        }
+
+        batchStatement.tryExecute(session)
+            .onFailure { return MaybeFail.fail(it.reason) }
+
+        return MaybeFail.none()
+    }
+
+    private fun buildStatement(bidEntity: BidEntityComplex): Result<BoundStatement, Fail.Incident> {
+        val data = generateJsonData(bidEntity.bid)
+            .onFailure { return it }
+
+        return preparedSaveCQL.bind()
+            .apply {
+                setString(Database.Bids.CPID, bidEntity.cpid.toString())
+                setString(Database.Bids.OCID, bidEntity.ocid.toString())
+                setString(Database.Bids.ID, bidEntity.bid.id.toString())
+                setString(Database.Bids.TOKEN, bidEntity.token.toString())
+                setString(Database.Bids.OWNER, bidEntity.owner.toString())
+                setString(Database.Bids.STATUS, bidEntity.bid.status.key)
+                setTimestamp(Database.Bids.CREATED_DATE, bidEntity.createdDate.toCassandraTimestamp())
+                setTimestamp(Database.Bids.PENDING_DATE, bidEntity.pendingDate?.toCassandraTimestamp())
+                setString(Database.Bids.JSON_DATA, data)
+            }
+            .asSuccess()
     }
 
     private fun generateJsonData(bid: Bid): Result<String, Fail.Incident> =

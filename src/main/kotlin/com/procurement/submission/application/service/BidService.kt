@@ -2338,7 +2338,7 @@ class BidService(
         val createdBid = params.bids.details.first().convert(params.date)
         val createdBidEntity = getEntity(params, createdBid)
 
-        bidRepository.saveAll(listOfNotNull(updatedBidEntity, createdBidEntity))
+        bidRepository.saveNew(listOfNotNull(updatedBidEntity, createdBidEntity))
 
         return createdBidEntity.bid.convertToCreateBidResult(createdBidEntity.token).asSuccess()
     }
@@ -2349,14 +2349,14 @@ class BidService(
 
     fun getEntity(params: CreateBidParams, bid: Bid) = BidEntityComplex(
         cpid = params.cpid,
+        ocid = params.ocid,
         status = bid.status,
-        bid = bid,
-        token = generationService.generateToken(),
         bidId = UUID.fromString(bid.id),
-        createdDate = params.date.toDate(),
+        token = generationService.generateToken(),
         owner = params.owner,
-        pendingDate = params.date.toDate(),
-        stage = params.ocid.stage
+        createdDate = params.date,
+        pendingDate = params.date,
+        bid = bid
     )
 
 }
