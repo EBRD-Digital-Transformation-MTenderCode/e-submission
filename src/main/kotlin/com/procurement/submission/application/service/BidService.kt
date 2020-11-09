@@ -2328,10 +2328,7 @@ class BidService(
         val receivedTenderers = receivedBid.tenderers.toSetBy { it.id }
 
         val bidEntityToWithdraw = bidEntities.firstOrNull { entity ->
-            val storedBidTenderers = entity.bid.tenderers.toSetBy { it.id }
-
-            storedBidTenderers == receivedTenderers
-                && entity.bid.isActive()
+            containsActiveBidByReceivedTenderersAndLot(entity, receivedTenderers, receivedBid)
         }
 
         val updatedBidEntity = bidEntityToWithdraw?.copy(bid = bidEntityToWithdraw.bid.copy(status = Status.WITHDRAWN))
@@ -2341,6 +2338,19 @@ class BidService(
         bidRepository.saveAll(listOfNotNull(updatedBidEntity, createdBidEntity))
 
         return createdBidEntity.bid.convertToCreateBidResult(createdBidEntity.token).asSuccess()
+    }
+
+    private fun containsActiveBidByReceivedTenderersAndLot(
+        entity: BidEntityComplex,
+        receivedTenderers: Set<String>,
+        receivedBid: CreateBidParams.Bids.Detail
+    ): Boolean {
+        val storedBidTenderers = entity.bid.tenderers.toSetBy { it.id }
+        val storedLot = entity.bid.relatedLots.first()
+        val receivedLot = receivedBid.relatedLots.first()
+        return entity.bid.isActive()
+            && storedBidTenderers == receivedTenderers
+            && storedLot == receivedLot
     }
 
     private fun Bid.isActive(): Boolean =
