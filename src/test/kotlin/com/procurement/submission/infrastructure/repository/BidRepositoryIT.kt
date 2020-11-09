@@ -13,7 +13,7 @@ import com.nhaarman.mockito_kotlin.doThrow
 import com.nhaarman.mockito_kotlin.spy
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.application.model.data.RequirementRsValue
-import com.procurement.submission.application.repository.BidRepository
+import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
@@ -31,6 +31,7 @@ import com.procurement.submission.get
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
 import com.procurement.submission.infrastructure.extension.cassandra.toCassandraTimestamp
+import com.procurement.submission.infrastructure.repository.bid.BidRepositoryCassandra
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import com.procurement.submission.model.dto.ocds.Amount

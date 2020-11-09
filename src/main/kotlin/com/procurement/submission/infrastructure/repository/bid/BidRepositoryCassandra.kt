@@ -1,10 +1,10 @@
-package com.procurement.submission.infrastructure.repository
+package com.procurement.submission.infrastructure.repository.bid
 
 import com.datastax.driver.core.BatchStatement
 import com.datastax.driver.core.BoundStatement
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.Session
-import com.procurement.submission.application.repository.BidRepository
+import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
@@ -16,6 +16,7 @@ import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.infrastructure.extension.cassandra.toCassandraTimestamp
 import com.procurement.submission.infrastructure.extension.cassandra.toLocalDateTime
 import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
+import com.procurement.submission.infrastructure.repository.Database
 import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asFailure
@@ -25,8 +26,7 @@ import com.procurement.submission.model.entity.BidEntityComplex
 import org.springframework.stereotype.Repository
 
 @Repository
-class BidRepositoryCassandra(private val session: Session, private val transform: Transform) :
-    BidRepository {
+class BidRepositoryCassandra(private val session: Session, private val transform: Transform) : BidRepository {
 
     companion object {
 

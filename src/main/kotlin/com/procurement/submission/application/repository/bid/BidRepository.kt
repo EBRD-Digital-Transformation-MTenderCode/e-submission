@@ -1,4 +1,4 @@
-package com.procurement.submission.application.repository
+package com.procurement.submission.application.repository.bid
 
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
