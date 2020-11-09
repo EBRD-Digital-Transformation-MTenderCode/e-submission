@@ -2,8 +2,6 @@ package com.procurement.submission.application.service
 
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
-import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodContext
-import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodResult
 import com.procurement.submission.application.params.CheckPeriodParams
 import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
@@ -280,49 +278,6 @@ internal class PeriodServiceTest {
             ocid = OCID.toString(),
             date = DATE.format()
         ).get()
-    }
-
-    @Nested
-    inner class ExtendTenderPeriod {
-        @Test
-        fun success() {
-            val context = getContext()
-
-            val entity = PeriodEntity(
-                cpid = CPID,
-                ocid = OCID,
-                startDate = DATE.plusDays(1),
-                endDate = DATE.plusDays(2)
-            )
-            whenever(periodDao.find(cpid = context.cpid, ocid = context.ocid)).thenReturn(entity.asSuccess())
-            whenever(
-                rulesService.getExtensionAfterUnsuspended(
-                    country = context.country,
-                    pmd = context.pmd
-                )
-            ).thenReturn(
-                Duration.ofSeconds(Duration.ofDays(10).seconds)
-            )
-
-            val actual = periodService.extendTenderPeriod(context)
-            val expected = ExtendTenderPeriodResult(
-                ExtendTenderPeriodResult.TenderPeriod(
-                    startDate = LocalDateTime.parse("2020-02-11T08:49:55Z", FORMATTER),
-                    endDate = LocalDateTime.parse("2020-02-20T08:49:55Z", FORMATTER)
-                )
-            )
-
-            assertEquals(expected, actual)
-        }
-
-        private fun getContext() = ExtendTenderPeriodContext(
-            cpid = CPID,
-            ocid = OCID,
-            stage = STAGE.toString(),
-            startDate = DATE,
-            pmd = PMD,
-            country = COUNTRY
-        )
     }
 
     fun <T, E> Result<T, E>.get(): T = when (this) {

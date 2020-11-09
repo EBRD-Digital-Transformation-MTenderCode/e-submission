@@ -10,7 +10,6 @@ import com.procurement.submission.domain.extension.toLocal
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteria
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
-import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
@@ -19,73 +18,33 @@ import com.procurement.submission.infrastructure.converter.convert
 import com.procurement.submission.infrastructure.dao.BidDao
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
-import com.procurement.submission.model.dto.bpe.country
 import com.procurement.submission.model.dto.bpe.cpid
 import com.procurement.submission.model.dto.bpe.ctxId
 import com.procurement.submission.model.dto.bpe.ocid
 import com.procurement.submission.model.dto.bpe.owner
-import com.procurement.submission.model.dto.bpe.phase
 import com.procurement.submission.model.dto.bpe.pmd
 import com.procurement.submission.model.dto.bpe.stage
 import com.procurement.submission.model.dto.bpe.startDate
 import com.procurement.submission.model.dto.bpe.token
 import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.dto.ocds.Period
-import com.procurement.submission.model.dto.ocds.Value
 import com.procurement.submission.model.dto.request.ConsideredBid
 import com.procurement.submission.model.dto.request.GetDocsOfConsideredBidRq
 import com.procurement.submission.model.dto.request.GetDocsOfConsideredBidRs
-import com.procurement.submission.model.dto.request.LotDto
 import com.procurement.submission.model.dto.request.RelatedBidRq
 import com.procurement.submission.model.dto.request.UpdateBidsByAwardStatusRq
-import com.procurement.submission.model.dto.request.UpdateBidsByLotsRq
-import com.procurement.submission.model.dto.response.BidCancellation
-import com.procurement.submission.model.dto.response.BidDto
 import com.procurement.submission.model.dto.response.BidRs
-import com.procurement.submission.model.dto.response.BidsStatusRs
-import com.procurement.submission.model.dto.response.BidsUpdateStatusRs
-import com.procurement.submission.model.dto.response.CancellationRs
-import com.procurement.submission.model.dto.response.FinalBid
-import com.procurement.submission.model.dto.response.GetBidsRs
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.utils.containsAny
 import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.collections.ArrayList
 
 @Service
 class StatusService(private val rulesService: RulesService,
                     private val periodService: PeriodService,
                     private val bidDao: BidDao
 ) {
-
-
-    fun getBids(cm: CommandMessage): ResponseDto {
-        val cpid = cm.cpid
-        val stage = cm.stage
-        val country = cm.country
-        val pmd = cm.pmd
-
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpid.toString(), stage)
-        val bids = HashSet<BidDto>()
-        if (bidEntities.isNotEmpty()) {
-            val pendingBidsSet = getPendingBids(bidEntities)
-            val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
-            val relatedLotsFromBidsList = getRelatedLotsListFromBids(pendingBidsSet)
-            val uniqueLotsMap = getUniqueLotsMap(relatedLotsFromBidsList)
-            val successfulLotsSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
-            val successfulBidsSet = getBidsByRelatedLots(pendingBidsSet, successfulLotsSet)
-            val successfulBidsIdSet = successfulBidsSet.asSequence().map { it.id }.toSet()
-            for (entity in bidEntities) {
-                if (entity.bidId.toString() in successfulBidsIdSet) {
-                    bids.add(convertBidEntityToBidData(entity))
-                }
-            }
-        }
-        return ResponseDto(data = GetBidsRs(bids = bids))
-    }
 
     fun getBidsAuction(requestData: BidsAuctionRequestData, context: GetBidsAuctionContext): BidsAuctionResponseData {
         fun determineOwner(bid: Bid, bidsRecordsByIds: Map<BidId, BidEntity>): BidData {
@@ -157,73 +116,6 @@ class StatusService(private val rulesService: RulesService,
         return bidsForResponse
     }
 
-    private fun convertBidEntityToBidData(entity: BidEntity): BidDto {
-        val bid = toObject(Bid::class.java, entity.jsonData)
-        return BidDto(
-                id = bid.id,
-                date = bid.date,
-                createdDate = entity.createdDate.toLocal(),
-                pendingDate = entity.pendingDate?.toLocal(),
-                value = bid.value!!.let { it.let { Value(amount = it.amount, currency = it.currency) } },
-                tenderers = bid.tenderers,
-                relatedLots = bid.relatedLots)
-    }
-
-    fun updateBidsByLots(cm: CommandMessage): ResponseDto {
-        val cpid = cm.cpid
-        val ocid = cm.ocid
-        val stage = cm.stage
-        val country = cm.country
-        val pmd = cm.pmd
-        val awardCriteria = AwardCriteria.creator(
-            cm.context.awardCriteria ?: throw ErrorException(ErrorType.CONTEXT)
-        )
-        val dto = toObject(UpdateBidsByLotsRq::class.java, cm.data)
-
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpid.toString(), stage)
-        if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
-        val pendingBidsSet = getPendingBids(bidEntities)
-        val minNumberOfBids = rulesService.getRulesMinBids(country, pmd)
-        val relatedLotsFromBidsList = getRelatedLotsListFromBids(pendingBidsSet)
-        val uniqueLotsMap = getUniqueLotsMap(relatedLotsFromBidsList)
-        val successfulLotsByRuleSet = getSuccessfulLotsByRule(uniqueLotsMap, minNumberOfBids)
-        val unsuccessfulLotsByReqSet = collectLotIds(dto.unsuccessfulLots)
-        val successfulLotsSet = successfulLotsByRuleSet.minus(unsuccessfulLotsByReqSet)
-        val successfulBidsSet = getBidsByRelatedLots(pendingBidsSet, successfulLotsSet)
-        val updatedBidsList = ArrayList<Bid>()
-        val unsuccessfulBidsSet = getBidsByRelatedLots(pendingBidsSet, unsuccessfulLotsByReqSet)
-        unsuccessfulBidsSet.asSequence()
-                .forEach { bid ->
-                    bid.status = Status.WITHDRAWN
-                    bid.statusDetails = StatusDetails.EMPTY
-                    updatedBidsList.add(bid)
-                }
-        val unsuccessfulLotsByRuleSet = relatedLotsFromBidsList.minus(successfulLotsByRuleSet)
-        val unsuccessfulLotsSetForRespSet = unsuccessfulLotsByReqSet.minus(unsuccessfulLotsByRuleSet)
-        val unsuccessfulBidsForRespSet = getBidsByRelatedLots(unsuccessfulBidsSet, unsuccessfulLotsSetForRespSet)
-        val bids = successfulBidsSet.plus(unsuccessfulBidsForRespSet)
-        val updatedBidEntities = getUpdatedBidEntities(bidEntities, updatedBidsList)
-        bidDao.saveAll(updatedBidEntities)
-        val period = periodService.getPeriodEntity(cpid, ocid)
-
-        if (awardCriteria == AwardCriteria.PRICE_ONLY && dto.firstBids != null && dto.firstBids.isNotEmpty()) {
-            val firstBidsIds = dto.firstBids.asSequence().map { it.id }.toSet()
-            for (bid in bids) {
-                if (bid.status == Status.PENDING && !firstBidsIds.contains(bid.id) && bid.documents != null) {
-                    bid.documents = bid.documents!!.filter {
-                        it.documentType == DocumentType.SUBMISSION_DOCUMENTS || it.documentType == DocumentType.ELIGIBILITY_DOCUMENTS
-                    }.takeIf { it.isNotEmpty() }
-                }
-            }
-        }
-        return ResponseDto(
-            data = BidsUpdateStatusRs(
-                tenderPeriod = Period(period.startDate, period.endDate),
-                bids = bids
-            )
-        )
-    }
-
     fun updateBidsByAwardStatus(cm: CommandMessage): ResponseDto {
         val cpid = cm.cpid
         val stage = cm.stage
@@ -262,30 +154,6 @@ class StatusService(private val rulesService: RulesService,
         return ResponseDto(data = BidRs(null, null, bid))
     }
 
-    fun setFinalStatuses(cm: CommandMessage): ResponseDto {
-        val cpid = cm.cpid
-        val stage = "EV"
-
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpid.toString(), stage)
-        if (bidEntities.isEmpty()) throw ErrorException(
-            ErrorType.BID_NOT_FOUND
-        )
-        val bids = getBidsFromEntities(bidEntities)
-        for (bid in bids) {
-            bid.apply {
-                if (status == Status.PENDING && statusDetails != StatusDetails.EMPTY) {
-                    status = Status.creator(bid.statusDetails.key)
-                    statusDetails = StatusDetails.EMPTY
-                }
-            }
-        }
-        bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        val bidsRs = bids.asSequence()
-                .map { FinalBid(id = it.id, status = it.status, statusDetails = it.statusDetails) }
-                .toList()
-        return ResponseDto(data = BidsStatusRs(bidsRs))
-    }
-
     fun bidWithdrawn(cm: CommandMessage): ResponseDto {
         val cpid = cm.cpid
         val ocid = cm.ocid
@@ -310,47 +178,6 @@ class StatusService(private val rulesService: RulesService,
         entity.status = bid.status.key
         bidDao.save(entity)
         return ResponseDto(data = BidRs(null, null, bid))
-    }
-
-    fun prepareBidsCancellation(cm: CommandMessage): ResponseDto {
-        val cpid = cm.cpid
-        val stage = cm.stage
-        val phase = cm.phase
-
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpid.toString(), stage)
-        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
-        val bids = getBidsFromEntities(bidEntities)
-        val bidStatusPredicate = getBidStatusPredicateForPrepareCancellation(phase)
-        val bidsResponseDto = mutableListOf<BidCancellation>()
-        bids.asSequence()
-            .filter(bidStatusPredicate)
-            .forEach { bid ->
-                bid.statusDetails = StatusDetails.WITHDRAWN
-                    addBidToResponseDto(bidsResponseDto, bid)
-                }
-        bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = CancellationRs(bidsResponseDto))
-    }
-
-    fun bidsCancellation(cm: CommandMessage): ResponseDto {
-        val cpid = cm.cpid
-        val stage = cm.stage
-        val phase = cm.phase
-
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpid.toString(), stage)
-        if (bidEntities.isEmpty()) return ResponseDto(data = BidsStatusRs(listOf()))
-        val bids = getBidsFromEntities(bidEntities)
-        val bidStatusPredicate = getBidStatusPredicateForCancellation(phase = phase)
-        val bidsResponseDto = mutableListOf<BidCancellation>()
-        bids.asSequence()
-            .filter(bidStatusPredicate)
-            .forEach { bid ->
-                bid.status = Status.WITHDRAWN
-                    bid.statusDetails = StatusDetails.EMPTY
-                    addBidToResponseDto(bidsResponseDto, bid)
-                }
-        bidDao.saveAll(getUpdatedBidEntities(bidEntities, bids))
-        return ResponseDto(data = CancellationRs(bidsResponseDto))
     }
 
     fun getDocsOfConsideredBid(cm: CommandMessage): ResponseDto {
@@ -403,14 +230,6 @@ class StatusService(private val rulesService: RulesService,
         return ResponseDto(data = "ok")
     }
 
-    private fun addBidToResponseDto(bidsResponseDto: MutableList<BidCancellation>, bid: Bid) {
-        bidsResponseDto.add(BidCancellation(
-                id = bid.id,
-                date = bid.date,
-                status = bid.status,
-                statusDetails = bid.statusDetails))
-    }
-
     private fun checkStatusesBidUpdate(bid: Bid) {
         if (bid.status != Status.PENDING && bid.status != Status.INVITED) throw ErrorException(
             ErrorType.INVALID_STATUSES_FOR_UPDATE
@@ -418,22 +237,6 @@ class StatusService(private val rulesService: RulesService,
         if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(
             ErrorType.INVALID_STATUSES_FOR_UPDATE
         )
-    }
-
-    private fun getBidsFromEntities(bidEntities: List<BidEntity>): List<Bid> {
-        return bidEntities.asSequence().map { toObject(Bid::class.java, it.jsonData) }.toList()
-    }
-
-
-    private fun collectLotIds(lots: List<LotDto>?): Set<String> {
-        return lots?.asSequence()?.map { it.id }?.toSet() ?: setOf()
-    }
-
-    private fun getPendingBids(entities: List<BidEntity>): Set<Bid> {
-        return entities.asSequence()
-                .filter { it.status == Status.PENDING.key }
-                .map { toObject(Bid::class.java, it.jsonData) }
-                .toSet()
     }
 
     private fun updateBidRecord(
@@ -446,76 +249,6 @@ class StatusService(private val rulesService: RulesService,
             message = "Cannot find bid with id ${bidId}. Available bids : ${bidsRecordsByIds.keys}"
         )
         return oldRecord.copy(jsonData = toJson(updatedBid))
-    }
-
-    private fun getRelatedLotsListFromBids(bids: Set<Bid>): List<String> {
-        return bids.asSequence()
-                .flatMap { it.relatedLots.asSequence() }
-                .toList()
-    }
-
-    private fun getUniqueLotsMap(lots: List<String>): Map<String, Int> {
-        return lots.asSequence().groupBy { it }.mapValues { it.value.size }
-    }
-
-    private fun getSuccessfulLotsByRule(uniqueLots: Map<String, Int>, minNumberOfBids: Int): Set<String> {
-        return uniqueLots.asSequence().filter { it.value >= minNumberOfBids }.map { it.key }.toSet()
-    }
-
-    private fun getBidsByRelatedLots(bids: Set<Bid>, lots: Set<String>): Set<Bid> {
-        return bids.asSequence()
-                .filter { lots.containsAny(it.relatedLots) }
-                .toSet()
-    }
-
-    private fun getBidStatusPredicateForPrepareCancellation(phase: String): (Bid) -> Boolean {
-        when (phase) {
-            "awarding" -> return { bid: Bid ->
-                (bid.status == Status.PENDING)
-                        && (bid.statusDetails == StatusDetails.EMPTY
-                        || bid.statusDetails == StatusDetails.VALID
-                        || bid.statusDetails == StatusDetails.DISQUALIFIED)
-            }
-            "tendering" -> return { bid: Bid ->
-                (bid.status == Status.PENDING || bid.status == Status.INVITED)
-                        && (bid.statusDetails == StatusDetails.EMPTY)
-            }
-            else -> throw ErrorException(ErrorType.CONTEXT)
-        }
-    }
-
-    private fun getBidStatusPredicateForCancellation(phase: String): (Bid) -> Boolean {
-        when (phase) {
-            "awarding" -> return { bid: Bid ->
-                (bid.status == Status.PENDING)
-                        && (bid.statusDetails == StatusDetails.WITHDRAWN)
-            }
-            "tendering" -> return { bid: Bid ->
-                (bid.status == Status.PENDING || bid.status == Status.INVITED)
-                        && (bid.statusDetails == StatusDetails.WITHDRAWN)
-            }
-            else -> throw ErrorException(ErrorType.CONTEXT)
-        }
-    }
-
-    private fun getUpdatedBidEntities(bidEntities: List<BidEntity>, bids: List<Bid>): List<BidEntity> {
-        val entities = ArrayList<BidEntity>()
-        bidEntities.asSequence().forEach { entity ->
-            bids.asSequence()
-                    .firstOrNull { it.id == entity.bidId.toString() }
-                    ?.let { bid ->
-                        entities.add(getEntity(
-                                bid = bid,
-                                cpId = entity.cpId,
-                                stage = entity.stage,
-                                owner = entity.owner,
-                                token = entity.token,
-                                createdDate = entity.createdDate,
-                                pendingDate = entity.pendingDate
-                        ))
-                    }
-        }
-        return entities
     }
 
     private fun getEntity(bid: Bid,

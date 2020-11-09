@@ -3,8 +3,6 @@ package com.procurement.submission.application.service
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.application.exception.ErrorType.BID_ALREADY_WITH_LOT
-import com.procurement.submission.application.exception.ErrorType.BID_NOT_FOUND
-import com.procurement.submission.application.exception.ErrorType.CONTEXT
 import com.procurement.submission.application.exception.ErrorType.ENTITY_NOT_FOUND
 import com.procurement.submission.application.exception.ErrorType.INVALID_AMOUNT
 import com.procurement.submission.application.exception.ErrorType.INVALID_CURRENCY
@@ -47,7 +45,6 @@ import com.procurement.submission.application.params.bid.ValidateBidDataParams
 import com.procurement.submission.application.repository.BidRepository
 import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.getDuplicate
-import com.procurement.submission.domain.extension.nowDefaultUTC
 import com.procurement.submission.domain.extension.toDate
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
@@ -78,17 +75,12 @@ import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.lib.functional.asValidationError
-import com.procurement.submission.model.dto.BidDetails
-import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
-import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
 import com.procurement.submission.model.dto.bpe.CommandMessage
 import com.procurement.submission.model.dto.bpe.ResponseDto
 import com.procurement.submission.model.dto.bpe.cpid
 import com.procurement.submission.model.dto.bpe.ctxId
-import com.procurement.submission.model.dto.bpe.endDate
 import com.procurement.submission.model.dto.bpe.ocid
 import com.procurement.submission.model.dto.bpe.owner
-import com.procurement.submission.model.dto.bpe.prevStage
 import com.procurement.submission.model.dto.bpe.stage
 import com.procurement.submission.model.dto.bpe.startDate
 import com.procurement.submission.model.dto.bpe.token
@@ -98,7 +90,6 @@ import com.procurement.submission.model.dto.ocds.Address
 import com.procurement.submission.model.dto.ocds.AddressDetails
 import com.procurement.submission.model.dto.ocds.BankAccount
 import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.dto.ocds.Bids
 import com.procurement.submission.model.dto.ocds.BusinessFunction
 import com.procurement.submission.model.dto.ocds.ContactPoint
 import com.procurement.submission.model.dto.ocds.CountryDetails
@@ -121,11 +112,8 @@ import com.procurement.submission.model.dto.ocds.Requirement
 import com.procurement.submission.model.dto.ocds.RequirementResponse
 import com.procurement.submission.model.dto.ocds.ValidityPeriod
 import com.procurement.submission.model.dto.request.BidUpdateDocsRq
-import com.procurement.submission.model.dto.request.LotDto
-import com.procurement.submission.model.dto.request.LotsDto
 import com.procurement.submission.model.dto.response.BidCreateResponse
 import com.procurement.submission.model.dto.response.BidRs
-import com.procurement.submission.model.dto.response.BidsCopyRs
 import com.procurement.submission.model.entity.BidEntity
 import com.procurement.submission.model.entity.BidEntityComplex
 import com.procurement.submission.utils.containsAny
@@ -135,8 +123,6 @@ import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 @Service
 class BidService(
@@ -353,26 +339,6 @@ class BidService(
         )
     }
 
-    fun copyBids(cm: CommandMessage): ResponseDto {
-        val cpid = cm.cpid
-        val ocid = cm.ocid
-        val stage = cm.stage
-        val previousStage = cm.prevStage
-        val startDate = cm.startDate
-        val endDate = cm.endDate
-        val lots = toObject(LotsDto::class.java, cm.data)
-
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpid.toString(), previousStage)
-        if (bidEntities.isEmpty())
-            throw ErrorException(BID_NOT_FOUND)
-        periodService.save(cpid, ocid, startDate, endDate)
-        val mapValidEntityBid = getBidsForNewStageMap(bidEntities, lots)
-        val mapCopyEntityBid = getBidsCopyMap(lots, mapValidEntityBid, stage)
-        bidDao.saveAll(mapCopyEntityBid.keys.toList())
-        val bids = ArrayList(mapCopyEntityBid.values)
-        return ResponseDto(data = BidsCopyRs(Bids(bids), Period(startDate, endDate)))
-    }
-
     fun updateBidDocs(cm: CommandMessage): ResponseDto {
         val cpid = cm.cpid
         val ocid = cm.ocid
@@ -422,39 +388,6 @@ class BidService(
         entity.jsonData = toJson(bid)
         bidDao.save(entity)
         return ResponseDto(data = BidRs(null, null, bid))
-    }
-
-    fun setInitialBidsStatus(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            CONTEXT
-        )
-        val dto = toObject(SetInitialBidsStatusDtoRq::class.java, cm.data)
-
-        val bidsRsList = arrayListOf<BidDetails>()
-        dto.awards.forEach { award ->
-            val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(award.relatedBid))
-            val bid: Bid = toObject(Bid::class.java, entity.jsonData)
-            bid.apply {
-                status = Status.PENDING
-                statusDetails = StatusDetails.EMPTY
-            }
-            entity.apply {
-                status = Status.PENDING.key
-                jsonData = toJson(bid)
-            }
-            bidDao.save(entity)
-            bidsRsList.add(
-                BidDetails(
-                    id = bid.id,
-                    status = bid.status,
-                    statusDetails = bid.statusDetails
-                )
-            )
-        }
-        return ResponseDto(data = SetInitialBidsStatusDtoRs(bids = bidsRsList))
     }
 
     /**
@@ -1434,55 +1367,6 @@ class BidService(
                         )
                 }
         }
-    }
-
-    private fun getBidsForNewStageMap(bidEntities: List<BidEntity>, lotsDto: LotsDto): Map<BidEntity, Bid> {
-        val validBids = HashMap<BidEntity, Bid>()
-        val lotsIds = collectLotIds(lotsDto.lots)
-        bidEntities.forEach { bidEntity ->
-            val bid = toObject(Bid::class.java, bidEntity.jsonData)
-            if (bid.status == Status.VALID && bid.statusDetails == StatusDetails.EMPTY)
-                bid.relatedLots.forEach {
-                    if (lotsIds.contains(it)) validBids[bidEntity] = bid
-                }
-        }
-        return validBids
-    }
-
-    private fun getBidsCopyMap(
-        lotsDto: LotsDto,
-        mapEntityBid: Map<BidEntity, Bid>,
-        stage: String
-    ): Map<BidEntity, Bid> {
-        val bidsCopy = HashMap<BidEntity, Bid>()
-        val lotsIds = collectLotIds(lotsDto.lots)
-        mapEntityBid.forEach { map ->
-            val (entity, bid) = map
-            if (bid.relatedLots.containsAny(lotsIds)) {
-                val bidCopy = bid.copy(
-                    date = nowDefaultUTC(),
-                    status = Status.INVITED,
-                    statusDetails = StatusDetails.EMPTY,
-                    value = null,
-                    documents = null
-                )
-                val entityCopy = getEntity(
-                    bid = bidCopy,
-                    cpId = entity.cpId,
-                    stage = stage,
-                    owner = entity.owner,
-                    token = entity.token,
-                    createdDate = nowDefaultUTC().toDate(),
-                    pendingDate = null
-                )
-                bidsCopy[entityCopy] = bidCopy
-            }
-        }
-        return bidsCopy
-    }
-
-    private fun collectLotIds(lots: List<LotDto>?): Set<String> {
-        return lots?.asSequence()?.map { it.id }?.toSet() ?: setOf()
     }
 
     private fun getEntity(

@@ -59,27 +59,27 @@ object JsonValidator {
             val intersect = expectedData.keys.intersect(actualData.keys)
 
             val message = buildString {
-                appendln("Error comparing JSONs. Different number of attributes (expected json: ${expectedData.size} attributes, actual json: ${actualData.size} attributes)")
+                appendLine("Error comparing JSONs. Different number of attributes (expected json: ${expectedData.size} attributes, actual json: ${actualData.size} attributes)")
                 for ((key, value) in expectedData) {
                     if (!intersect.contains(key))
-                        appendln("EXPECTED JSON => path: $key, value: $value")
+                        appendLine("EXPECTED JSON => path: $key, value: $value")
                 }
                 for ((key, value) in actualData) {
                     if (!intersect.contains(key))
-                        appendln("ACTUAL JSON => path: $key, value: $value")
+                        appendLine("ACTUAL JSON => path: $key, value: $value")
                 }
             }
             throw JsonCompareException(message)
         }
 
-        val message = buildString() {
+        val message = buildString {
             actualData.forEach { (path, value) ->
                 val expectedValue = expectedData[path]
                 if (expectedValue != null) {
                     if (expectedValue != value)
-                        appendln("Actual value [$value] not equals expected value [$expectedValue] by path: $path.")
+                        appendLine("Actual value [$value] not equals expected value [$expectedValue] by path: $path.")
                 } else {
-                    appendln("Path $path not found in actual json.")
+                    appendLine("Path $path not found in actual json.")
                 }
             }
         }

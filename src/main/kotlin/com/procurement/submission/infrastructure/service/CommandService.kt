@@ -12,7 +12,6 @@ import com.procurement.submission.application.model.data.bid.open.OpenBidsForPub
 import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsData
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
-import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodContext
 import com.procurement.submission.application.service.BidService
 import com.procurement.submission.application.service.PeriodService
 import com.procurement.submission.application.service.StatusService
@@ -201,15 +200,12 @@ class CommandService(
                     ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
                 }
             }
-            CommandType.COPY_BIDS -> bidService.copyBids(cm)
-            CommandType.GET_PERIOD -> periodService.getPeriod(cm)
             CommandType.SAVE_PERIOD -> periodService.savePeriod(cm)
             CommandType.SAVE_NEW_PERIOD -> periodService.saveNewPeriod(cm)
             CommandType.VALIDATE_PERIOD -> periodService.periodValidation(cm)
             CommandType.CHECK_PERIOD_END_DATE -> periodService.checkEndDate(cm)
             CommandType.CHECK_PERIOD -> periodService.checkPeriod(cm)
             CommandType.CHECK_TOKEN_OWNER -> statusService.checkTokenOwner(cm)
-            CommandType.GET_BIDS -> statusService.getBids(cm)
             CommandType.GET_BIDS_AUCTION -> {
                 when (cm.pmd) {
                     ProcurementMethod.CF, ProcurementMethod.TEST_CF,
@@ -241,15 +237,10 @@ class CommandService(
                     ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
                 }
             }
-            CommandType.UPDATE_BIDS_BY_LOTS -> statusService.updateBidsByLots(cm)
             CommandType.UPDATE_BID_BY_AWARD_STATUS -> statusService.updateBidsByAwardStatus(cm)
             CommandType.UPDATE_BID_DOCS -> bidService.updateBidDocs(cm)
-            CommandType.SET_BIDS_FINAL_STATUSES -> statusService.setFinalStatuses(cm)
             CommandType.BID_WITHDRAWN -> statusService.bidWithdrawn(cm)
-            CommandType.PREPARE_BIDS_CANCELLATION -> statusService.prepareBidsCancellation(cm)
-            CommandType.BIDS_CANCELLATION -> statusService.bidsCancellation(cm)
             CommandType.GET_DOCS_OF_CONSIDERED_BID -> statusService.getDocsOfConsideredBid(cm)
-            CommandType.SET_INITIAL_BIDS_STATUS -> bidService.setInitialBidsStatus(cm)
             CommandType.APPLY_EVALUATED_AWARDS -> {
                 val context = ApplyEvaluatedAwardsContext(
                     cpid = cm.cpid,
@@ -319,24 +310,6 @@ class CommandService(
                 val result = bidService.getBidsByLots(context = context, data = request.convert())
                 if (log.isDebugEnabled)
                     log.debug("Bids are gotten. Result: ${toJson(result)}")
-                val response = result.convert()
-                if (log.isDebugEnabled)
-                    log.debug("Bids are gotten. Response: ${toJson(response)}")
-                ResponseDto(data = response)
-            }
-            CommandType.EXTEND_TENDER_PERIOD -> {
-                val context = ExtendTenderPeriodContext(
-                    cpid = cm.cpid,
-                    ocid = cm.ocid,
-                    stage = cm.stage,
-                    startDate = cm.startDate,
-                    country = cm.country,
-                    pmd = cm.pmd
-                )
-                val result = periodService.extendTenderPeriod(context)
-                if (log.isDebugEnabled)
-                    log.debug("Bids are gotten. Result: ${toJson(result)}")
-
                 val response = result.convert()
                 if (log.isDebugEnabled)
                     log.debug("Bids are gotten. Response: ${toJson(response)}")

@@ -2,8 +2,6 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
-import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodContext
-import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodResult
 import com.procurement.submission.application.params.CheckPeriodParams
 import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
@@ -94,13 +92,6 @@ class PeriodService(
         periodRepository.save(newPeriod)
             .doOnFail { throw it.exception }
         return ResponseDto(data = Period(startDate, endDate))
-    }
-
-    fun getPeriod(cm: CommandMessage): ResponseDto {
-        val cpid = cm.cpid
-        val ocid = cm.ocid
-        val entity = getPeriodEntity(cpid, ocid)
-        return ResponseDto(data = Period(entity.startDate, entity.endDate))
     }
 
     fun checkPeriod(cm: CommandMessage): ResponseDto {
@@ -269,23 +260,5 @@ class PeriodService(
             return ValidationError.ReceivedDateIsAfterStoredEndDate().asValidationError()
 
         return Validated.ok()
-    }
-
-    fun extendTenderPeriod(context: ExtendTenderPeriodContext): ExtendTenderPeriodResult {
-        val tenderPeriod = periodRepository.find(context.cpid, context.ocid)
-            .onFailure { throw it.reason.exception }
-            ?: throw ErrorException(ErrorType.PERIOD_NOT_FOUND)
-        val extensionAfterUnsuspended = rulesService.getExtensionAfterUnsuspended(context.country, context.pmd)
-        val newEndDate = context.startDate.plus(extensionAfterUnsuspended)
-        val updatedTenderPeriod = tenderPeriod.copy(endDate = newEndDate)
-
-        periodRepository.save(updatedTenderPeriod)
-
-        return ExtendTenderPeriodResult(
-            ExtendTenderPeriodResult.TenderPeriod(
-                startDate = updatedTenderPeriod.startDate,
-                endDate = updatedTenderPeriod.endDate
-            )
-        )
     }
 }
