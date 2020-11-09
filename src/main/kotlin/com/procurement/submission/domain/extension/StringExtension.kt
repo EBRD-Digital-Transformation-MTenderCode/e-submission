@@ -23,11 +23,15 @@ fun String.tryToLong(): Result<Long, Fail.Incident.Transform.Parsing> = try {
 
 private val TRUE = Result.Success(true)
 private val FALSE = Result.Success(false)
-private val BOOLEAN_PARSE_FAIL = Result.failure(Fail.Incident.Transform.Parsing(className = Boolean::class.java.canonicalName))
 
 fun String.tryToBoolean(): Result<Boolean, Fail.Incident.Transform.Parsing> =
     when {
         this.equals("true", ignoreCase = true) -> TRUE
         this.equals("false", ignoreCase = true) -> FALSE
-        else -> BOOLEAN_PARSE_FAIL
+        else -> Result.failure(
+            Fail.Incident.Transform.Parsing(
+                className = Boolean::class.java.canonicalName,
+                exception = IllegalArgumentException("Invalid value '$this'.")
+            )
+        )
     }

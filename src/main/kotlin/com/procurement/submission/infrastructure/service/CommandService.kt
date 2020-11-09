@@ -38,7 +38,6 @@ import com.procurement.submission.model.dto.bpe.ctxId
 import com.procurement.submission.model.dto.bpe.ocid
 import com.procurement.submission.model.dto.bpe.owner
 import com.procurement.submission.model.dto.bpe.pmd
-import com.procurement.submission.model.dto.bpe.stage
 import com.procurement.submission.model.dto.bpe.startDate
 import com.procurement.submission.model.dto.bpe.token
 import com.procurement.submission.model.dto.request.BidCreateRequest
@@ -87,7 +86,6 @@ class CommandService(
                             cpid = cm.cpid,
                             ocid = cm.ocid,
                             owner = cm.owner,
-                            stage = cm.stage,
                             startDate = cm.startDate,
                             pmd = cm.pmd
                         )
@@ -119,7 +117,6 @@ class CommandService(
                             cpid = cm.cpid,
                             ocid = cm.ocid,
                             owner = cm.owner,
-                            stage = cm.stage,
                             token = cm.token,
                             startDate = cm.startDate
                         )
@@ -148,7 +145,7 @@ class CommandService(
                         val requestData = request.toData()
                         val context = GetBidsForEvaluationContext(
                             cpid = cm.cpid,
-                            stage = cm.stage,
+                            ocid = cm.ocid,
                             country = cm.country,
                             pmd = cm.pmd
                         )
@@ -180,7 +177,7 @@ class CommandService(
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
                         val context = OpenBidsForPublishingContext(
                             cpid = cm.cpid,
-                            stage = cm.stage
+                            ocid = cm.ocid
                         )
                         val request = toObject(OpenBidsForPublishingRequest::class.java, cm.data)
                         val serviceResponse = bidService.openBidsForPublishing(
@@ -219,7 +216,7 @@ class CommandService(
                         val requestData = request.convert()
                         val context = GetBidsAuctionContext(
                             cpid = cm.cpid,
-                            stage = cm.stage,
+                            ocid = cm.ocid,
                             country = cm.country,
                             pmd = cm.pmd
                         )
@@ -244,7 +241,7 @@ class CommandService(
             CommandType.APPLY_EVALUATED_AWARDS -> {
                 val context = ApplyEvaluatedAwardsContext(
                     cpid = cm.cpid,
-                    stage = cm.stage
+                    ocid = cm.ocid
                 )
                 val request = toObject(ApplyEvaluatedAwardsRequest::class.java, cm.data)
                 val result = bidService.applyEvaluatedAwards(context = context, data = request.convert())
@@ -259,6 +256,7 @@ class CommandService(
             CommandType.FINAL_BIDS_STATUS_BY_LOTS -> {
                 val context = FinalBidsStatusByLotsContext(
                     cpid = cm.cpid,
+                    ocid = cm.ocid,
                     pmd = cm.pmd
                 )
                 val request = toObject(FinalBidsStatusByLotsRequest::class.java, cm.data)
@@ -290,7 +288,7 @@ class CommandService(
             CommandType.OPEN_BID_DOCS -> {
                 val context = OpenBidDocsContext(
                     cpid = cm.cpid,
-                    stage = cm.stage
+                    ocid = cm.ocid
                 )
                 val request = toObject(OpenBidDocsRequest::class.java, cm.data)
                 val result = bidService.openBidDocs(context = context, data = request.convert())
@@ -304,7 +302,7 @@ class CommandService(
             CommandType.GET_BIDS_BY_LOTS -> {
                 val context = GetBidsByLotsContext(
                     cpid = cm.cpid,
-                    stage = cm.stage
+                    ocid = cm.ocid
                 )
                 val request = toObject(GetBidsByLotsRequest::class.java, cm.data)
                 val result = bidService.getBidsByLots(context = context, data = request.convert())

@@ -2,6 +2,7 @@ package com.procurement.submission.infrastructure.converter
 
 import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionRequestData
 import com.procurement.submission.application.model.data.bid.auction.get.BidsAuctionResponseData
+import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
@@ -12,10 +13,9 @@ import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.dto.request.GetBidsAuctionRequest
 import com.procurement.submission.model.dto.response.GetBidsAuctionResponse
 import java.time.LocalDateTime
-import java.util.*
 
 data class BidData(
-    val owner: UUID,
+    val owner: Owner,
     val bid: Bid
 )
 

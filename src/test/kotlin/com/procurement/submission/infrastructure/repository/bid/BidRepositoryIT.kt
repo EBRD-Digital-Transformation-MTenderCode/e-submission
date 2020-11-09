@@ -1,4 +1,4 @@
-package com.procurement.submission.infrastructure.repository
+package com.procurement.submission.infrastructure.repository.bid
 
 import com.datastax.driver.core.BatchStatement
 import com.datastax.driver.core.BoundStatement
@@ -14,6 +14,7 @@ import com.nhaarman.mockito_kotlin.spy
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.application.repository.bid.BidRepository
+import com.procurement.submission.application.repository.bid.model.BidEntity
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
@@ -31,7 +32,7 @@ import com.procurement.submission.get
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
 import com.procurement.submission.infrastructure.extension.cassandra.toCassandraTimestamp
-import com.procurement.submission.infrastructure.repository.bid.BidRepositoryCassandra
+import com.procurement.submission.infrastructure.repository.Database
 import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
 import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import com.procurement.submission.model.dto.ocds.Amount
@@ -42,7 +43,6 @@ import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Requirement
 import com.procurement.submission.model.dto.ocds.RequirementResponse
 import com.procurement.submission.model.dto.ocds.Value
-import com.procurement.submission.model.entity.BidEntityComplex
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -120,15 +120,13 @@ class BidRepositoryIT {
             )
 
         private fun stubBidEntity() =
-            BidEntityComplex(
+            BidEntity.New(
                 cpid = CPID,
                 ocid = OCID,
                 pendingDate = null,
                 createdDate = DATE,
                 owner = Owner.randomUUID(),
-                bidId = BID_ID,
                 token = Token.randomUUID(),
-                status = Status.PENDING,
                 bid = stubBid()
             )
     }
@@ -168,26 +166,61 @@ class BidRepositoryIT {
     }
 
     @Test
-    fun findBy_success() {
+    fun findByCpid_success() {
         val expectedBid = stubBidEntity()
         insertBid(expectedBid)
 
-        val expectedBids = listOf(expectedBid)
+        val actualBids = bidRepository.findBy(cpid = CPID).get()
 
-        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
-
-        assertEquals(expectedBids, actualBids)
+        assertTrue(actualBids.size == 1)
+        val actualBid = actualBids[0]
+        assertNotNull(actualBid)
+        assertEquals(expectedBid.cpid, actualBid.cpid)
+        assertEquals(expectedBid.ocid, actualBid.ocid)
+        assertEquals(BID_ID, actualBid.bidId)
+        assertEquals(expectedBid.token, actualBid.token)
+        assertEquals(expectedBid.owner, actualBid.owner)
+        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(expectedBid.createdDate, actualBid.createdDate)
+        assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }
 
     @Test
-    fun findBy_notFound_success() {
+    fun findByCpid_notFound_success() {
+        val actualBids = bidRepository.findBy(cpid = CPID).get()
+
+        assertTrue(actualBids.isEmpty())
+    }
+
+    @Test
+    fun findByCpidAndOcid_success() {
+        val expectedBid = stubBidEntity()
+        insertBid(expectedBid)
+
+        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
+
+        assertTrue(actualBids.size == 1)
+        val actualBid = actualBids[0]
+        assertNotNull(actualBid)
+        assertEquals(expectedBid.cpid, actualBid.cpid)
+        assertEquals(expectedBid.ocid, actualBid.ocid)
+        assertEquals(BID_ID, actualBid.bidId)
+        assertEquals(expectedBid.token, actualBid.token)
+        assertEquals(expectedBid.owner, actualBid.owner)
+        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(expectedBid.createdDate, actualBid.createdDate)
+        assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
+    }
+
+    @Test
+    fun findByCpidAndOcid_notFound_success() {
         val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
 
         assertTrue(actualBids.isEmpty())
     }
 
     @Test
-    fun findBy_executeException_fail() {
+    fun findByCpidAndOcid_executeException_fail() {
         doThrow(RuntimeException())
             .whenever(session)
             .execute(any<BoundStatement>())
@@ -198,25 +231,32 @@ class BidRepositoryIT {
     }
 
     @Test
-    fun findById_success() {
+    fun findByCpidAndOcidAndId_success() {
         val expectedBid = stubBidEntity()
         insertBid(expectedBid)
 
         val actualBid = bidRepository.findBy(cpid = CPID, ocid = OCID, id = BID_ID).get()
 
         assertNotNull(actualBid)
-        assertEquals(expectedBid, actualBid)
+        assertEquals(expectedBid.cpid, actualBid!!.cpid)
+        assertEquals(expectedBid.ocid, actualBid.ocid)
+        assertEquals(BID_ID, actualBid.bidId)
+        assertEquals(expectedBid.token, actualBid.token)
+        assertEquals(expectedBid.owner, actualBid.owner)
+        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(expectedBid.createdDate, actualBid.createdDate)
+        assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }
 
     @Test
-    fun findById_notFound_success() {
+    fun findByCpidAndOcidAndId_notFound_success() {
         val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID, id = BID_ID).get()
 
         assertNull(actualBids)
     }
 
     @Test
-    fun findById_executeException_fail() {
+    fun findByCpidAndOcidAndId_executeException_fail() {
         doThrow(RuntimeException())
             .whenever(session)
             .execute(any<BoundStatement>())
@@ -229,11 +269,20 @@ class BidRepositoryIT {
     @Test
     fun save_success() {
         val expectedBid = stubBidEntity()
-        bidRepository.saveNew(expectedBid)
+        bidRepository.save(expectedBid)
         val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
 
         assertTrue(actualBids.size == 1)
-        assertEquals(expectedBid, actualBids[0])
+        val actualBid = actualBids[0]
+        assertNotNull(actualBid)
+        assertEquals(expectedBid.cpid, actualBid.cpid)
+        assertEquals(expectedBid.ocid, actualBid.ocid)
+        assertEquals(BID_ID, actualBid.bidId)
+        assertEquals(expectedBid.token, actualBid.token)
+        assertEquals(expectedBid.owner, actualBid.owner)
+        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(expectedBid.createdDate, actualBid.createdDate)
+        assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }
 
     @Test
@@ -244,19 +293,29 @@ class BidRepositoryIT {
             .whenever(session)
             .execute(any<BoundStatement>())
 
-        val actual = bidRepository.saveNew(expectedBid).error
+        val actual = bidRepository.save(expectedBid).error
 
         assertTrue(actual is Fail.Incident.Database.Interaction)
     }
 
     @Test
     fun saveNewAll_success() {
-        val bid = stubBidEntity()
-        val expectedBids = listOf(bid)
-        bidRepository.saveNew(expectedBids)
+        val expectedBid = stubBidEntity()
+        val expectedBids = listOf(expectedBid)
+        bidRepository.save(expectedBids)
         val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID).get()
 
-        assertEquals(expectedBids, actualBids)
+        assertTrue(actualBids.size == 1)
+        val actualBid = actualBids[0]
+        assertNotNull(actualBid)
+        assertEquals(expectedBid.cpid, actualBid.cpid)
+        assertEquals(expectedBid.ocid, actualBid.ocid)
+        assertEquals(BID_ID, actualBid.bidId)
+        assertEquals(expectedBid.token, actualBid.token)
+        assertEquals(expectedBid.owner, actualBid.owner)
+        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(expectedBid.createdDate, actualBid.createdDate)
+        assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }
 
     @Test
@@ -268,7 +327,7 @@ class BidRepositoryIT {
             .whenever(session)
             .execute(any<BatchStatement>())
 
-        val expected = bidRepository.saveNew(expectedBids).error
+        val expected = bidRepository.save(expectedBids).error
 
         assertTrue(expected is Fail.Incident.Database.Interaction)
     }
@@ -304,15 +363,15 @@ class BidRepositoryIT {
         )
     }
 
-    private fun insertBid(bidEntity: BidEntityComplex) {
+    private fun insertBid(bidEntity: BidEntity.New) {
         val jsonData = transform.trySerialization(bidEntity.bid).get()
         val record = QueryBuilder.insertInto(Database.KEYSPACE, Database.Bids.TABLE)
             .value(Database.Bids.CPID, bidEntity.cpid.toString())
             .value(Database.Bids.OCID, bidEntity.ocid.toString())
             .value(Database.Bids.OWNER, bidEntity.owner.toString())
-            .value(Database.Bids.ID, bidEntity.bidId.toString())
+            .value(Database.Bids.ID, bidEntity.bid.id.toString())
             .value(Database.Bids.TOKEN, bidEntity.token.toString())
-            .value(Database.Bids.STATUS, bidEntity.status.toString())
+            .value(Database.Bids.STATUS, bidEntity.bid.status.toString())
             .value(Database.Bids.CREATED_DATE, bidEntity.createdDate.toCassandraTimestamp())
             .value(Database.Bids.PENDING_DATE, bidEntity.pendingDate?.toCassandraTimestamp())
             .value(Database.Bids.JSON_DATA, jsonData)

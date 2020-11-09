@@ -5,6 +5,7 @@ import com.datastax.driver.core.BoundStatement
 import com.datastax.driver.core.Row
 import com.datastax.driver.core.Session
 import com.procurement.submission.application.repository.bid.BidRepository
+import com.procurement.submission.application.repository.bid.model.BidEntity
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.Cpid
@@ -19,10 +20,8 @@ import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
 import com.procurement.submission.infrastructure.repository.Database
 import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.lib.functional.Result
-import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.entity.BidEntityComplex
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -30,7 +29,21 @@ class BidRepositoryCassandra(private val session: Session, private val transform
 
     companion object {
 
-        private const val FIND_BY_CQL = """
+        private const val FIND_BY_CPID_CQL = """
+               SELECT ${Database.Bids.CPID},
+                      ${Database.Bids.OCID},
+                      ${Database.Bids.ID},
+                      ${Database.Bids.TOKEN},
+                      ${Database.Bids.OWNER},
+                      ${Database.Bids.STATUS},
+                      ${Database.Bids.CREATED_DATE},
+                      ${Database.Bids.PENDING_DATE},
+                      ${Database.Bids.JSON_DATA}
+                 FROM ${Database.KEYSPACE}.${Database.Bids.TABLE}
+                WHERE ${Database.Bids.CPID}=?
+            """
+
+        private const val FIND_BY_CPID_OCID_CQL = """
                SELECT ${Database.Bids.CPID},
                       ${Database.Bids.OCID},
                       ${Database.Bids.ID},
@@ -45,7 +58,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
                   AND ${Database.Bids.OCID}=?
             """
 
-        private const val FIND_BY_ID_CQL = """
+        private const val FIND_BY_CPID_OCID_ID_CQL = """
                SELECT ${Database.Bids.CPID},
                       ${Database.Bids.OCID},
                       ${Database.Bids.ID},
@@ -74,15 +87,42 @@ class BidRepositoryCassandra(private val session: Session, private val transform
                       ${Database.Bids.JSON_DATA}
                )
                VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)
+               IF NOT EXISTS
+            """
+
+        private const val UPDATE_CQL = """
+               UPDATE ${Database.KEYSPACE}.${Database.Bids.TABLE}
+                  SET ${Database.Bids.STATUS}=?,
+                      ${Database.Bids.CREATED_DATE}=?,
+                      ${Database.Bids.PENDING_DATE}=?,
+                      ${Database.Bids.JSON_DATA}=?
+                WHERE ${Database.Bids.CPID}=?
+                  AND ${Database.Bids.OCID}=?
+                  AND ${Database.Bids.ID}=?
+               IF EXISTS
             """
     }
 
-    private val preparedFindByCQL = session.prepare(FIND_BY_CQL)
-    private val preparedFindByIdCQL = session.prepare(FIND_BY_ID_CQL)
+    private val preparedFindByCpidCQL = session.prepare(FIND_BY_CPID_CQL)
+    private val preparedFindByCpidAndOcidCQL = session.prepare(FIND_BY_CPID_OCID_CQL)
+    private val preparedFindByCpidAndOcidAndIdCQL = session.prepare(FIND_BY_CPID_OCID_ID_CQL)
     private val preparedSaveCQL = session.prepare(SAVE_CQL)
+    private val preparedUpdateQL = session.prepare(UPDATE_CQL)
 
-    override fun findBy(cpid: Cpid, ocid: Ocid): Result<List<BidEntityComplex>, Fail.Incident> {
-        val query = preparedFindByCQL.bind()
+    override fun findBy(cpid: Cpid): Result<List<BidEntity.Record>, Fail.Incident.Database> {
+        val query = preparedFindByCpidCQL.bind()
+            .apply {
+                setString(Database.Bids.CPID, cpid.toString())
+            }
+
+        return query.tryExecute(session)
+            .onFailure { return it }
+            .map { row -> row.convert() }
+            .asSuccess()
+    }
+
+    override fun findBy(cpid: Cpid, ocid: Ocid): Result<List<BidEntity.Record>, Fail.Incident.Database> {
+        val query = preparedFindByCpidAndOcidCQL.bind()
             .apply {
                 setString(Database.Bids.CPID, cpid.toString())
                 setString(Database.Bids.OCID, ocid.toString())
@@ -90,12 +130,12 @@ class BidRepositoryCassandra(private val session: Session, private val transform
 
         return query.tryExecute(session)
             .onFailure { return it }
-            .map { row -> row.convert().onFailure { return it } }
+            .map { row -> row.convert() }
             .asSuccess()
     }
 
-    override fun findBy(cpid: Cpid, ocid: Ocid, id: BidId): Result<BidEntityComplex?, Fail.Incident> {
-        val query = preparedFindByIdCQL.bind()
+    override fun findBy(cpid: Cpid, ocid: Ocid, id: BidId): Result<BidEntity.Record?, Fail.Incident.Database> {
+        val query = preparedFindByCpidAndOcidAndIdCQL.bind()
             .apply {
                 setString(Database.Bids.CPID, cpid.toString())
                 setString(Database.Bids.OCID, ocid.toString())
@@ -105,33 +145,23 @@ class BidRepositoryCassandra(private val session: Session, private val transform
         return query.tryExecute(session)
             .onFailure { return it }
             .one()
-            ?.let { row ->
-                row.convert().onFailure { return it }
-            }
+            ?.convert()
             .asSuccess()
     }
 
-    private fun Row.convert(): Result<BidEntityComplex, Fail.Incident> {
-        val data = getString(Database.Bids.JSON_DATA)
-        val entity = transform.tryDeserialization(value = data, target = Bid::class.java)
-            .onFailure {
-                return Fail.Incident.Database.DatabaseParsing(exception = it.reason.exception).asFailure()
-            }
+    private fun Row.convert() = BidEntity.Record(
+        cpid = Cpid.tryCreateOrNull(getString(Database.Bids.CPID))!!,
+        ocid = Ocid.tryCreateOrNull(getString(Database.Bids.OCID))!!,
+        bidId = BidId.fromString(getString(Database.Bids.ID)),
+        token = Token.fromString(getString(Database.Bids.TOKEN)),
+        owner = Owner.fromString(getString(Database.Bids.OWNER)),
+        status = Status.creator(getString(Database.Bids.STATUS)),
+        createdDate = getTimestamp(Database.Bids.CREATED_DATE).toLocalDateTime(),
+        pendingDate = getTimestamp(Database.Bids.PENDING_DATE)?.toLocalDateTime(),
+        jsonData = getString(Database.Bids.JSON_DATA)
+    )
 
-        return BidEntityComplex(
-            cpid = Cpid.tryCreateOrNull(getString(Database.Bids.CPID))!!,
-            ocid = Ocid.tryCreateOrNull(getString(Database.Bids.OCID))!!,
-            bidId = BidId.fromString(getString(Database.Bids.ID)),
-            token = Token.fromString(getString(Database.Bids.TOKEN)),
-            owner = Owner.fromString(getString(Database.Bids.OWNER)),
-            status = Status.creator(getString(Database.Bids.STATUS)),
-            createdDate = getTimestamp(Database.Bids.CREATED_DATE).toLocalDateTime(),
-            pendingDate = getTimestamp(Database.Bids.PENDING_DATE)?.toLocalDateTime(),
-            bid = entity
-        ).asSuccess()
-    }
-
-    override fun saveNew(bidEntity: BidEntityComplex): MaybeFail<Fail.Incident> {
+    override fun save(bidEntity: BidEntity): MaybeFail<Fail.Incident.Database> {
         buildStatement(bidEntity)
             .onFailure { return MaybeFail.fail(it.reason) }
             .tryExecute(session)
@@ -140,7 +170,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
         return MaybeFail.none()
     }
 
-    override fun saveNew(bidEntities: List<BidEntityComplex>): MaybeFail<Fail.Incident> {
+    override fun save(bidEntities: Collection<BidEntity>): MaybeFail<Fail.Incident.Database> {
         val batchStatement = BatchStatement()
 
         bidEntities.forEach { bidEntity ->
@@ -155,26 +185,47 @@ class BidRepositoryCassandra(private val session: Session, private val transform
         return MaybeFail.none()
     }
 
-    private fun buildStatement(bidEntity: BidEntityComplex): Result<BoundStatement, Fail.Incident> {
-        val data = generateJsonData(bidEntity.bid)
-            .onFailure { return it }
+    private fun buildStatement(bidEntity: BidEntity): Result<BoundStatement, Fail.Incident.Database> =
+        when (bidEntity) {
+            is BidEntity.New -> buildStatement(bidEntity)
+            is BidEntity.Updated -> buildStatement(bidEntity)
+        }
 
+    private fun buildStatement(entity: BidEntity.New): Result<BoundStatement, Fail.Incident.Database> {
+        val data = generateJsonData(entity.bid)
+            .onFailure { return it }
         return preparedSaveCQL.bind()
             .apply {
-                setString(Database.Bids.CPID, bidEntity.cpid.toString())
-                setString(Database.Bids.OCID, bidEntity.ocid.toString())
-                setString(Database.Bids.ID, bidEntity.bid.id.toString())
-                setString(Database.Bids.TOKEN, bidEntity.token.toString())
-                setString(Database.Bids.OWNER, bidEntity.owner.toString())
-                setString(Database.Bids.STATUS, bidEntity.bid.status.key)
-                setTimestamp(Database.Bids.CREATED_DATE, bidEntity.createdDate.toCassandraTimestamp())
-                setTimestamp(Database.Bids.PENDING_DATE, bidEntity.pendingDate?.toCassandraTimestamp())
+                setString(Database.Bids.CPID, entity.cpid.toString())
+                setString(Database.Bids.OCID, entity.ocid.toString())
+                setString(Database.Bids.ID, entity.bid.id.toString())
+                setString(Database.Bids.TOKEN, entity.token.toString())
+                setString(Database.Bids.OWNER, entity.owner.toString())
+                setString(Database.Bids.STATUS, entity.bid.status.key)
+                setTimestamp(Database.Bids.CREATED_DATE, entity.createdDate.toCassandraTimestamp())
+                setTimestamp(Database.Bids.PENDING_DATE, entity.pendingDate?.toCassandraTimestamp())
                 setString(Database.Bids.JSON_DATA, data)
             }
             .asSuccess()
     }
 
-    private fun generateJsonData(bid: Bid): Result<String, Fail.Incident> =
+    private fun buildStatement(entity: BidEntity.Updated): Result<BoundStatement, Fail.Incident.Database> {
+        val data = generateJsonData(entity.bid)
+            .onFailure { return it }
+        return preparedUpdateQL.bind()
+            .apply {
+                setString(Database.Bids.CPID, entity.cpid.toString())
+                setString(Database.Bids.OCID, entity.ocid.toString())
+                setString(Database.Bids.ID, entity.bid.id.toString())
+                setString(Database.Bids.STATUS, entity.bid.status.key)
+                setTimestamp(Database.Bids.CREATED_DATE, entity.createdDate.toCassandraTimestamp())
+                setTimestamp(Database.Bids.PENDING_DATE, entity.pendingDate?.toCassandraTimestamp())
+                setString(Database.Bids.JSON_DATA, data)
+            }
+            .asSuccess()
+    }
+
+    private fun generateJsonData(bid: Bid): Result<String, Fail.Incident.Database> =
         transform.trySerialization(bid)
             .mapFailure {
                 Fail.Incident.Database.DatabaseParsing(exception = it.exception)

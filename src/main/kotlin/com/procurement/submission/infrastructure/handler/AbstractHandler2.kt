@@ -44,24 +44,6 @@ abstract class AbstractHandler2<ACTION : Action, R>(
                     logger.debug("${action.key} has been executed. Result: '${transform.trySerialization(result)}'")
                 return ApiSuccessResponse2(version = version, id = id, result = result)
             }
-
-/*        return when (val result = execute(node)) {
-            is Result.Success -> {
-                if (logger.isDebugEnabled)
-                    logger.debug("${action.key} has been executed. Result: '${transform.trySerialization(result.get)}'")
-                return ApiSuccessResponse2(
-                    version = version,
-                    id = id,
-                    result = result.get
-                )
-            }
-            is Result.Failure -> generateResponseOnFailure(
-                fail = result.error,
-                version = version,
-                id = id,
-                logger = logger
-            )
-        }*/
     }
 
     abstract fun execute(node: JsonNode): Result<R, Fail>
