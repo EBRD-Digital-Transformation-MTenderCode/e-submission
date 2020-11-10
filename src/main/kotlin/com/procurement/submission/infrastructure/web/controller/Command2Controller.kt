@@ -6,7 +6,7 @@ import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.infrastructure.configuration.properties.GlobalProperties2
 import com.procurement.submission.infrastructure.model.CommandId
 import com.procurement.submission.infrastructure.service.Command2Service
-import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
+import com.procurement.submission.infrastructure.web.api.response.ApiResponseV2
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.api.version.ApiVersion2
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
@@ -28,7 +28,7 @@ class Command2Controller(
 ) {
 
     @PostMapping
-    fun command(@RequestBody requestBody: String): ResponseEntity<ApiResponse2> {
+    fun command(@RequestBody requestBody: String): ResponseEntity<ApiResponseV2> {
         if (logger.isDebugEnabled)
             logger.debug("RECEIVED COMMAND: '$requestBody'.")
 
@@ -62,10 +62,9 @@ class Command2Controller(
 
     private fun generateResponseEntityOnFailure(
         fail: Fail, version: ApiVersion2 = GlobalProperties2.App.apiVersion, id: CommandId
-    ): ResponseEntity<ApiResponse2> {
-        val response = generateResponseOnFailure(
-            fail = fail, id = id, version = version, logger = logger
-        )
+    ): ResponseEntity<ApiResponseV2> {
+        val response =
+            generateResponseOnFailure(fail = fail, id = id, version = version, logger = logger)
         return ResponseEntity(response, HttpStatus.OK)
     }
 }

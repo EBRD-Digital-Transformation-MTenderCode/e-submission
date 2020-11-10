@@ -12,7 +12,7 @@ import com.procurement.submission.infrastructure.handler.tender.period.CheckPeri
 import com.procurement.submission.infrastructure.handler.tender.period.SetTenderPeriodHandler
 import com.procurement.submission.infrastructure.handler.tender.period.ValidateTenderPeriodHandler
 import com.procurement.submission.infrastructure.model.CommandId
-import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
+import com.procurement.submission.infrastructure.web.api.response.ApiResponseV2
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.response.parser.tryGetAction
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
@@ -32,7 +32,7 @@ class Command2Service(
     private val checkPeriodHandler: CheckPeriodHandler
 ) {
 
-    fun execute(node: JsonNode): ApiResponse2 {
+    fun execute(node: JsonNode): ApiResponseV2 {
 
         val version = node.tryGetVersion()
             .onFailure {

@@ -8,8 +8,7 @@ import com.procurement.submission.domain.extension.nowDefaultUTC
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.infrastructure.model.CommandId
 import com.procurement.submission.infrastructure.repository.history.model.HistoryEntity
-import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
-import com.procurement.submission.infrastructure.web.api.response.ApiSuccessResponse2
+import com.procurement.submission.infrastructure.web.api.response.ApiResponseV2
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.web.response.parser.tryGetAction
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
@@ -22,9 +21,9 @@ abstract class AbstractHistoricalHandler2<ACTION : Action, R>(
     private val historyRepository: HistoryRepository,
     val transform: Transform,
     private val logger: Logger
-) : Handler<ACTION, ApiResponse2> {
+) : Handler<ACTION, ApiResponseV2> {
 
-    override fun handle(node: JsonNode): ApiResponse2 {
+    override fun handle(node: JsonNode): ApiResponseV2 {
         val version = node.tryGetVersion()
             .onFailure {
                 return generateResponseOnFailure(fail = it.reason, id = CommandId.NaN, logger = logger)
@@ -63,7 +62,7 @@ abstract class AbstractHistoricalHandler2<ACTION : Action, R>(
                         logger = logger
                     )
                 }
-            return ApiSuccessResponse2(version = version, id = id, result = result)
+            return ApiResponseV2.Success(version = version, id = id, result = result)
         }
 
         return execute(node)
@@ -83,7 +82,7 @@ abstract class AbstractHistoricalHandler2<ACTION : Action, R>(
                 if (logger.isDebugEnabled)
                     logger.debug("${action.key} has been executed. Result: '${transform.trySerialization(result)}'")
 
-                ApiSuccessResponse2(version = version, id = id, result = result)
+                ApiResponseV2.Success(version = version, id = id, result = result)
             }
     }
 
