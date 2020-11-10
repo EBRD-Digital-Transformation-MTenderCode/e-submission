@@ -20,25 +20,25 @@ class RulesService(private val ruleRepository: RuleRepository) {
 
     fun getInterval(country: String, pmd: ProcurementMethod): Duration =
         ruleRepository.find(country, pmd, PARAMETER_INTERVAL)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?.let { Duration.ofSeconds(it.toLong()) }
             ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
 
     fun getUnsuspendInterval(country: String, pmd: ProcurementMethod): Duration =
         ruleRepository.find(country, pmd, PARAMETER_UNSUSPEND_INTERVAL)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?.let { Duration.ofSeconds(it.toLong()) }
             ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
 
     fun getIntervalBefore(country: String, pmd: ProcurementMethod): Duration =
         ruleRepository.find(country, pmd, PARAMETER_INTERVAL_BEFORE)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?.let { Duration.ofSeconds(it.toLong()) }
             ?: throw ErrorException(ErrorType.INTERVAL_RULES_NOT_FOUND)
 
     fun getRulesMinBids(country: String, pmd: ProcurementMethod): Int =
         ruleRepository.find(country, pmd, PARAMETER_MIN_BIDS)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?.toInt()
             ?: throw ErrorException(ErrorType.BIDS_RULES_NOT_FOUND)
 
@@ -99,7 +99,7 @@ class RulesService(private val ruleRepository: RuleRepository) {
 
     fun getExtensionAfterUnsuspended(country: String, pmd: ProcurementMethod): Duration {
         return ruleRepository.find(country, pmd, EXTENSION_AFTER_UNSUSPENDED)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?.let { Duration.ofSeconds(it.toLong()) }
             ?: throw ErrorException(ErrorType.EXTENSION_AFTER_UNSUSPENDED_RULES_NOT_FOUND)
     }

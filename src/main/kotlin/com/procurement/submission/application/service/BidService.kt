@@ -189,7 +189,7 @@ class BidService(
         periodService.checkCurrentDateInPeriod(context.cpid, context.ocid, context.startDate)
 
         val entity = bidRepository.findBy(context.cpid, context.ocid, BidId.fromString(bidId))
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         if (entity.token != context.token) throw ErrorException(INVALID_TOKEN)
         if (entity.owner != context.owner) throw ErrorException(INVALID_OWNER)
@@ -236,7 +236,7 @@ class BidService(
         context: GetBidsForEvaluationContext
     ): BidsForEvaluationResponseData {
         val bidsEntitiesByIds = bidRepository.findBy(context.cpid, context.ocid)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             .asSequence()
             .filter { entity -> entity.status == Status.PENDING }
             .associateBy { it.bidId }
@@ -299,7 +299,7 @@ class BidService(
         data: OpenBidsForPublishingData
     ): OpenBidsForPublishingResult {
         val activeBids: List<Bid> = bidRepository.findBy(context.cpid, context.ocid)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             .asSequence()
             .filter { entity -> entity.status == Status.PENDING }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
@@ -352,7 +352,7 @@ class BidService(
         if (dateTime <= period.endDate) throw ErrorException(PERIOD_NOT_EXPIRED)
 
         val entity = bidRepository.findBy(cpid, ocid, BidId.fromString(bidId))
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         if (entity.token != token) throw ErrorException(INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
@@ -434,7 +434,7 @@ class BidService(
         val lotsIds: Set<LotId> = data.lots.toSetBy { it.id }
 
         val updatedBids: Map<Bid, BidEntity.Updated> = bidRepository.findBy(context.cpid, context.ocid)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             .asSequence()
             .map { entity ->
                 val bid = toObject(Bid::class.java, entity.jsonData)
@@ -494,7 +494,7 @@ class BidService(
 
         val updatedBidEntitiesByBid =
             bidRepository.findBy(context.cpid, context.ocid)
-                .onFailure { throw it.reason.exception }
+                .orThrow { it.exception }
                 .asSequence()
                 .filter { entity -> entity.bidId in relatedBidsByStatuses }
                 .map { entity ->
@@ -1326,7 +1326,7 @@ class BidService(
 
     private fun checkTenderers(cpid: Cpid, ocid: Ocid, bidDto: BidCreateData.Bid) {
         val bidEntities = bidRepository.findBy(cpid, ocid)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
         if (bidEntities.isNotEmpty()) {
             val receivedRelatedLots = bidDto.relatedLots.toSet()
             val idsReceivedTenderers = bidDto.tenderers.toSetBy { it.id }
@@ -1628,7 +1628,7 @@ class BidService(
 
     fun openBidDocs(context: OpenBidDocsContext, data: OpenBidDocsData): OpenBidDocsResult {
         val bidEntity = bidRepository.findBy(context.cpid, context.ocid, data.bidId)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bid = toObject(Bid::class.java, bidEntity.jsonData)
 
@@ -1656,7 +1656,7 @@ class BidService(
         val lotsIds = data.lots
             .toSetBy { it.id.toString() }
         val bids = bidRepository.findBy(context.cpid, context.ocid)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             .asSequence()
             .filter { entity -> entity.status == Status.PENDING }
             .map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }

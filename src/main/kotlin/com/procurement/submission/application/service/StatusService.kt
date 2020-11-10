@@ -66,7 +66,7 @@ class StatusService(
         }
 
         val bidsRecords = bidRepository.findBy(context.cpid, context.ocid)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
         val bidsRecordsByIds = bidsRecords.associateBy { it.bidId }
         val bidsDb = bidsRecordsByIds.values.map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
 
@@ -122,7 +122,7 @@ class StatusService(
         val awardStatusDetails = AwardStatusDetails.creator(dto.awardStatusDetails)
 
         val entity = bidRepository.findBy(cpid, ocid, BidId.fromString(bidId))
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
 
         val bid = toObject(Bid::class.java, entity.jsonData)
@@ -162,7 +162,7 @@ class StatusService(
 
         periodService.checkCurrentDateInPeriod(cpid, ocid, dateTime)
         val entity = bidRepository.findBy(cpid, ocid, BidId.fromString(bidId))
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         if (entity.token != token) throw ErrorException(ErrorType.INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
@@ -194,7 +194,7 @@ class StatusService(
         val dto = toObject(GetDocsOfConsideredBidRq::class.java, cm.data)
         return if (awardCriteria == AwardCriteria.PRICE_ONLY && dto.consideredBidId != null) {
             val entity = bidRepository.findBy(cpid, ocid, BidId.fromString(dto.consideredBidId))
-                .onFailure { throw it.reason.exception }
+                .orThrow { it.exception }
                 ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
 
             val bid = toObject(Bid::class.java, entity.jsonData)
@@ -210,7 +210,7 @@ class StatusService(
         val bidIds = dto.relatedBids
 
         val bidEntities = bidRepository.findBy(cpid)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
         if (bidEntities.isEmpty()) throw ErrorException(ErrorType.BID_NOT_FOUND)
         val tokens = bidEntities.asSequence()
             .filter { bidIds.contains(it.bidId.toString()) }

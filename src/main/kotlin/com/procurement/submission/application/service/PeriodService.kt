@@ -200,7 +200,7 @@ class PeriodService(
 
     fun getPeriodEntity(cpid: Cpid, ocid: Ocid): PeriodEntity =
         periodRepository.find(cpid, ocid)
-            .onFailure { throw it.reason.exception }
+            .orThrow { it.exception }
             ?: throw ErrorException(ErrorType.PERIOD_NOT_FOUND)
 
     private fun checkInterval(
