@@ -10,9 +10,9 @@ import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.infrastructure.api.v1.request.OpenBidsForPublishingRequest
+import com.procurement.submission.infrastructure.api.v1.response.OpenBidsForPublishingResponse
 import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.dto.request.OpenBidsForPublishingRequest
-import com.procurement.submission.model.dto.response.OpenBidsForPublishingResponse
 
 fun OpenBidsForPublishingRequest.convert(): OpenBidsForPublishingData {
     return OpenBidsForPublishingData(

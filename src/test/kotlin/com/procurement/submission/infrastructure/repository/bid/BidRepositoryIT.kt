@@ -29,12 +29,12 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.item.ItemId
 import com.procurement.submission.failure
 import com.procurement.submission.get
+import com.procurement.submission.infrastructure.bind.date.JsonDateDeserializer
+import com.procurement.submission.infrastructure.bind.date.JsonDateSerializer
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
 import com.procurement.submission.infrastructure.extension.cassandra.toCassandraTimestamp
 import com.procurement.submission.infrastructure.repository.Database
-import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
-import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import com.procurement.submission.model.dto.ocds.Amount
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.model.dto.ocds.Document

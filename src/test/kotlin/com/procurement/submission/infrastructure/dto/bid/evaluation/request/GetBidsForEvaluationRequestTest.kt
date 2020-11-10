@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.dto.bid.evaluation.request
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.model.dto.request.GetBidsForEvaluationRequest
+import com.procurement.submission.infrastructure.api.v1.request.GetBidsForEvaluationRequest
 import org.junit.jupiter.api.Test
 
 class GetBidsForEvaluationRequestTest : AbstractDTOTestBase<GetBidsForEvaluationRequest>(GetBidsForEvaluationRequest::class.java) {

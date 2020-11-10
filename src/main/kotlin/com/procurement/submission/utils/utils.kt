@@ -3,7 +3,7 @@ package com.procurement.submission.utils
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.procurement.submission.infrastructure.handler.bid.jackson.configuration
+import com.procurement.submission.infrastructure.bind.configuration
 import java.io.IOException
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeFormatterBuilder

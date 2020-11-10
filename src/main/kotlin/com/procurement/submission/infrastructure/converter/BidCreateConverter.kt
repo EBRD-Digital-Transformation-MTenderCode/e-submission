@@ -6,7 +6,7 @@ import com.procurement.submission.application.model.data.bid.create.BidCreateDat
 import com.procurement.submission.domain.extension.errorIfEmpty
 import com.procurement.submission.domain.extension.mapIfNotEmpty
 import com.procurement.submission.domain.extension.orThrow
-import com.procurement.submission.model.dto.request.BidCreateRequest
+import com.procurement.submission.infrastructure.api.v1.request.BidCreateRequest
 
 fun BidCreateRequest.toData(): BidCreateData {
     return BidCreateData(

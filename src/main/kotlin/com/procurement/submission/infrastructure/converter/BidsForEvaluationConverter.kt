@@ -4,9 +4,9 @@ import com.procurement.submission.application.model.data.bid.get.BidsForEvaluati
 import com.procurement.submission.application.model.data.bid.get.BidsForEvaluationResponseData
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
+import com.procurement.submission.infrastructure.api.v1.request.GetBidsForEvaluationRequest
+import com.procurement.submission.infrastructure.api.v1.response.GetBidsForEvaluationResponse
 import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.dto.request.GetBidsForEvaluationRequest
-import com.procurement.submission.model.dto.response.GetBidsForEvaluationResponse
 import java.util.*
 
 fun GetBidsForEvaluationRequest.toData() : BidsForEvaluationRequestData {

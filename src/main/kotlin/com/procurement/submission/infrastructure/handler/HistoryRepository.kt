@@ -1,8 +1,8 @@
 package com.procurement.submission.infrastructure.handler
 
-import com.procurement.submission.domain.Action
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.infrastructure.model.CommandId
+import com.procurement.submission.infrastructure.api.Action
+import com.procurement.submission.infrastructure.api.CommandId
 import com.procurement.submission.infrastructure.repository.history.model.HistoryEntity
 import com.procurement.submission.lib.functional.Result
 

@@ -5,12 +5,12 @@ import com.procurement.submission.application.service.Logger
 import com.procurement.submission.application.service.PeriodService
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
+import com.procurement.submission.infrastructure.api.tryGetParams
+import com.procurement.submission.infrastructure.api.v1.request.CheckPeriodRequest
+import com.procurement.submission.infrastructure.api.v2.CommandTypeV2
 import com.procurement.submission.infrastructure.converter.convert
-import com.procurement.submission.infrastructure.enums.Command2Type
-import com.procurement.submission.infrastructure.handler.AbstractValidationHandler2
-import com.procurement.submission.infrastructure.web.response.parser.tryGetParams
+import com.procurement.submission.infrastructure.handler.AbstractValidationHandlerV2
 import com.procurement.submission.lib.functional.Validated
-import com.procurement.submission.model.dto.request.CheckPeriodRequest
 import org.springframework.stereotype.Component
 
 @Component
@@ -18,9 +18,9 @@ class CheckPeriodHandler(
     val transform: Transform,
     logger: Logger,
     private val periodService: PeriodService
-) : AbstractValidationHandler2<Command2Type, Fail>(logger = logger) {
+) : AbstractValidationHandlerV2<CommandTypeV2, Fail>(logger = logger) {
 
-    override val action: Command2Type = Command2Type.CHECK_PERIOD
+    override val action: CommandTypeV2 = CommandTypeV2.CHECK_PERIOD
 
     override fun execute(node: JsonNode): Validated<Fail> {
         val params = node.tryGetParams(CheckPeriodRequest::class.java, transform = transform)

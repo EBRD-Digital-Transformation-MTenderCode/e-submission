@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.procurement.submission.infrastructure.handler.bid.jackson.configuration
+import com.procurement.submission.infrastructure.bind.configuration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 

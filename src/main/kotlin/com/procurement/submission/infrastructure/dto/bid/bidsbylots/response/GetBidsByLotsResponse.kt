@@ -18,10 +18,10 @@ import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueDeserializer
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueSerializer
+import com.procurement.submission.infrastructure.bind.date.JsonDateDeserializer
+import com.procurement.submission.infrastructure.bind.date.JsonDateSerializer
 import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
 import com.procurement.submission.infrastructure.bind.money.MoneySerializer
-import com.procurement.submission.model.dto.databinding.JsonDateDeserializer
-import com.procurement.submission.model.dto.databinding.JsonDateSerializer
 import java.time.LocalDateTime
 
 data class GetBidsByLotsResponse(

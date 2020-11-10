@@ -9,9 +9,9 @@ import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.domain.model.requirement.RequirementId
 import com.procurement.submission.domain.model.requirement.RequirementResponseId
+import com.procurement.submission.infrastructure.api.v1.request.GetBidsAuctionRequest
+import com.procurement.submission.infrastructure.api.v1.response.GetBidsAuctionResponse
 import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.dto.request.GetBidsAuctionRequest
-import com.procurement.submission.model.dto.response.GetBidsAuctionResponse
 import java.time.LocalDateTime
 
 data class BidData(

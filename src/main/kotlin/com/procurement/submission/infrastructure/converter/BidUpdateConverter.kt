@@ -6,7 +6,7 @@ import com.procurement.submission.application.model.data.bid.update.BidUpdateDat
 import com.procurement.submission.domain.extension.errorIfEmpty
 import com.procurement.submission.domain.extension.mapIfNotEmpty
 import com.procurement.submission.domain.extension.orThrow
-import com.procurement.submission.model.dto.request.BidUpdateRequest
+import com.procurement.submission.infrastructure.api.v1.request.BidUpdateRequest
 
 fun BidUpdateRequest.toData(): BidUpdateData {
     return BidUpdateData(

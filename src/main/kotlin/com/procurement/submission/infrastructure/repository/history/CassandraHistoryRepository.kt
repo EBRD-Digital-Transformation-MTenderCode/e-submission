@@ -1,12 +1,12 @@
 package com.procurement.submission.infrastructure.repository.history
 
 import com.datastax.driver.core.Session
-import com.procurement.submission.domain.Action
 import com.procurement.submission.domain.fail.Fail
+import com.procurement.submission.infrastructure.api.Action
+import com.procurement.submission.infrastructure.api.CommandId
 import com.procurement.submission.infrastructure.extension.cassandra.toCassandraTimestamp
 import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
 import com.procurement.submission.infrastructure.handler.HistoryRepository
-import com.procurement.submission.infrastructure.model.CommandId
 import com.procurement.submission.infrastructure.repository.Database
 import com.procurement.submission.infrastructure.repository.history.model.HistoryEntity
 import com.procurement.submission.lib.functional.Result

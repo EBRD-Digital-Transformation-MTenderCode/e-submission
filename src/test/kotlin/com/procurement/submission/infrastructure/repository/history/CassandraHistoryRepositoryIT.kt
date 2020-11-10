@@ -6,16 +6,16 @@ import com.datastax.driver.core.PlainTextAuthProvider
 import com.datastax.driver.core.PoolingOptions
 import com.datastax.driver.core.Session
 import com.nhaarman.mockito_kotlin.spy
-import com.procurement.submission.domain.Action
 import com.procurement.submission.domain.extension.format
 import com.procurement.submission.domain.extension.parseLocalDateTime
+import com.procurement.submission.infrastructure.api.Action
+import com.procurement.submission.infrastructure.api.CommandId
+import com.procurement.submission.infrastructure.api.v1.CommandTypeV1
 import com.procurement.submission.infrastructure.config.CassandraTestContainer
 import com.procurement.submission.infrastructure.config.DatabaseTestConfiguration
 import com.procurement.submission.infrastructure.handler.HistoryRepository
-import com.procurement.submission.infrastructure.model.CommandId
 import com.procurement.submission.infrastructure.repository.Database
 import com.procurement.submission.infrastructure.repository.history.model.HistoryEntity
-import com.procurement.submission.model.dto.bpe.CommandType
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -35,7 +35,7 @@ class CassandraHistoryRepositoryIT {
 
     companion object {
         private val COMMAND_ID: CommandId = CommandId(UUID.randomUUID().toString())
-        private val COMMAND_NAME: Action = CommandType.BID_WITHDRAWN
+        private val COMMAND_NAME: Action = CommandTypeV1.BID_WITHDRAWN
         private val COMMAND_DATE = LocalDateTime.now().format().parseLocalDateTime()
         private const val JSON_DATA: String = """{"tender": {"title" : "Tender-Title"}}"""
 
