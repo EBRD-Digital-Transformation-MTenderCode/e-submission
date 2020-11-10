@@ -1,9 +1,7 @@
 package com.procurement.submission.infrastructure.api.v1
 
 import com.fasterxml.jackson.annotation.JsonCreator
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.JsonNode
-import com.procurement.submission.application.exception.EnumException
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.domain.extension.parseLocalDateTime
@@ -127,36 +125,3 @@ val CommandMessage.endDate: LocalDateTime
 val CommandMessage.country: String
     get() = this.context.country
         ?: throw ErrorException(error = ErrorType.CONTEXT, message = "Missing the 'country' attribute in context.")
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class ResponseDto(
-    val id: String? = null,
-    val errors: List<ResponseErrorDto>? = null,
-    val data: Any? = null
-)
-
-@JsonInclude(JsonInclude.Include.NON_NULL)
-data class ResponseErrorDto(
-    val code: String,
-    val description: String?
-)
-
-fun getExceptionResponseDto(exception: Exception) = ResponseDto(
-    errors = listOf(
-        ResponseErrorDto(code = "400.04.00", description = exception.message)
-    )
-)
-
-fun getErrorExceptionResponseDto(error: ErrorException, id: String? = null) = ResponseDto(
-    errors = listOf(
-        ResponseErrorDto(code = "400.04." + error.code, description = error.msg)
-    ),
-    id = id
-)
-
-fun getEnumExceptionResponseDto(error: EnumException, id: String? = null) = ResponseDto(
-    errors = listOf(
-        ResponseErrorDto(code = "400.04." + error.code, description = error.msg)
-    ),
-    id = id
-)

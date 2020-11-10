@@ -20,8 +20,8 @@ import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.failure
 import com.procurement.submission.get
-import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
-import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.DoInvitationsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.PublishInvitationsResult
 import com.procurement.submission.lib.functional.Result.Companion.success
 import com.procurement.submission.lib.functional.asSuccess
 import org.junit.jupiter.api.Assertions.assertEquals

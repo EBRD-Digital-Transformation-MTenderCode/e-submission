@@ -11,9 +11,9 @@ import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.invitation.Invitation
 import com.procurement.submission.domain.model.submission.SubmissionId
-import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
-import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
-import com.procurement.submission.infrastructure.dto.invitation.publish.convert
+import com.procurement.submission.infrastructure.handler.v2.model.response.DoInvitationsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.PublishInvitationsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.convert
 import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Result.Companion.failure

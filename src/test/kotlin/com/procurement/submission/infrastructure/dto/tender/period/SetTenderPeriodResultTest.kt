@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.dto.tender.period
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.SetTenderPeriodResult
 import org.junit.jupiter.api.Test
 
 class SetTenderPeriodResultTest :

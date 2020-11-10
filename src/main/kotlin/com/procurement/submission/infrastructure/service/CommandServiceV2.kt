@@ -9,14 +9,14 @@ import com.procurement.submission.infrastructure.api.tryGetVersion
 import com.procurement.submission.infrastructure.api.v2.ApiResponseV2
 import com.procurement.submission.infrastructure.api.v2.ApiResponseV2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.api.v2.CommandTypeV2
-import com.procurement.submission.infrastructure.handler.bid.CreateBidHandler
-import com.procurement.submission.infrastructure.handler.bid.ValidateBidDataHandler
-import com.procurement.submission.infrastructure.handler.invitation.CheckAbsenceActiveInvitationsHandler
-import com.procurement.submission.infrastructure.handler.invitation.DoInvitationsHandler
-import com.procurement.submission.infrastructure.handler.invitation.PublishInvitationsHandler
-import com.procurement.submission.infrastructure.handler.tender.period.CheckPeriodHandler
-import com.procurement.submission.infrastructure.handler.tender.period.SetTenderPeriodHandler
-import com.procurement.submission.infrastructure.handler.tender.period.ValidateTenderPeriodHandler
+import com.procurement.submission.infrastructure.handler.v2.CheckAbsenceActiveInvitationsHandler
+import com.procurement.submission.infrastructure.handler.v2.CheckPeriodHandler
+import com.procurement.submission.infrastructure.handler.v2.CreateBidHandler
+import com.procurement.submission.infrastructure.handler.v2.DoInvitationsHandler
+import com.procurement.submission.infrastructure.handler.v2.PublishInvitationsHandler
+import com.procurement.submission.infrastructure.handler.v2.SetTenderPeriodHandler
+import com.procurement.submission.infrastructure.handler.v2.ValidateBidDataHandler
+import com.procurement.submission.infrastructure.handler.v2.ValidateTenderPeriodHandler
 import org.springframework.stereotype.Service
 
 @Service

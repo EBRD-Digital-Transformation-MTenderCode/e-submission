@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.dto.bid.publishing.response
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.infrastructure.api.v1.response.OpenBidsForPublishingResponse
+import com.procurement.submission.infrastructure.handler.v1.model.response.OpenBidsForPublishingResponse
 import org.junit.jupiter.api.Test
 
 class OpenBidsForPublishingResponseTest : AbstractDTOTestBase<OpenBidsForPublishingResponse>(

@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.dto.bid.create.request
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.infrastructure.api.v1.request.BidCreateRequest
+import com.procurement.submission.infrastructure.handler.v1.model.request.BidCreateRequest
 import org.junit.jupiter.api.Test
 
 class BidCreateRequestTest : AbstractDTOTestBase<BidCreateRequest>(BidCreateRequest::class.java) {

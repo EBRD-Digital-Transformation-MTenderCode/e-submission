@@ -13,7 +13,7 @@ import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.Stage
-import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.SetTenderPeriodResult
 import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated

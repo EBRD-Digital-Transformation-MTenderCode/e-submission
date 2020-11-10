@@ -1,6 +1,7 @@
 package com.procurement.submission.infrastructure.dto.bid.finalize.request
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
+import com.procurement.submission.infrastructure.handler.v1.model.request.FinalBidsStatusByLotsRequest
 import org.junit.jupiter.api.Test
 
 class FinalBidsStatusByLotsRequestTest :
