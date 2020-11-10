@@ -103,7 +103,7 @@ class CassandraHistoryRepositoryIT {
             assertEquals(HISTORY_ENTITY.data, it.data)
         }
 
-        val loadedResult = repository.getHistory(commandId = HISTORY_ENTITY.commandId)
+        val loadedResult = repository.getHistory(commandId = HISTORY_ENTITY.commandId, action = HISTORY_ENTITY.action)
         assertTrue(loadedResult.isSuccess)
         loadedResult.forEach {
             assertNotNull(it)
@@ -131,7 +131,7 @@ class CassandraHistoryRepositoryIT {
                         ${Database.History.COMMAND_NAME} TEXT,
                         ${Database.History.COMMAND_DATE} TIMESTAMP,
                         ${Database.History.JSON_DATA}    TEXT,
-                        PRIMARY KEY (${Database.History.COMMAND_ID})
+                        PRIMARY KEY (${Database.History.COMMAND_ID}, ${Database.History.COMMAND_NAME})
                     );
             """
         )

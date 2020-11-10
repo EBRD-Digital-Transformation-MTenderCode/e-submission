@@ -11,6 +11,7 @@ import com.procurement.submission.infrastructure.repository.history.model.Histor
 import com.procurement.submission.infrastructure.web.api.response.ApiResponse2
 import com.procurement.submission.infrastructure.web.api.response.ApiSuccessResponse2
 import com.procurement.submission.infrastructure.web.api.response.generator.ApiResponse2Generator.generateResponseOnFailure
+import com.procurement.submission.infrastructure.web.response.parser.tryGetAction
 import com.procurement.submission.infrastructure.web.response.parser.tryGetId
 import com.procurement.submission.infrastructure.web.response.parser.tryGetVersion
 import com.procurement.submission.lib.functional.Result
@@ -38,7 +39,12 @@ abstract class AbstractHistoricalHandler2<ACTION : Action, R>(
                 )
             }
 
-        val history = historyRepository.getHistory(id)
+        val action = node.tryGetAction()
+            .onFailure {
+                return generateResponseOnFailure(fail = it.reason, version = version, id = id, logger = logger)
+            }
+
+        val history = historyRepository.getHistory(id, action)
             .onFailure {
                 return generateResponseOnFailure(fail = it.reason, version = version, id = id, logger = logger)
             }

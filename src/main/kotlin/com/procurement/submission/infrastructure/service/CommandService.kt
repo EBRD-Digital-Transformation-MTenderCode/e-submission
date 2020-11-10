@@ -63,7 +63,7 @@ class CommandService(
     }
 
     fun execute(cm: CommandMessage): ResponseDto {
-        val history = historyDao.getHistory(cm.commandId)
+        val history = historyDao.getHistory(cm.commandId, cm.action)
             .onFailure {
                 throw RuntimeException("Error of loading history. ${it.reason.description}", it.reason.exception)
             }

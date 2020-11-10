@@ -210,7 +210,6 @@ INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
 VALUES ('MD', 'TEST_SV', 'all', 'interval_before', '20');
 INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
 VALUES ('MD', 'TEST_SV', 'all', 'unsuspend_interval', '30');
-
 INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
 VALUES ('MD', 'TEST_SV', 'all', 'unsuspend_interval', '30');
 
@@ -218,3 +217,14 @@ INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
 VALUES ('MD', 'GPA', 'startSecondStage', 'minTenderPeriodDuration', '864000');
 INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
 VALUES ('MD', 'TEST_GPA', 'startSecondStage', 'minTenderPeriodDuration', '0');
+
+DROP TABLE IF EXISTS submission.history;
+
+CREATE TABLE IF NOT EXISTS submission.history
+(
+    command_id   TEXT,
+    command_name TEXT,
+    command_date TIMESTAMP,
+    json_data    TEXT,
+    PRIMARY KEY (command_id, command_name)
+);
