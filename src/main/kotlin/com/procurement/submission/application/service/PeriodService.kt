@@ -2,148 +2,123 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
-import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodContext
-import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodResult
 import com.procurement.submission.application.params.CheckPeriodParams
 import com.procurement.submission.application.params.SetTenderPeriodParams
 import com.procurement.submission.application.params.ValidateTenderPeriodParams
-import com.procurement.submission.domain.extension.parseLocalDateTime
-import com.procurement.submission.domain.extension.toDate
-import com.procurement.submission.domain.extension.toLocal
+import com.procurement.submission.application.repository.period.PeriodRepository
+import com.procurement.submission.application.repository.period.model.PeriodEntity
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.ValidationResult
-import com.procurement.submission.domain.functional.asFailure
-import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.functional.asValidationFailure
-import com.procurement.submission.infrastructure.dao.PeriodDao
-import com.procurement.submission.infrastructure.dto.tender.period.set.SetTenderPeriodResult
-import com.procurement.submission.model.dto.bpe.CommandMessage
-import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.Ocid
+import com.procurement.submission.domain.model.enums.ProcurementMethod
+import com.procurement.submission.infrastructure.api.v1.CommandMessage
+import com.procurement.submission.infrastructure.api.v1.ResponseDto
+import com.procurement.submission.infrastructure.api.v1.country
+import com.procurement.submission.infrastructure.api.v1.cpid
+import com.procurement.submission.infrastructure.api.v1.ocid
+import com.procurement.submission.infrastructure.api.v1.pmd
+import com.procurement.submission.infrastructure.api.v1.startDate
+import com.procurement.submission.infrastructure.handler.v1.model.request.CheckPeriodRq
+import com.procurement.submission.infrastructure.handler.v1.model.request.CheckPeriodRs
+import com.procurement.submission.infrastructure.handler.v1.model.request.PeriodRq
+import com.procurement.submission.infrastructure.handler.v1.model.request.SaveNewPeriodRq
+import com.procurement.submission.infrastructure.handler.v1.model.response.CheckPeriodEndDateRs
+import com.procurement.submission.infrastructure.handler.v2.model.response.SetTenderPeriodResult
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.Validated
+import com.procurement.submission.lib.functional.asFailure
+import com.procurement.submission.lib.functional.asSuccess
+import com.procurement.submission.lib.functional.asValidationError
 import com.procurement.submission.model.dto.ocds.Period
-import com.procurement.submission.model.dto.request.CheckPeriodRq
-import com.procurement.submission.model.dto.request.CheckPeriodRs
-import com.procurement.submission.model.dto.request.PeriodRq
-import com.procurement.submission.model.dto.request.SaveNewPeriodRq
-import com.procurement.submission.model.dto.response.CheckPeriodEndDateRs
-import com.procurement.submission.model.entity.PeriodEntity
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
 import java.time.Duration
+import java.time.Duration.between
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
-import java.util.*
 
 @Service
 class PeriodService(
-    private val periodDao: PeriodDao,
+    private val periodRepository: PeriodRepository,
     private val rulesService: RulesService
 ) {
 
     fun periodValidation(cm: CommandMessage): ResponseDto {
-        val country = cm.context.country ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
-        val pmd = cm.context.pmd ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
+        val country = cm.country
+        val pmd = cm.pmd
         val tenderPeriod = toObject(PeriodRq::class.java, cm.data).tenderPeriod
         val startDate = tenderPeriod.startDate
         val endDate = tenderPeriod.endDate
 
-        if (!checkInterval(country, pmd, startDate, endDate)) throw ErrorException(
-            ErrorType.INVALID_PERIOD
-        )
+        if (!checkInterval(country, pmd, startDate, endDate)) throw ErrorException(ErrorType.INVALID_PERIOD)
         return ResponseDto(data = "Period is valid.")
     }
 
     fun savePeriod(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
+        val cpid = cm.cpid
+        val ocid = cm.ocid
+
         val tenderPeriod = toObject(PeriodRq::class.java, cm.data).tenderPeriod
         val startDate = tenderPeriod.startDate
         val endDate = tenderPeriod.endDate
 
-        val period = getEntity(
-            cpId = cpId,
-            stage = stage,
-            startDate = startDate.toDate(),
-            endDate = endDate.toDate()
+        val entity = PeriodEntity(
+            cpid = cpid,
+            ocid = ocid,
+            startDate = startDate,
+            endDate = endDate
         )
-        periodDao.save(period)
-        return ResponseDto(data = Period(period.startDate.toLocal(), period.endDate.toLocal()))
+        periodRepository.save(entity)
+            .doOnFail { throw it.exception }
+
+        return ResponseDto(data = Period(entity.startDate, entity.endDate))
     }
 
     fun saveNewPeriod(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
+        val cpid = cm.cpid
+        val ocid = cm.ocid
         val dto = toObject(SaveNewPeriodRq::class.java, cm.data)
-        val oldPeriod = getPeriodEntity(cpId, stage)
-        val tenderInterval = ChronoUnit.SECONDS.between(oldPeriod.startDate.toLocal(), oldPeriod.endDate.toLocal())
+        val oldPeriod = getPeriodEntity(cpid, ocid)
+        val tenderInterval = Duration.between(oldPeriod.startDate, oldPeriod.endDate)
         val startDate = dto.enquiryPeriod.endDate
-        val endDate = startDate.plusSeconds(tenderInterval)
-        val newPeriod = getEntity(
-            cpId = cpId,
-            stage = stage,
-            startDate = startDate.toDate(),
-            endDate = endDate.toDate()
+        val endDate = startDate.plus(tenderInterval)
+        val newPeriod = PeriodEntity(
+            cpid = cpid,
+            ocid = ocid,
+            startDate = startDate,
+            endDate = endDate
         )
-        periodDao.save(newPeriod)
+
+        periodRepository.save(newPeriod)
+            .doOnFail { throw it.exception }
         return ResponseDto(data = Period(startDate, endDate))
     }
 
-    fun getPeriod(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
-
-        val entity = getPeriodEntity(cpId, stage)
-        return ResponseDto(data = Period(entity.startDate.toLocal(), entity.endDate.toLocal()))
-    }
-
     fun checkPeriod(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
+        val cpid = cm.cpid
+        val ocid = cm.ocid
         val dto = toObject(CheckPeriodRq::class.java, cm.data)
-        val setExtendedPeriodRq = dto.setExtendedPeriod ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
-        val isEnquiryPeriodChanged = dto.isEnquiryPeriodChanged ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
+        val setExtendedPeriodRq = dto.setExtendedPeriod
+            ?: throw ErrorException(ErrorType.CONTEXT)
+        val isEnquiryPeriodChanged = dto.isEnquiryPeriodChanged
+            ?: throw ErrorException(
+                ErrorType.CONTEXT
+            )
         val enquiryEndDateRq = dto.enquiryPeriod.endDate
         val tenderEndDateRq = dto.tenderPeriod.endDate
 
-        val periodEntity = getPeriodEntity(cpId, stage)
-        val startDateDb = periodEntity.startDate.toLocal()
-        val endDateDb = periodEntity.endDate.toLocal()
-        if (tenderEndDateRq < endDateDb) throw ErrorException(
-            ErrorType.INVALID_PERIOD
-        )
-        val secBetween = ChronoUnit.SECONDS.between(startDateDb, enquiryEndDateRq)
-        val eligibleTenderEndDate = endDateDb.plusSeconds(secBetween)
+        val periodEntity = getPeriodEntity(cpid, ocid)
+        val startDateDb = periodEntity.startDate
+        val endDateDb = periodEntity.endDate
+        if (tenderEndDateRq < endDateDb)
+            throw ErrorException(ErrorType.INVALID_PERIOD)
+        val secBetween = between(startDateDb, enquiryEndDateRq)
+        val eligibleTenderEndDate = endDateDb.plus(secBetween)
         //a)
         if (!setExtendedPeriodRq) {
             if (isEnquiryPeriodChanged) {
-                if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(
-                    ErrorType.INVALID_PERIOD
-                )
+                if (tenderEndDateRq < eligibleTenderEndDate)
+                    throw ErrorException(ErrorType.INVALID_PERIOD)
                 return ResponseDto(
                     data = CheckPeriodRs(
                         isTenderPeriodChanged = true,
@@ -172,9 +147,8 @@ class PeriodService(
             }
         } else {
             if (tenderEndDateRq > endDateDb) {
-                if (tenderEndDateRq < eligibleTenderEndDate) throw ErrorException(
-                    ErrorType.INVALID_PERIOD
-                )
+                if (tenderEndDateRq < eligibleTenderEndDate)
+                    throw ErrorException(ErrorType.INVALID_PERIOD)
                 return ResponseDto(
                     data = CheckPeriodRs(
                         isTenderPeriodChanged = true,
@@ -196,131 +170,95 @@ class PeriodService(
     }
 
     fun checkEndDate(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
-        val dateTime = cm.context.startDate?.parseLocalDateTime() ?: throw ErrorException(
-            ErrorType.CONTEXT
-        )
+        val cpid = cm.cpid
+        val ocid = cm.ocid
+        val dateTime = cm.startDate
 
-        val tenderPeriod = getPeriodEntity(cpId, stage)
-        val startDate = tenderPeriod.startDate.toLocal()
-        val endDate = tenderPeriod.endDate.toLocal()
+        val tenderPeriod = getPeriodEntity(cpid, ocid)
+        val startDate = tenderPeriod.startDate
+        val endDate = tenderPeriod.endDate
         val isTenderPeriodExpired = (dateTime >= endDate)
         return ResponseDto(data = CheckPeriodEndDateRs(isTenderPeriodExpired, startDate, endDate))
     }
 
-    fun save(cpId: String, stage: String, startDate: LocalDateTime, endDate: LocalDateTime) {
-        val period = getEntity(
-            cpId = cpId,
-            stage = stage,
-            startDate = startDate.toDate(),
-            endDate = endDate.toDate()
+    fun save(cpid: Cpid, ocid: Ocid, startDate: LocalDateTime, endDate: LocalDateTime) {
+        val period = PeriodEntity(
+            cpid = cpid,
+            ocid = ocid,
+            startDate = startDate,
+            endDate = endDate
         )
-        periodDao.save(period)
+        periodRepository.save(period)
+            .doOnFail { throw it.exception }
     }
 
-    fun checkCurrentDateInPeriod(cpId: String, stage: String, dateTime: LocalDateTime) {
-        val periodEntity = getPeriodEntity(cpId, stage)
-        val isPeriodValid = (dateTime >= periodEntity.startDate.toLocal() && dateTime <= periodEntity.endDate.toLocal())
-        if (!isPeriodValid) throw ErrorException(
-            ErrorType.INVALID_DATE
-        )
+    fun checkCurrentDateInPeriod(cpid: Cpid, ocid: Ocid, dateTime: LocalDateTime) {
+        val periodEntity = getPeriodEntity(cpid, ocid)
+        val isPeriodValid = (dateTime >= periodEntity.startDate && dateTime <= periodEntity.endDate)
+        if (!isPeriodValid) throw ErrorException(ErrorType.INVALID_DATE)
     }
 
-    fun getPeriodEntity(cpId: String, stage: String): PeriodEntity {
-        return periodDao.getByCpIdAndStage(cpId, stage)
-    }
+    fun getPeriodEntity(cpid: Cpid, ocid: Ocid): PeriodEntity =
+        periodRepository.find(cpid, ocid)
+            .orThrow { it.exception }
+            ?: throw ErrorException(ErrorType.PERIOD_NOT_FOUND)
 
     private fun checkInterval(
         country: String,
-        pmd: String,
+        pmd: ProcurementMethod,
         startDate: LocalDateTime,
         endDate: LocalDateTime
     ): Boolean {
         val interval = rulesService.getInterval(country, pmd)
-        val sec = ChronoUnit.SECONDS.between(startDate, endDate)
+        val sec = between(startDate, endDate)
         return sec >= interval
     }
 
-    private fun getEntity(
-        cpId: String,
-        stage: String,
-        startDate: Date,
-        endDate: Date
-    ): PeriodEntity {
-        return PeriodEntity(
-            cpId = cpId,
-            stage = stage,
-            startDate = startDate,
-            endDate = endDate
-        )
-    }
-
-    fun validateTenderPeriod(params: ValidateTenderPeriodParams): ValidationResult<Fail> {
+    fun validateTenderPeriod(params: ValidateTenderPeriodParams): Validated<Fail> {
         val minimumDuration = rulesService
             .getTenderPeriodMinimumDuration(params.country, params.pmd, params.operationType)
-            .doReturn { error -> return error.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
 
         val periodDuration = Duration.between(params.date, params.tender.tenderPeriod.endDate)
 
         if (periodDuration < minimumDuration)
             return ValidationError.TenderPeriodDurationError(expectedDuration = minimumDuration)
-                .asValidationFailure()
+                .asValidationError()
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     fun setTenderPeriod(params: SetTenderPeriodParams): Result<SetTenderPeriodResult, Fail> {
         val entity = PeriodEntity(
-            cpId = params.cpid.toString(),
-            stage = params.ocid.stage.toString(),
-            startDate = params.date.toDate(),
-            endDate = params.tender.tenderPeriod.endDate.toDate()
+            cpid = params.cpid,
+            ocid = params.ocid,
+            startDate = params.date,
+            endDate = params.tender.tenderPeriod.endDate
         )
-        periodDao.trySave(entity = entity)
+        periodRepository.save(entity = entity)
             .doOnFail { error -> return error.asFailure() }
 
         return SetTenderPeriodResult(
             tender = SetTenderPeriodResult.Tender(
                 tenderPeriod = SetTenderPeriodResult.Tender.TenderPeriod(
-                    startDate = entity.startDate.toLocal(),
-                    endDate = entity.endDate.toLocal()
+                    startDate = entity.startDate,
+                    endDate = entity.endDate
                 )
             )
         ).asSuccess()
     }
 
-    fun checkPeriod(params: CheckPeriodParams): ValidationResult<Fail> {
-        val tenderPeriod = periodDao.tryGetBy(params.cpid, params.ocid.stage)
-            .doReturn { error -> return error.asValidationFailure() }
-            ?: return ValidationError.TenderPeriodNotFound(params.cpid, params.ocid).asValidationFailure()
+    fun checkPeriod(params: CheckPeriodParams): Validated<Fail> {
+        val tenderPeriod = periodRepository.find(params.cpid, params.ocid)
+            .onFailure { return it.reason.asValidationError() }
+            ?: return ValidationError.TenderPeriodNotFound(params.cpid, params.ocid).asValidationError()
 
-        if (!params.date.isAfter(tenderPeriod.startDate.toLocal()))
-            return ValidationError.ReceivedDatePrecedesStoredStartDate().asValidationFailure()
+        if (!params.date.isAfter(tenderPeriod.startDate))
+            return ValidationError.ReceivedDatePrecedesStoredStartDate().asValidationError()
 
-        if (!params.date.isBefore(tenderPeriod.endDate.toLocal()))
-            return ValidationError.ReceivedDateIsAfterStoredEndDate().asValidationFailure()
+        if (!params.date.isBefore(tenderPeriod.endDate))
+            return ValidationError.ReceivedDateIsAfterStoredEndDate().asValidationError()
 
-        return ValidationResult.ok()
-    }
-
-    fun extendTenderPeriod(context: ExtendTenderPeriodContext): ExtendTenderPeriodResult {
-        val tenderPeriod = periodDao.getByCpIdAndStage(context.cpid, context.stage)
-        val extensionAfterUnsuspended = rulesService.getExtensionAfterUnsuspended(context.country, context.pmd)
-        val newEndDate = context.startDate.plus(extensionAfterUnsuspended).toDate()
-        val updatedTenderPeriod = tenderPeriod.copy(endDate = newEndDate)
-
-        periodDao.save(updatedTenderPeriod)
-
-        return ExtendTenderPeriodResult(
-            ExtendTenderPeriodResult.TenderPeriod(
-                startDate = updatedTenderPeriod.startDate.toLocal(),
-                endDate = updatedTenderPeriod.endDate.toLocal()
-            )
-        )
+        return Validated.ok()
     }
 }

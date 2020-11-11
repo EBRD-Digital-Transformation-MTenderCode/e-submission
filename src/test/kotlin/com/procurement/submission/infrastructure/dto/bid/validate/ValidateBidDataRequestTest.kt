@@ -1,6 +1,7 @@
 package com.procurement.submission.infrastructure.dto.bid.validate
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
+import com.procurement.submission.infrastructure.handler.v2.model.request.ValidateBidDataRequest
 import org.junit.jupiter.api.Test
 
 class ValidateBidDataRequestTest : AbstractDTOTestBase<ValidateBidDataRequest>(ValidateBidDataRequest::class.java) {

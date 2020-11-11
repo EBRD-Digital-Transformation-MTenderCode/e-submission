@@ -2,7 +2,7 @@ package com.procurement.submission.infrastructure.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.procurement.submission.application.service.Transform
-import com.procurement.submission.infrastructure.configuration.ObjectMapperConfig
+import com.procurement.submission.infrastructure.bind.configuration
 import com.procurement.submission.infrastructure.configuration.TransformConfiguration
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
@@ -11,23 +11,15 @@ import org.testcontainers.containers.wait.strategy.Wait
 @TestConfiguration
 class DatabaseTestConfiguration {
     @Bean
-    fun container() = CassandraTestContainer(
-        "3.11"
-    )
+    fun container() = CassandraTestContainer("3.11")
         .apply {
             setWaitStrategy(Wait.forListeningPort())
             start()
         }
 
     @Bean
-    fun mapper(): ObjectMapper {
-        val mapper = ObjectMapper()
-        ObjectMapperConfig(mapper)
-        return mapper
-    }
+    fun mapper(): ObjectMapper = ObjectMapper().apply { configuration() }
 
     @Bean
-    fun transform(): Transform = TransformConfiguration(
-        mapper()
-    ).transform()
+    fun transform(): Transform = TransformConfiguration(mapper()).transform()
 }

@@ -2,8 +2,8 @@ package com.procurement.submission.application.service
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonNode
-import com.procurement.submission.domain.functional.Result
 import com.procurement.submission.domain.fail.Fail
+import com.procurement.submission.lib.functional.Result
 
 interface Transform {
 

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.procurement.submission.domain.model.Money
-import com.procurement.submission.infrastructure.exception.MoneyParseException
 import java.math.BigDecimal
 import java.math.RoundingMode
 

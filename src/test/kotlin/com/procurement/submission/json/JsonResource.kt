@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.procurement.submission.infrastructure.configuration.ObjectMapperConfig
+import com.procurement.submission.infrastructure.bind.configuration
 import com.procurement.submission.json.exception.JsonBindingException
 import com.procurement.submission.json.exception.JsonFileNotFoundException
 import com.procurement.submission.json.exception.JsonMappingException
@@ -70,7 +70,5 @@ private object ClassPathResource {
 }
 
 object JsonMapper {
-    val mapper = ObjectMapper().apply {
-        ObjectMapperConfig(this)
-    }
+    val mapper = ObjectMapper().apply { configuration() }
 }
