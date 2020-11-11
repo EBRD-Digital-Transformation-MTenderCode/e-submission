@@ -1,10 +1,10 @@
 package com.procurement.submission.application.params
 
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
 import java.time.LocalDateTime
 
 class SetTenderPeriodParams private constructor(
@@ -22,13 +22,13 @@ class SetTenderPeriodParams private constructor(
             tender: Tender
         ): Result<SetTenderPeriodParams, DataErrors> {
             val cpidParsed = parseCpid(value = cpid)
-                .orForwardFail { error -> return error }
+                .onFailure { return it }
 
             val ocidParsed = parseOcid(value = ocid)
-                .orForwardFail { error -> return error }
+                .onFailure { return it }
 
             val dateParsed = parseDate(value = date, attributeName = "date")
-                .orForwardFail { error -> return error }
+                .onFailure { return it }
 
             return SetTenderPeriodParams(
                 cpid = cpidParsed,
@@ -50,7 +50,7 @@ class SetTenderPeriodParams private constructor(
 
                 fun tryCreate(endDate: String): Result<TenderPeriod, DataErrors> {
                     val endDateParsed = parseDate(endDate, TENDER_PERIOD_END_DATE_ATTRIBUTE_NAME)
-                        .orForwardFail { fail -> return fail }
+                        .onFailure { return it }
 
                     return TenderPeriod(endDateParsed).asSuccess()
                 }

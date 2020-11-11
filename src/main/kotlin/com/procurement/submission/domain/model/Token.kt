@@ -2,7 +2,7 @@ package com.procurement.submission.domain.model
 
 import com.procurement.submission.domain.extension.tryUUID
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.Result
+import com.procurement.submission.lib.functional.Result
 import java.util.*
 
 typealias Token = UUID

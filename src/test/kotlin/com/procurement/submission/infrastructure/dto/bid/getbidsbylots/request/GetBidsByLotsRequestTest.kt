@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.dto.bid.getbidsbylots.request
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.infrastructure.dto.bid.bidsbylots.request.GetBidsByLotsRequest
+import com.procurement.submission.infrastructure.handler.v1.model.request.GetBidsByLotsRequest
 import org.junit.jupiter.api.Test
 
 class GetBidsByLotsRequestTest :

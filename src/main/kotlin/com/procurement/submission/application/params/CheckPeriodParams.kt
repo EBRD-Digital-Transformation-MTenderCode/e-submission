@@ -1,10 +1,10 @@
 package com.procurement.submission.application.params
 
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
 import java.time.LocalDateTime
 
 class CheckPeriodParams private constructor(
@@ -20,13 +20,13 @@ class CheckPeriodParams private constructor(
             date: String
         ): Result<CheckPeriodParams, DataErrors> {
             val cpidParsed = parseCpid(value = cpid)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             val ocidParsed = parseOcid(value = ocid)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             val dateParsed = parseDate(value = date)
-                .orForwardFail { fail -> return fail }
+                .onFailure { return it }
 
             return CheckPeriodParams(cpidParsed, ocidParsed, dateParsed).asSuccess()
         }

@@ -102,27 +102,129 @@ INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, valu
 INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'SV', 'all','interval_before', '172800');
 INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'SV', 'all','unsuspend_interval', '259200');
 
-INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','minBids', '1');
-INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','interval', '30');
-INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','interval_before', '20');
-INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','unsuspend_interval', '30');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'minBids', '1');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'interval', '30');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'interval_before', '20');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'unsuspend_interval', '30');
 
-INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_SV', 'all','unsuspend_interval', '30');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'unsuspend_interval', '30');
 
-INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'GPA', 'startSecondStage','minTenderPeriodDuration', '864000');
-INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)  VALUES ('MD', 'TEST_GPA', 'startSecondStage','minTenderPeriodDuration', '0');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'GPA', 'startSecondStage', 'minTenderPeriodDuration', '864000');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_GPA', 'startSecondStage', 'minTenderPeriodDuration', '0');
 
+CREATE KEYSPACE IF NOT EXISTS submission
+    WITH REPLICATION = {
+        'class' : 'SimpleStrategy',
+        'replication_factor' : 1
+        };
 
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','GPA','all','returnInvitations','true');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_GPA','all','returnInvitations','true');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','RT','all','returnInvitations','true');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_RT','all','returnInvitations','true');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','OF','all','returnInvitations','false');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_OF','all','returnInvitations','false');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','CF','all','returnInvitations','false');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_CF','all','returnInvitations','false');
+CREATE TABLE IF NOT EXISTS submission.history
+(
+    command_id   TEXT,
+    command_name TEXT,
+    command_date TIMESTAMP,
+    json_data    TEXT,
+    PRIMARY KEY (command_id)
+);
 
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','OF','all','extensionAfterUnsuspended','1000');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_OF','all','extensionAfterUnsuspended','1000');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','CF','all','extensionAfterUnsuspended','1000');
-INSERT INTO ocds.submission_rules (country,pmd,operation_type,parameter,value) VALUES ('MD','TEST_CF','all','extensionAfterUnsuspended','1000');
+CREATE TABLE IF NOT EXISTS submission.rules
+(
+    country        TEXT,
+    pmd            TEXT,
+    operation_type TEXT,
+    parameter      TEXT,
+    value          TEXT,
+    PRIMARY KEY (country, pmd, operation_type, parameter)
+);
+
+CREATE TABLE IF NOT EXISTS submission.bids
+(
+    cpid         TEXT,
+    ocid         TEXT,
+    id           TEXT,
+    owner        TEXT,
+    token_entity TEXT,
+    status       TEXT,
+    created_date TIMESTAMP,
+    pending_date TIMESTAMP,
+    json_data    TEXT,
+    PRIMARY KEY (cpid, ocid, id)
+);
+
+CREATE TABLE IF NOT EXISTS submission.periods
+(
+    cpid       TEXT,
+    ocid       TEXT,
+    start_date TIMESTAMP,
+    end_date   TIMESTAMP,
+    PRIMARY KEY (cpid, ocid)
+);
+
+CREATE TABLE IF NOT EXISTS submission.invitations
+(
+    cpid      TEXT,
+    id        TEXT,
+    json_data TEXT,
+    PRIMARY KEY (cpid, id)
+);
+
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'OT', 'all', 'minBids', '1');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'OT', 'all', 'interval', '259200');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'OT', 'all', 'interval_before', '172800');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'OT', 'all', 'unsuspend_interval', '259200');
+
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_OT', 'all', 'minBids', '1');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_OT', 'all', 'interval', '30');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_OT', 'all', 'interval_before', '20');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_OT', 'all', 'unsuspend_interval', '30');
+
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'SV', 'all', 'minBids', '1');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'SV', 'all', 'interval', '259200');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'SV', 'all', 'interval_before', '172800');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'SV', 'all', 'unsuspend_interval', '259200');
+
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'minBids', '1');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'interval', '30');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'interval_before', '20');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'unsuspend_interval', '30');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_SV', 'all', 'unsuspend_interval', '30');
+
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'GPA', 'startSecondStage', 'minTenderPeriodDuration', '864000');
+INSERT INTO submission.rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_GPA', 'startSecondStage', 'minTenderPeriodDuration', '0');
+
+DROP TABLE IF EXISTS submission.history;
+
+CREATE TABLE IF NOT EXISTS submission.history
+(
+    command_id   TEXT,
+    command_name TEXT,
+    command_date TIMESTAMP,
+    json_data    TEXT,
+    PRIMARY KEY (command_id, command_name)
+);
