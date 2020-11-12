@@ -2092,7 +2092,7 @@ class BidService(
             if (duplicateItem != null)
                 return ValidationError.DuplicateItems(bid.id, duplicateItem.id).asValidationError()
 
-            checkBidAndTenderItemsEquality(bid, params).onFailure { return it.reason.asValidationError() }
+            checkTenderItemsContainBidItems(bid, params).onFailure { return it.reason.asValidationError() }
             checkItemValue(bid, params).onFailure { return it.reason.asValidationError() }
             checkBidAndTenderUnitEquality(bid, params).onFailure { return it.reason.asValidationError() }
         }
@@ -2116,13 +2116,13 @@ class BidService(
         return Validated.ok()
     }
 
-    private fun checkBidAndTenderItemsEquality(
+    private fun checkTenderItemsContainBidItems(
         bid: ValidateBidDataParams.Bids.Detail,
         params: ValidateBidDataParams
     ): Validated<Fail> {
         val bidItems = bid.items.toSetBy { it.id }
         val tenderItems = params.tender.items.toSetBy { it.id }
-        if (bidItems != tenderItems)
+        if(!tenderItems.containsAll(bidItems))
             return ValidationError.InvalidItems().asValidationError()
 
         return Validated.ok()
