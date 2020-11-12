@@ -7,5 +7,5 @@ spring:
 
 cassandra:
   contact-points: localhost
-  keyspace-name: ocds
+  keyspace-name: requisition
   port: 9042

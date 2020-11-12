@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.dto.bid.auction.response
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.model.dto.response.GetBidsAuctionResponse
+import com.procurement.submission.infrastructure.handler.v1.model.response.GetBidsAuctionResponse
 import org.junit.jupiter.api.Test
 
 class GetBidsAuctionResponseTest : AbstractDTOTestBase<GetBidsAuctionResponse>(GetBidsAuctionResponse::class.java) {

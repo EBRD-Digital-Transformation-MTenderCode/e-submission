@@ -1,7 +1,7 @@
 package com.procurement.submission.infrastructure.dto.bid.update.request
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.model.dto.request.BidUpdateRequest
+import com.procurement.submission.infrastructure.handler.v1.model.request.BidUpdateRequest
 import org.junit.jupiter.api.Test
 
 class BidUpdateRequestTest : AbstractDTOTestBase<BidUpdateRequest>(BidUpdateRequest::class.java) {

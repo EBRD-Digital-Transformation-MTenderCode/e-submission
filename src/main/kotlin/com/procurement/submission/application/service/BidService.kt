@@ -3,8 +3,6 @@ package com.procurement.submission.application.service
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.application.exception.ErrorType.BID_ALREADY_WITH_LOT
-import com.procurement.submission.application.exception.ErrorType.BID_NOT_FOUND
-import com.procurement.submission.application.exception.ErrorType.CONTEXT
 import com.procurement.submission.application.exception.ErrorType.ENTITY_NOT_FOUND
 import com.procurement.submission.application.exception.ErrorType.INVALID_AMOUNT
 import com.procurement.submission.application.exception.ErrorType.INVALID_CURRENCY
@@ -44,22 +42,16 @@ import com.procurement.submission.application.model.data.bid.update.BidUpdateCon
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
 import com.procurement.submission.application.params.bid.CreateBidParams
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
-import com.procurement.submission.application.repository.BidRepository
-import com.procurement.submission.application.repository.InvitationRepository
+import com.procurement.submission.application.repository.bid.BidRepository
+import com.procurement.submission.application.repository.bid.model.BidEntity
+import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.getDuplicate
-import com.procurement.submission.domain.extension.nowDefaultUTC
-import com.procurement.submission.domain.extension.parseLocalDateTime
-import com.procurement.submission.domain.extension.toDate
-import com.procurement.submission.domain.extension.toLocal
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.ValidationResult
-import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.functional.asValidationFailure
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Money
+import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
@@ -75,23 +67,32 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
-import com.procurement.submission.infrastructure.converter.convert
-import com.procurement.submission.infrastructure.converter.convertToCreateBidResult
-import com.procurement.submission.infrastructure.converter.toBidsForEvaluationResponseData
-import com.procurement.submission.infrastructure.dao.BidDao
-import com.procurement.submission.infrastructure.dto.bid.create.CreateBidResult
-import com.procurement.submission.model.dto.BidDetails
-import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRq
-import com.procurement.submission.model.dto.SetInitialBidsStatusDtoRs
-import com.procurement.submission.model.dto.bpe.CommandMessage
-import com.procurement.submission.model.dto.bpe.ResponseDto
+import com.procurement.submission.infrastructure.api.v1.CommandMessage
+import com.procurement.submission.infrastructure.api.v1.ResponseDto
+import com.procurement.submission.infrastructure.api.v1.cpid
+import com.procurement.submission.infrastructure.api.v1.ctxId
+import com.procurement.submission.infrastructure.api.v1.ocid
+import com.procurement.submission.infrastructure.api.v1.owner
+import com.procurement.submission.infrastructure.api.v1.startDate
+import com.procurement.submission.infrastructure.api.v1.token
+import com.procurement.submission.infrastructure.handler.v1.converter.convert
+import com.procurement.submission.infrastructure.handler.v1.converter.toBidsForEvaluationResponseData
+import com.procurement.submission.infrastructure.handler.v1.model.request.BidUpdateDocsRq
+import com.procurement.submission.infrastructure.handler.v1.model.response.BidCreateResponse
+import com.procurement.submission.infrastructure.handler.v1.model.response.BidRs
+import com.procurement.submission.infrastructure.handler.v2.converter.convert
+import com.procurement.submission.infrastructure.handler.v2.converter.convertToCreateBidResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.CreateBidResult
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.Validated
+import com.procurement.submission.lib.functional.asSuccess
+import com.procurement.submission.lib.functional.asValidationError
 import com.procurement.submission.model.dto.ocds.AccountIdentification
 import com.procurement.submission.model.dto.ocds.AdditionalAccountIdentifier
 import com.procurement.submission.model.dto.ocds.Address
 import com.procurement.submission.model.dto.ocds.AddressDetails
 import com.procurement.submission.model.dto.ocds.BankAccount
 import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.dto.ocds.Bids
 import com.procurement.submission.model.dto.ocds.BusinessFunction
 import com.procurement.submission.model.dto.ocds.ContactPoint
 import com.procurement.submission.model.dto.ocds.CountryDetails
@@ -113,42 +114,31 @@ import com.procurement.submission.model.dto.ocds.RegionDetails
 import com.procurement.submission.model.dto.ocds.Requirement
 import com.procurement.submission.model.dto.ocds.RequirementResponse
 import com.procurement.submission.model.dto.ocds.ValidityPeriod
-import com.procurement.submission.model.dto.request.BidUpdateDocsRq
-import com.procurement.submission.model.dto.request.LotDto
-import com.procurement.submission.model.dto.request.LotsDto
-import com.procurement.submission.model.dto.response.BidCreateResponse
-import com.procurement.submission.model.dto.response.BidRs
-import com.procurement.submission.model.dto.response.BidsCopyRs
-import com.procurement.submission.model.entity.BidEntity
-import com.procurement.submission.model.entity.BidEntityComplex
 import com.procurement.submission.utils.containsAny
-import com.procurement.submission.utils.toJson
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 @Service
 class BidService(
     private val generationService: GenerationService,
     private val rulesService: RulesService,
     private val periodService: PeriodService,
-    private val bidDao: BidDao,
     private val bidRepository: BidRepository,
-    private val invitationRepository: InvitationRepository
+    private val invitationRepository: InvitationRepository,
+    private val transform: Transform,
 ) {
 
     fun createBid(requestData: BidCreateData, context: BidCreateContext): ResponseDto {
 
         val bidRequest = requestData.bid
-        periodService.checkCurrentDateInPeriod(context.cpid, context.stage, context.startDate)
+        periodService.checkCurrentDateInPeriod(context.cpid, context.ocid, context.startDate)
         checkRelatedLotsInDocuments(bidRequest)
         isOneRelatedLot(bidRequest)
         checkTypeOfDocumentsCreateBid(bidRequest.documents)
-        checkTenderers(context.cpid, context.stage, bidRequest)
+        checkTenderers(context.cpid, context.ocid, bidRequest)
         checkDocumentsIds(bidRequest.documents)
         checkMoney(bidRequest.value)                                // FReq-1.2.1.42
         checkCurrency(bidRequest.value, requestData.lot.value)      // FReq-1.2.1.43
@@ -176,18 +166,18 @@ class BidService(
             tenderers = bidRequest.tenderers.toBidEntityTenderers(),
             requirementResponses = requirementResponses.toBidEntityRequirementResponse()
         )
-        val entity = getEntity(
-            bid = bid,
-            cpId = context.cpid,
-            stage = context.stage,
+        val entity = BidEntity.New(
+            cpid = context.cpid,
+            ocid = context.ocid,
             owner = context.owner,
             token = generationService.generateRandomUUID(),
-            createdDate = context.startDate.toDate(),
-            pendingDate = context.startDate.toDate()
+            createdDate = context.startDate,
+            pendingDate = context.startDate,
+            bid = bid
         )
-        bidDao.save(entity)
+        bidRepository.save(entity)
         val bidResponse = BidCreateResponse.Bid(
-            id = UUID.fromString(bid.id),
+            id = BidId.fromString(bid.id),
             token = entity.token
         )
         return ResponseDto(data = BidCreateResponse(bid = bidResponse))
@@ -197,48 +187,48 @@ class BidService(
         val bidId = context.id
         val bidRequest = requestData.bid
 
-        periodService.checkCurrentDateInPeriod(context.cpid, context.stage, context.startDate)
+        periodService.checkCurrentDateInPeriod(context.cpid, context.ocid, context.startDate)
 
-        val entity = bidDao.findByCpIdAndStageAndBidId(context.cpid, context.stage, UUID.fromString(bidId))
-        if (entity.token != context.token) throw ErrorException(
-            INVALID_TOKEN
-        )
-        if (entity.owner != context.owner) throw ErrorException(
-            INVALID_OWNER
-        )
+        val entity = bidRepository.findBy(context.cpid, context.ocid, BidId.fromString(bidId))
+            .orThrow { it.exception }
+            ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
+        if (entity.token != context.token) throw ErrorException(INVALID_TOKEN)
+        if (entity.owner != context.owner) throw ErrorException(INVALID_OWNER)
 
-        val bidEntity: Bid = toObject(Bid::class.java, entity.jsonData)
+        val bid: Bid = toObject(Bid::class.java, entity.jsonData)
 
-        checkStatusesBidUpdate(bidEntity)
+        checkStatusesBidUpdate(bid)
         checkTypeOfDocumentsUpdateBid(bidRequest.documents)
-        validateRelatedLotsOfDocuments(bidDto = bidRequest, bidEntity = bidEntity)
-        checkEntitiesListUniquenessById(bid = bidRequest)           // Freq-1.2.1.6
-        checkBusinessFunctionTypeOfDocumentsUpdateBid(bidRequest)   // FReq-1.2.1.19
-        checkBusinessFunctionsPeriod(
-            bid = bidRequest,
-            requestDate = context.startDate
-        )                                                           // FReq-1.2.1.39
-        checkRelatedLots(bidEntity, bidRequest)                     // FReq-1.2.1.41
-        checkMoney(bidRequest.value)                                // FReq-1.2.1.42
-        checkCurrency(bidRequest.value, requestData.lot.value)      // FReq-1.2.1.43
+        validateRelatedLotsOfDocuments(bidDto = bidRequest, bidEntity = bid)
+        checkEntitiesListUniquenessById(bid = bidRequest)                               // Freq-1.2.1.6
+        checkBusinessFunctionTypeOfDocumentsUpdateBid(bidRequest)                       // FReq-1.2.1.19
+        checkBusinessFunctionsPeriod(bid = bidRequest, requestDate = context.startDate) // FReq-1.2.1.39
+        checkRelatedLots(bid, bidRequest)                                               // FReq-1.2.1.41
+        checkMoney(bidRequest.value)                                                    // FReq-1.2.1.42
+        checkCurrency(bidRequest.value, requestData.lot.value)                          // FReq-1.2.1.43
 
-        val updatedTenderers = updateTenderers(bidRequest, bidEntity)    // FReq-1.2.1.30
-        val updatedRequirementResponse = updateRequirementResponse(bidRequest, bidEntity)  // FReq-1.2.1.34
+        val updatedTenderers = updateTenderers(bidRequest, bid)  // FReq-1.2.1.30
+        val updatedRequirementResponse = updateRequirementResponse(bidRequest, bid)  // FReq-1.2.1.34
+        checkOneAuthority(updatedTenderers)                                             // FReq-1.2.1.26
 
-        checkOneAuthority(updatedTenderers)                               // FReq-1.2.1.26
-
-        val updatedBidEntity = bidEntity.copy(
+        val updatedBid = bid.copy(
             date = context.startDate,
             status = Status.PENDING,
-            documents = updateDocuments(bidEntity.documents, bidRequest.documents),
+            documents = updateDocuments(bid.documents, bidRequest.documents),
             value = bidRequest.value,
             tenderers = updatedTenderers,
             requirementResponses = updatedRequirementResponse
         )
 
-        entity.jsonData = toJson(updatedBidEntity)
-        entity.pendingDate = context.startDate.toDate()
-        bidDao.save(entity)
+        val updatedBidEntity = BidEntity.Updated(
+            cpid = entity.cpid,
+            ocid = entity.ocid,
+            createdDate = entity.createdDate,
+            pendingDate = context.startDate,
+            bid = updatedBid
+        )
+
+        bidRepository.save(updatedBidEntity)
         return ResponseDto(data = "ok")
     }
 
@@ -246,11 +236,10 @@ class BidService(
         requestData: BidsForEvaluationRequestData,
         context: GetBidsForEvaluationContext
     ): BidsForEvaluationResponseData {
-        val bidsEntitiesByIds = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+        val bidsEntitiesByIds = bidRepository.findBy(context.cpid, context.ocid)
+            .orThrow { it.exception }
             .asSequence()
-            .filter { entity ->
-                Status.creator(entity.status) == Status.PENDING
-            }
+            .filter { entity -> entity.status == Status.PENDING }
             .associateBy { it.bidId }
 
         val bidsDb = bidsEntitiesByIds.asSequence()
@@ -262,14 +251,13 @@ class BidService(
         val bidsByRelatedLot: Map<String, List<Bid>> = bidsDb.values
             .asSequence()
             .flatMap { bid ->
-                bid.relatedLots.asSequence()
-                    .map { lotId ->
-                        lotId to bid
-                    }
+                bid.relatedLots
+                    .asSequence()
+                    .map { lotId -> lotId to bid }
             }
             .groupBy(keySelector = { it.first }, valueTransform = { it.second })
 
-        val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd.name)
+        val minNumberOfBids = rulesService.getRulesMinBids(context.country, context.pmd)
         val bidsForEvaluation = requestData.lots
             .asSequence()
             .flatMap { lot ->
@@ -279,20 +267,23 @@ class BidService(
                 else
                     emptySequence()
             }
-            .associateBy { bid ->
-                UUID.fromString(bid.id)
-            }
+            .associateBy { bid -> UUID.fromString(bid.id) }
 
         val updatedBidEntities = getBidsForArchive(bids = bidsDb, subtractBids = bidsForEvaluation)
-            .map { bid ->
-                bid.archive()
-            }
+            .asSequence()
+            .map { bid -> bid.archive() }
             .map { updatedBid ->
-                bidsEntitiesByIds.getValue(UUID.fromString(updatedBid.id))
-                    .copy(jsonData = toJson(updatedBid))
+                val entity = bidsEntitiesByIds.getValue(BidId.fromString(updatedBid.id))
+                BidEntity.Updated(
+                    cpid = entity.cpid,
+                    ocid = entity.ocid,
+                    createdDate = entity.createdDate,
+                    pendingDate = entity.pendingDate,
+                    bid = updatedBid
+                )
             }
             .toList()
-        bidDao.saveAll(updatedBidEntities)
+        bidRepository.save(updatedBidEntities)
 
         return bidsForEvaluation.values.toBidsForEvaluationResponseData()
     }
@@ -308,9 +299,10 @@ class BidService(
         context: OpenBidsForPublishingContext,
         data: OpenBidsForPublishingData
     ): OpenBidsForPublishingResult {
-        val activeBids: List<Bid> = bidDao.findAllByCpIdAndStage(context.cpid, context.stage)
+        val activeBids: List<Bid> = bidRepository.findBy(context.cpid, context.ocid)
+            .orThrow { it.exception }
             .asSequence()
-            .filter { Status.creator(it.status) == Status.PENDING }
+            .filter { entity -> entity.status == Status.PENDING }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
             .filter { it.statusDetails == StatusDetails.EMPTY }
             .toList()
@@ -337,6 +329,7 @@ class BidService(
                     }
                     .toList()
             }
+
             AwardCriteriaDetails.MANUAL -> {
                 activeBids.map { bid -> bid.convert() }
             }
@@ -346,133 +339,55 @@ class BidService(
         )
     }
 
-    fun copyBids(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            CONTEXT
-        )
-        val previousStage = cm.context.prevStage ?: throw ErrorException(
-            CONTEXT
-        )
-        val startDate = cm.context.startDate?.parseLocalDateTime() ?: throw ErrorException(
-            CONTEXT
-        )
-        val endDate = cm.context.endDate?.parseLocalDateTime() ?: throw ErrorException(
-            CONTEXT
-        )
-        val lots = toObject(LotsDto::class.java, cm.data)
-
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, previousStage)
-        if (bidEntities.isEmpty()) throw ErrorException(
-            BID_NOT_FOUND
-        )
-        periodService.save(cpId, stage, startDate, endDate)
-        val mapValidEntityBid = getBidsForNewStageMap(bidEntities, lots)
-        val mapCopyEntityBid = getBidsCopyMap(lots, mapValidEntityBid, stage)
-        bidDao.saveAll(mapCopyEntityBid.keys.toList())
-        val bids = ArrayList(mapCopyEntityBid.values)
-        return ResponseDto(data = BidsCopyRs(Bids(bids), Period(startDate, endDate)))
-    }
-
     fun updateBidDocs(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            CONTEXT
-        )
-        val token = cm.context.token ?: throw ErrorException(
-            CONTEXT
-        )
-        val owner = cm.context.owner ?: throw ErrorException(
-            CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            CONTEXT
-        )
-        val bidId = cm.context.id ?: throw ErrorException(
-            CONTEXT
-        )
-        val dateTime = cm.context.startDate?.parseLocalDateTime() ?: throw ErrorException(
-            CONTEXT
-        )
+        val cpid = cm.cpid
+        val ocid = cm.ocid
+        val token = cm.token
+        val owner = cm.owner
+        val bidId = cm.ctxId
+        val dateTime = cm.startDate
         val dto = toObject(BidUpdateDocsRq::class.java, cm.data)
         val documentsDto = dto.bid.documents
         //VR-4.8.1
-        val period = periodService.getPeriodEntity(cpId, stage)
-        if (dateTime <= period.endDate.toLocal()) throw ErrorException(
-            PERIOD_NOT_EXPIRED
-        )
+        val period = periodService.getPeriodEntity(cpid, ocid)
+        if (dateTime <= period.endDate) throw ErrorException(PERIOD_NOT_EXPIRED)
 
-        val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(bidId))
-        if (entity.token.toString() != token) throw ErrorException(
-            INVALID_TOKEN
-        )
-        if (entity.owner != owner) throw ErrorException(
-            INVALID_OWNER
-        )
+        val entity = bidRepository.findBy(cpid, ocid, BidId.fromString(bidId))
+            .orThrow { it.exception }
+            ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
+        if (entity.token != token) throw ErrorException(INVALID_TOKEN)
+        if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
         //VR-4.8.4
         if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID)
             && (bid.status != Status.VALID && bid.statusDetails != StatusDetails.EMPTY)
         ) {
-            throw ErrorException(
-                INVALID_STATUSES_FOR_UPDATE
-            )
+            throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
         }
         //VR-4.8.5
         documentsDto.forEach { document ->
             if (document.relatedLots != null) {
-                if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(
-                    INVALID_RELATED_LOT
-                )
+                if (!bid.relatedLots.containsAll(document.relatedLots!!)) throw ErrorException(INVALID_RELATED_LOT)
             }
         }
         //BR-4.8.2
         val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
         val documentsDbId = bid.documents?.asSequence()?.map { it.id }?.toSet() ?: setOf()
         val newDocumentsId = documentsDtoId - documentsDbId
-        if (newDocumentsId.isEmpty()) throw ErrorException(
-            INVALID_DOCS_FOR_UPDATE
-        )
+        if (newDocumentsId.isEmpty()) throw ErrorException(INVALID_DOCS_FOR_UPDATE)
         val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
         val documentsDb = bid.documents ?: listOf()
         bid.documents = documentsDb + newDocuments
-        entity.jsonData = toJson(bid)
-        bidDao.save(entity)
+
+        val updatedBidEntity = BidEntity.Updated(
+            cpid = entity.cpid,
+            ocid = entity.ocid,
+            createdDate = entity.createdDate,
+            pendingDate = entity.pendingDate,
+            bid = bid
+        )
+        bidRepository.save(updatedBidEntity)
         return ResponseDto(data = BidRs(null, null, bid))
-    }
-
-    fun setInitialBidsStatus(cm: CommandMessage): ResponseDto {
-        val cpId = cm.context.cpid ?: throw ErrorException(
-            CONTEXT
-        )
-        val stage = cm.context.stage ?: throw ErrorException(
-            CONTEXT
-        )
-        val dto = toObject(SetInitialBidsStatusDtoRq::class.java, cm.data)
-
-        val bidsRsList = arrayListOf<BidDetails>()
-        dto.awards.forEach { award ->
-            val entity = bidDao.findByCpIdAndStageAndBidId(cpId, stage, UUID.fromString(award.relatedBid))
-            val bid: Bid = toObject(Bid::class.java, entity.jsonData)
-            bid.apply {
-                status = Status.PENDING
-                statusDetails = StatusDetails.EMPTY
-            }
-            entity.apply {
-                status = Status.PENDING.key
-                jsonData = toJson(bid)
-            }
-            bidDao.save(entity)
-            bidsRsList.add(
-                BidDetails(
-                    id = bid.id,
-                    status = bid.status,
-                    statusDetails = bid.statusDetails
-                )
-            )
-        }
-        return ResponseDto(data = SetInitialBidsStatusDtoRs(bids = bidsRsList))
     }
 
     /**
@@ -519,8 +434,8 @@ class BidService(
 
         val lotsIds: Set<LotId> = data.lots.toSetBy { it.id }
 
-        val stage = getStage(context)
-        val updatedBids: Map<Bid, BidEntity> = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = stage)
+        val updatedBids: Map<Bid, BidEntity.Updated> = bidRepository.findBy(context.cpid, context.ocid)
+            .orThrow { it.exception }
             .asSequence()
             .map { entity ->
                 val bid = toObject(Bid::class.java, entity.jsonData)
@@ -531,17 +446,18 @@ class BidService(
             }
             .map { (bid, entity) ->
                 val updatedBid = bid.updatingStatuses()
-
-                val updatedEntity = entity.copy(
-                    status = updatedBid.status.key,
-                    jsonData = toJson(updatedBid)
+                val updatedBidEntity = BidEntity.Updated(
+                    cpid = entity.cpid,
+                    ocid = entity.ocid,
+                    createdDate = entity.createdDate,
+                    pendingDate = entity.pendingDate,
+                    bid = updatedBid
                 )
-
-                updatedBid to updatedEntity
+                updatedBid to updatedBidEntity
             }
             .toMap()
 
-        bidDao.saveAll(updatedBids.values)
+        bidRepository.save(updatedBids.values)
 
         return FinalizedBidsStatusByLots(
             bids = updatedBids.keys
@@ -553,26 +469,6 @@ class BidService(
                     )
                 }
         )
-    }
-
-    private fun getStage(context: FinalBidsStatusByLotsContext): String = when (context.pmd) {
-        ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-        ProcurementMethod.SV, ProcurementMethod.TEST_SV,
-        ProcurementMethod.MV, ProcurementMethod.TEST_MV -> "EV"
-
-        ProcurementMethod.CD, ProcurementMethod.TEST_CD,
-        ProcurementMethod.DA, ProcurementMethod.TEST_DA,
-        ProcurementMethod.DC, ProcurementMethod.TEST_DC,
-        ProcurementMethod.IP, ProcurementMethod.TEST_IP,
-        ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-        ProcurementMethod.OP, ProcurementMethod.TEST_OP -> "NP"
-
-        ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
-        ProcurementMethod.RT, ProcurementMethod.TEST_RT -> "TP"
-
-        ProcurementMethod.CF, ProcurementMethod.TEST_CF,
-        ProcurementMethod.FA, ProcurementMethod.TEST_FA,
-        ProcurementMethod.OF, ProcurementMethod.TEST_OF -> throw ErrorException(ErrorType.INVALID_PMD)
     }
 
     /**
@@ -597,19 +493,25 @@ class BidService(
             it.relatedBid to it.statusDetails
         }
 
-        val updatedBidEntitiesByBid = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
-            .asSequence()
-            .filter { entity ->
-                entity.bidId in relatedBidsByStatuses
-            }
-            .map { entity ->
-                val statusDetails = relatedBidsByStatuses.getValue(entity.bidId)
-                val updatedBid: Bid = toObject(Bid::class.java, entity.jsonData)
-                    .updateStatusDetails(statusDetails)
-                val updatedEntity: BidEntity = entity.copy(jsonData = toJson(updatedBid))
-                updatedBid to updatedEntity
-            }
-            .toMap()
+        val updatedBidEntitiesByBid =
+            bidRepository.findBy(context.cpid, context.ocid)
+                .orThrow { it.exception }
+                .asSequence()
+                .filter { entity -> entity.bidId in relatedBidsByStatuses }
+                .map { entity ->
+                    val statusDetails = relatedBidsByStatuses.getValue(entity.bidId)
+                    val updatedBid: Bid = toObject(Bid::class.java, entity.jsonData)
+                        .updateStatusDetails(statusDetails)
+                    val updatedBidEntity = BidEntity.Updated(
+                        cpid = entity.cpid,
+                        ocid = entity.ocid,
+                        createdDate = entity.createdDate,
+                        pendingDate = entity.pendingDate,
+                        bid = updatedBid
+                    )
+                    updatedBid to updatedBidEntity
+                }
+                .toMap()
 
         val result = ApplyEvaluatedAwardsResult(
             bids = updatedBidEntitiesByBid.keys
@@ -621,7 +523,7 @@ class BidService(
                 }
         )
 
-        bidDao.saveAll(updatedBidEntitiesByBid.values)
+        bidRepository.save(updatedBidEntitiesByBid.values)
         return result
     }
 
@@ -654,11 +556,9 @@ class BidService(
         documentsDto: List<BidUpdateData.Bid.Document>
     ): List<Document>? {
         return if (documentsDb != null && documentsDb.isNotEmpty()) {
-            if (!documentsDto.isEmpty()) {
+            if (documentsDto.isNotEmpty()) {
                 val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
-                if (documentsDtoId.size != documentsDto.size) throw ErrorException(
-                    INVALID_DOCS_ID
-                )
+                if (documentsDtoId.size != documentsDto.size) throw ErrorException(INVALID_DOCS_ID)
                 val documentsDbId = documentsDb.asSequence().map { it.id }.toSet()
                 val newDocumentsId = documentsDtoId - documentsDbId
                 //update
@@ -692,24 +592,20 @@ class BidService(
         if (documentDto != null) {
             this.title = documentDto.title
             this.description = documentDto.description ?: this.description
-            this.relatedLots = documentDto.relatedLots.let { if (!it.isEmpty()) it else this.relatedLots }
+            this.relatedLots = documentDto.relatedLots.let { if (it.isNotEmpty()) it else this.relatedLots }
         }
     }
 
     private fun checkStatusesBidUpdate(bid: Bid) {
-        if (bid.status != Status.PENDING && bid.status != Status.INVITED) throw ErrorException(
-            INVALID_STATUSES_FOR_UPDATE
-        )
-        if (bid.statusDetails != StatusDetails.EMPTY) throw ErrorException(
-            INVALID_STATUSES_FOR_UPDATE
-        )
+        if (bid.status != Status.PENDING && bid.status != Status.INVITED)
+            throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
+        if (bid.statusDetails != StatusDetails.EMPTY)
+            throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
     }
 
     private fun checkRelatedLotsInDocuments(bidDto: BidCreateData.Bid) {
         bidDto.documents.forEach { document ->
-            if (!bidDto.relatedLots.containsAll(document.relatedLots)) throw ErrorException(
-                INVALID_RELATED_LOT
-            )
+            if (!bidDto.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
         }
     }
 
@@ -754,7 +650,7 @@ class BidService(
 
 
         bid.tenderers.forEach { tenderer ->
-            if (!tenderer.persones.isEmpty()) {
+            if (tenderer.persones.isNotEmpty()) {
                 val authorityPersones = tenderer.persones
                     .flatMap { it.businessFunctions }
                     .filter { it.type == BusinessFunctionType.AUTHORITY }
@@ -785,10 +681,11 @@ class BidService(
 
     private fun checkBusinessFunctionsPeriod(bid: BidCreateData.Bid, requestDate: LocalDateTime) {
         fun BidCreateData.Bid.Tenderer.Persone.BusinessFunction.Period.validate() {
-            if (this.startDate > requestDate) throw ErrorException(
-                error = INVALID_DATE,
-                message = "Period.startDate specified in  business functions cannot be greater than startDate from request."
-            )
+            if (this.startDate > requestDate)
+                throw ErrorException(
+                    error = INVALID_DATE,
+                    message = "Period.startDate specified in  business functions cannot be greater than startDate from request."
+                )
         }
 
         bid.tenderers.flatMap { it.persones }
@@ -799,7 +696,7 @@ class BidService(
 
     fun getInvitedTenderers(cpid: Cpid): Set<String> = invitationRepository
         .findBy(cpid)
-        .doReturn {
+        .onFailure {
             throw ErrorException(
                 error = ENTITY_NOT_FOUND,
                 message = "Cannot found invitations by cpid='${cpid}'"
@@ -832,21 +729,23 @@ class BidService(
 
     private fun checkMoney(money: Money?) {
         money?.let {
-            if (money.amount.compareTo(BigDecimal.ZERO) <= 0) throw ErrorException(
-                error = INVALID_AMOUNT,
-                message = "Amount cannot be less than 0. Current value = ${money.amount}"
-            )
+            if (money.amount.compareTo(BigDecimal.ZERO) <= 0)
+                throw ErrorException(
+                    error = INVALID_AMOUNT,
+                    message = "Amount cannot be less than 0. Current value = ${money.amount}"
+                )
         }
     }
 
     private fun checkCurrency(bidMoney: Money?, lotMoney: Money) {
         bidMoney?.let {
-            if (!bidMoney.currency.equals(lotMoney.currency, true)) throw ErrorException(
-                error = INVALID_CURRENCY,
-                message = "Currency in bid missmatch with currency in related lot. " +
-                    "Bid currency='${bidMoney.currency}', " +
-                    "Lot currency='${lotMoney.currency}'. "
-            )
+            if (!bidMoney.currency.equals(lotMoney.currency, true))
+                throw ErrorException(
+                    error = INVALID_CURRENCY,
+                    message = "Currency in bid missmatch with currency in related lot. " +
+                        "Bid currency='${bidMoney.currency}', " +
+                        "Lot currency='${lotMoney.currency}'. "
+                )
         }
     }
 
@@ -889,8 +788,8 @@ class BidService(
         }
 
         bid.tenderers.forEach { tenderer ->
-            tenderer.details.bankAccounts.forEach {
-                val actualIds = it.additionalAccountIdentifiers.map { it.id }
+            tenderer.details.bankAccounts.forEach { bankAccount ->
+                val actualIds = bankAccount.additionalAccountIdentifiers.map { it.id }
                 val uniqueIds = actualIds.toSet()
 
                 if (actualIds.size != uniqueIds.size) {
@@ -954,16 +853,12 @@ class BidService(
     }
 
     private fun isOneRelatedLot(bidDto: BidCreateData.Bid) {
-        if (bidDto.relatedLots.size > 1) throw ErrorException(
-            RELATED_LOTS_MUST_BE_ONE_UNIT
-        )
+        if (bidDto.relatedLots.size > 1) throw ErrorException(RELATED_LOTS_MUST_BE_ONE_UNIT)
     }
 
     private fun validateRelatedLotsOfDocuments(bidDto: BidUpdateData.Bid, bidEntity: Bid) {
         bidDto.documents.forEach { document ->
-            if (!bidEntity.relatedLots.containsAll(document.relatedLots)) throw ErrorException(
-                INVALID_RELATED_LOT
-            )
+            if (!bidEntity.relatedLots.containsAll(document.relatedLots)) throw ErrorException(INVALID_RELATED_LOT)
         }
     }
 
@@ -1009,8 +904,8 @@ class BidService(
 
         bid.tenderers.forEach { tenderer ->
             tenderer.details?.let { details ->
-                details.bankAccounts.forEach {
-                    val actualIds = it.additionalAccountIdentifiers.map { it.id }
+                details.bankAccounts.forEach { bankAccount ->
+                    val actualIds = bankAccount.additionalAccountIdentifiers.map { it.id }
                     val uniqueIds = actualIds.toSet()
 
                     if (actualIds.size != uniqueIds.size) {
@@ -1115,7 +1010,7 @@ class BidService(
                     )
                 }
 
-                if (!persones.isEmpty() && authorityPersones.isEmpty()) {
+                if (persones.isNotEmpty() && authorityPersones.isEmpty()) {
                     throw ErrorException(
                         error = INVALID_PERSONES,
                         message = "At least one person with business function type 'authority' should be added. "
@@ -1245,9 +1140,11 @@ class BidService(
         documentsRequest: List<BidUpdateData.Bid.Tenderer.Persone.BusinessFunction.Document>
     ): List<BusinessFunction.Document> {
         val documentsDb = documentsEntities ?: emptyList()
-        val newDocuments = documentsRequest.filter { it.id !in documentsDb.map { it.id } }
+        val documentsDbIds = documentsDb.toSetBy { it.id }
+        val newDocuments = documentsRequest.filter { it.id !in documentsDbIds }
+        val documentsRequestIds = documentsRequest.toSetBy { it.id }
         val updatedDocuments = documentsDb.map { documentDb ->
-            if (documentDb.id in documentsRequest.map { it.id }) {
+            if (documentDb.id in documentsRequestIds) {
                 val documentRequest = documentsRequest.find { it.id == documentDb.id }!!
 
                 BusinessFunction.Document(
@@ -1419,108 +1316,31 @@ class BidService(
     }
 
     private fun checkRelatedLots(bidEntity: Bid, bidRequest: BidUpdateData.Bid) {
-        if (!bidEntity.relatedLots.containsAll(bidRequest.relatedLots)) throw ErrorException(
-            error = INVALID_RELATED_LOT,
-            message = "Some of related lots from request is missing in database. " +
-                "Saved related lots: ${bidEntity.relatedLots}. " +
-                "Related lots from request: ${bidRequest.relatedLots}. "
-        )
+        if (!bidEntity.relatedLots.containsAll(bidRequest.relatedLots))
+            throw ErrorException(
+                error = INVALID_RELATED_LOT,
+                message = "Some of related lots from request is missing in database. " +
+                    "Saved related lots: ${bidEntity.relatedLots}. " +
+                    "Related lots from request: ${bidRequest.relatedLots}. "
+            )
     }
 
-    private fun getBidsFromEntities(bidEntities: List<BidEntity>): List<Bid> {
-        return bidEntities.asSequence().map { toObject(Bid::class.java, it.jsonData) }.toList()
-    }
-
-    private fun checkTenderers(cpId: String, stage: String, bidDto: BidCreateData.Bid) {
-        val bidEntities = bidDao.findAllByCpIdAndStage(cpId, stage)
+    private fun checkTenderers(cpid: Cpid, ocid: Ocid, bidDto: BidCreateData.Bid) {
+        val bidEntities = bidRepository.findBy(cpid, ocid)
+            .orThrow { it.exception }
         if (bidEntities.isNotEmpty()) {
             val receivedRelatedLots = bidDto.relatedLots.toSet()
             val idsReceivedTenderers = bidDto.tenderers.toSetBy { it.id }
-            val savedBids = getBidsFromEntities(bidEntities)
-            savedBids.asSequence()
-                .filter {
-                    it.status != Status.WITHDRAWN
-                }
+            bidEntities.asSequence()
+                .filter { entity -> entity.status != Status.WITHDRAWN }
+                .map { entity -> toObject(Bid::class.java, entity.jsonData) }
                 .forEach { bid ->
                     val idsTenderers: Set<String> = bid.tenderers.toSetBy { it.id!! }
                     val relatedLots: Set<String> = bid.relatedLots.toSet()
                     if (idsReceivedTenderers.any { it in idsTenderers } && receivedRelatedLots.any { it in relatedLots })
-                        throw ErrorException(
-                            BID_ALREADY_WITH_LOT
-                        )
+                        throw ErrorException(BID_ALREADY_WITH_LOT)
                 }
         }
-    }
-
-    private fun getBidsForNewStageMap(bidEntities: List<BidEntity>, lotsDto: LotsDto): Map<BidEntity, Bid> {
-        val validBids = HashMap<BidEntity, Bid>()
-        val lotsIds = collectLotIds(lotsDto.lots)
-        bidEntities.forEach { bidEntity ->
-            val bid = toObject(Bid::class.java, bidEntity.jsonData)
-            if (bid.status == Status.VALID && bid.statusDetails == StatusDetails.EMPTY)
-                bid.relatedLots.forEach {
-                    if (lotsIds.contains(it)) validBids[bidEntity] = bid
-                }
-        }
-        return validBids
-    }
-
-    private fun getBidsCopyMap(
-        lotsDto: LotsDto,
-        mapEntityBid: Map<BidEntity, Bid>,
-        stage: String
-    ): Map<BidEntity, Bid> {
-        val bidsCopy = HashMap<BidEntity, Bid>()
-        val lotsIds = collectLotIds(lotsDto.lots)
-        mapEntityBid.forEach { map ->
-            val (entity, bid) = map
-            if (bid.relatedLots.containsAny(lotsIds)) {
-                val bidCopy = bid.copy(
-                    date = nowDefaultUTC(),
-                    status = Status.INVITED,
-                    statusDetails = StatusDetails.EMPTY,
-                    value = null,
-                    documents = null
-                )
-                val entityCopy = getEntity(
-                    bid = bidCopy,
-                    cpId = entity.cpId,
-                    stage = stage,
-                    owner = entity.owner,
-                    token = entity.token,
-                    createdDate = nowDefaultUTC().toDate(),
-                    pendingDate = null
-                )
-                bidsCopy[entityCopy] = bidCopy
-            }
-        }
-        return bidsCopy
-    }
-
-    private fun collectLotIds(lots: List<LotDto>?): Set<String> {
-        return lots?.asSequence()?.map { it.id }?.toSet() ?: setOf()
-    }
-
-    private fun getEntity(
-        bid: Bid,
-        cpId: String,
-        stage: String,
-        owner: String,
-        token: UUID,
-        createdDate: Date,
-        pendingDate: Date?
-    ): BidEntity {
-        return BidEntity(
-            cpId = cpId,
-            stage = stage,
-            owner = owner,
-            status = bid.status.key,
-            bidId = UUID.fromString(bid.id),
-            token = token,
-            createdDate = createdDate,
-            pendingDate = pendingDate,
-            jsonData = toJson(bid)
-        )
     }
 
     private fun List<BidCreateData.Bid.Document>.toBidEntityDocuments(): List<Document> {
@@ -1808,23 +1628,21 @@ class BidService(
     }
 
     fun openBidDocs(context: OpenBidDocsContext, data: OpenBidDocsData): OpenBidDocsResult {
-        val bidEntity = bidDao.findByCpIdAndStageAndBidId(
-            cpId = context.cpid,
-            stage = context.stage,
-            bidId = data.bidId
-        )
+        val bidEntity = bidRepository.findBy(context.cpid, context.ocid, data.bidId)
+            .orThrow { it.exception }
+            ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
         val bid = toObject(Bid::class.java, bidEntity.jsonData)
 
         return OpenBidDocsResult(
             bid = OpenBidDocsResult.Bid(
-                id = UUID.fromString(bid.id),
+                id = BidId.fromString(bid.id),
                 documents = bid.documents
                     ?.map { document ->
                         OpenBidDocsResult.Bid.Document(
                             description = document.description,
                             id = document.id,
                             relatedLots = document.relatedLots
-                                ?.map { lotId -> UUID.fromString(lotId) }
+                                ?.map { lotId -> LotId.fromString(lotId) }
                                 .orEmpty(),
                             documentType = document.documentType,
                             title = document.title
@@ -1838,8 +1656,10 @@ class BidService(
     fun getBidsByLots(context: GetBidsByLotsContext, data: GetBidsByLotsData): GetBidsByLotsResult {
         val lotsIds = data.lots
             .toSetBy { it.id.toString() }
-        val bids = bidDao.findAllByCpIdAndStage(cpId = context.cpid, stage = context.stage)
+        val bids = bidRepository.findBy(context.cpid, context.ocid)
+            .orThrow { it.exception }
             .asSequence()
+            .filter { entity -> entity.status == Status.PENDING }
             .map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }
             .filter { bid ->
                 bid.status == Status.PENDING
@@ -1856,7 +1676,7 @@ class BidService(
                             GetBidsByLotsResult.Bid.Document(
                                 id = document.id,
                                 relatedLots = document.relatedLots
-                                    ?.map { relatedLot -> UUID.fromString(relatedLot) }
+                                    ?.map { relatedLot -> LotId.fromString(relatedLot) }
                                     .orEmpty(),
                                 description = document.description,
                                 title = document.title,
@@ -2141,49 +1961,70 @@ class BidService(
         )
     }
 
-    fun validateBidData(params: ValidateBidDataParams): ValidationResult<Fail> {
-        checkBidsValue(params).doOnError { return it.asValidationFailure() }
-        checkTenderers(params).doOnError { return it.asValidationFailure() }
-        checkDocuments(params).doOnError { return it.asValidationFailure() }
-        checkItems(params).doOnError { return it.asValidationFailure() }
+    fun validateBidData(params: ValidateBidDataParams): Validated<Fail> {
+        checkBidsValue(params).onFailure { return it.reason.asValidationError() }
+        checkTenderers(params).onFailure { return it.reason.asValidationError() }
+        checkDocuments(params).onFailure { return it.reason.asValidationError() }
+        checkItems(params).onFailure { return it.reason.asValidationError() }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkBidsValue(params: ValidateBidDataParams): ValidationResult<Fail.Error> {
+    private fun checkBidsValue(params: ValidateBidDataParams): Validated<Fail.Error> {
         val requiresElectronicCatalogue = params.tender.procurementMethodModalities
             .any { it == ProcurementMethodModalities.REQUIRES_ELECTRONIC_CATALOGUE }
 
         if (!requiresElectronicCatalogue) {
             val bid = params.bids.details.first()
-            val value = bid.value ?: return ValidationError.MissingBidValue(bid.id).asValidationFailure()
+            val value = bid.value ?: return ValidationError.MissingBidValue(bid.id).asValidationError()
 
             if (value.amount.value <= BigDecimal.ZERO)
-                return ValidationError.InvalidBidAmount(bid.id).asValidationFailure()
+                return ValidationError.InvalidBidAmount(bid.id).asValidationError()
 
             if (value.currency != params.tender.value.currency)
-                return ValidationError.InvalidBidCurrency(bid.id).asValidationFailure()
+                return ValidationError.InvalidBidCurrency(bid.id).asValidationError()
         }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkTenderers(params: ValidateBidDataParams): ValidationResult<Fail.Error> {
+    private fun checkTenderers(params: ValidateBidDataParams): Validated<Fail> {
         val tenderers = params.bids.details.first().tenderers
         val duplicateTenderer = tenderers.getDuplicate { it.id }
         if (duplicateTenderer != null)
-            return ValidationError.DuplicateTenderers(duplicateTenderer.id).asValidationFailure()
+            return ValidationError.DuplicateTenderers(duplicateTenderer.id).asValidationError()
+
+        checkForActiveInvitations(params)
+            .onFailure { return it.reason.asValidationError() }
 
         checkForDuplicatePersonBusinessFunctions(tenderers)
-            .doOnError { return it.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
 
         checkForDuplicatePersonDocuments(tenderers)
-            .doOnError { return it.asValidationFailure() }
+            .onFailure { return it.reason.asValidationError() }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkForDuplicatePersonDocuments(tenderers: List<ValidateBidDataParams.Bids.Detail.Tenderer>): ValidationResult<Fail.Error> {
+    private fun checkForActiveInvitations(params: ValidateBidDataParams): Validated<Fail> {
+        val activeInvitations = invitationRepository.findBy(params.cpid)
+            .onFailure { return it.reason.asValidationError() }
+            .filter { invitation -> invitation.status == InvitationStatus.ACTIVE }
+
+        val groupsOfTenderers = activeInvitations
+            .asSequence()
+            .map { invitation -> invitation.tenderers.toSetBy { it.id } }
+            .toSet()
+
+        val receivedTenderers = params.bids.details.first().tenderers.toSetBy { it.id }
+
+        if (receivedTenderers !in groupsOfTenderers)
+            return ValidationError.ActiveInvitationNotFound().asValidationError()
+
+        return Validated.ok()
+    }
+
+    private fun checkForDuplicatePersonDocuments(tenderers: List<ValidateBidDataParams.Bids.Detail.Tenderer>): Validated<Fail.Error> {
         tenderers.flatMap { tenderer -> tenderer.persones }
             .map { person ->
                 val duplicateDocuments = person.businessFunctions
@@ -2192,52 +2033,52 @@ class BidService(
 
                 if (duplicateDocuments != null)
                     return ValidationError.DuplicatePersonDocuments(person.id, duplicateDocuments.id)
-                        .asValidationFailure()
+                        .asValidationError()
             }
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkForDuplicatePersonBusinessFunctions(tenderers: List<ValidateBidDataParams.Bids.Detail.Tenderer>): ValidationResult<Fail.Error> {
+    private fun checkForDuplicatePersonBusinessFunctions(tenderers: List<ValidateBidDataParams.Bids.Detail.Tenderer>): Validated<Fail.Error> {
         tenderers.flatMap { tenderer -> tenderer.persones }
             .map { person ->
                 val duplicateBusinessFunction = person.businessFunctions.getDuplicate { it.id }
                 if (duplicateBusinessFunction != null)
                     return ValidationError.DuplicatePersonBusinessFunctions(person.id, duplicateBusinessFunction.id)
-                        .asValidationFailure()
+                        .asValidationError()
             }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkDocuments(params: ValidateBidDataParams): ValidationResult<Fail.Error> {
+    private fun checkDocuments(params: ValidateBidDataParams): Validated<Fail.Error> {
         val bid = params.bids.details.first()
-        checkForDuplicateBidDocument(bid).doOnError { return it.asValidationFailure() }
-        checkRelatedLots(bid).doOnError { return it.asValidationFailure() }
+        checkForDuplicateBidDocument(bid).onFailure { return it.reason.asValidationError() }
+        checkRelatedLots(bid).onFailure { return it.reason.asValidationError() }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkForDuplicateBidDocument(bid: ValidateBidDataParams.Bids.Detail): ValidationResult<Fail.Error> {
+    private fun checkForDuplicateBidDocument(bid: ValidateBidDataParams.Bids.Detail): Validated<Fail.Error> {
         val documents = bid.documents
 
         if (documents.isNotEmpty()) {
             val duplicateDocument = documents.getDuplicate { it.id }
             if (duplicateDocument != null)
-                return ValidationError.DuplicateDocuments(bid.id, duplicateDocument.id).asValidationFailure()
+                return ValidationError.DuplicateDocuments(bid.id, duplicateDocument.id).asValidationError()
         }
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkRelatedLots(bid: ValidateBidDataParams.Bids.Detail): ValidationResult<Fail.Error> {
+    private fun checkRelatedLots(bid: ValidateBidDataParams.Bids.Detail): Validated<Fail.Error> {
         val documentsRelatedLots = bid.documents.flatMap { it.relatedLots }.toSet()
         if (documentsRelatedLots.isNotEmpty()) {
             if (documentsRelatedLots != bid.relatedLots.toSet())
-                return ValidationError.InvalidRelatedLots().asValidationFailure()
+                return ValidationError.InvalidRelatedLots().asValidationError()
         }
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkItems(params: ValidateBidDataParams): ValidationResult<Fail> {
+    private fun checkItems(params: ValidateBidDataParams): Validated<Fail> {
         val requiresElectronicCatalogue = params.tender.procurementMethodModalities
             .any { it == ProcurementMethodModalities.REQUIRES_ELECTRONIC_CATALOGUE }
 
@@ -2245,104 +2086,122 @@ class BidService(
             val bid = params.bids.details.first()
 
             if (bid.items.isEmpty())
-                return ValidationError.MissingItems().asValidationFailure()
+                return ValidationError.MissingItems().asValidationError()
 
             val duplicateItem = bid.items.getDuplicate { it.id }
             if (duplicateItem != null)
-                return ValidationError.DuplicateItems(bid.id, duplicateItem.id).asValidationFailure()
+                return ValidationError.DuplicateItems(bid.id, duplicateItem.id).asValidationError()
 
-            checkTenderItemsContainBidItems(bid, params).doOnError { return it.asValidationFailure() }
-            checkItemValue(bid, params).doOnError { return it.asValidationFailure() }
-            checkBidAndTenderUnitEquality(bid, params).doOnError { return it.asValidationFailure() }
+            checkBidAndTenderItemsEquality(bid, params).onFailure { return it.reason.asValidationError() }
+            checkItemValue(bid, params).onFailure { return it.reason.asValidationError() }
+            checkBidAndTenderUnitEquality(bid, params).onFailure { return it.reason.asValidationError() }
         }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     private fun checkItemValue(
         bid: ValidateBidDataParams.Bids.Detail,
         params: ValidateBidDataParams
-    ): ValidationResult<Fail> {
+    ): Validated<Fail> {
         bid.items.map { item ->
             val value = item.unit.value
             if (value.amount.value <= BigDecimal.ZERO)
-                return ValidationError.InvalidItemAmount(item.id).asValidationFailure()
+                return ValidationError.InvalidItemAmount(item.id).asValidationError()
 
             if (value.currency != params.tender.value.currency)
-                return ValidationError.InvalidItemCurrency(item.id).asValidationFailure()
+                return ValidationError.InvalidItemCurrency(item.id).asValidationError()
         }
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
-    private fun checkTenderItemsContainBidItems(
+    private fun checkBidAndTenderItemsEquality(
         bid: ValidateBidDataParams.Bids.Detail,
         params: ValidateBidDataParams
-    ): ValidationResult<Fail> {
+    ): Validated<Fail> {
         val bidItems = bid.items.toSetBy { it.id }
         val tenderItems = params.tender.items.toSetBy { it.id }
+        if (bidItems != tenderItems)
+            return ValidationError.InvalidItems().asValidationError()
 
-        if(!tenderItems.containsAll(bidItems))
-            return ValidationError.InvalidItems().asValidationFailure()
-
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     private fun checkBidAndTenderUnitEquality(
         bid: ValidateBidDataParams.Bids.Detail,
         params: ValidateBidDataParams
-    ): ValidationResult<Fail> {
+    ): Validated<Fail> {
         val bidUnits = bid.items.toSetBy { it.unit.id }
         val tenderUnits = params.tender.items.toSetBy { it.unit.id }
         if (bidUnits != tenderUnits)
-            return ValidationError.InvalidUnits().asValidationFailure()
+            return ValidationError.InvalidUnits().asValidationError()
 
-        return ValidationResult.ok()
+        return Validated.ok()
     }
 
     fun createBid(params: CreateBidParams): Result<CreateBidResult, Fail> {
         val bidEntities = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid)
-            .orForwardFail { return it }
+            .onFailure { return it }
+            .asSequence()
+            .map { entity -> entity.bidId to entity }
+            .toMap()
 
-        val receivedBid = params.bids.details.first()
-        val receivedTenderers = receivedBid.tenderers.toSetBy { it.id }
+        val bids = bidEntities.values
+            .map { entity ->
+                transform.tryDeserialization(entity.jsonData, Bid::class.java)
+                    .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+                    .onFailure { return it }
+            }
 
-        val bidEntityToWithdraw = bidEntities.firstOrNull { entity ->
-            val storedBidTenderers = entity.bid.tenderers.toSetBy { it.id }
+        val receivedTenderers = params.bids.details
+            .first()
+            .tenderers
+            .toSetBy { it.id }
 
-            storedBidTenderers == receivedTenderers
-                && entity.bid.isActive()
+        val bidToWithdraw = bids.firstOrNull { bid ->
+            val storedBidTenderers = bid.tenderers.toSetBy { it.id }
+            storedBidTenderers == receivedTenderers && bid.isActive()
         }
 
-        val updatedBidEntity = bidEntityToWithdraw?.copy(bid = bidEntityToWithdraw.bid.copy(status = Status.WITHDRAWN))
-        val createdBid = params.bids.details.first().convert(params.date)
-        val createdBidEntity = getEntity(params, createdBid)
+        val updatedBid = bidToWithdraw?.withdrawBid()
+        val updatedBidEntity = updatedBid
+            ?.let { bid ->
+                val entity = bidEntities.getValue(BidId.fromString(bid.id))
+                BidEntity.Updated(
+                    cpid = entity.cpid,
+                    ocid = entity.ocid,
+                    createdDate = entity.createdDate,
+                    pendingDate = entity.pendingDate,
+                    bid = bid
+                )
+            }
 
-        bidRepository.saveAll(listOfNotNull(updatedBidEntity, createdBidEntity))
+        val createdBid = params.bids.details
+            .first()
+            .convert(params.date)
+        val createdBidEntity = BidEntity.New(
+            cpid = params.cpid,
+            ocid = params.ocid,
+            token = generationService.generateToken(),
+            owner = params.owner,
+            createdDate = params.date,
+            pendingDate = params.date,
+            bid = createdBid
+        )
 
-        return createdBidEntity.bid.convertToCreateBidResult(createdBidEntity.token).asSuccess()
+        bidRepository.save(listOfNotNull(updatedBidEntity, createdBidEntity))
+
+        return createdBid.convertToCreateBidResult(createdBidEntity.token).asSuccess()
     }
 
-    private fun Bid.isActive(): Boolean =
-        status == Status.PENDING &&
-            statusDetails == StatusDetails.EMPTY
+    fun Bid.isActive(): Boolean = status == Status.PENDING && statusDetails == StatusDetails.EMPTY
 
-    fun getEntity(params: CreateBidParams, bid: Bid) = BidEntityComplex(
-        cpid = params.cpid,
-        status = bid.status,
-        bid = bid,
-        token = generationService.generateToken(),
-        bidId = UUID.fromString(bid.id),
-        createdDate = params.date.toDate(),
-        owner = params.owner,
-        pendingDate = params.date.toDate(),
-        stage = params.ocid.stage
-    )
-
+    fun Bid.withdrawBid() = copy(status = Status.WITHDRAWN)
 }
 
 fun checkTenderersInvitations(
-    cpid: String,
+    cpid: Cpid,
     pmd: ProcurementMethod,
     tenderers: List<BidCreateData.Bid.Tenderer>,
     getInvitations: (Cpid) -> Set<String>
@@ -2364,12 +2223,7 @@ fun checkTenderersInvitations(
         ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
         ProcurementMethod.RT, ProcurementMethod.TEST_RT -> {
             val tenderersIds = tenderers.map { it.id }
-            val parsedCpid = Cpid.tryCreateOrNull(cpid)
-                ?: throw ErrorException(
-                    error = ErrorType.INVALID_FORMAT_OF_ATTRIBUTE,
-                    message = "Cannot parse 'cpid' attribute. cpid='${cpid}'"
-                )
-            val activeInvitations = getInvitations(parsedCpid)
+            val activeInvitations = getInvitations(cpid)
             checkTenderersInvitedToTender(tenderersIds, activeInvitations)
         }
     }

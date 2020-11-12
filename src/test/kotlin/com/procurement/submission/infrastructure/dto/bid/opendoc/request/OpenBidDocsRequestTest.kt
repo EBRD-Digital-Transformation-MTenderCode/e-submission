@@ -1,6 +1,7 @@
 package com.procurement.submission.infrastructure.dto.bid.opendoc.request
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
+import com.procurement.submission.infrastructure.handler.v1.model.request.OpenBidDocsRequest
 import org.junit.jupiter.api.Test
 
 class OpenBidDocsRequestTest :
