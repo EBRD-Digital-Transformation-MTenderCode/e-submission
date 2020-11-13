@@ -16,7 +16,8 @@ class PublishInvitationsParams private constructor(
             .filter {
                 when (it) {
                     OperationType.CREATE_PCR,
-                    OperationType.START_SECOND_STAGE -> true
+                    OperationType.START_SECOND_STAGE,
+                    OperationType.COMPLETE_QUALIFICATION -> true
 
                     OperationType.QUALIFICATION_PROTOCOL,
                     OperationType.SUBMIT_BID_IN_PCR -> false
