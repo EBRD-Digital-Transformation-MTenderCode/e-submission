@@ -188,7 +188,8 @@ class InvitationServiceImpl(
         val pendingInvitations = invitationsByStatus[InvitationStatus.PENDING].orEmpty()
 
         when (params.operationType) {
-            OperationType.START_SECOND_STAGE ->
+            OperationType.START_SECOND_STAGE,
+            OperationType.COMPLETE_QUALIFICATION ->
                 if (pendingInvitations.isEmpty())
                     return failure(ValidationError.PendingInvitationsNotFoundOnPublishInvitations(params.cpid))
             OperationType.SUBMIT_BID_IN_PCR,
