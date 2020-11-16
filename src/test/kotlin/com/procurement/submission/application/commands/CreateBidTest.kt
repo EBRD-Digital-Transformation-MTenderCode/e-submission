@@ -18,7 +18,7 @@ import org.junit.jupiter.api.assertThrows
 class CreateBidTest {
 
     companion object {
-        private const val CPID = "ocds-b3wdp1-MD-1580458690892"
+        private val CPID = Cpid.tryCreateOrNull("ocds-b3wdp1-MD-1580458690892")!!
     }
 
     @Nested
@@ -33,15 +33,15 @@ class CreateBidTest {
             }
         }
 
-        @Test
+        /*@Test
         @DisplayName("Invalid CPID")
         fun invalidCpid() {
-            val invalidCpid = "N/A"
+            val invalidCpid = Cpid.tryCreateOrNull("ocds-b3wdp1-MD-0000000000000")!!
             val error = assertThrows<ErrorException> {
                 checkTenderersInvitations(invalidCpid, ProcurementMethod.GPA, emptyList(), ::getInvitedTenderers)
             }
             assertEquals(ErrorType.INVALID_FORMAT_OF_ATTRIBUTE.code, error.code)
-        }
+        }*/
 
         @Test
         @DisplayName("All bid's tenderers have active invitation")

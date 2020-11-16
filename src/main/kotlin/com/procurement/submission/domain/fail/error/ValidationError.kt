@@ -67,13 +67,13 @@ sealed class ValidationError(
             description = "Tender period by cpid '$cpid' and ocid '$ocid' not found."
         )
 
-    class ReceivedDatePrecedesStoredStartDate() :
+    class ReceivedDatePrecedesStoredStartDate :
         ValidationError(
             numberError = "13.6.2",
             description = "Received date must be after stored start date."
         )
 
-    class ReceivedDateIsAfterStoredEndDate() :
+    class ReceivedDateIsAfterStoredEndDate :
         ValidationError(
             numberError = "13.6.3",
             description = "Received date must precede stored end date."
@@ -125,13 +125,13 @@ sealed class ValidationError(
             description = "Bid '$bidId' contains duplicate document '$documentId'."
         )
 
-    class InvalidRelatedLots() :
+    class InvalidRelatedLots :
         ValidationError(
             numberError = "13.7.8",
             description = "Related lots in bids' documents must equal related lots in bids."
         )
 
-    class MissingItems() :
+    class MissingItems :
         ValidationError(
             numberError = "13.7.9",
             description = "Bid items are missing."
@@ -143,7 +143,7 @@ sealed class ValidationError(
             description = "Bid '$bidId' contains duplicate item '$intemId'."
         )
 
-    class InvalidItems() :
+    class InvalidItems :
         ValidationError(
             numberError = "13.7.11",
             description = "Bid items must equal tender items."
@@ -163,9 +163,15 @@ sealed class ValidationError(
             entityId = itemId.toString()
         )
 
-    class InvalidUnits() :
+    class InvalidUnits :
         ValidationError(
             numberError = "13.7.14",
             description = "Bid unit ids must equal tender unit ids."
+        )
+
+    class ActiveInvitationNotFound :
+        ValidationError(
+            numberError = "13.7.15",
+            description = "Active invitation by received group of tenderers not found."
         )
 }

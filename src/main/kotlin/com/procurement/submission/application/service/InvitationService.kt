@@ -4,16 +4,16 @@ import com.procurement.submission.application.params.CheckAbsenceActiveInvitatio
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.ValidationResult
-import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
-import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.DoInvitationsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.PublishInvitationsResult
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.Validated
 
 interface InvitationService {
 
     fun doInvitations(params: DoInvitationsParams): Result<DoInvitationsResult?, Fail>
 
-    fun checkAbsenceActiveInvitations(params: CheckAbsenceActiveInvitationsParams): ValidationResult<Fail>
+    fun checkAbsenceActiveInvitations(params: CheckAbsenceActiveInvitationsParams): Validated<Fail>
 
     fun publishInvitations(params: PublishInvitationsParams): Result<PublishInvitationsResult, Fail>
 }

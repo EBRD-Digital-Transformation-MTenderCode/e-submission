@@ -1,10 +1,10 @@
 package com.procurement.submission.application.params
 
 import com.procurement.submission.domain.fail.error.DataErrors
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asSuccess
 import java.time.LocalDateTime
 
 class ValidateTenderPeriodParams private constructor(
@@ -44,7 +44,8 @@ class ValidateTenderPeriodParams private constructor(
                     OperationType.CREATE_PCR,
                     OperationType.START_SECOND_STAGE -> true
                     OperationType.QUALIFICATION_PROTOCOL,
-                    OperationType.SUBMIT_BID_IN_PCR -> false
+                    OperationType.SUBMIT_BID_IN_PCR,
+                    OperationType.COMPLETE_QUALIFICATION -> false
                 }
             }.toSet()
 
@@ -56,13 +57,13 @@ class ValidateTenderPeriodParams private constructor(
             tender: Tender
         ): Result<ValidateTenderPeriodParams, DataErrors> {
             val dateParsed = parseDate(value = date, attributeName = "date")
-                .orForwardFail { error -> return error }
+                .onFailure { return it }
 
             val pmdParsed = parsePmd(value = pmd, allowedEnums = allowedPmd)
-                .orForwardFail { error -> return error }
+                .onFailure { return it }
 
             val operationTypeParsed = parseOperationType(value = operationType, allowedEnums = allowedOperationTypes)
-                .orForwardFail { error -> return error }
+                .onFailure { return it }
 
             return ValidateTenderPeriodParams(
                 pmd = pmdParsed,
@@ -85,7 +86,7 @@ class ValidateTenderPeriodParams private constructor(
 
                 fun tryCreate(endDate: String): Result<TenderPeriod, DataErrors> {
                     val dateParsed = parseDate(endDate, TENDER_PERIOD_END_DATE_ATTRIBUTE)
-                        .orForwardFail { error -> return error }
+                        .onFailure { return it }
 
                     return TenderPeriod(dateParsed).asSuccess()
                 }

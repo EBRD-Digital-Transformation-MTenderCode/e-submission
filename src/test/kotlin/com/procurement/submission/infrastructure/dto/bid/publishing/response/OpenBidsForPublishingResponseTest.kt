@@ -1,10 +1,11 @@
 package com.procurement.submission.infrastructure.dto.bid.publishing.response
 
 import com.procurement.submission.infrastructure.AbstractDTOTestBase
-import com.procurement.submission.model.dto.response.OpenBidsForPublishingResponse
+import com.procurement.submission.infrastructure.handler.v1.model.response.OpenBidsForPublishingResponse
 import org.junit.jupiter.api.Test
 
-class OpenBidsForPublishingResponseTest : AbstractDTOTestBase<OpenBidsForPublishingResponse>(OpenBidsForPublishingResponse::class.java) {
+class OpenBidsForPublishingResponseTest : AbstractDTOTestBase<OpenBidsForPublishingResponse>(
+    OpenBidsForPublishingResponse::class.java) {
 
     @Test
     fun fully() {
