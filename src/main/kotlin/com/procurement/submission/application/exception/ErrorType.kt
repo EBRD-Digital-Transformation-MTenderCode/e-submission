@@ -41,5 +41,6 @@ enum class ErrorType constructor(val code: String, val message: String) {
     INVALID_CURRENCY("20.12", "Invalid amount."),
     INVALID_FORMAT_OF_ATTRIBUTE("20.13", "Invalid attribute format."),
     ENTITY_NOT_FOUND("20.14", "Entity not found."),
-    RELATION_NOT_FOUND("20.15", "Relation not found.");
+    RELATION_NOT_FOUND("20.15", "Relation not found."),
+    EXTENSION_AFTER_UNSUSPENDED_RULES_NOT_FOUND("20.16", "Extension after unsuspended rules not found.");
 }

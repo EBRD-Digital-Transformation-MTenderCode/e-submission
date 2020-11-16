@@ -1,7 +1,7 @@
 package com.procurement.submission.domain.extension
 
 import com.procurement.submission.domain.fail.error.DataTimeError
-import com.procurement.submission.domain.functional.Result
+import com.procurement.submission.lib.functional.Result
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter

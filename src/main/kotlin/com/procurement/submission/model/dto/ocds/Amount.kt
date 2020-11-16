@@ -2,8 +2,8 @@ package com.procurement.submission.model.dto.ocds
 
 import com.procurement.submission.domain.fail.Fail.Error.Companion.toResult
 import com.procurement.submission.domain.fail.error.DomainErrors
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.validate
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.validate
 import com.procurement.submission.utils.negativeValidationRule
 import com.procurement.submission.utils.scaleValidationRule
 import java.io.Serializable

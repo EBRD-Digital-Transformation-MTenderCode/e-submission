@@ -1,14 +1,14 @@
 package com.procurement.submission.infrastructure.configuration.properties
 
+import com.procurement.submission.infrastructure.api.ApiVersion
 import com.procurement.submission.infrastructure.io.orThrow
-import com.procurement.submission.infrastructure.web.api.version.ApiVersion2
 import java.util.*
 
 object GlobalProperties2 {
     val service = Service()
 
     object App {
-        val apiVersion = ApiVersion2(major = 1, minor = 0, patch = 0)
+        val apiVersion = ApiVersion(major = 1, minor = 0, patch = 0)
     }
 
     class Service {

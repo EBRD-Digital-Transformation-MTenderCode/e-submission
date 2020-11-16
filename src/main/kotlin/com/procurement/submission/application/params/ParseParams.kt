@@ -5,16 +5,13 @@ import com.procurement.submission.domain.extension.tryParseLocalDateTime
 import com.procurement.submission.domain.extension.tryUUID
 import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.fail.error.DataTimeError
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.asFailure
-import com.procurement.submission.domain.functional.asSuccess
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
-import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.EnumElementProvider
 import com.procurement.submission.domain.model.enums.EnumElementProvider.Companion.keysAsStrings
 import com.procurement.submission.domain.model.enums.OperationType
@@ -29,6 +26,9 @@ import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.requirement.RequirementId
 import com.procurement.submission.domain.model.requirement.RequirementResponseId
 import com.procurement.submission.domain.model.tryOwner
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.asFailure
+import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.model.dto.ocds.Amount
 import com.procurement.submission.model.dto.ocds.PersonId
 import java.math.BigDecimal
@@ -156,9 +156,9 @@ private fun <T> parseEnum(
 
 fun parseDate(value: String, attributeName: String = "date"): Result<LocalDateTime, DataErrors.Validation> =
     value.tryParseLocalDateTime()
-        .mapError { fail ->
+        .mapFailure { fail ->
             when (fail) {
-                is DataTimeError.InvalidFormat   -> DataErrors.Validation.DataFormatMismatch(
+                is DataTimeError.InvalidFormat -> DataErrors.Validation.DataFormatMismatch(
                     name = attributeName,
                     actualValue = value,
                     expectedFormat = fail.pattern
@@ -171,7 +171,7 @@ fun parseDate(value: String, attributeName: String = "date"): Result<LocalDateTi
 
 fun parseOwner(value: String): Result<Owner, DataErrors.Validation.DataFormatMismatch> =
     value.tryOwner()
-        .doReturn {
+        .onFailure {
             return Result.failure(
                 DataErrors.Validation.DataFormatMismatch(
                     name = "owner",
@@ -198,7 +198,7 @@ fun parseQualificationId(
 fun parseBidId(
     value: String, attributeName: String
 ): Result<BidId, DataErrors.Validation.DataMismatchToPattern> {
-    val id = value.tryUUID().doReturn {
+    val id = value.tryUUID().onFailure {
         return DataErrors.Validation.DataMismatchToPattern(
             name = attributeName,
             pattern = UUID_PATTERN,
@@ -223,7 +223,7 @@ fun parseItemId(
 fun parseRequirementResponseId(
     value: String, attributeName: String
 ): Result<RequirementResponseId, DataErrors.Validation.DataMismatchToPattern> {
-    val id = value.tryUUID().doReturn {
+    val id = value.tryUUID().onFailure {
         return DataErrors.Validation.DataMismatchToPattern(
             name = attributeName,
             pattern = UUID_PATTERN,
@@ -236,7 +236,7 @@ fun parseRequirementResponseId(
 fun parseRequirementId(
     value: String, attributeName: String
 ): Result<RequirementId, DataErrors.Validation.DataMismatchToPattern> {
-    val id = value.tryUUID().doReturn {
+    val id = value.tryUUID().onFailure {
         return DataErrors.Validation.DataMismatchToPattern(
             name = attributeName,
             pattern = UUID_PATTERN,
@@ -258,13 +258,14 @@ fun parseParsePersonId(
 fun parseAmount(
     value: BigDecimal, attributeName: String
 ): Result<Amount, DataErrors.Validation.DataMismatchToPattern> {
-    val amount = Amount.tryCreate(value).doReturn { error ->
-        return DataErrors.Validation.DataMismatchToPattern(
-            name = attributeName,
-            pattern = error.description,
-            actualValue = value.toString()
-        ).asFailure()
-    }
+    val amount = Amount.tryCreate(value)
+        .onFailure {
+            return DataErrors.Validation.DataMismatchToPattern(
+                name = attributeName,
+                pattern = it.reason.description,
+                actualValue = value.toString()
+            ).asFailure()
+        }
 
     return amount.asSuccess()
 }

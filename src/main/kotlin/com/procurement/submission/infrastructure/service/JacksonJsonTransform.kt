@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.NullNode
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.fail.Fail
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.Result.Companion.failure
-import com.procurement.submission.domain.functional.Result.Companion.success
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.Result.Companion.failure
+import com.procurement.submission.lib.functional.Result.Companion.success
 import java.io.IOException
 
 class JacksonJsonTransform(private val mapper: ObjectMapper) :

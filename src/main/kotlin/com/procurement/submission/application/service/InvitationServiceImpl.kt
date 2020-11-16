@@ -3,25 +3,25 @@ package com.procurement.submission.application.service
 import com.procurement.submission.application.params.CheckAbsenceActiveInvitationsParams
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
-import com.procurement.submission.application.repository.InvitationRepository
+import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
-import com.procurement.submission.domain.functional.MaybeFail
-import com.procurement.submission.domain.functional.Result
-import com.procurement.submission.domain.functional.Result.Companion.failure
-import com.procurement.submission.domain.functional.Result.Companion.success
-import com.procurement.submission.domain.functional.ValidationResult
-import com.procurement.submission.domain.functional.asFailure
-import com.procurement.submission.domain.functional.asSuccess
-import com.procurement.submission.domain.functional.asValidationFailure
 import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.invitation.Invitation
 import com.procurement.submission.domain.model.submission.SubmissionId
-import com.procurement.submission.infrastructure.dto.invitation.create.DoInvitationsResult
-import com.procurement.submission.infrastructure.dto.invitation.publish.PublishInvitationsResult
-import com.procurement.submission.infrastructure.dto.invitation.publish.convert
+import com.procurement.submission.infrastructure.handler.v2.model.response.DoInvitationsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.PublishInvitationsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.convert
+import com.procurement.submission.lib.functional.MaybeFail
+import com.procurement.submission.lib.functional.Result
+import com.procurement.submission.lib.functional.Result.Companion.failure
+import com.procurement.submission.lib.functional.Result.Companion.success
+import com.procurement.submission.lib.functional.Validated
+import com.procurement.submission.lib.functional.asFailure
+import com.procurement.submission.lib.functional.asSuccess
+import com.procurement.submission.lib.functional.asValidationError
 import org.springframework.stereotype.Service
 
 @Service
@@ -35,14 +35,14 @@ class InvitationServiceImpl(
         checkForMissingSubmissions(params).doOnFail { error -> return error.asFailure() }
 
         val invitationsToSave = getInvitationsToSave(params)
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
 
         if (invitationsToSave.isEmpty())
             return null.asSuccess()
 
         val invitationsResponseIsNeeded = rulesService
             .getReturnInvitationsFlag(params.country, params.pmd, params.operationType)
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
 
         invitationRepository.saveAll(cpid = params.cpid, invitations = invitationsToSave)
 
@@ -81,7 +81,7 @@ class InvitationServiceImpl(
 
     fun getInvitationsToSave(params: DoInvitationsParams): Result<List<Invitation>, Fail> {
         val invitations = invitationRepository.findBy(cpid = params.cpid)
-            .orForwardFail { fail -> return fail }
+            .onFailure { return it }
 
         return mutableListOf<Invitation>()
             .apply {
@@ -147,25 +147,25 @@ class InvitationServiceImpl(
             }
     )
 
-    override fun checkAbsenceActiveInvitations(params: CheckAbsenceActiveInvitationsParams): ValidationResult<Fail> {
+    override fun checkAbsenceActiveInvitations(params: CheckAbsenceActiveInvitationsParams): Validated<Fail> {
 
         val activeInvitationsFromDb = invitationRepository.findBy(cpid = params.cpid)
-            .doReturn { error -> return error.asValidationFailure() }
+            .onFailure { error -> return error.reason.asValidationError() }
             .filter { it.status == InvitationStatus.PENDING }
 
         return if (activeInvitationsFromDb.isNotEmpty())
-            ValidationResult.error(ValidationError.ActiveInvitationsFound(activeInvitationsFromDb.map { it.id }))
+            Validated.error(ValidationError.ActiveInvitationsFound(activeInvitationsFromDb.map { it.id }))
         else
-            ValidationResult.ok()
+            Validated.ok()
     }
 
     override fun publishInvitations(params: PublishInvitationsParams): Result<PublishInvitationsResult, Fail> {
         val invitationsByStatus = invitationRepository.findBy(cpid = params.cpid)
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
             .groupBy { it.status }
 
         val pendingInvitations = checkAndGetPendingInvitations(invitationsByStatus, params)
-            .orForwardFail { error -> return error }
+            .onFailure { return it }
 
         val updatedInvitations = pendingInvitations
             .map { invitation -> invitation.copy(status = InvitationStatus.ACTIVE) }
@@ -188,7 +188,8 @@ class InvitationServiceImpl(
         val pendingInvitations = invitationsByStatus[InvitationStatus.PENDING].orEmpty()
 
         when (params.operationType) {
-            OperationType.START_SECOND_STAGE ->
+            OperationType.START_SECOND_STAGE,
+            OperationType.COMPLETE_QUALIFICATION ->
                 if (pendingInvitations.isEmpty())
                     return failure(ValidationError.PendingInvitationsNotFoundOnPublishInvitations(params.cpid))
             OperationType.SUBMIT_BID_IN_PCR,
