@@ -228,3 +228,12 @@ CREATE TABLE IF NOT EXISTS submission.history
     json_data    TEXT,
     PRIMARY KEY (command_id, command_name)
 );
+
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'OF', 'all', 'extensionAfterUnsuspended', '1000');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_OF', 'all', 'extensionAfterUnsuspended', '1000');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'CF', 'all', 'extensionAfterUnsuspended', '1000');
+INSERT INTO ocds.submission_rules (country, pmd, operation_type, parameter, value)
+VALUES ('MD', 'TEST_CF', 'all', 'extensionAfterUnsuspended', '1000');
