@@ -10,9 +10,10 @@ import com.procurement.submission.application.repository.period.model.PeriodEnti
 import com.procurement.submission.domain.extension.format
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
+import com.procurement.submission.domain.model.date.tryParseToLocalDateTime
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
-import com.procurement.submission.domain.model.enums.Stage
+import com.procurement.submission.get
 import com.procurement.submission.infrastructure.handler.v2.model.response.SetTenderPeriodResult
 import com.procurement.submission.lib.functional.MaybeFail
 import com.procurement.submission.lib.functional.Result
@@ -24,8 +25,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.time.format.ResolverStyle
 
 internal class PeriodServiceTest {
 
@@ -33,13 +32,8 @@ internal class PeriodServiceTest {
         val CPID = Cpid.tryCreateOrNull("ocds-b3wdp1-MD-1580458690892") ?: throw RuntimeException()
         val OCID = Ocid.tryCreateOrNull("ocds-b3wdp1-MD-1580458690892-EV-1580458791896") ?: throw RuntimeException()
         private const val COUNTRY = "MD"
-        private val STAGE = Stage.AC
-        private val PMD = ProcurementMethod.CF
 
-        private const val FORMAT_PATTERN = "uuuu-MM-dd'T'HH:mm:ss'Z'"
-        private val FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(FORMAT_PATTERN)
-            .withResolverStyle(ResolverStyle.STRICT)
-        private val DATE = LocalDateTime.parse("2020-02-10T08:49:55Z", FORMATTER)
+        private val DATE = "2020-02-10T08:49:55Z".tryParseToLocalDateTime().get()
         val MINIMUM_DURATION = Duration.ofDays(10).seconds
     }
 
