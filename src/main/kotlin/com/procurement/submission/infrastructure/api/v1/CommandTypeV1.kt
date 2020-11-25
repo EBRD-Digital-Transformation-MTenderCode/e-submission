@@ -10,6 +10,7 @@ enum class CommandTypeV1(override val key: String) : Action {
     CHECK_PERIOD_END_DATE("checkPeriodEndDate"),
     CHECK_TOKEN_OWNER("checkTokenOwner"),
     CREATE_BID("createBid"),
+    EXTEND_TENDER_PERIOD("extendTenderPeriod"),
     FINAL_BIDS_STATUS_BY_LOTS("finalBidsStatusByLots"),
     GET_BIDS_AUCTION("getBidsAuction"),
     GET_BIDS_BY_LOTS("getBidsByLots"),
