@@ -1049,7 +1049,7 @@ class BidService(
                     additionalIdentifiers = updateAdditionalIdentifiers(
                         additionalIdentifiersDb,
                         additionalIdentifiersRequest
-                    ).toSet(),
+                    ),
                     details = updateDetails(tenderer.details, detailsRequest)
                 )
             } else tenderer
@@ -1161,7 +1161,7 @@ class BidService(
     }
 
     private fun updateAdditionalIdentifiers(
-        additionalIdentifiersDb: Set<Identifier>?,
+        additionalIdentifiersDb: List<Identifier>?,
         additionalIdentifiersRequest: List<BidUpdateData.Bid.Tenderer.AdditionalIdentifier>
     ): List<Identifier> {
         val additionalIdentifiersEntities = additionalIdentifiersDb ?: emptyList<Identifier>()
@@ -1373,7 +1373,7 @@ class BidService(
                         legalName = additionalIdentifier.legalName,
                         uri = additionalIdentifier.uri
                     )
-                }.toSet(),
+                },
                 address = Address(
                     streetAddress = tenderer.address.streetAddress,
                     postalCode = tenderer.address.postalCode,

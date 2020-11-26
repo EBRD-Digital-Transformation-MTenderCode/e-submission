@@ -15,7 +15,7 @@ data class OrganizationReference @JsonCreator constructor(
         val address: Address,
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        val additionalIdentifiers: Set<Identifier>?,
+        val additionalIdentifiers: List<Identifier>?,
 
         val contactPoint: ContactPoint,
 
