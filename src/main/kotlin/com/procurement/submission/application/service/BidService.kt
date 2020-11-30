@@ -371,8 +371,8 @@ class BidService(
             }
         }
         //BR-4.8.2
-        val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
-        val documentsDbId = bid.documents?.asSequence()?.map { it.id }?.toSet() ?: setOf()
+        val documentsDtoId = documentsDto.toSetBy { it.id }
+        val documentsDbId = bid.documents?.toSetBy { it.id } ?: setOf()
         val newDocumentsId = documentsDtoId - documentsDbId
         if (newDocumentsId.isEmpty()) throw ErrorException(INVALID_DOCS_FOR_UPDATE)
         val newDocuments = documentsDto.asSequence().filter { it.id in newDocumentsId }.toList()
@@ -557,9 +557,9 @@ class BidService(
     ): List<Document>? {
         return if (documentsDb != null && documentsDb.isNotEmpty()) {
             if (documentsDto.isNotEmpty()) {
-                val documentsDtoId = documentsDto.asSequence().map { it.id }.toSet()
+                val documentsDtoId = documentsDto.toSetBy { it.id }
                 if (documentsDtoId.size != documentsDto.size) throw ErrorException(INVALID_DOCS_ID)
-                val documentsDbId = documentsDb.asSequence().map { it.id }.toSet()
+                val documentsDbId = documentsDb.toSetBy { it.id }
                 val newDocumentsId = documentsDtoId - documentsDbId
                 //update
                 documentsDb.forEach { document ->
@@ -1049,7 +1049,7 @@ class BidService(
                     additionalIdentifiers = updateAdditionalIdentifiers(
                         additionalIdentifiersDb,
                         additionalIdentifiersRequest
-                    ).toSet(),
+                    ),
                     details = updateDetails(tenderer.details, detailsRequest)
                 )
             } else tenderer
@@ -1161,7 +1161,7 @@ class BidService(
     }
 
     private fun updateAdditionalIdentifiers(
-        additionalIdentifiersDb: Set<Identifier>?,
+        additionalIdentifiersDb: List<Identifier>?,
         additionalIdentifiersRequest: List<BidUpdateData.Bid.Tenderer.AdditionalIdentifier>
     ): List<Identifier> {
         val additionalIdentifiersEntities = additionalIdentifiersDb ?: emptyList<Identifier>()
@@ -1373,7 +1373,7 @@ class BidService(
                         legalName = additionalIdentifier.legalName,
                         uri = additionalIdentifier.uri
                     )
-                }.toSet(),
+                },
                 address = Address(
                     streetAddress = tenderer.address.streetAddress,
                     postalCode = tenderer.address.postalCode,
