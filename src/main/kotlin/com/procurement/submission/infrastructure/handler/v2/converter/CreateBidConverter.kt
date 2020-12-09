@@ -654,7 +654,7 @@ fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
                             scheme = additionalIdentifier.scheme,
                             uri = additionalIdentifier.uri
                         )
-                    }.toSet(),
+                    },
                 address = tenderer.address
                     .let { address ->
                         Address(
