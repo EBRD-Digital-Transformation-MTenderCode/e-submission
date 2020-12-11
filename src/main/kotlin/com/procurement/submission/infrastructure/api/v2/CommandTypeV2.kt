@@ -11,10 +11,11 @@ enum class CommandTypeV2(@JsonValue override val key: String) : Action, EnumElem
     CHECK_PERIOD("checkPeriod"),
     CREATE_BID("createBid"),
     DO_INVITATIONS("doInvitations"),
+    GET_BIDS_FOR_PACS("getBidsForPacs"),
+    PUBLISH_INVITATIONS("publishInvitations"),
     SET_TENDER_PERIOD("setTenderPeriod"),
     VALIDATE_BID_DATA("validateBidData"),
-    VALIDATE_TENDER_PERIOD("validateTenderPeriod"),
-    PUBLISH_INVITATIONS("publishInvitations");
+    VALIDATE_TENDER_PERIOD("validateTenderPeriod");
 
     override fun toString(): String = key
 
