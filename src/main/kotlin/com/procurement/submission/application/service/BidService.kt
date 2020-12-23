@@ -132,6 +132,7 @@ class BidService(
 ) {
 
     fun createBid(requestData: BidCreateData, context: BidCreateContext): ResponseDto {
+        requestData.validateDuplicates()
 
         val bidRequest = requestData.bid
         periodService.checkCurrentDateInPeriod(context.cpid, context.ocid, context.startDate)
@@ -184,6 +185,8 @@ class BidService(
     }
 
     fun updateBid(requestData: BidUpdateData, context: BidUpdateContext): ResponseDto {
+        requestData.validateDuplicates()
+
         val bidId = context.id
         val bidRequest = requestData.bid
 
@@ -230,6 +233,30 @@ class BidService(
 
         bidRepository.save(updatedBidEntity)
         return ResponseDto(data = "ok")
+    }
+
+    private fun BidCreateData.validateDuplicates() {
+        bid.documents
+            .forEach { document ->
+                val duplicate = document.relatedLots.getDuplicate { it }
+                if (duplicate != null)
+                    throw ErrorException(
+                        error = ErrorType.DUPLICATE,
+                        message = "Attribute 'bid.documents.relatedLots' has duplicate '$duplicate'."
+                    )
+            }
+    }
+
+    private fun BidUpdateData.validateDuplicates() {
+        bid.documents
+            .forEach { document ->
+                val duplicate = document.relatedLots.getDuplicate { it }
+                if (duplicate != null)
+                    throw ErrorException(
+                        error = ErrorType.DUPLICATE,
+                        message = "Attribute 'bid.documents.relatedLots' has duplicate '$duplicate'."
+                    )
+            }
     }
 
     fun getBidsForEvaluation(
