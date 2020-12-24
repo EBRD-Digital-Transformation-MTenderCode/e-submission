@@ -187,6 +187,7 @@ class BidService(
     }
 
     fun updateBid(requestData: BidUpdateData, context: BidUpdateContext): ResponseDto {
+        requestData.validateTextAttributes()
         requestData.validateDuplicates()
 
         val bidId = context.id
@@ -373,6 +374,124 @@ class BidService(
             }
 
             requirementResponses.forEachIndexed { requirementResponseIdx, requirementResponse ->
+                requirementResponse.title.checkForBlank("bid.documents[$requirementResponseIdx].title")
+                requirementResponse.description.checkForBlank("bid.documents[$requirementResponseIdx].description")
+            }
+        }
+    }
+
+    private fun BidUpdateData.validateTextAttributes() {
+
+        bid.apply {
+            tenderers.forEachIndexed { tendererIdx, tenderer ->
+                tenderer.apply {
+                    additionalIdentifiers.forEachIndexed { additionalIdentifierIdx, additionalIdentifier ->
+                        additionalIdentifier.scheme.checkForBlank("bid.tenderers[$tendererIdx].additionalIdentifiers[$additionalIdentifierIdx].scheme")
+                        additionalIdentifier.id.checkForBlank("bid.tenderers[$tendererIdx].additionalIdentifiers[$additionalIdentifierIdx].id")
+                        additionalIdentifier.legalName.checkForBlank("bid.tenderers[$tendererIdx].additionalIdentifiers[$additionalIdentifierIdx].legalName")
+                        additionalIdentifier.uri.checkForBlank("bid.tenderers[$tendererIdx].additionalIdentifiers[$additionalIdentifierIdx].uri")
+                    }
+
+                    persones.forEachIndexed { personIdx, person ->
+                        person.title.checkForBlank("tenderer.persones[$personIdx].title")
+                        person.name.checkForBlank("tenderer.persones[$personIdx].name")
+                        person.identifier.scheme.checkForBlank("tenderer.persones[$personIdx].identifier.scheme")
+                        person.identifier.id.checkForBlank("tenderer.persones[$personIdx].identifier.id")
+                        person.identifier.uri.checkForBlank("tenderer.persones[$personIdx].identifier.uri")
+
+                        person.businessFunctions
+                            .forEachIndexed { businessFunctionIdx, businessFunction ->
+                                businessFunction.id.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].id")
+                                businessFunction.jobTitle.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].jobTitle")
+
+                                businessFunction.documents
+                                    .forEachIndexed { documentIdx, document ->
+                                        document.title.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
+                                        document.description.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
+                                    }
+                            }
+                    }
+
+                    details?.apply {
+
+                        mainEconomicActivities.forEachIndexed { mainEconomicActivityIdx, mainEconomicActivity ->
+                            mainEconomicActivity.scheme.checkForBlank("tenderer.details.mainEconomicActivities[$mainEconomicActivityIdx].scheme")
+                            mainEconomicActivity.id.checkForBlank("tenderer.details.mainEconomicActivities[$mainEconomicActivityIdx].id")
+                            mainEconomicActivity.description.checkForBlank("tenderer.details.mainEconomicActivities[$mainEconomicActivityIdx].description")
+                            mainEconomicActivity.uri.checkForBlank("tenderer.details.mainEconomicActivities[$mainEconomicActivityIdx].uri")
+                        }
+
+                        permits.forEachIndexed { permitIdx, permit ->
+                            permit.scheme.checkForBlank("tenderer.details.permits[$permitIdx].scheme")
+                            permit.id.checkForBlank("tenderer.details.permits[$permitIdx].id")
+                            permit.url.checkForBlank("tenderer.details.permits[$permitIdx].url")
+
+                            permit.permitDetails
+                                .apply {
+                                    issuedBy.id.checkForBlank("tenderer.details.permits[$permitIdx].permitDetails.issuedBy.id")
+                                    issuedBy.name.checkForBlank("tenderer.details.permits[$permitIdx].permitDetails.issuedBy.name")
+
+                                    issuedThought.id.checkForBlank("tenderer.details.permits[$permitIdx].permitDetails.issuedThought.id")
+                                    issuedThought.name.checkForBlank("tenderer.details.permits[$permitIdx].permitDetails.issuedThought.name")
+                                }
+                        }
+
+                        bankAccounts.forEachIndexed { bankAccountIdx, bankAccount ->
+                            bankAccount.description.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].description")
+                            bankAccount.bankName.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].bankName")
+
+                            bankAccount.address
+                                .apply {
+                                    streetAddress.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.streetAddress")
+                                    postalCode.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.postalCode")
+
+                                    addressDetails.apply {
+                                        country.scheme.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.country.scheme")
+                                        country.id.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.country.id")
+                                        country.description.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.country.description")
+                                        country.uri.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.country.uri")
+
+                                        region.scheme.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.region.scheme")
+                                        region.id.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.region.id")
+                                        region.description.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.region.description")
+                                        region.uri.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.region.uri")
+
+                                        locality.scheme.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.locality.scheme")
+                                        locality.id.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.locality.id")
+                                        locality.description.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.locality.description")
+                                        locality.uri.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].address.addressDetails.locality.uri")
+                                    }
+                                }
+
+                            bankAccount.identifier.scheme.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].identifier.scheme")
+                            bankAccount.identifier.id.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].identifier.id")
+                            bankAccount.accountIdentification.scheme.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].accountIdentification.scheme")
+                            bankAccount.accountIdentification.id.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].accountIdentification.id")
+
+                            bankAccount.additionalAccountIdentifiers
+                                .forEachIndexed { additionalAccountIdentifierIdx, additionalAccountIdentifier ->
+                                    additionalAccountIdentifier.scheme.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].additionalAccountIdentifiers[$additionalAccountIdentifierIdx].scheme")
+                                    additionalAccountIdentifier.id.checkForBlank("tenderer.details.bankAccounts[$bankAccountIdx].additionalAccountIdentifiers[$additionalAccountIdentifierIdx].id")
+                                }
+                        }
+
+                        legalForm?.apply {
+                            scheme.checkForBlank("tenderer.details.legalForm.scheme")
+                            id.checkForBlank("tenderer.details.legalForm.id")
+                            description.checkForBlank("tenderer.details.legalForm.description")
+                            uri.checkForBlank("tenderer.details.legalForm.uri")
+                        }
+                    }
+                }
+            }
+
+            documents.forEachIndexed { documentIdx, document ->
+                document.title.checkForBlank("bid.documents[$documentIdx].title")
+                document.description.checkForBlank("bid.documents[$documentIdx].description")
+            }
+
+            requirementResponses.forEachIndexed { requirementResponseIdx, requirementResponse ->
+                requirementResponse.id.checkForBlank("bid.documents[$requirementResponseIdx].id")
                 requirementResponse.title.checkForBlank("bid.documents[$requirementResponseIdx].title")
                 requirementResponse.description.checkForBlank("bid.documents[$requirementResponseIdx].description")
             }
