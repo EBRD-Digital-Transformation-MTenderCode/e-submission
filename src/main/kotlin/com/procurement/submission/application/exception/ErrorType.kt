@@ -43,5 +43,6 @@ enum class ErrorType constructor(val code: String, val message: String) {
     ENTITY_NOT_FOUND("20.14", "Entity not found."),
     RELATION_NOT_FOUND("20.15", "Relation not found."),
     EXTENSION_AFTER_UNSUSPENDED_RULES_NOT_FOUND("20.16", "Extension after unsuspended rules not found."),
-    DUPLICATE("20.17", "Duplicate.");
+    DUPLICATE("20.17", "Duplicate."),
+    INCORRECT_VALUE_ATTRIBUTE("20.18", "Incorrect an attribute value.");
 }
