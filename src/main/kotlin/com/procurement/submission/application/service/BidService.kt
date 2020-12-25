@@ -506,6 +506,17 @@ class BidService(
     }
 
     private fun BidCreateData.validateDuplicates() {
+        bid.tenderers
+            .forEachIndexed { tendererIdx, tenderer ->
+                val duplicate =
+                    tenderer.details.mainEconomicActivities.getDuplicate { it.scheme.toUpperCase() + it.id.toUpperCase() }
+                if (duplicate != null)
+                    throw ErrorException(
+                        error = ErrorType.DUPLICATE,
+                        message = "Attribute 'bid.tenderers[$tendererIdx].details.mainEconomicActivities' has duplicate by scheme '${duplicate.scheme}' and id '${duplicate.id}'."
+                    )
+            }
+
         bid.documents
             .forEach { document ->
                 val duplicate = document.relatedLots.getDuplicate { it }
@@ -518,6 +529,17 @@ class BidService(
     }
 
     private fun BidUpdateData.validateDuplicates() {
+        bid.tenderers
+            .forEachIndexed { tendererIdx, tenderer ->
+                val duplicate =
+                    tenderer.details?.mainEconomicActivities.getDuplicate { it.scheme.toUpperCase() + it.id.toUpperCase() }
+                if (duplicate != null)
+                    throw ErrorException(
+                        error = ErrorType.DUPLICATE,
+                        message = "Attribute 'bid.tenderers[$tendererIdx].details.mainEconomicActivities' has duplicate by scheme '${duplicate.scheme}' and id '${duplicate.id}'."
+                    )
+            }
+
         bid.documents
             .forEach { document ->
                 val duplicate = document.relatedLots.getDuplicate { it }
