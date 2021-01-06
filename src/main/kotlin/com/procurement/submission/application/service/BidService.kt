@@ -246,9 +246,9 @@ class BidService(
                     name.checkForBlank("bid.tenderers[$tendererIdx].name")
 
                     identifier.apply {
-                        id.checkForBlank("bid.tenderers[$tendererIdx].id")
-                        legalName.checkForBlank("bid.tenderers[$tendererIdx].legalName")
-                        uri.checkForBlank("bid.tenderers[$tendererIdx].uri")
+                        id.checkForBlank("bid.tenderers[$tendererIdx].identifier.id")
+                        legalName.checkForBlank("bid.tenderers[$tendererIdx].identifier.legalName")
+                        uri.checkForBlank("bid.tenderers[$tendererIdx].identifier.uri")
                     }
 
                     additionalIdentifiers.forEachIndexed { additionalIdentifierIdx, additionalIdentifier ->
@@ -290,7 +290,7 @@ class BidService(
                                 businessFunction.documents
                                     .forEachIndexed { documentIdx, document ->
                                         document.title.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
-                                        document.description.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
+                                        document.description.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].description")
                                     }
                             }
                     }
@@ -374,8 +374,8 @@ class BidService(
             }
 
             requirementResponses.forEachIndexed { requirementResponseIdx, requirementResponse ->
-                requirementResponse.title.checkForBlank("bid.documents[$requirementResponseIdx].title")
-                requirementResponse.description.checkForBlank("bid.documents[$requirementResponseIdx].description")
+                requirementResponse.title.checkForBlank("bid.requirementResponses[$requirementResponseIdx].title")
+                requirementResponse.description.checkForBlank("bid.requirementResponses[$requirementResponseIdx].description")
             }
         }
     }
