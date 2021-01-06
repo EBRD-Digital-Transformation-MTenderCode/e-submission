@@ -407,7 +407,7 @@ class BidService(
                                 businessFunction.documents
                                     .forEachIndexed { documentIdx, document ->
                                         document.title.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
-                                        document.description.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
+                                        document.description.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].description")
                                     }
                             }
                     }
@@ -491,9 +491,9 @@ class BidService(
             }
 
             requirementResponses.forEachIndexed { requirementResponseIdx, requirementResponse ->
-                requirementResponse.id.checkForBlank("bid.documents[$requirementResponseIdx].id")
-                requirementResponse.title.checkForBlank("bid.documents[$requirementResponseIdx].title")
-                requirementResponse.description.checkForBlank("bid.documents[$requirementResponseIdx].description")
+                requirementResponse.id.checkForBlank("bid.requirementResponses[$requirementResponseIdx].id")
+                requirementResponse.title.checkForBlank("bid.requirementResponses[$requirementResponseIdx].title")
+                requirementResponse.description.checkForBlank("bid.requirementResponses[$requirementResponseIdx].description")
             }
         }
     }
