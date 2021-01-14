@@ -2522,6 +2522,9 @@ class BidService(
             return ValidationError.ValidateBidData.DuplicatedRequirementResponseIds(duplicatedIds).asValidationError()
         }
 
+        /**
+         * Check tenderer answered only once per requirement
+         */
         responses
             .groupBy(keySelector = { it.relatedTenderer?.id }, valueTransform = { it.requirement })
             .filter { (_, requirements) -> !requirements.uniqueBy { it.id } }
