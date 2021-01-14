@@ -46,7 +46,9 @@ import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.repository.bid.model.BidEntity
 import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.getDuplicate
+import com.procurement.submission.domain.extension.getDuplicated
 import com.procurement.submission.domain.extension.toSetBy
+import com.procurement.submission.domain.extension.uniqueBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.domain.model.Cpid
@@ -2285,6 +2287,7 @@ class BidService(
         checkTenderers(params).onFailure { return it.reason.asValidationError() }
         checkDocuments(params).onFailure { return it.reason.asValidationError() }
         checkItems(params).onFailure { return it.reason.asValidationError() }
+        checkBid(params.bids).onFailure { return it.reason.asValidationError() }
 
         return Validated.ok()
     }
@@ -2293,7 +2296,9 @@ class BidService(
         val requiresElectronicCatalogue = params.tender.procurementMethodModalities
             .any { it == ProcurementMethodModalities.REQUIRES_ELECTRONIC_CATALOGUE }
 
-        if (!requiresElectronicCatalogue) {
+        val pmd = params.pmd
+
+        if (pmd.isOpenOrSelective() || (pmd.isFrameworkAgreement() && !requiresElectronicCatalogue)) {
             val bid = params.bids.details.first()
             val value = bid.value ?: return ValidationError.MissingBidValue(bid.id).asValidationError()
 
@@ -2306,6 +2311,44 @@ class BidService(
 
         return Validated.ok()
     }
+
+    private fun ProcurementMethod.isOpenOrSelective() =
+        when(this) {
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> true
+
+            ProcurementMethod.CD, ProcurementMethod.TEST_CD,
+            ProcurementMethod.CF, ProcurementMethod.TEST_CF,
+            ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+            ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+            ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+            ProcurementMethod.IP, ProcurementMethod.TEST_IP,
+            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.OF, ProcurementMethod.TEST_OF,
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP -> false
+        }
+
+    private fun ProcurementMethod.isFrameworkAgreement() =
+        when(this) {
+            ProcurementMethod.OF, ProcurementMethod.TEST_OF,
+            ProcurementMethod.CF, ProcurementMethod.TEST_CF -> true
+
+            ProcurementMethod.CD, ProcurementMethod.TEST_CD,
+            ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+            ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+            ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.IP, ProcurementMethod.TEST_IP,
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
+        }
 
     private fun checkTenderers(params: ValidateBidDataParams): Validated<Fail> {
         val tenderers = params.bids.details.first().tenderers
@@ -2414,6 +2457,93 @@ class BidService(
             checkTenderItemsContainBidItems(bid, params).onFailure { return it.reason.asValidationError() }
             checkItemValue(bid, params).onFailure { return it.reason.asValidationError() }
             checkBidAndTenderUnitEquality(bid, params).onFailure { return it.reason.asValidationError() }
+        }
+
+        return Validated.ok()
+    }
+
+    private fun checkBid(bids: ValidateBidDataParams.Bids): Validated<Fail> {
+        checkBidRelation(bids).onFailure { return it.reason.asValidationError() }
+
+        bids.details
+            .flatMap { it.requirementResponses }
+            .run {
+                checkRequirementResponses(this)
+                    .onFailure { return it.reason.asValidationError() }
+
+                checkDocuments(this, bids.details.flatMap { it.documents })
+                    .onFailure { return it.reason.asValidationError() }
+            }
+
+        bids.details.forEach { bid ->
+            if (bid.tenderers.size > 1) {
+                bid.requirementResponses
+                    .filter { it.relatedTenderer == null }
+                    .forEach { return ValidationError.ValidateBidData.MissingRelatedTenderer(it.id).asValidationError() }
+                }
+            }
+
+        return Validated.ok()
+    }
+
+    /**
+     * Check bid related only to one lot
+     */
+    private fun checkBidRelation(bids: ValidateBidDataParams.Bids): Validated<Fail> {
+        bids.details.forEach { bid ->
+            if (bid.relatedLots.size != 1)
+                return ValidationError.ValidateBidData.InvalidBidRelationToLot(bid.id).asValidationError()
+        }
+        return Validated.ok()
+    }
+
+    private fun checkDocuments(
+        responses: List<ValidateBidDataParams.Bids.Detail.RequirementResponse>,
+        documents: List<ValidateBidDataParams.Bids.Detail.Document>
+    ): Validated<Fail> {
+        val receivedDocuments = documents.toSetBy { it.id }
+
+        responses
+            .flatMap { it.evidences }
+            .mapNotNull { it.relatedDocument?.id }
+            .filter { specifiedDocument -> specifiedDocument !in receivedDocuments }
+            .forEach { missingDocument -> return ValidationError.ValidateBidData.MissingDocuments(missingDocument).asValidationError() }
+
+        return Validated.ok()
+    }
+
+    private fun checkRequirementResponses(responses: List<ValidateBidDataParams.Bids.Detail.RequirementResponse>): Validated<Fail> {
+
+        /**
+         *  Check Ids uniqueness
+         */
+        if (!responses.uniqueBy { it.id }) {
+            val duplicatedIds = responses.getDuplicated { it.id }
+            return ValidationError.ValidateBidData.DuplicatedRequirementResponseIds(duplicatedIds).asValidationError()
+        }
+
+        responses
+            .groupBy(keySelector = { it.relatedTenderer?.id }, valueTransform = { it.requirement })
+            .filter { (_, requirements) -> !requirements.uniqueBy { it.id } }
+            .forEach { (tenderer, requirements) ->
+                val duplicatedResponse = requirements.getDuplicated { it.id }.first()
+                return ValidationError.ValidateBidData.TooManyRequirementResponse(tenderer, duplicatedResponse).asValidationError()
+            }
+
+        val allReceivedEvidences = responses.flatMap { it.evidences }
+        if (!allReceivedEvidences.uniqueBy { it.id }) {
+            val duplicatedIds = responses.getDuplicated { it.id }
+            return ValidationError.ValidateBidData.DuplicatedEvidencesIds(duplicatedIds).asValidationError()
+        }
+
+        responses.forEach { response ->
+            response.period?.let { period ->
+                if (!period.endDate.isBefore(LocalDateTime.now()))
+                    return ValidationError.ValidateBidData.InvalidPeriodEndDate(response.id).asValidationError()
+
+                if (!period.startDate.isBefore(period.endDate))
+                    return ValidationError.ValidateBidData.InvalidPeriod(response.id).asValidationError()
+            }
         }
 
         return Validated.ok()
