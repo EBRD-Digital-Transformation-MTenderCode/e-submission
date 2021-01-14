@@ -11,6 +11,7 @@ import com.procurement.submission.domain.model.invitation.InvitationId
 import com.procurement.submission.domain.model.item.ItemId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import java.time.Duration
+import java.util.*
 
 sealed class ValidationError(
     numberError: String,
@@ -50,7 +51,7 @@ sealed class ValidationError(
         ) : EntityNotFound("Invitations rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
     }
 
-    class TenderPeriodDurationError(expectedDuration: Duration): ValidationError(
+    class TenderPeriodDurationError(expectedDuration: Duration) : ValidationError(
         numberError = "13.4.2",
         description = "Actual tender period duration is less than '${expectedDuration.toDays()}' days."
     )
@@ -174,4 +175,56 @@ sealed class ValidationError(
             numberError = "13.7.15",
             description = "Active invitation by received group of tenderers not found."
         )
+
+    object ValidateBidData {
+
+        class InvalidBidRelationToLot(bidId: UUID) :
+            ValidationError(
+                numberError = "13.7.16",
+                description = "Bid $bidId must be related only to one lot."
+            )
+
+        class DuplicatedRequirementResponseIds(duplicatedIds: List<String>) :
+            ValidationError(
+                numberError = "13.7.17",
+                description = "Bid's requirement responses contains duplicated id $duplicatedIds."
+            )
+
+        class MissingRelatedTenderer(responseId: String) :
+            ValidationError(
+                numberError = "13.7.18",
+                description = "Missing 'relatedTenderer' attribute in requirement response $responseId."
+            )
+
+        class TooManyRequirementResponse(tendererId: String?,  requirementId: String) :
+            ValidationError(
+                numberError = "13.7.19",
+                description = "Tenderer ${tendererId.orEmpty()} gave more than one responses on requirement $requirementId."
+            )
+
+        class DuplicatedEvidencesIds(duplicatedIds: List<String>) :
+            ValidationError(
+                numberError = "13.7.20",
+                description = "Requirement responses evidences contains duplicated id $duplicatedIds."
+            )
+
+        class MissingDocuments(documentId: String) :
+            ValidationError(
+                numberError = "13.7.21",
+                description = "Missing documents $documentId specified in requirement responses."
+            )
+
+        class InvalidPeriodEndDate(responseId: String) :
+            ValidationError(
+                numberError = "13.7.22",
+                description = "End date specified in requirement response $responseId less than current date."
+            )
+
+        class InvalidPeriod(responseId: String) :
+            ValidationError(
+                numberError = "13.7.23",
+                description = "Invalid period specified in requirement response $responseId. End date must be after start date."
+            )
+    }
+
 }
