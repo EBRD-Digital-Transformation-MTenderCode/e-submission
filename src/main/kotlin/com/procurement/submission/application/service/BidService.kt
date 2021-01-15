@@ -1385,6 +1385,8 @@ class BidService(
                 title = requirementResponse.title,
                 description = requirementResponse.description,
                 value = requirementResponse.value,
+                relatedTenderer = null,
+                evidences = emptyList(),
                 requirement = Requirement(
                     id = requirementResponse.requirement.id
                 ),
@@ -1854,6 +1856,8 @@ class BidService(
                 title = requirementResponse.title,
                 description = requirementResponse.description,
                 value = requirementResponse.value,
+                relatedTenderer = null,
+                evidences = emptyList(),
                 requirement = Requirement(
                     id = requirementResponse.requirement.id
                 ),
@@ -2498,6 +2502,7 @@ class BidService(
 
         val createdBid = receivedBid
             .convert(params.date)
+
         val createdBidEntity = BidEntity.New(
             cpid = params.cpid,
             ocid = params.ocid,

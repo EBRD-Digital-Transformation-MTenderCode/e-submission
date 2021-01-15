@@ -47,6 +47,7 @@ import com.procurement.submission.model.dto.ocds.ContactPoint
 import com.procurement.submission.model.dto.ocds.CountryDetails
 import com.procurement.submission.model.dto.ocds.Details
 import com.procurement.submission.model.dto.ocds.Document
+import com.procurement.submission.model.dto.ocds.Evidence
 import com.procurement.submission.model.dto.ocds.Identifier
 import com.procurement.submission.model.dto.ocds.IssuedBy
 import com.procurement.submission.model.dto.ocds.IssuedThought
@@ -55,11 +56,13 @@ import com.procurement.submission.model.dto.ocds.LegalForm
 import com.procurement.submission.model.dto.ocds.LocalityDetails
 import com.procurement.submission.model.dto.ocds.MainEconomicActivity
 import com.procurement.submission.model.dto.ocds.Organization
+import com.procurement.submission.model.dto.ocds.OrganizationReference
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Permit
 import com.procurement.submission.model.dto.ocds.PermitDetails
 import com.procurement.submission.model.dto.ocds.Persone
 import com.procurement.submission.model.dto.ocds.RegionDetails
+import com.procurement.submission.model.dto.ocds.RelatedDocument
 import com.procurement.submission.model.dto.ocds.Requirement
 import com.procurement.submission.model.dto.ocds.RequirementResponse
 import com.procurement.submission.model.dto.ocds.ValidityPeriod
@@ -644,6 +647,25 @@ fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
             RequirementResponse(
                 id = requirementResponse.id,
                 value = requirementResponse.value,
+                relatedTenderer = requirementResponse.relatedTenderer
+                    ?.let { tenderer ->
+                        OrganizationReference(
+                            id = tenderer.id,
+                            name = tenderer.name
+                        )
+                    },
+                evidences = requirementResponse.evidences.orEmpty()
+                    .map { evidence ->
+                        Evidence(
+                            id = evidence.id,
+                            title = evidence.title,
+                            description = evidence.description,
+                            relatedDocument = evidence.relatedDocument
+                                ?.let { document ->
+                                    RelatedDocument(id = document.id)
+                                }
+                        )
+                    },
                 requirement = Requirement(requirementResponse.requirement.id.toString()),
                 period = requirementResponse.period
                     ?.let { period ->
