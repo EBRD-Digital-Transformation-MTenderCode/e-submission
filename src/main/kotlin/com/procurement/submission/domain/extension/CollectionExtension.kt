@@ -63,3 +63,9 @@ inline fun <T, V> Collection<T>?.getDuplicate(selector: (T) -> V): T? {
     }
     return null
 }
+
+inline fun <T, V> Collection<T>.getDuplicated(selector: (T) -> V): List<V> =
+    this.map { selector(it) }
+        .groupBy { it }
+        .filter { (_, used) -> used.size > 1  }
+        .map { it.key }
