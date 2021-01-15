@@ -14,28 +14,28 @@ import java.time.LocalDateTime
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class Bid @JsonCreator constructor(
 
-        var id: String,
+    var id: String,
 
-        var date: LocalDateTime,
+    var date: LocalDateTime,
 
-        var status: Status,
+    var status: Status,
 
-        var statusDetails: StatusDetails,
+    var statusDetails: StatusDetails,
 
-        val tenderers: List<OrganizationReference>,
+    val tenderers: List<Organization>,
 
-        @JsonDeserialize(using = MoneyDeserializer::class)
+    @JsonDeserialize(using = MoneyDeserializer::class)
         @JsonSerialize(using = MoneySerializer::class)
         var value: Money?,
 
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
         var documents: List<Document>?,
 
-        val relatedLots: List<String>,
+    val relatedLots: List<String>,
 
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
         val requirementResponses: List<RequirementResponse>?,
 
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
         var items: List<Item>? = null
 )

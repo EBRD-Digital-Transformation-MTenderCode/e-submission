@@ -205,6 +205,20 @@
           {
             "id": "string",
             "value": "Unknown Type: string,number,integer,boolean",
+            "relatedTenderer": {
+              "id": "string",
+              "name": "string"
+            },
+            "evidences": [
+              {
+                "id": "string",
+                "title": "string",
+                "description": "string",
+                "relatedDocument": {
+                  "id": "string"
+                }
+              }
+            ],
             "requirement": {
               "id": "string"
             },
