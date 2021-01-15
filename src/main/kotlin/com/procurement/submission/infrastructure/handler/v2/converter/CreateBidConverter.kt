@@ -965,6 +965,27 @@ fun Bid.convertToCreateBidResult(token: Token) = CreateBidResult(
                     CreateBidResult.Bids.Detail.RequirementResponse(
                         id = requirementResponse.id,
                         value = requirementResponse.value,
+                        relatedTenderer = requirementResponse.relatedTenderer
+                            ?.let { tenderer ->
+                                CreateBidResult.Bids.Detail.RequirementResponse.OrganizationReference(
+                                    id = tenderer.id,
+                                    name = tenderer.name
+                                )
+                            },
+                        evidences = requirementResponse.evidences.orEmpty()
+                            .map { evidence ->
+                                CreateBidResult.Bids.Detail.RequirementResponse.Evidence(
+                                    id = evidence.id,
+                                    title = evidence.title,
+                                    description = evidence.description,
+                                    relatedDocument = evidence.relatedDocument
+                                        ?.let { document ->
+                                            CreateBidResult.Bids.Detail.RequirementResponse.Evidence.RelatedDocument(
+                                                id = document.id
+                                            )
+                                        }
+                                )
+                            },
                         requirement = CreateBidResult.Bids.Detail.RequirementResponse.Requirement(
                             requirementResponse.requirement.id
                         ),
