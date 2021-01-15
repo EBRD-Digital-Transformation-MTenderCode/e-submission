@@ -105,7 +105,7 @@ import com.procurement.submission.model.dto.ocds.IssuedThought
 import com.procurement.submission.model.dto.ocds.LegalForm
 import com.procurement.submission.model.dto.ocds.LocalityDetails
 import com.procurement.submission.model.dto.ocds.MainEconomicActivity
-import com.procurement.submission.model.dto.ocds.OrganizationReference
+import com.procurement.submission.model.dto.ocds.Organization
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Permit
 import com.procurement.submission.model.dto.ocds.PermitDetails
@@ -1301,7 +1301,7 @@ class BidService(
             }
     }
 
-    private fun checkOneAuthority(tenderers: List<OrganizationReference>) {
+    private fun checkOneAuthority(tenderers: List<Organization>) {
         fun BusinessFunctionType.validate() {
             when (this) {
                 BusinessFunctionType.AUTHORITY,
@@ -1339,7 +1339,7 @@ class BidService(
         }
     }
 
-    private fun updateTenderers(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<OrganizationReference> {
+    private fun updateTenderers(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<Organization> {
         if (bidRequest.tenderers.isEmpty()) return bidEntity.tenderers
 
         val tenderersRequestIds = bidRequest.tenderers.map { it.id.toString() }
@@ -1674,9 +1674,9 @@ class BidService(
         }
     }
 
-    private fun List<BidCreateData.Bid.Tenderer>.toBidEntityTenderers(): List<OrganizationReference> {
+    private fun List<BidCreateData.Bid.Tenderer>.toBidEntityTenderers(): List<Organization> {
         return this.map { tenderer ->
-            OrganizationReference(
+            Organization(
                 id = tenderer.id,
                 name = tenderer.name,
                 identifier = Identifier(

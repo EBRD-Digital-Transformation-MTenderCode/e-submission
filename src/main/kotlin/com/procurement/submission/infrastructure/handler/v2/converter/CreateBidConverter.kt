@@ -54,7 +54,7 @@ import com.procurement.submission.model.dto.ocds.Item
 import com.procurement.submission.model.dto.ocds.LegalForm
 import com.procurement.submission.model.dto.ocds.LocalityDetails
 import com.procurement.submission.model.dto.ocds.MainEconomicActivity
-import com.procurement.submission.model.dto.ocds.OrganizationReference
+import com.procurement.submission.model.dto.ocds.Organization
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Permit
 import com.procurement.submission.model.dto.ocds.PermitDetails
@@ -658,7 +658,7 @@ fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
         },
     tenderers = tenderers
         .map { tenderer ->
-            OrganizationReference(
+            Organization(
                 id = tenderer.id,
                 name = tenderer.name,
                 identifier = tenderer.identifier
