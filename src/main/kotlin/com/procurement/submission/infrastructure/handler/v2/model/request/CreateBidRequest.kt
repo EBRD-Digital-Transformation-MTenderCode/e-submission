@@ -331,10 +331,36 @@ data class CreateBidRequest(
                 @param:JsonProperty("requirement") @field:JsonProperty("requirement") val requirement: Requirement,
 
                 @JsonInclude(JsonInclude.Include.NON_NULL)
+                @field:JsonProperty("relatedTenderer") @param:JsonProperty("relatedTenderer") val relatedTenderer: OrganizationReference?,
+
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @field:JsonProperty("evidences") @param:JsonProperty("evidences") val evidences: List<Evidence>?,
+
+                @JsonInclude(JsonInclude.Include.NON_NULL)
                 @param:JsonProperty("period") @field:JsonProperty("period") val period: Period?
             ) {
                 data class Requirement(
                     @param:JsonProperty("id") @field:JsonProperty("id") val id: String
+                )
+
+                data class Evidence(
+                    @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
+                    @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
+
+                    @JsonInclude(JsonInclude.Include.NON_NULL)
+                    @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
+
+                    @JsonInclude(JsonInclude.Include.NON_NULL)
+                    @field:JsonProperty("relatedDocument") @param:JsonProperty("relatedDocument") val relatedDocument: RelatedDocument?
+                ) {
+                    data class RelatedDocument(
+                        @field:JsonProperty("id") @param:JsonProperty("id") val id: String
+                    )
+                }
+
+                data class OrganizationReference(
+                    @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
+                    @field:JsonProperty("name") @param:JsonProperty("name") val name: String
                 )
 
                 data class Period(

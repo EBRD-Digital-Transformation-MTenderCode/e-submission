@@ -142,11 +142,18 @@ private fun CreateBidRequest.Bids.Detail.RequirementResponse.convert(path: Strin
     val period = period?.convert(path)
         ?.onFailure { return it }
 
+    val relatedTenderer = relatedTenderer?.convert()
+
+    val evidences = evidences.orEmpty()
+        .map { it.convert() }
+
     return CreateBidParams.Bids.Detail.RequirementResponse(
         id = id,
         requirement = requirement,
         period = period,
-        value = value
+        value = value,
+        relatedTenderer = relatedTenderer,
+        evidences = evidences
     ).asSuccess()
 }
 
@@ -162,6 +169,23 @@ private fun CreateBidRequest.Bids.Detail.RequirementResponse.Period.convert(path
         endDate = endDate
     ).asSuccess()
 }
+
+private fun CreateBidRequest.Bids.Detail.RequirementResponse.OrganizationReference.convert(): CreateBidParams.Bids.Detail.RequirementResponse.OrganizationReference =
+    CreateBidParams.Bids.Detail.RequirementResponse.OrganizationReference(
+        id = id,
+        name = name
+    )
+
+private fun CreateBidRequest.Bids.Detail.RequirementResponse.Evidence.convert(): CreateBidParams.Bids.Detail.RequirementResponse.Evidence =
+    CreateBidParams.Bids.Detail.RequirementResponse.Evidence(
+        id = id,
+        title = title,
+        description = description,
+        relatedDocument = relatedDocument?.convert()
+    )
+
+private fun CreateBidRequest.Bids.Detail.RequirementResponse.Evidence.RelatedDocument.convert(): CreateBidParams.Bids.Detail.RequirementResponse.Evidence.RelatedDocument =
+    CreateBidParams.Bids.Detail.RequirementResponse.Evidence.RelatedDocument(id = id)
 
 private fun CreateBidRequest.Bids.Detail.RequirementResponse.Requirement.convert(path: String): Result<CreateBidParams.Bids.Detail.RequirementResponse.Requirement, DataErrors> {
     val id = parseRequirementId(id, "$path.id")
