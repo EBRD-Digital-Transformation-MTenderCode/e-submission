@@ -72,6 +72,19 @@
         "amount": 100.00,
         "currency": "MDL"
       },
+      "requirementResponses": [
+        {
+          "id": "bids[0].requirementResponses[0].id",
+          "value": "bids[0].requirementResponses[0].value",
+          "requirement": {
+            "id": "bids[0].requirementResponses[0].requirement.id"
+          },
+          "period": {
+            "startDate": "2019-11-11T12:00:12Z",
+            "endDate": "2019-11-11T12:00:12Z"
+          }
+        }
+      ],
       "relatedLots": [
         "1091acb1-4b11-4cc5-83e2-5c584c4b9a57"
       ]
