@@ -163,6 +163,12 @@
         {
           "id": "bids[0].requirementResponses[0].id",
           "value": "bids[0].requirementResponses[0].value",
+          "evidences": [
+            {
+              "id": "string",
+              "title": "string"
+            }
+          ],
           "requirement": {
             "id": "bids[0].requirementResponses[0].requirement.id"
           },
