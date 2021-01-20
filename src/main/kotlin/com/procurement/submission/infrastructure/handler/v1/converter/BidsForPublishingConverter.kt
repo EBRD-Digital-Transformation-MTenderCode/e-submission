@@ -303,7 +303,28 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
                                     },
                                 requirement = OpenBidsForPublishingResponse.Bid.RequirementResponse.Requirement(
                                     id = requirementResponse.requirement.id
-                                )
+                                ),
+                                relatedTenderer = requirementResponse.relatedTenderer
+                                    ?.let { tenderer ->
+                                        OpenBidsForPublishingResponse.Bid.RequirementResponse.OrganizationReference(
+                                            id = tenderer.id,
+                                            name = tenderer.name
+                                        )
+                                    },
+                                evidences = requirementResponse.evidences
+                                    ?.map { evidence ->
+                                        OpenBidsForPublishingResponse.Bid.RequirementResponse.Evidence(
+                                            id = evidence.id,
+                                            title = evidence.title,
+                                            description = evidence.description,
+                                            relatedDocument = evidence.relatedDocument
+                                                ?.let { relatedDocument ->
+                                                    OpenBidsForPublishingResponse.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                                        id = relatedDocument.id
+                                                    )
+                                                }
+                                        )
+                                    }
                             )
                         },
                     relatedLots = bid.relatedLots.toList()
@@ -596,8 +617,28 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
                             OpenBidsForPublishingResult.Bid.RequirementResponse.Requirement(
                                 id = requirement.id
                             )
+                        },
+                    relatedTenderer = requirementResponse.relatedTenderer
+                        ?.let { tenderer ->
+                            OpenBidsForPublishingResult.Bid.RequirementResponse.OrganizationReference(
+                                id = tenderer.id,
+                                name = tenderer.name
+                            )
+                        },
+                    evidences = requirementResponse.evidences
+                        ?.map { evidence ->
+                            OpenBidsForPublishingResult.Bid.RequirementResponse.Evidence(
+                                id = evidence.id,
+                                title = evidence.title,
+                                description = evidence.description,
+                                relatedDocument = evidence.relatedDocument
+                                    ?.let { relatedDocument ->
+                                        OpenBidsForPublishingResult.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                            id = relatedDocument.id
+                                        )
+                                    }
+                            )
                         }
-
                 )
             }
             .orEmpty(),

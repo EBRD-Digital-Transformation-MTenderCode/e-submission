@@ -188,6 +188,20 @@
         {
           "id": "bids[0].requirementResponses[0].id",
           "value": "bids[0].requirementResponses[0].value",
+          "evidences": [
+            {
+              "id": "string",
+              "title": "string",
+              "description": "string",
+              "relatedDocument": {
+                "id": ""
+              }
+            }
+          ],
+          "relatedTenderer": {
+            "name": "name",
+            "id": "id"
+          },
           "requirement": {
             "id": "bids[0].requirementResponses[0].requirement.id"
           },
