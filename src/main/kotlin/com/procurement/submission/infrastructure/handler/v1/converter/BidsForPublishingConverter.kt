@@ -293,8 +293,6 @@ fun OpenBidsForPublishingResult.convert(): OpenBidsForPublishingResponse {
                         .map { requirementResponse ->
                             OpenBidsForPublishingResponse.Bid.RequirementResponse(
                                 id = requirementResponse.id,
-                                description = requirementResponse.description,
-                                title = requirementResponse.title,
                                 value = requirementResponse.value,
                                 period = requirementResponse.period
                                     ?.let { period ->
@@ -585,8 +583,6 @@ fun Bid.convert(): OpenBidsForPublishingResult.Bid = this.let { bid ->
             ?.map { requirementResponse ->
                 OpenBidsForPublishingResult.Bid.RequirementResponse(
                     id = requirementResponse.id,
-                    description = requirementResponse.description,
-                    title = requirementResponse.title,
                     value = requirementResponse.value,
                     period = requirementResponse.period
                         ?.let { period ->
