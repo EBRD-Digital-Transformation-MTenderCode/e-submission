@@ -162,7 +162,6 @@
       "requirementResponses": [
         {
           "id": "bids[0].requirementResponses[0].id",
-          "title": "bids[0].requirementResponses[0].title",
           "value": "bids[0].requirementResponses[0].value",
           "requirement": {
             "id": "bids[0].requirementResponses[0].requirement.id"

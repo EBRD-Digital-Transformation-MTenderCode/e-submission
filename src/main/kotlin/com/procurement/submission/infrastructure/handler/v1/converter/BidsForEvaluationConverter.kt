@@ -209,8 +209,6 @@ fun BidsForEvaluationResponseData.toResponse() : GetBidsForEvaluationResponse {
                 requirementResponses = bid.requirementResponses?.map { requirementResponse ->
                     GetBidsForEvaluationResponse.Bid.RequirementResponse(
                         id = requirementResponse.id,
-                        description = requirementResponse.description,
-                        title = requirementResponse.title,
                         value = requirementResponse.value,
                         period = requirementResponse.period?.let { period ->
                             GetBidsForEvaluationResponse.Bid.RequirementResponse.Period(
@@ -418,8 +416,6 @@ fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationRespons
                 requirementResponses = bid.requirementResponses?.map { requirementResponse ->
                     BidsForEvaluationResponseData.Bid.RequirementResponse(
                         id = requirementResponse.id,
-                        description = requirementResponse.description,
-                        title = requirementResponse.title,
                         value = requirementResponse.value,
                         period = requirementResponse.period?.let { period ->
                             BidsForEvaluationResponseData.Bid.RequirementResponse.Period(
