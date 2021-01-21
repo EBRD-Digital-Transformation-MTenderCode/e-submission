@@ -172,7 +172,6 @@
           "requirementResponses": [
             {
               "id": "e949deab-5800-4021-9c4d-d7ff771c5c12",
-              "title": "bidsData[0].bids[0].requirementResponses[0].title",
               "value": "bidsData[0].bids[0].requirementResponses[0].value",
               "requirement": {
                 "id": "e949deab-5800-4021-9c4d-d7ff771c5c12"

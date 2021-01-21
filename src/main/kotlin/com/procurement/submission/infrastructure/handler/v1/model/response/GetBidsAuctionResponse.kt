@@ -341,12 +341,6 @@ data class GetBidsAuctionResponse(
             data class RequirementResponse(
                 @field:JsonProperty("id") @param:JsonProperty("id") val id: RequirementResponseId,
 
-                @JsonInclude(JsonInclude.Include.NON_NULL)
-                @field:JsonProperty("title") @param:JsonProperty("title") val title: String?,
-
-                @JsonInclude(JsonInclude.Include.NON_NULL)
-                @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
-
                 @JsonDeserialize(using = RequirementValueDeserializer::class)
                 @JsonSerialize(using = RequirementValueSerializer::class)
                 @field:JsonProperty("value") @param:JsonProperty("value") val value: RequirementRsValue,
