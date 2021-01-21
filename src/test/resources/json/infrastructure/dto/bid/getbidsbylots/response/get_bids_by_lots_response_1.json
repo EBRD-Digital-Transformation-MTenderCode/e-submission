@@ -160,11 +160,16 @@
       "requirementResponses": [
         {
           "id": "bids[0].requirementResponses.id",
-          "title": "bids[0].requirementResponses.title",
           "value": "bids[0].requirementResponses.value",
           "requirement": {
             "id": "bids[0].requirementResponses.requirement.id"
-          }
+          },
+          "evidences": [
+            {
+              "id": "string",
+              "title": "string"
+            }
+          ]
         }
       ],
       "relatedLots": [

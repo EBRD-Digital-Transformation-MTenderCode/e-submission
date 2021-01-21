@@ -186,8 +186,6 @@
       "requirementResponses": [
         {
           "id": "bids[0].requirementResponses.id",
-          "title": "bids[0].requirementResponses.title",
-          "description": "bids[0].requirementResponses.description",
           "value": "bids[0].requirementResponses.value",
           "requirement": {
             "id": "bids[0].requirementResponses.requirement.id"
@@ -195,7 +193,21 @@
           "period": {
             "startDate": "2019-09-03T22:22:22Z",
             "endDate": "2019-09-03T22:22:23Z"
-          }
+          },
+          "relatedTenderer": {
+            "name": "",
+            "id": ""
+          },
+          "evidences": [
+            {
+              "id": "string",
+              "title": "string",
+              "description": "string",
+              "relatedDocument": {
+                "id": ""
+              }
+            }
+          ]
         }
       ],
       "relatedLots": [
