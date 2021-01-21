@@ -276,8 +276,6 @@ fun GetBidsByLotsResult.convert() = GetBidsByLotsResponse(
                     .map { requirementResponse ->
                         GetBidsByLotsResponse.Bid.RequirementResponse(
                             id = requirementResponse.id,
-                            description = requirementResponse.description,
-                            title = requirementResponse.title,
                             value = requirementResponse.value,
                             period = requirementResponse.period
                                 ?.let { period ->
@@ -288,7 +286,25 @@ fun GetBidsByLotsResult.convert() = GetBidsByLotsResponse(
                                 },
                             requirement = GetBidsByLotsResponse.Bid.RequirementResponse.Requirement(
                                 id = requirementResponse.requirement.id
-                            )
+                            ),
+                            relatedTenderer = requirementResponse.relatedTenderer?.let { relatedTenderer ->
+                                GetBidsByLotsResponse.Bid.RequirementResponse.RelatedTenderer(
+                                    id = relatedTenderer.id,
+                                    name = relatedTenderer.name
+                                )
+                            },
+                            evidences = requirementResponse.evidences?.map { evidence ->
+                                    GetBidsByLotsResponse.Bid.RequirementResponse.Evidence(
+                                        id = evidence.id,
+                                        title = evidence.title,
+                                        description = evidence.description,
+                                        relatedDocument = evidence.relatedDocument?.let { relatedDocument ->
+                                            GetBidsByLotsResponse.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                                id = relatedDocument.id
+                                            )
+                                        }
+                                    )
+                                }
                         )
                     },
                 date = bid.date,
