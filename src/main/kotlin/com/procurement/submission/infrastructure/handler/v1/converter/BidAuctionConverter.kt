@@ -285,6 +285,27 @@ fun BidsAuctionResponseData.convert(): GetBidsAuctionResponse {
                                                     GetBidsAuctionResponse.BidsData.Bid.RequirementResponse.Requirement(
                                                         id = requirement.id
                                                     )
+                                                },
+                                            relatedTenderer = requirementResponse.relatedTenderer
+                                                ?.let { tenderer ->
+                                                    GetBidsAuctionResponse.BidsData.Bid.RequirementResponse.OrganizationReference(
+                                                        id = tenderer.id,
+                                                        name = tenderer.name
+                                                    )
+                                                },
+                                            evidences = requirementResponse.evidences
+                                                ?.map { evidence ->
+                                                    GetBidsAuctionResponse.BidsData.Bid.RequirementResponse.Evidence(
+                                                        id = evidence.id,
+                                                        title = evidence.title,
+                                                        description = evidence.description,
+                                                        relatedDocument = evidence.relatedDocument
+                                                            ?.let { relatedDocument ->
+                                                                GetBidsAuctionResponse.BidsData.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                                                    id = relatedDocument.id
+                                                                )
+                                                            }
+                                                    )
                                                 }
                                         )
                                     },
@@ -575,6 +596,27 @@ fun Bid.convert(pendingDate: LocalDateTime): BidsAuctionResponseData.BidsData.Bi
                             BidsAuctionResponseData.BidsData.Bid.RequirementResponse.Requirement(
                                 id = RequirementId.fromString(requirement.id)
                             )
+                        },
+                    relatedTenderer = requirementResponse.relatedTenderer
+                        ?.let { tenderer ->
+                            BidsAuctionResponseData.BidsData.Bid.RequirementResponse.OrganizationReference(
+                                id = tenderer.id,
+                                name = tenderer.name
+                            )
+                        },
+                    evidences = requirementResponse.evidences
+                        ?.map { evidence ->
+                            BidsAuctionResponseData.BidsData.Bid.RequirementResponse.Evidence(
+                                id = evidence.id,
+                                title = evidence.title,
+                                description = evidence.description,
+                                relatedDocument = evidence.relatedDocument
+                                    ?.let { relatedDocument ->
+                                        BidsAuctionResponseData.BidsData.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                            id = relatedDocument.id
+                                        )
+                                    }
+                            )
                         }
                 )
             },
@@ -843,6 +885,27 @@ fun List<BidsAuctionResponseData.BidsData>.convert(): BidsAuctionResponseData {
                                             .let { requirement ->
                                                 BidsAuctionResponseData.BidsData.Bid.RequirementResponse.Requirement(
                                                     id = requirement.id
+                                                )
+                                            },
+                                        relatedTenderer = requirementResponse.relatedTenderer
+                                            ?.let { tenderer ->
+                                                BidsAuctionResponseData.BidsData.Bid.RequirementResponse.OrganizationReference(
+                                                    id = tenderer.id,
+                                                    name = tenderer.name
+                                                )
+                                            },
+                                        evidences = requirementResponse.evidences
+                                            ?.map { evidence ->
+                                                BidsAuctionResponseData.BidsData.Bid.RequirementResponse.Evidence(
+                                                    id = evidence.id,
+                                                    title = evidence.title,
+                                                    description = evidence.description,
+                                                    relatedDocument = evidence.relatedDocument
+                                                        ?.let { relatedDocument ->
+                                                            BidsAuctionResponseData.BidsData.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                                                id = relatedDocument.id
+                                                            )
+                                                        }
                                                 )
                                             }
                                     )
