@@ -2302,7 +2302,7 @@ class BidService(
 
         val pmd = params.pmd
 
-        if (pmd.isOpenOrSelective() || (pmd.isFrameworkAgreement() && !requiresElectronicCatalogue)) {
+        if ((pmd.isOpen() || pmd.isSelective()) || (pmd.isFrameworkAgreement() && !requiresElectronicCatalogue)) {
             val bid = params.bids.details.first()
             val value = bid.value ?: return ValidationError.MissingBidValue(bid.id).asValidationError()
 
@@ -2316,12 +2316,10 @@ class BidService(
         return Validated.ok()
     }
 
-    private fun ProcurementMethod.isOpenOrSelective() =
+    private fun ProcurementMethod.isOpen() =
         when(this) {
-            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
             ProcurementMethod.MV, ProcurementMethod.TEST_MV,
             ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-            ProcurementMethod.RT, ProcurementMethod.TEST_RT,
             ProcurementMethod.SV, ProcurementMethod.TEST_SV -> true
 
             ProcurementMethod.CD, ProcurementMethod.TEST_CD,
@@ -2329,10 +2327,31 @@ class BidService(
             ProcurementMethod.DA, ProcurementMethod.TEST_DA,
             ProcurementMethod.DC, ProcurementMethod.TEST_DC,
             ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
             ProcurementMethod.IP, ProcurementMethod.TEST_IP,
             ProcurementMethod.NP, ProcurementMethod.TEST_NP,
             ProcurementMethod.OF, ProcurementMethod.TEST_OF,
-            ProcurementMethod.OP, ProcurementMethod.TEST_OP -> false
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT -> false
+        }
+
+    private fun ProcurementMethod.isSelective() =
+        when(this) {
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT -> true
+
+            ProcurementMethod.CD, ProcurementMethod.TEST_CD,
+            ProcurementMethod.CF, ProcurementMethod.TEST_CF,
+            ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+            ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+            ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+            ProcurementMethod.IP, ProcurementMethod.TEST_IP,
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.OF, ProcurementMethod.TEST_OF,
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
         }
 
     private fun ProcurementMethod.isFrameworkAgreement() =
@@ -2360,8 +2379,10 @@ class BidService(
         if (duplicateTenderer != null)
             return ValidationError.DuplicateTenderers(duplicateTenderer.id).asValidationError()
 
-        checkForActiveInvitations(params)
-            .onFailure { return it.reason.asValidationError() }
+        if (params.pmd.isSelective() || params.pmd.isFrameworkAgreement()) {
+            checkForActiveInvitations(params)
+                .onFailure { return it.reason.asValidationError() }
+        }
 
         checkForDuplicatePersonBusinessFunctions(tenderers)
             .onFailure { return it.reason.asValidationError() }
