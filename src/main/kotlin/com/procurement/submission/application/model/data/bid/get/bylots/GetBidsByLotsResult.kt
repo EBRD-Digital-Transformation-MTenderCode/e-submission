@@ -243,11 +243,11 @@ class GetBidsByLotsResult(
 
         data class RequirementResponse(
             val id: String,
-            val title: String?,
-            val description: String?,
             val value: RequirementRsValue,
             val requirement: Requirement,
-            val period: Period?
+            val period: Period?,
+            val relatedTenderer: RelatedTenderer?,
+            val evidences: List<Evidence>?
         ) {
             data class Requirement(
                 val id: String
@@ -257,6 +257,22 @@ class GetBidsByLotsResult(
                 val startDate: LocalDateTime,
                 val endDate: LocalDateTime
             )
+
+            data class RelatedTenderer(
+                val id: String,
+                val name: String
+            )
+
+            data class Evidence(
+                val id: String,
+                val title: String,
+                val description: String?,
+                val relatedDocument: RelatedDocument?
+            ) {
+                data class RelatedDocument(
+                    val id: DocumentId
+                )
+            }
         }
     }
 }    
