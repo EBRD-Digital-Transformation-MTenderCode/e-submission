@@ -2263,8 +2263,6 @@ class BidService(
                         ?.map { requirementResponse ->
                             GetBidsByLotsResult.Bid.RequirementResponse(
                                 id = requirementResponse.id,
-                                description = requirementResponse.description,
-                                title = requirementResponse.title,
                                 value = requirementResponse.value,
                                 period = requirementResponse.period
                                     ?.let { period ->
@@ -2275,7 +2273,25 @@ class BidService(
                                     },
                                 requirement = GetBidsByLotsResult.Bid.RequirementResponse.Requirement(
                                     id = requirementResponse.requirement.id
-                                )
+                                ),
+                                relatedTenderer = requirementResponse.relatedTenderer?.let { relatedTenderer ->
+                                    GetBidsByLotsResult.Bid.RequirementResponse.RelatedTenderer(
+                                        id = relatedTenderer.id,
+                                        name = relatedTenderer.name
+                                    )
+                                },
+                                evidences = requirementResponse.evidences?.map { evidence ->
+                                    GetBidsByLotsResult.Bid.RequirementResponse.Evidence(
+                                        id = evidence.id,
+                                        title = evidence.title,
+                                        description = evidence.description,
+                                        relatedDocument = evidence.relatedDocument?.let { relatedDocument ->
+                                            GetBidsByLotsResult.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                                id = relatedDocument.id
+                                            )
+                                        }
+                                    )
+                                }
                             )
                         }
                         .orEmpty(),
