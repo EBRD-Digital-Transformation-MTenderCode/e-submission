@@ -2582,7 +2582,7 @@ class BidService(
 
         responses.forEach { response ->
             response.period?.let { period ->
-                if (!period.endDate.isBefore(LocalDateTime.now()))
+                if (!period.endDate.isAfter(LocalDateTime.now()))
                     return ValidationError.ValidateBidData.InvalidPeriodEndDate(response.id).asValidationError()
 
                 if (!period.startDate.isBefore(period.endDate))
