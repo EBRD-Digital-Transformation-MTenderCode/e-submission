@@ -8,6 +8,7 @@ import com.procurement.submission.application.model.data.bid.create.BidCreateCon
 import com.procurement.submission.application.model.data.bid.document.open.OpenBidDocsContext
 import com.procurement.submission.application.model.data.bid.get.GetBidsForEvaluationContext
 import com.procurement.submission.application.model.data.bid.get.bylots.GetBidsByLotsContext
+import com.procurement.submission.application.model.data.bid.get.period.GetTenderPeriodEndContext
 import com.procurement.submission.application.model.data.bid.open.OpenBidsForPublishingContext
 import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsContext
 import com.procurement.submission.application.model.data.bid.status.FinalBidsStatusByLotsData
@@ -45,6 +46,7 @@ import com.procurement.submission.infrastructure.handler.v1.model.request.GetBid
 import com.procurement.submission.infrastructure.handler.v1.model.request.OpenBidDocsRequest
 import com.procurement.submission.infrastructure.handler.v1.model.request.OpenBidsForPublishingRequest
 import com.procurement.submission.infrastructure.handler.v1.model.response.FinalBidsStatusByLotsResponse
+import com.procurement.submission.infrastructure.handler.v1.model.response.GetTenderPeriodEndResponse
 import com.procurement.submission.infrastructure.handler.v2.converter.convert
 import com.procurement.submission.infrastructure.repository.history.model.HistoryEntity
 import com.procurement.submission.utils.toJson
@@ -167,6 +169,19 @@ class CommandServiceV1(
                     ProcurementMethod.NP, ProcurementMethod.TEST_NP,
                     ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
                 }
+            }
+            CommandTypeV1.GET_TENDER_PERIOD_END -> {
+                val context = GetTenderPeriodEndContext(cpid = cm.cpid, ocid = cm.ocid)
+
+                val result = periodService.getTenderPeriodEnd(context = context)
+                if (log.isDebugEnabled)
+                    log.debug("Result: ${toJson(result)}")
+
+                val response = GetTenderPeriodEndResponse.fromResult(result)
+                if (log.isDebugEnabled)
+                    log.debug("Response: ${toJson(response)}")
+
+                return ResponseDto(data = response)
             }
             CommandTypeV1.OPEN_BIDS_FOR_PUBLISHING -> {
                 when (cm.pmd) {

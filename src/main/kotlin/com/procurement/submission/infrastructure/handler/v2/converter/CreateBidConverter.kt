@@ -47,6 +47,7 @@ import com.procurement.submission.model.dto.ocds.ContactPoint
 import com.procurement.submission.model.dto.ocds.CountryDetails
 import com.procurement.submission.model.dto.ocds.Details
 import com.procurement.submission.model.dto.ocds.Document
+import com.procurement.submission.model.dto.ocds.Evidence
 import com.procurement.submission.model.dto.ocds.Identifier
 import com.procurement.submission.model.dto.ocds.IssuedBy
 import com.procurement.submission.model.dto.ocds.IssuedThought
@@ -54,12 +55,14 @@ import com.procurement.submission.model.dto.ocds.Item
 import com.procurement.submission.model.dto.ocds.LegalForm
 import com.procurement.submission.model.dto.ocds.LocalityDetails
 import com.procurement.submission.model.dto.ocds.MainEconomicActivity
+import com.procurement.submission.model.dto.ocds.Organization
 import com.procurement.submission.model.dto.ocds.OrganizationReference
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Permit
 import com.procurement.submission.model.dto.ocds.PermitDetails
 import com.procurement.submission.model.dto.ocds.Persone
 import com.procurement.submission.model.dto.ocds.RegionDetails
+import com.procurement.submission.model.dto.ocds.RelatedDocument
 import com.procurement.submission.model.dto.ocds.Requirement
 import com.procurement.submission.model.dto.ocds.RequirementResponse
 import com.procurement.submission.model.dto.ocds.ValidityPeriod
@@ -142,11 +145,18 @@ private fun CreateBidRequest.Bids.Detail.RequirementResponse.convert(path: Strin
     val period = period?.convert(path)
         ?.onFailure { return it }
 
+    val relatedTenderer = relatedTenderer?.convert()
+
+    val evidences = evidences.orEmpty()
+        .map { it.convert() }
+
     return CreateBidParams.Bids.Detail.RequirementResponse(
         id = id,
         requirement = requirement,
         period = period,
-        value = value
+        value = value,
+        relatedTenderer = relatedTenderer,
+        evidences = evidences
     ).asSuccess()
 }
 
@@ -162,6 +172,23 @@ private fun CreateBidRequest.Bids.Detail.RequirementResponse.Period.convert(path
         endDate = endDate
     ).asSuccess()
 }
+
+private fun CreateBidRequest.Bids.Detail.RequirementResponse.OrganizationReference.convert(): CreateBidParams.Bids.Detail.RequirementResponse.OrganizationReference =
+    CreateBidParams.Bids.Detail.RequirementResponse.OrganizationReference(
+        id = id,
+        name = name
+    )
+
+private fun CreateBidRequest.Bids.Detail.RequirementResponse.Evidence.convert(): CreateBidParams.Bids.Detail.RequirementResponse.Evidence =
+    CreateBidParams.Bids.Detail.RequirementResponse.Evidence(
+        id = id,
+        title = title,
+        description = description,
+        relatedDocument = relatedDocument?.convert()
+    )
+
+private fun CreateBidRequest.Bids.Detail.RequirementResponse.Evidence.RelatedDocument.convert(): CreateBidParams.Bids.Detail.RequirementResponse.Evidence.RelatedDocument =
+    CreateBidParams.Bids.Detail.RequirementResponse.Evidence.RelatedDocument(id = id)
 
 private fun CreateBidRequest.Bids.Detail.RequirementResponse.Requirement.convert(path: String): Result<CreateBidParams.Bids.Detail.RequirementResponse.Requirement, DataErrors> {
     val id = parseRequirementId(id, "$path.id")
@@ -620,6 +647,25 @@ fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
             RequirementResponse(
                 id = requirementResponse.id,
                 value = requirementResponse.value,
+                relatedTenderer = requirementResponse.relatedTenderer
+                    ?.let { tenderer ->
+                        OrganizationReference(
+                            id = tenderer.id,
+                            name = tenderer.name
+                        )
+                    },
+                evidences = requirementResponse.evidences.orEmpty()
+                    .map { evidence ->
+                        Evidence(
+                            id = evidence.id,
+                            title = evidence.title,
+                            description = evidence.description,
+                            relatedDocument = evidence.relatedDocument
+                                ?.let { document ->
+                                    RelatedDocument(id = document.id)
+                                }
+                        )
+                    },
                 requirement = Requirement(requirementResponse.requirement.id.toString()),
                 period = requirementResponse.period
                     ?.let { period ->
@@ -634,7 +680,7 @@ fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
         },
     tenderers = tenderers
         .map { tenderer ->
-            OrganizationReference(
+            Organization(
                 id = tenderer.id,
                 name = tenderer.name,
                 identifier = tenderer.identifier
@@ -919,6 +965,27 @@ fun Bid.convertToCreateBidResult(token: Token) = CreateBidResult(
                     CreateBidResult.Bids.Detail.RequirementResponse(
                         id = requirementResponse.id,
                         value = requirementResponse.value,
+                        relatedTenderer = requirementResponse.relatedTenderer
+                            ?.let { tenderer ->
+                                CreateBidResult.Bids.Detail.RequirementResponse.OrganizationReference(
+                                    id = tenderer.id,
+                                    name = tenderer.name
+                                )
+                            },
+                        evidences = requirementResponse.evidences.orEmpty()
+                            .map { evidence ->
+                                CreateBidResult.Bids.Detail.RequirementResponse.Evidence(
+                                    id = evidence.id,
+                                    title = evidence.title,
+                                    description = evidence.description,
+                                    relatedDocument = evidence.relatedDocument
+                                        ?.let { document ->
+                                            CreateBidResult.Bids.Detail.RequirementResponse.Evidence.RelatedDocument(
+                                                id = document.id
+                                            )
+                                        }
+                                )
+                            },
                         requirement = CreateBidResult.Bids.Detail.RequirementResponse.Requirement(
                             requirementResponse.requirement.id
                         ),

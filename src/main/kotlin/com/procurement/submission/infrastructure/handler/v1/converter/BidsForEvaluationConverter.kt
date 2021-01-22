@@ -9,7 +9,7 @@ import com.procurement.submission.infrastructure.handler.v1.model.response.GetBi
 import com.procurement.submission.model.dto.ocds.Bid
 import java.util.*
 
-fun GetBidsForEvaluationRequest.toData() : BidsForEvaluationRequestData {
+fun GetBidsForEvaluationRequest.toData(): BidsForEvaluationRequestData {
     return BidsForEvaluationRequestData(
         lots = this.lots.map { lot ->
             BidsForEvaluationRequestData.Lot(
@@ -20,7 +20,7 @@ fun GetBidsForEvaluationRequest.toData() : BidsForEvaluationRequestData {
 }
 
 
-fun BidsForEvaluationResponseData.toResponse() : GetBidsForEvaluationResponse {
+fun BidsForEvaluationResponseData.toResponse(): GetBidsForEvaluationResponse {
     return GetBidsForEvaluationResponse(
         bids = this.bids?.map { bid ->
             GetBidsForEvaluationResponse.Bid(
@@ -209,8 +209,6 @@ fun BidsForEvaluationResponseData.toResponse() : GetBidsForEvaluationResponse {
                 requirementResponses = bid.requirementResponses?.map { requirementResponse ->
                     GetBidsForEvaluationResponse.Bid.RequirementResponse(
                         id = requirementResponse.id,
-                        description = requirementResponse.description,
-                        title = requirementResponse.title,
                         value = requirementResponse.value,
                         period = requirementResponse.period?.let { period ->
                             GetBidsForEvaluationResponse.Bid.RequirementResponse.Period(
@@ -220,7 +218,28 @@ fun BidsForEvaluationResponseData.toResponse() : GetBidsForEvaluationResponse {
                         },
                         requirement = GetBidsForEvaluationResponse.Bid.RequirementResponse.Requirement(
                             id = requirementResponse.requirement.id
-                        )
+                        ),
+                        relatedTenderer = requirementResponse.relatedTenderer
+                            ?.let { tenderer ->
+                                GetBidsForEvaluationResponse.Bid.RequirementResponse.OrganizationReference(
+                                    id = tenderer.id,
+                                    name = tenderer.name
+                                )
+                            },
+                        evidences = requirementResponse.evidences
+                            ?.map { evidence ->
+                                GetBidsForEvaluationResponse.Bid.RequirementResponse.Evidence(
+                                    id = evidence.id,
+                                    title = evidence.title,
+                                    description = evidence.description,
+                                    relatedDocument = evidence.relatedDocument
+                                        ?.let { relatedDocument ->
+                                            GetBidsForEvaluationResponse.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                                id = relatedDocument.id
+                                            )
+                                        }
+                                )
+                            }
                     )
                 },
                 relatedLots = bid.relatedLots
@@ -229,7 +248,7 @@ fun BidsForEvaluationResponseData.toResponse() : GetBidsForEvaluationResponse {
     )
 }
 
-fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationResponseData {
+fun Collection<Bid>.toBidsForEvaluationResponseData(): BidsForEvaluationResponseData {
     return BidsForEvaluationResponseData(
         bids = this.map { bid ->
             BidsForEvaluationResponseData.Bid(
@@ -418,8 +437,6 @@ fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationRespons
                 requirementResponses = bid.requirementResponses?.map { requirementResponse ->
                     BidsForEvaluationResponseData.Bid.RequirementResponse(
                         id = requirementResponse.id,
-                        description = requirementResponse.description,
-                        title = requirementResponse.title,
                         value = requirementResponse.value,
                         period = requirementResponse.period?.let { period ->
                             BidsForEvaluationResponseData.Bid.RequirementResponse.Period(
@@ -429,7 +446,28 @@ fun Collection<Bid>.toBidsForEvaluationResponseData() : BidsForEvaluationRespons
                         },
                         requirement = BidsForEvaluationResponseData.Bid.RequirementResponse.Requirement(
                             id = requirementResponse.requirement.id
-                        )
+                        ),
+                        relatedTenderer = requirementResponse.relatedTenderer
+                            ?.let { tenderer ->
+                                BidsForEvaluationResponseData.Bid.RequirementResponse.OrganizationReference(
+                                    id = tenderer.id,
+                                    name = tenderer.name
+                                )
+                            },
+                        evidences = requirementResponse.evidences
+                            ?.map { evidence ->
+                                BidsForEvaluationResponseData.Bid.RequirementResponse.Evidence(
+                                    id = evidence.id,
+                                    title = evidence.title,
+                                    description = evidence.description,
+                                    relatedDocument = evidence.relatedDocument
+                                        ?.let { relatedDocument ->
+                                            BidsForEvaluationResponseData.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                                id = relatedDocument.id
+                                            )
+                                        }
+                                )
+                            }
                     )
                 },
                 relatedLots = bid.relatedLots

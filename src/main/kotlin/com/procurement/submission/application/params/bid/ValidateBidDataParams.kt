@@ -1,5 +1,6 @@
 package com.procurement.submission.application.params.bid
 
+import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.document.DocumentId
@@ -7,6 +8,7 @@ import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentTyp
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.PersonTitle
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.ProcurementMethodModalities
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
@@ -17,7 +19,8 @@ import java.time.LocalDateTime
 data class ValidateBidDataParams(
     val bids: Bids,
     val tender: Tender,
-    val cpid: Cpid
+    val cpid: Cpid,
+    val pmd: ProcurementMethod,
 ) {
     data class Bids constructor(
         val details: List<Detail>
@@ -28,12 +31,48 @@ data class ValidateBidDataParams(
             val tenderers: List<Tenderer>,
             val relatedLots: List<String>,
             val documents: List<Document>,
-            val items: List<Item>
+            val items: List<Item>,
+            val requirementResponses: List<RequirementResponse>
         ) {
             data class Value(
                 val amount: Amount,
                 val currency: String
             )
+
+            data class RequirementResponse(
+                val id: String,
+                val value: RequirementRsValue,
+                val requirement: Requirement,
+                val relatedTenderer: OrganizationReference?,
+                val evidences: List<Evidence>,
+                val period: Period?
+            ) {
+
+                data class Evidence(
+                    val id: String,
+                    val title: String,
+                    val description: String?,
+                    val relatedDocument: RelatedDocument?
+                ) {
+                    data class RelatedDocument(
+                        val id: String
+                    )
+                }
+
+                data class OrganizationReference(
+                    val id: String,
+                    val name: String
+                )
+
+                data class Period(
+                    val startDate: LocalDateTime,
+                    val endDate: LocalDateTime
+                )
+
+                data class Requirement(
+                    val id: String
+                )
+            }
 
             data class Tenderer(
                 val id: String,
