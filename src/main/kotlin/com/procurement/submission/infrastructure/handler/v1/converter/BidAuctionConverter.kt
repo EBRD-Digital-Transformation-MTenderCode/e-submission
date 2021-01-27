@@ -520,7 +520,7 @@ fun Bid.convert(pendingDate: LocalDateTime): BidsAuctionResponseData.BidsData.Bi
                                             id = legalform.id,
                                             scheme = legalform.scheme,
                                             description = legalform.description,
-                                            uri = legalform.uri!!
+                                            uri = legalform.uri
                                         )
                                     }
                             )
@@ -534,7 +534,7 @@ fun Bid.convert(pendingDate: LocalDateTime): BidsAuctionResponseData.BidsData.Bi
                                         BidsAuctionResponseData.BidsData.Bid.Tenderer.Persone.Identifier(
                                             id = identifier.id,
                                             scheme = identifier.scheme,
-                                            uri = identifier.uri!!
+                                            uri = identifier.uri
                                         )
                                     },
                                 name = person.name,
