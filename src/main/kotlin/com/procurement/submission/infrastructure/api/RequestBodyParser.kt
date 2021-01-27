@@ -37,7 +37,7 @@ fun <T : Any> JsonNode.tryGetParams(target: Class<T>, transform: Transform): Res
         when (val result = transform.tryMapping(it, target)) {
             is Result.Success -> result
             is Result.Failure -> Result.failure(
-                BadRequest("Error parsing '$name'")
+                BadRequest("Error parsing '$name'", exception = result.reason.exception)
             )
         }
     }

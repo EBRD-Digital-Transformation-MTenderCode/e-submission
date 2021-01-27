@@ -83,6 +83,8 @@ class BidRepositoryIT {
                         id = "requirementResponse.id",
                         value = RequirementRsValue.AsString("requirementResponse.value"),
                         requirement = Requirement("requirementResponse.requirement.id"),
+                        relatedTenderer = null,
+                        evidences = emptyList(),
                         period = Period(
                             startDate = DATE,
                             endDate = DATE

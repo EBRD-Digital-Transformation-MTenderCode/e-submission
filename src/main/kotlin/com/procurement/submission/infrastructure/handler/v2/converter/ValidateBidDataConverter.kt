@@ -10,6 +10,7 @@ import com.procurement.submission.application.params.parseDate
 import com.procurement.submission.application.params.parseDocumentType
 import com.procurement.submission.application.params.parseItemId
 import com.procurement.submission.application.params.parsePersonTitle
+import com.procurement.submission.application.params.parsePmd
 import com.procurement.submission.application.params.parseProcurementMethodModalities
 import com.procurement.submission.application.params.parseScale
 import com.procurement.submission.application.params.parseTypeOfSupplier
@@ -20,6 +21,7 @@ import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentTyp
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.PersonTitle
+import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.ProcurementMethodModalities
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
@@ -35,7 +37,8 @@ fun ValidateBidDataRequest.convert(): Result<ValidateBidDataParams, DataErrors> 
     return ValidateBidDataParams(
         bids = bids.convert(path).onFailure { return it },
         tender = tender.convert(path).onFailure { return it },
-        cpid = parseCpid(cpid).onFailure { return it }
+        cpid = parseCpid(cpid).onFailure { return it },
+        pmd = parsePmd(pmd, allowedPmd).onFailure { return it }
     ).asSuccess()
 }
 
@@ -44,6 +47,28 @@ private val allowedProcurementMethodModalities = ProcurementMethodModalities.all
         when (it) {
             ProcurementMethodModalities.ELECTRONIC_AUCTION,
             ProcurementMethodModalities.REQUIRES_ELECTRONIC_CATALOGUE -> true
+        }
+    }
+    .toSet()
+
+private val allowedPmd = ProcurementMethod.values()
+    .filter {
+        when (it) {
+            ProcurementMethod.CF, ProcurementMethod.TEST_CF,
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.OF, ProcurementMethod.TEST_OF,
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> true
+
+            ProcurementMethod.CD, ProcurementMethod.TEST_CD,
+            ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+            ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+            ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+            ProcurementMethod.IP, ProcurementMethod.TEST_IP,
+            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP -> false
         }
     }
     .toSet()
@@ -119,13 +144,18 @@ private fun ValidateBidDataRequest.Bids.Detail.convert(path: String): Result<Val
         .flatMap { it.mapResult { tenderer -> tenderer.convert("$path.tenderers") } }
         .onFailure { return it }
 
+    val requirementResponses = requirementResponses.validate(notEmptyRule("$path.requirementResponses"))
+        .flatMap { it.orEmpty().mapResult { requirementResponse -> requirementResponse.convert("$path.requirementResponses") } }
+        .onFailure { return it }
+
     return ValidateBidDataParams.Bids.Detail(
         id = id,
         items = items,
         relatedLots = relatedLots,
         value = value,
         documents = documents,
-        tenderers = tenderers
+        tenderers = tenderers,
+        requirementResponses = requirementResponses
     ).asSuccess()
 }
 
@@ -155,6 +185,52 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.convert(path: String): R
         persones = persones
     ).asSuccess()
 }
+
+private fun ValidateBidDataRequest.Bids.Detail.RequirementResponse.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.RequirementResponse, DataErrors> {
+    val requirement = requirement.convert()
+    val relatedTenderer = relatedTenderer?.convert()
+    val period = period?.convert()
+
+    val evidences = evidences.validate(notEmptyRule("$path.evidences"))
+        .onFailure { return it }
+        .orEmpty()
+        .map { it.convert() }
+
+    return ValidateBidDataParams.Bids.Detail.RequirementResponse(
+        id = id,
+        value = value,
+        requirement = requirement,
+        relatedTenderer = relatedTenderer,
+        evidences = evidences,
+        period = period
+    ).asSuccess()
+}
+
+private fun ValidateBidDataRequest.Bids.Detail.RequirementResponse.Requirement.convert(): ValidateBidDataParams.Bids.Detail.RequirementResponse.Requirement =
+    ValidateBidDataParams.Bids.Detail.RequirementResponse.Requirement(id = id)
+
+private fun ValidateBidDataRequest.Bids.Detail.RequirementResponse.OrganizationReference.convert(): ValidateBidDataParams.Bids.Detail.RequirementResponse.OrganizationReference =
+    ValidateBidDataParams.Bids.Detail.RequirementResponse.OrganizationReference(
+        id = id,
+        name = name
+    )
+
+private fun ValidateBidDataRequest.Bids.Detail.RequirementResponse.Evidence.convert(): ValidateBidDataParams.Bids.Detail.RequirementResponse.Evidence =
+    ValidateBidDataParams.Bids.Detail.RequirementResponse.Evidence(
+        id = id,
+        title = title,
+        description = description,
+        relatedDocument = relatedDocument?.convert()
+    )
+
+private fun ValidateBidDataRequest.Bids.Detail.RequirementResponse.Evidence.RelatedDocument.convert(): ValidateBidDataParams.Bids.Detail.RequirementResponse.Evidence.RelatedDocument =
+    ValidateBidDataParams.Bids.Detail.RequirementResponse.Evidence.RelatedDocument(id = id)
+
+private fun ValidateBidDataRequest.Bids.Detail.RequirementResponse.Period.convert(): ValidateBidDataParams.Bids.Detail.RequirementResponse.Period =
+    ValidateBidDataParams.Bids.Detail.RequirementResponse.Period(
+        startDate = startDate,
+        endDate = endDate
+    )
 
 private val allowedPersonTitles = PersonTitle.allowedElements
     .filter {
@@ -369,8 +445,8 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.conv
     val additionalAccountIdentifiers =
         additionalAccountIdentifiers.validate(notEmptyRule("$path.additionalAccountIdentifiers"))
             .onFailure { return it }
-        .orEmpty()
-        .map { bankAccount -> bankAccount.convert() }
+            .orEmpty()
+            .map { bankAccount -> bankAccount.convert() }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount(
         description = description,

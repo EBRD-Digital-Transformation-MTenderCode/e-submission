@@ -1,5 +1,6 @@
 {
   "cpid": "ocds-t1s2t3-MD-1544113930847",
+  "pmd": "TEST_OT",
   "bids": {
     "details": [
       {
@@ -8,6 +9,33 @@
           "amount": 0.00,
           "currency": "string"
         },
+        "requirementResponses": [
+          {
+            "id": "string",
+            "value": true,
+            "requirement": {
+              "id": "string"
+            },
+            "relatedTenderer": {
+              "id": "string",
+              "name": "string"
+            },
+            "evidences": [
+              {
+                "id": "string",
+                "title": "string",
+                "description": "string",
+                "relatedDocument": {
+                  "id": "string"
+                }
+              }
+            ],
+            "period": {
+              "startDate": "2021-01-14T10:58:44Z",
+              "endDate": "2021-01-14T10:58:44Z"
+            }
+          }
+        ],
         "tenderers": [
           {
             "id": "string",

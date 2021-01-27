@@ -46,7 +46,9 @@ import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.repository.bid.model.BidEntity
 import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.getDuplicate
+import com.procurement.submission.domain.extension.getDuplicated
 import com.procurement.submission.domain.extension.toSetBy
+import com.procurement.submission.domain.extension.uniqueBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.domain.model.Cpid
@@ -105,7 +107,7 @@ import com.procurement.submission.model.dto.ocds.IssuedThought
 import com.procurement.submission.model.dto.ocds.LegalForm
 import com.procurement.submission.model.dto.ocds.LocalityDetails
 import com.procurement.submission.model.dto.ocds.MainEconomicActivity
-import com.procurement.submission.model.dto.ocds.OrganizationReference
+import com.procurement.submission.model.dto.ocds.Organization
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Permit
 import com.procurement.submission.model.dto.ocds.PermitDetails
@@ -246,9 +248,9 @@ class BidService(
                     name.checkForBlank("bid.tenderers[$tendererIdx].name")
 
                     identifier.apply {
-                        id.checkForBlank("bid.tenderers[$tendererIdx].id")
-                        legalName.checkForBlank("bid.tenderers[$tendererIdx].legalName")
-                        uri.checkForBlank("bid.tenderers[$tendererIdx].uri")
+                        id.checkForBlank("bid.tenderers[$tendererIdx].identifier.id")
+                        legalName.checkForBlank("bid.tenderers[$tendererIdx].identifier.legalName")
+                        uri.checkForBlank("bid.tenderers[$tendererIdx].identifier.uri")
                     }
 
                     additionalIdentifiers.forEachIndexed { additionalIdentifierIdx, additionalIdentifier ->
@@ -290,7 +292,7 @@ class BidService(
                                 businessFunction.documents
                                     .forEachIndexed { documentIdx, document ->
                                         document.title.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
-                                        document.description.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
+                                        document.description.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].description")
                                     }
                             }
                     }
@@ -374,8 +376,8 @@ class BidService(
             }
 
             requirementResponses.forEachIndexed { requirementResponseIdx, requirementResponse ->
-                requirementResponse.title.checkForBlank("bid.documents[$requirementResponseIdx].title")
-                requirementResponse.description.checkForBlank("bid.documents[$requirementResponseIdx].description")
+                requirementResponse.title.checkForBlank("bid.requirementResponses[$requirementResponseIdx].title")
+                requirementResponse.description.checkForBlank("bid.requirementResponses[$requirementResponseIdx].description")
             }
         }
     }
@@ -407,7 +409,7 @@ class BidService(
                                 businessFunction.documents
                                     .forEachIndexed { documentIdx, document ->
                                         document.title.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
-                                        document.description.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].title")
+                                        document.description.checkForBlank("tenderer.persones[$personIdx].businessFunctions[$businessFunctionIdx].documents[$documentIdx].description")
                                     }
                             }
                     }
@@ -491,9 +493,9 @@ class BidService(
             }
 
             requirementResponses.forEachIndexed { requirementResponseIdx, requirementResponse ->
-                requirementResponse.id.checkForBlank("bid.documents[$requirementResponseIdx].id")
-                requirementResponse.title.checkForBlank("bid.documents[$requirementResponseIdx].title")
-                requirementResponse.description.checkForBlank("bid.documents[$requirementResponseIdx].description")
+                requirementResponse.id.checkForBlank("bid.requirementResponses[$requirementResponseIdx].id")
+                requirementResponse.title.checkForBlank("bid.requirementResponses[$requirementResponseIdx].title")
+                requirementResponse.description.checkForBlank("bid.requirementResponses[$requirementResponseIdx].description")
             }
         }
     }
@@ -1301,7 +1303,7 @@ class BidService(
             }
     }
 
-    private fun checkOneAuthority(tenderers: List<OrganizationReference>) {
+    private fun checkOneAuthority(tenderers: List<Organization>) {
         fun BusinessFunctionType.validate() {
             when (this) {
                 BusinessFunctionType.AUTHORITY,
@@ -1339,7 +1341,7 @@ class BidService(
         }
     }
 
-    private fun updateTenderers(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<OrganizationReference> {
+    private fun updateTenderers(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<Organization> {
         if (bidRequest.tenderers.isEmpty()) return bidEntity.tenderers
 
         val tenderersRequestIds = bidRequest.tenderers.map { it.id.toString() }
@@ -1385,6 +1387,8 @@ class BidService(
                 title = requirementResponse.title,
                 description = requirementResponse.description,
                 value = requirementResponse.value,
+                relatedTenderer = null,
+                evidences = emptyList(),
                 requirement = Requirement(
                     id = requirementResponse.requirement.id
                 ),
@@ -1674,9 +1678,9 @@ class BidService(
         }
     }
 
-    private fun List<BidCreateData.Bid.Tenderer>.toBidEntityTenderers(): List<OrganizationReference> {
+    private fun List<BidCreateData.Bid.Tenderer>.toBidEntityTenderers(): List<Organization> {
         return this.map { tenderer ->
-            OrganizationReference(
+            Organization(
                 id = tenderer.id,
                 name = tenderer.name,
                 identifier = Identifier(
@@ -1854,6 +1858,8 @@ class BidService(
                 title = requirementResponse.title,
                 description = requirementResponse.description,
                 value = requirementResponse.value,
+                relatedTenderer = null,
+                evidences = emptyList(),
                 requirement = Requirement(
                     id = requirementResponse.requirement.id
                 ),
@@ -2257,8 +2263,6 @@ class BidService(
                         ?.map { requirementResponse ->
                             GetBidsByLotsResult.Bid.RequirementResponse(
                                 id = requirementResponse.id,
-                                description = requirementResponse.description,
-                                title = requirementResponse.title,
                                 value = requirementResponse.value,
                                 period = requirementResponse.period
                                     ?.let { period ->
@@ -2269,7 +2273,25 @@ class BidService(
                                     },
                                 requirement = GetBidsByLotsResult.Bid.RequirementResponse.Requirement(
                                     id = requirementResponse.requirement.id
-                                )
+                                ),
+                                relatedTenderer = requirementResponse.relatedTenderer?.let { relatedTenderer ->
+                                    GetBidsByLotsResult.Bid.RequirementResponse.RelatedTenderer(
+                                        id = relatedTenderer.id,
+                                        name = relatedTenderer.name
+                                    )
+                                },
+                                evidences = requirementResponse.evidences?.map { evidence ->
+                                    GetBidsByLotsResult.Bid.RequirementResponse.Evidence(
+                                        id = evidence.id,
+                                        title = evidence.title,
+                                        description = evidence.description,
+                                        relatedDocument = evidence.relatedDocument?.let { relatedDocument ->
+                                            GetBidsByLotsResult.Bid.RequirementResponse.Evidence.RelatedDocument(
+                                                id = relatedDocument.id
+                                            )
+                                        }
+                                    )
+                                }
                             )
                         }
                         .orEmpty(),
@@ -2285,6 +2307,7 @@ class BidService(
         checkTenderers(params).onFailure { return it.reason.asValidationError() }
         checkDocuments(params).onFailure { return it.reason.asValidationError() }
         checkItems(params).onFailure { return it.reason.asValidationError() }
+        checkBid(params.bids).onFailure { return it.reason.asValidationError() }
 
         return Validated.ok()
     }
@@ -2293,7 +2316,9 @@ class BidService(
         val requiresElectronicCatalogue = params.tender.procurementMethodModalities
             .any { it == ProcurementMethodModalities.REQUIRES_ELECTRONIC_CATALOGUE }
 
-        if (!requiresElectronicCatalogue) {
+        val pmd = params.pmd
+
+        if ((pmd.isOpen() || pmd.isSelective()) || (pmd.isFrameworkAgreement() && !requiresElectronicCatalogue)) {
             val bid = params.bids.details.first()
             val value = bid.value ?: return ValidationError.MissingBidValue(bid.id).asValidationError()
 
@@ -2307,14 +2332,73 @@ class BidService(
         return Validated.ok()
     }
 
+    private fun ProcurementMethod.isOpen() =
+        when(this) {
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> true
+
+            ProcurementMethod.CD, ProcurementMethod.TEST_CD,
+            ProcurementMethod.CF, ProcurementMethod.TEST_CF,
+            ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+            ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+            ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.IP, ProcurementMethod.TEST_IP,
+            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.OF, ProcurementMethod.TEST_OF,
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT -> false
+        }
+
+    private fun ProcurementMethod.isSelective() =
+        when(this) {
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT -> true
+
+            ProcurementMethod.CD, ProcurementMethod.TEST_CD,
+            ProcurementMethod.CF, ProcurementMethod.TEST_CF,
+            ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+            ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+            ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+            ProcurementMethod.IP, ProcurementMethod.TEST_IP,
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.OF, ProcurementMethod.TEST_OF,
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
+        }
+
+    private fun ProcurementMethod.isFrameworkAgreement() =
+        when(this) {
+            ProcurementMethod.OF, ProcurementMethod.TEST_OF,
+            ProcurementMethod.CF, ProcurementMethod.TEST_CF -> true
+
+            ProcurementMethod.CD, ProcurementMethod.TEST_CD,
+            ProcurementMethod.DA, ProcurementMethod.TEST_DA,
+            ProcurementMethod.DC, ProcurementMethod.TEST_DC,
+            ProcurementMethod.FA, ProcurementMethod.TEST_FA,
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.IP, ProcurementMethod.TEST_IP,
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.NP, ProcurementMethod.TEST_NP,
+            ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
+        }
+
     private fun checkTenderers(params: ValidateBidDataParams): Validated<Fail> {
         val tenderers = params.bids.details.first().tenderers
         val duplicateTenderer = tenderers.getDuplicate { it.id }
         if (duplicateTenderer != null)
             return ValidationError.DuplicateTenderers(duplicateTenderer.id).asValidationError()
 
-        checkForActiveInvitations(params)
-            .onFailure { return it.reason.asValidationError() }
+        if (params.pmd.isSelective() || params.pmd.isFrameworkAgreement()) {
+            checkForActiveInvitations(params)
+                .onFailure { return it.reason.asValidationError() }
+        }
 
         checkForDuplicatePersonBusinessFunctions(tenderers)
             .onFailure { return it.reason.asValidationError() }
@@ -2419,6 +2503,96 @@ class BidService(
         return Validated.ok()
     }
 
+    private fun checkBid(bids: ValidateBidDataParams.Bids): Validated<Fail> {
+        checkBidRelation(bids).onFailure { return it.reason.asValidationError() }
+
+        bids.details
+            .flatMap { it.requirementResponses }
+            .run {
+                checkRequirementResponses(this)
+                    .onFailure { return it.reason.asValidationError() }
+
+                checkDocuments(this, bids.details.flatMap { it.documents })
+                    .onFailure { return it.reason.asValidationError() }
+            }
+
+        bids.details.forEach { bid ->
+            if (bid.tenderers.size > 1) {
+                bid.requirementResponses
+                    .filter { it.relatedTenderer == null }
+                    .forEach { return ValidationError.ValidateBidData.MissingRelatedTenderer(it.id).asValidationError() }
+                }
+            }
+
+        return Validated.ok()
+    }
+
+    /**
+     * Check bid related only to one lot
+     */
+    private fun checkBidRelation(bids: ValidateBidDataParams.Bids): Validated<Fail> {
+        bids.details.forEach { bid ->
+            if (bid.relatedLots.size != 1)
+                return ValidationError.ValidateBidData.InvalidBidRelationToLot(bid.id).asValidationError()
+        }
+        return Validated.ok()
+    }
+
+    private fun checkDocuments(
+        responses: List<ValidateBidDataParams.Bids.Detail.RequirementResponse>,
+        documents: List<ValidateBidDataParams.Bids.Detail.Document>
+    ): Validated<Fail> {
+        val receivedDocuments = documents.toSetBy { it.id }
+
+        responses
+            .flatMap { it.evidences }
+            .mapNotNull { it.relatedDocument?.id }
+            .filter { specifiedDocument -> specifiedDocument !in receivedDocuments }
+            .forEach { missingDocument -> return ValidationError.ValidateBidData.MissingDocuments(missingDocument).asValidationError() }
+
+        return Validated.ok()
+    }
+
+    private fun checkRequirementResponses(responses: List<ValidateBidDataParams.Bids.Detail.RequirementResponse>): Validated<Fail> {
+
+        /**
+         *  Check Ids uniqueness
+         */
+        if (!responses.uniqueBy { it.id }) {
+            val duplicatedIds = responses.getDuplicated { it.id }
+            return ValidationError.ValidateBidData.DuplicatedRequirementResponseIds(duplicatedIds).asValidationError()
+        }
+
+        /**
+         * Check tenderer answered only once per requirement
+         */
+        responses
+            .groupBy(keySelector = { it.relatedTenderer?.id }, valueTransform = { it.requirement })
+            .filter { (_, requirements) -> !requirements.uniqueBy { it.id } }
+            .forEach { (tenderer, requirements) ->
+                val duplicatedResponse = requirements.getDuplicated { it.id }.first()
+                return ValidationError.ValidateBidData.TooManyRequirementResponse(tenderer, duplicatedResponse).asValidationError()
+            }
+
+        val allReceivedEvidences = responses.flatMap { it.evidences }
+        if (!allReceivedEvidences.uniqueBy { it.id }) {
+            val duplicatedIds = responses.getDuplicated { it.id }
+            return ValidationError.ValidateBidData.DuplicatedEvidencesIds(duplicatedIds).asValidationError()
+        }
+
+        responses.forEach { response ->
+            response.period?.let { period ->
+                if (!period.endDate.isAfter(LocalDateTime.now()))
+                    return ValidationError.ValidateBidData.InvalidPeriodEndDate(response.id).asValidationError()
+
+                if (!period.startDate.isBefore(period.endDate))
+                    return ValidationError.ValidateBidData.InvalidPeriod(response.id).asValidationError()
+            }
+        }
+
+        return Validated.ok()
+    }
+
     private fun checkItemValue(
         bid: ValidateBidDataParams.Bids.Detail,
         params: ValidateBidDataParams
@@ -2498,6 +2672,7 @@ class BidService(
 
         val createdBid = receivedBid
             .convert(params.date)
+
         val createdBidEntity = BidEntity.New(
             cpid = params.cpid,
             ocid = params.ocid,

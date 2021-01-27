@@ -2,13 +2,22 @@ package com.procurement.submission.infrastructure.handler.v2.model.request
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
+import com.procurement.submission.application.model.data.RequirementRsValue
+import com.procurement.submission.infrastructure.bind.criteria.RequirementValueDeserializer
+import com.procurement.submission.infrastructure.bind.criteria.RequirementValueSerializer
+import com.procurement.submission.infrastructure.bind.date.JsonDateDeserializer
+import com.procurement.submission.infrastructure.bind.date.JsonDateSerializer
 import java.math.BigDecimal
+import java.time.LocalDateTime
 
 data class ValidateBidDataRequest(
     @param:JsonProperty("bids") @field:JsonProperty("bids") val bids: Bids,
     @param:JsonProperty("tender") @field:JsonProperty("tender") val tender: Tender,
-    @param:JsonProperty("cpid") @field:JsonProperty("cpid") val cpid: String
-    ) {
+    @param:JsonProperty("cpid") @field:JsonProperty("cpid") val cpid: String,
+    @param:JsonProperty("pmd") @field:JsonProperty("pmd") val pmd: String
+) {
     data class Bids(
         @param:JsonProperty("details") @field:JsonProperty("details") val details: List<Detail>
     ) {
@@ -25,12 +34,70 @@ data class ValidateBidDataRequest(
             @param:JsonProperty("documents") @field:JsonProperty("documents") val documents: List<Document>?,
 
             @JsonInclude(JsonInclude.Include.NON_EMPTY)
-            @param:JsonProperty("items") @field:JsonProperty("items") val items: List<Item>?
+            @param:JsonProperty("items") @field:JsonProperty("items") val items: List<Item>?,
+
+            @JsonInclude(JsonInclude.Include.NON_EMPTY)
+            @param:JsonProperty("requirementResponses") @field:JsonProperty("requirementResponses") val requirementResponses: List<RequirementResponse>?
+
         ) {
             data class Value(
                 @param:JsonProperty("amount") @field:JsonProperty("amount") val amount: BigDecimal,
                 @param:JsonProperty("currency") @field:JsonProperty("currency") val currency: String
             )
+
+            data class RequirementResponse(
+                @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
+
+                @JsonDeserialize(using = RequirementValueDeserializer::class)
+                @JsonSerialize(using = RequirementValueSerializer::class)
+                @field:JsonProperty("value") @param:JsonProperty("value") val value: RequirementRsValue,
+
+                @field:JsonProperty("requirement") @param:JsonProperty("requirement") val requirement: Requirement,
+
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                @field:JsonProperty("relatedTenderer") @param:JsonProperty("relatedTenderer") val relatedTenderer: OrganizationReference?,
+
+                @JsonInclude(JsonInclude.Include.NON_EMPTY)
+                @field:JsonProperty("evidences") @param:JsonProperty("evidences") val evidences: List<Evidence>?,
+
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                @field:JsonProperty("period") @param:JsonProperty("period") val period: Period?
+            ) {
+
+                data class Evidence(
+                    @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
+                    @field:JsonProperty("title") @param:JsonProperty("title") val title: String,
+
+                    @JsonInclude(JsonInclude.Include.NON_NULL)
+                    @field:JsonProperty("description") @param:JsonProperty("description") val description: String?,
+
+                    @JsonInclude(JsonInclude.Include.NON_NULL)
+                    @field:JsonProperty("relatedDocument") @param:JsonProperty("relatedDocument") val relatedDocument: RelatedDocument?
+                ) {
+                    data class RelatedDocument(
+                        @field:JsonProperty("id") @param:JsonProperty("id") val id: String
+                    )
+                }
+
+                data class OrganizationReference(
+                    @field:JsonProperty("id") @param:JsonProperty("id") val id: String,
+                    @field:JsonProperty("name") @param:JsonProperty("name") val name: String
+                )
+
+                data class Period(
+                    @JsonDeserialize(using = JsonDateDeserializer::class)
+                    @JsonSerialize(using = JsonDateSerializer::class)
+                    @field:JsonProperty("startDate") @param:JsonProperty("startDate") val startDate: LocalDateTime,
+
+                    @JsonDeserialize(using = JsonDateDeserializer::class)
+                    @JsonSerialize(using = JsonDateSerializer::class)
+                    @field:JsonProperty("endDate") @param:JsonProperty("endDate") val endDate: LocalDateTime
+                )
+
+                data class Requirement(
+                    @field:JsonProperty("id") @param:JsonProperty("id") val id: String
+                )
+            }
 
             data class Tenderer(
                 @param:JsonProperty("id") @field:JsonProperty("id") val id: String,

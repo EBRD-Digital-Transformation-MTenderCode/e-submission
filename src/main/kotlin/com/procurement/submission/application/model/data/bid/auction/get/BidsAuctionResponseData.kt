@@ -122,7 +122,7 @@ data class BidsAuctionResponseData(
                         val scheme: String,
                         val id: String,
                         val description: String,
-                        val uri: String
+                        val uri: String?
                     )
 
                     data class Permit(
@@ -171,7 +171,7 @@ data class BidsAuctionResponseData(
                     data class Identifier(
                         val scheme: String,
                         val id: String,
-                        val uri: String
+                        val uri: String?
                     )
 
                     data class BusinessFunction(
@@ -252,14 +252,30 @@ data class BidsAuctionResponseData(
 
             data class RequirementResponse(
                 val id: RequirementResponseId,
-                val title: String?,
-                val description: String?,
                 val value: RequirementRsValue,
+                val relatedTenderer: OrganizationReference?,
+                val evidences: List<Evidence>?,
                 val requirement: Requirement,
                 val period: Period?
             ) {
                 data class Requirement(
                     val id: RequirementId
+                )
+
+                data class Evidence(
+                    val id: String,
+                    val title: String,
+                    val description: String?,
+                    val relatedDocument: RelatedDocument?
+                ) {
+                    data class RelatedDocument(
+                        val id: String
+                    )
+                }
+
+                data class OrganizationReference(
+                    val id: String,
+                    val name: String
                 )
 
                 data class Period(

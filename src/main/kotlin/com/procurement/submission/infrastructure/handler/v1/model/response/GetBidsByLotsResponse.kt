@@ -336,12 +336,6 @@ data class GetBidsByLotsResponse(
         data class RequirementResponse(
             @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
 
-            @JsonInclude(JsonInclude.Include.NON_NULL)
-            @param:JsonProperty("title") @field:JsonProperty("title") val title: String?,
-
-            @JsonInclude(JsonInclude.Include.NON_NULL)
-            @param:JsonProperty("description") @field:JsonProperty("description") val description: String?,
-
             @JsonDeserialize(using = RequirementValueDeserializer::class)
             @JsonSerialize(using = RequirementValueSerializer::class)
             @param:JsonProperty("value") @field:JsonProperty("value") val value: RequirementRsValue,
@@ -349,7 +343,14 @@ data class GetBidsByLotsResponse(
             @param:JsonProperty("requirement") @field:JsonProperty("requirement") val requirement: Requirement,
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
-            @param:JsonProperty("period") @field:JsonProperty("period") val period: Period?
+            @param:JsonProperty("period") @field:JsonProperty("period") val period: Period?,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
+            @param:JsonProperty("relatedTenderer") @field:JsonProperty("relatedTenderer") val relatedTenderer: RelatedTenderer?,
+
+            @JsonInclude(JsonInclude.Include.NON_EMPTY)
+            @param:JsonProperty("evidences") @field:JsonProperty("evidences") val evidences: List<Evidence>?
+
         ) {
             data class Requirement(
                 @param:JsonProperty("id") @field:JsonProperty("id") val id: String
@@ -364,6 +365,27 @@ data class GetBidsByLotsResponse(
                 @JsonSerialize(using = JsonDateSerializer::class)
                 @param:JsonProperty("endDate") @field:JsonProperty("endDate") val endDate: LocalDateTime
             )
+
+
+            data class RelatedTenderer(
+                @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
+                @param:JsonProperty("name") @field:JsonProperty("name") val name: String
+            )
+
+            data class Evidence(
+                @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
+                @param:JsonProperty("title") @field:JsonProperty("title") val title: String,
+
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                @param:JsonProperty("description") @field:JsonProperty("description") val description: String?,
+
+                @JsonInclude(JsonInclude.Include.NON_NULL)
+                @param:JsonProperty("relatedDocument") @field:JsonProperty("relatedDocument") val relatedDocument: RelatedDocument?
+            ) {
+                data class RelatedDocument(
+                    @param:JsonProperty("id") @field:JsonProperty("id") val id: DocumentId
+                )
+            }
         }
     }
 }

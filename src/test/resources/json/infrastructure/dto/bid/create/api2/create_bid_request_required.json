@@ -169,6 +169,16 @@
           {
             "id": "string",
             "value": "Unknown Type: string,number,integer,boolean",
+            "relatedTenderer": {
+              "id": "string",
+              "name": "string"
+            },
+            "evidences": [
+              {
+                "id": "string",
+                "title": "string"
+              }
+            ],
             "requirement": {
               "id": "string"
             }

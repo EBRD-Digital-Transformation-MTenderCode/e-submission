@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.model.dto.ocds.Bid
-import com.procurement.submission.model.dto.ocds.OrganizationReference
+import com.procurement.submission.model.dto.ocds.Organization
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.model.dto.ocds.Requirement
 import com.procurement.submission.model.dto.ocds.RequirementResponse
@@ -59,7 +59,7 @@ data class GetBidsForPacsResult(
                 requirementResponses = bid.requirementResponses?.map { fromDomain(it) }
             )
 
-        fun fromDomain(tenderer: OrganizationReference): Bids.Detail.Tenderer =
+        fun fromDomain(tenderer: Organization): Bids.Detail.Tenderer =
             Bids.Detail.Tenderer(id = tenderer.id!!, name = tenderer.name)
 
         fun fromDomain(requirementResponses: RequirementResponse): Bids.Detail.RequirementResponse =

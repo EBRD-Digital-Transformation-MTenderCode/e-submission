@@ -1,9 +1,25 @@
 {
   "cpid": "ocds-t1s2t3-MD-1544113930847",
+  "pmd": "TEST_OT",
   "bids": {
     "details": [
       {
         "id": "ad346431-1d0e-4c82-9d85-d718d65370fb",
+        "requirementResponses": [
+          {
+            "id": "string",
+            "value": true,
+            "requirement": {
+              "id": "string"
+            },
+            "evidences": [
+              {
+                "id": "string",
+                "title": "string"
+              }
+            ]
+          }
+        ],
         "tenderers": [
           {
             "id": "string",

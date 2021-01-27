@@ -2,6 +2,8 @@ package com.procurement.submission.application.service
 
 import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
+import com.procurement.submission.application.model.data.bid.get.period.GetTenderPeriodEndContext
+import com.procurement.submission.application.model.data.bid.get.period.GetTenderPeriodEndResult
 import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodContext
 import com.procurement.submission.application.model.data.tender.period.ExtendTenderPeriodResult
 import com.procurement.submission.application.params.CheckPeriodParams
@@ -203,6 +205,13 @@ class PeriodService(
     fun getPeriodEntity(cpid: Cpid, ocid: Ocid): PeriodEntity =
         periodRepository.find(cpid, ocid)
             .orThrow { it.exception }
+            ?: throw ErrorException(ErrorType.PERIOD_NOT_FOUND)
+
+
+    fun getTenderPeriodEnd(context: GetTenderPeriodEndContext): GetTenderPeriodEndResult =
+        periodRepository.find(context.cpid, context.ocid)
+            .orThrow { it.exception }
+            ?.let { GetTenderPeriodEndResult.fromDomain(it) }
             ?: throw ErrorException(ErrorType.PERIOD_NOT_FOUND)
 
     private fun checkInterval(

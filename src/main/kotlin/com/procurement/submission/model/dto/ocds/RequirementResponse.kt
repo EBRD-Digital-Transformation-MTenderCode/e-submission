@@ -18,6 +18,12 @@ data class RequirementResponse @JsonCreator constructor(
     @JsonInclude(JsonInclude.Include.NON_NULL)
     val description: String?,
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonProperty("relatedTenderer") @param:JsonProperty("relatedTenderer") val relatedTenderer: OrganizationReference?,
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonProperty("evidences") @param:JsonProperty("evidences") val evidences: List<Evidence>?,
+
     @JsonDeserialize(using = RequirementValueDeserializer::class)
     @JsonSerialize(using = RequirementValueSerializer::class)
     @field:JsonProperty("value") @param:JsonProperty("value") val value: RequirementRsValue,
