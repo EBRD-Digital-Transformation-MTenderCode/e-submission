@@ -122,7 +122,7 @@ data class BidsAuctionResponseData(
                         val scheme: String,
                         val id: String,
                         val description: String,
-                        val uri: String
+                        val uri: String?
                     )
 
                     data class Permit(
@@ -171,7 +171,7 @@ data class BidsAuctionResponseData(
                     data class Identifier(
                         val scheme: String,
                         val id: String,
-                        val uri: String
+                        val uri: String?
                     )
 
                     data class BusinessFunction(
