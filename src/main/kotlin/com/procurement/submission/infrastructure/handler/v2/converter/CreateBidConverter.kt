@@ -824,7 +824,7 @@ fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
                                                     .let { validityPeriod ->
                                                         ValidityPeriod(
                                                             startDate = validityPeriod.startDate,
-                                                            endDate = validityPeriod.startDate
+                                                            endDate = validityPeriod.endDate
                                                         )
                                                     }
                                             )
