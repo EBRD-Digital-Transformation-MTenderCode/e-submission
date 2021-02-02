@@ -60,5 +60,15 @@
     "value": {
       "currency": "string"
     }
+  },
+  "mdm": {
+    "registrationSchemes": [
+      {
+        "country": "string",
+        "schemes": [
+          "string"
+        ]
+      }
+    ]
   }
 }
