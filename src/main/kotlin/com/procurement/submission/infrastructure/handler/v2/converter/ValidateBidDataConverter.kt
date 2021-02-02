@@ -38,7 +38,15 @@ fun ValidateBidDataRequest.convert(): Result<ValidateBidDataParams, DataErrors> 
         bids = bids.convert(path).onFailure { return it },
         tender = tender.convert(path).onFailure { return it },
         cpid = parseCpid(cpid).onFailure { return it },
-        pmd = parsePmd(pmd, allowedPmd).onFailure { return it }
+        pmd = parsePmd(pmd, allowedPmd).onFailure { return it },
+        mdm = ValidateBidDataParams.Mdm(
+            registrationSchemes = mdm.registrationSchemes.map { registrationScheme ->
+                ValidateBidDataParams.Mdm.RegistrationScheme(
+                    country = registrationScheme.country,
+                    schemes = registrationScheme.schemes
+                )
+            }
+        )
     ).asSuccess()
 }
 
