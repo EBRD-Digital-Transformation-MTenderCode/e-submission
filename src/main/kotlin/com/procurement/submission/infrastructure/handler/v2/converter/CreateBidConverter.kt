@@ -410,8 +410,10 @@ private fun CreateBidRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.V
     val startDate = parseDate(value = startDate, attributeName = "$path.startDate")
         .onFailure { return it }
 
-    val endDate = parseDate(value = endDate, attributeName = "$path.endDate")
-        .onFailure { return it }
+    val endDate = endDate?.let {
+        parseDate(value = endDate, attributeName = "$path.endDate")
+            .onFailure { return it }
+    }
 
     return CreateBidParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.ValidityPeriod(
         startDate = startDate,
