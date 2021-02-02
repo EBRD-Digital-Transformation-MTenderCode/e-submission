@@ -229,7 +229,9 @@ data class CreateBidResult(
 
                             data class ValidityPeriod(
                                 @param:JsonProperty("startDate") @field:JsonProperty("startDate") val startDate: LocalDateTime,
-                                @param:JsonProperty("endDate") @field:JsonProperty("endDate") val endDate: LocalDateTime
+
+                                @JsonInclude(JsonInclude.Include.NON_NULL)
+                                @param:JsonProperty("endDate") @field:JsonProperty("endDate") val endDate: LocalDateTime?
                             )
                         }
                     }
