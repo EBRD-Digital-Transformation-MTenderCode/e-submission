@@ -2406,8 +2406,69 @@ class BidService(
         checkForDuplicatePersonDocuments(tenderers)
             .onFailure { return it.reason.asValidationError() }
 
+        checkScheme(params)
+            .onFailure { return it.reason.asValidationError() }
+
         return Validated.ok()
     }
+
+    private fun checkScheme(params: ValidateBidDataParams): Validated<ValidationError> {
+        checkForUnknownSchemes(params)
+            .onFailure { return it.reason.asValidationError() }
+
+        checkWhetherSchemesMatchByCountry(params)
+            .onFailure { return it.reason.asValidationError() }
+
+        return Validated.ok()
+    }
+
+    private fun checkWhetherSchemesMatchByCountry(params: ValidateBidDataParams): Validated<ValidationError> {
+        val identifierSchemesByCountry = params.bids.details.asSequence()
+            .flatMap { it.tenderers }
+            .associateBy(
+                valueTransform = { it.identifier.scheme },
+                keySelector = { it.address.addressDetails.country.id }
+            )
+
+        val registrationSchemesByCountry = params.mdm.registrationSchemes.associateBy(
+            keySelector = { it.country },
+            valueTransform = { it.schemes.toSet() }
+        )
+
+        identifierSchemesByCountry.forEach { schemeByCountry ->
+            val identifierScheme = schemeByCountry.value
+            val country = schemeByCountry.key
+            if (!schemesMatch(registrationSchemesByCountry, country, identifierScheme))
+                return ValidationError.SchemeMismatchByCountry(identifierScheme, country).asValidationError()
+        }
+
+        return Validated.ok()
+    }
+
+    private fun checkForUnknownSchemes(params: ValidateBidDataParams): Validated<ValidationError> {
+        val identifierSchemes = params.bids.details.asSequence()
+            .flatMap { it.tenderers }
+            .map { it.identifier.scheme }
+            .toSet()
+
+        val registrationSchemes = params.mdm.registrationSchemes.flatMap { it.schemes }
+
+        val unknownIdentifierSchemes = identifierSchemes.subtract(registrationSchemes)
+        if (unknownIdentifierSchemes.isNotEmpty())
+            return ValidationError.UnknownIdentifierSchemes(unknownIdentifierSchemes).asValidationError()
+
+        val unknownRegistrationSchemes = registrationSchemes.subtract(identifierSchemes)
+        if (unknownRegistrationSchemes.isNotEmpty())
+            return ValidationError.UnknownRegistrationSchemes(unknownRegistrationSchemes).asValidationError()
+
+        return Validated.ok()
+    }
+
+    private fun schemesMatch(
+        registrationSchemesByCountry: Map<String, Set<String>>,
+        country: String,
+        identifierScheme: String
+    ) = registrationSchemesByCountry[country]?.contains(identifierScheme) ?: false
 
     private fun checkForActiveInvitations(params: ValidateBidDataParams): Validated<Fail> {
         val activeInvitations = invitationRepository.findBy(params.cpid)

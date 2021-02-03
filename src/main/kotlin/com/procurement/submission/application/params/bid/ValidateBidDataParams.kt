@@ -21,6 +21,7 @@ data class ValidateBidDataParams(
     val tender: Tender,
     val cpid: Cpid,
     val pmd: ProcurementMethod,
+    val mdm: Mdm
 ) {
     data class Bids constructor(
         val details: List<Detail>
@@ -318,5 +319,14 @@ data class ValidateBidDataParams(
                 val id: String
             )
         }
+    }
+
+    data class Mdm(
+        val registrationSchemes: List<RegistrationScheme>
+    ) {
+        data class RegistrationScheme(
+            val country: String,
+            val schemes: List<String>
+        )
     }
 }
