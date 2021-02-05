@@ -14,6 +14,7 @@ import com.procurement.submission.application.params.parsePmd
 import com.procurement.submission.application.params.parseProcurementMethodModalities
 import com.procurement.submission.application.params.parseScale
 import com.procurement.submission.application.params.parseTypeOfSupplier
+import com.procurement.submission.application.params.rules.notEmptyOrBlankRule
 import com.procurement.submission.application.params.rules.notEmptyRule
 import com.procurement.submission.domain.extension.mapResult
 import com.procurement.submission.domain.fail.error.DataErrors
@@ -145,15 +146,15 @@ private fun ValidateBidDataRequest.Bids.Detail.convert(path: String): Result<Val
         ?.onFailure { return it }
 
     val documents = documents.validate(notEmptyRule("$path.documents"))
-        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents") } }
+        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents[${document.id}]") } }
         .onFailure { return it }
 
     val tenderers = tenderers.validate(notEmptyRule("$path.tenderers"))
-        .flatMap { it.mapResult { tenderer -> tenderer.convert("$path.tenderers") } }
+        .flatMap { it.mapResult { tenderer -> tenderer.convert("$path.tenderers[${tenderer.id}]") } }
         .onFailure { return it }
 
     val requirementResponses = requirementResponses.validate(notEmptyRule("$path.requirementResponses"))
-        .flatMap { it.orEmpty().mapResult { requirementResponse -> requirementResponse.convert("$path.requirementResponses") } }
+        .flatMap { it.orEmpty().mapResult { requirementResponse -> requirementResponse.convert("$path.requirementResponses[${requirementResponse.id}]") } }
         .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail(
@@ -171,15 +172,17 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.convert(path: String): R
     val additionalIdentifiers = additionalIdentifiers.validate(notEmptyRule("$path.additionalIdentifiers"))
         .onFailure { return it }
         .orEmpty()
-        .map { additionalIdentifier -> additionalIdentifier.convert() }
+        .map { additionalIdentifier -> additionalIdentifier.convert("$path.additionalIdentifiers[${additionalIdentifier.id}]").onFailure { return it } }
 
-    val address = address.convert()
-    val contactPoint = contactPoint.convert()
+    val name = name.validate(notEmptyOrBlankRule("$path.name")).onFailure { return it }
+
+    val address = address.convert("$path.address").onFailure { return it }
+    val contactPoint = contactPoint.convert("$path.contactPoint").onFailure { return it }
     val details = details.convert("$path.details").onFailure { return it }
-    val identifier = identifier.convert()
+    val identifier = identifier.convert("$path.identifier").onFailure { return it }
 
     val persones = persones.validate(notEmptyRule("$path.persones"))
-        .flatMap { it.orEmpty().mapResult { person -> person.convert("$path.persones") } }
+        .flatMap { it.orEmpty().mapResult { person -> person.convert("$path.persones[${person.id}]") } }
         .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer(
@@ -195,6 +198,8 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.convert(path: String): R
 }
 
 private fun ValidateBidDataRequest.Bids.Detail.RequirementResponse.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.RequirementResponse, DataErrors> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+
     val requirement = requirement.convert()
     val relatedTenderer = relatedTenderer?.convert()
     val period = period?.convert()
@@ -251,14 +256,15 @@ private val allowedPersonTitles = PersonTitle.allowedElements
     .toSet()
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone, DataErrors> {
+    val name = name.validate(notEmptyOrBlankRule("$path.name")).onFailure { return it }
 
     val title = parsePersonTitle(title, allowedPersonTitles, "$path.title")
         .onFailure { return it }
 
-    val identifier = identifier.convert()
+    val identifier = identifier.convert("$path.identifier").onFailure { return it }
 
     val businessFunctions = businessFunctions.validate(notEmptyRule("$path.businessFunctions"))
-        .flatMap { it.mapResult { businessFunction -> businessFunction.convert("$path.businessFunctions") } }
+        .flatMap { it.mapResult { businessFunction -> businessFunction.convert("$path.businessFunctions[${businessFunction.id}]") } }
         .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Persone(
@@ -279,8 +285,10 @@ private val allowedBusinessFunctionType = BusinessFunctionType.allowedElements
     }.toSet()
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction, DataErrors> {
+    val jobTitle = jobTitle.validate(notEmptyOrBlankRule("$path.jobTitle")).onFailure { return it }
+
     val documents = documents.validate(notEmptyRule("$path.documents"))
-        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents") } }
+        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents[${document.id}]") } }
         .onFailure { return it }
 
     val type = parseBusinessFunctionType(type, allowedBusinessFunctionType, "$path.type")
@@ -306,6 +314,8 @@ private val allowedBFDocumentType = BusinessFunctionDocumentType.allowedElements
     .toSet()
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction.Document.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction.Document, DataErrors> {
+    val description = description?.validate(notEmptyOrBlankRule("$path.description"))?.onFailure { return it }
+
     val documentType = parseBFDocumentType(documentType, allowedBFDocumentType, "$path.documentType")
         .onFailure { return it }
 
@@ -326,18 +336,31 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction
     ).asSuccess()
 }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.Identifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Persone.Identifier(
-    id = id,
-    uri = uri,
-    scheme = scheme
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.Identifier.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone.Identifier, DataErrors.Validation> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val uri = uri?.validate(notEmptyOrBlankRule("$path.uri"))?.onFailure { return it }
+    val scheme = scheme.validate(notEmptyOrBlankRule("$path.scheme")).onFailure { return it }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Identifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Identifier(
-    id = id,
-    scheme = scheme,
-    uri = uri,
-    legalName = legalName
-)
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Persone.Identifier(
+        id = id,
+        uri = uri,
+        scheme = scheme
+    ).asSuccess()
+}
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Identifier.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Identifier, DataErrors.Validation> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val scheme = scheme.validate(notEmptyOrBlankRule("$path.scheme")).onFailure { return it }
+    val uri = uri?.validate(notEmptyOrBlankRule("$path.uri"))?.onFailure { return it }
+    val legalName = legalName.validate(notEmptyOrBlankRule("$path.legalName")).onFailure { return it }
+
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Identifier(
+        id = id,
+        scheme = scheme,
+        uri = uri,
+        legalName = legalName
+    ).asSuccess()
+}
 
 private val allowedTypeOfSupplier = TypeOfSupplier.allowedElements
     .filter {
@@ -368,18 +391,18 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.convert(path: St
     }
 
     val bankAccounts = bankAccounts.validate(notEmptyRule("$path.bankAccounts"))
-        .flatMap { it.orEmpty().mapResult { bankAccount -> bankAccount.convert("$path.bankAccounts") } }
+        .flatMap { it.orEmpty().mapResult { bankAccount -> bankAccount.convert("$path.bankAccounts[${bankAccount.identifier.scheme}-${bankAccount.identifier.id}]") } }
         .onFailure { return it }
 
-    val legalForm = legalForm?.convert()
+    val legalForm = legalForm?.convert("$path.legalForm")?.onFailure { return it }
 
     val mainEconomicActivities = mainEconomicActivities.validate(notEmptyRule("$path.mainEconomicActivities"))
         .onFailure { return it }
         .orEmpty()
-        .map { mainEconomicActivity -> mainEconomicActivity.convert() }
+        .map { mainEconomicActivity -> mainEconomicActivity.convert("$path.mainEconomicActivities[${mainEconomicActivity.id}]").onFailure { return it } }
 
     val permits = permits.validate(notEmptyRule("$path.permits"))
-        .flatMap { it.orEmpty().mapResult { permit -> permit.convert("$path.permits") } }
+        .flatMap { it.orEmpty().mapResult { permit -> permit.convert("$path.permits[${permit.id}]") } }
         .onFailure { return it }
 
     val scale = parseScale(scale, allowedScales, "$path.scale")
@@ -396,6 +419,10 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.convert(path: St
 }
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit, DataErrors> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val scheme = scheme.validate(notEmptyOrBlankRule("$path.scheme")).onFailure { return it }
+    val url = url?.validate(notEmptyOrBlankRule("$path.url"))?.onFailure { return it }
+
     val permitDetails = permitDetails.convert("$path.permitDetails")
         .onFailure { return it }
 
@@ -408,8 +435,8 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.convert(p
 }
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails, DataErrors> {
-    val issuedBy = issuedBy.convert()
-    val issuedThought = issuedThought.convert()
+    val issuedBy = issuedBy.convert("$path.issuedBy").onFailure { return it }
+    val issuedThought = issuedThought.convert("$path.issuedThought").onFailure { return it }
     val validityPeriod = validityPeriod.convert("$path.validityPeriod")
         .onFailure { return it }
 
@@ -435,26 +462,39 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDet
     ).asSuccess()
 }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought(
-    id = id,
-    name = name
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought, DataErrors.Validation> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val name = name.validate(notEmptyOrBlankRule("$path.name")).onFailure { return it }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy(
-    id = id,
-    name = name
-)
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought(
+        id = id,
+        name = name
+    ).asSuccess()
+}
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy, DataErrors.Validation> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val name = name.validate(notEmptyOrBlankRule("$path.name")).onFailure { return it }
+
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy(
+        id = id,
+        name = name
+    ).asSuccess()
+}
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount, DataErrors> {
-    val identifier = identifier.convert()
-    val address = address.convert()
-    val accountIdentification = accountIdentification.convert()
+    val description = description.validate(notEmptyOrBlankRule("$path.description")).onFailure { return it }
+    val bankName = bankName.validate(notEmptyOrBlankRule("$path.bankName")).onFailure { return it }
+
+    val identifier = identifier.convert("$path.identifier").onFailure { return it }
+    val address = address.convert("$path.address").onFailure { return it }
+    val accountIdentification = accountIdentification.convert("$path.accountIdentification").onFailure { return it }
 
     val additionalAccountIdentifiers =
         additionalAccountIdentifiers.validate(notEmptyRule("$path.additionalAccountIdentifiers"))
             .onFailure { return it }
             .orEmpty()
-            .map { bankAccount -> bankAccount.convert() }
+            .map { bankAccount -> bankAccount.convert("$path.additionalAccountIdentifiers[${bankAccount.scheme}-${bankAccount.id}]").onFailure { return it } }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount(
         description = description,
@@ -466,105 +506,163 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.conv
     ).asSuccess()
 }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
-    id = id,
-    scheme = scheme
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier, DataErrors>{
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val scheme = scheme.validate(notEmptyOrBlankRule("$path.scheme")).onFailure { return it }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification(
-    id = id,
-    scheme = scheme
-)
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
+        id = id,
+        scheme = scheme
+    ).asSuccess()
+}
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.Address.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address(
-    streetAddress = streetAddress,
-    postalCode = postalCode,
-    addressDetails = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails(
-        country = addressDetails.country.let { country ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
-                id = country.id,
-                description = country.description,
-                scheme = country.scheme
-            )
-        },
-        locality = addressDetails.locality.let { locality ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
-                id = locality.id,
-                description = locality.description,
-                scheme = locality.scheme
-            )
-        },
-        region = addressDetails.region.let { region ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
-                id = region.id,
-                description = region.description,
-                scheme = region.scheme
-            )
-        }
-    )
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification, DataErrors.Validation> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val scheme = scheme.validate(notEmptyOrBlankRule("$path.scheme")).onFailure { return it }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.Identifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Identifier(
-    id = id,
-    scheme = scheme
-)
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification(
+        id = id,
+        scheme = scheme
+    ).asSuccess()
+}
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.MainEconomicActivity.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.MainEconomicActivity(
-    id = id,
-    scheme = scheme,
-    uri = uri,
-    description = description
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.Address.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address, DataErrors.Validation> {
+    val streetAddress = streetAddress.validate(notEmptyOrBlankRule("$path.streetAddress")).onFailure { return it }
+    val postalCode = postalCode?.validate(notEmptyOrBlankRule("$path.postalCode"))?.onFailure { return it }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.LegalForm.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.LegalForm(
-    id = id,
-    scheme = scheme,
-    uri = uri,
-    description = description
-)
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address(
+        streetAddress = streetAddress,
+        postalCode = postalCode,
+        addressDetails = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails(
+            country = addressDetails.country.let { country ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
+                    id = country.id,
+                    description = country.description,
+                    scheme = country.scheme
+                )
+            },
+            locality = addressDetails.locality.let { locality ->
+                val description = locality.description.validate(notEmptyOrBlankRule("$path.addressDetails.locality.description")).onFailure { return it }
+                ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
+                    id = locality.id,
+                    description = description,
+                    scheme = locality.scheme
+                )
+            },
+            region = addressDetails.region.let { region ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
+                    id = region.id,
+                    description = region.description,
+                    scheme = region.scheme
+                )
+            }
+        )
+    ).asSuccess()
+}
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.ContactPoint.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.ContactPoint(
-    name = name,
-    email = email,
-    faxNumber = faxNumber,
-    telephone = telephone,
-    url = url
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.Identifier.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Identifier, DataErrors> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val scheme = scheme.validate(notEmptyOrBlankRule("$path.scheme")).onFailure { return it }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Address.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Address(
-    streetAddress = streetAddress,
-    postalCode = postalCode,
-    addressDetails = ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails(
-        country = addressDetails.country.let { country ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Country(
-                id = country.id,
-                description = country.description,
-                scheme = country.scheme
-            )
-        },
-        locality = addressDetails.locality.let { locality ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Locality(
-                id = locality.id,
-                description = locality.description,
-                scheme = locality.scheme
-            )
-        },
-        region = addressDetails.region.let { region ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Region(
-                id = region.id,
-                description = region.description,
-                scheme = region.scheme
-            )
-        }
-    )
-)
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Identifier(
+        id = id,
+        scheme = scheme
+    ).asSuccess()
+}
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.AdditionalIdentifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.AdditionalIdentifier(
-    id = id,
-    scheme = scheme,
-    legalName = legalName,
-    uri = uri
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.MainEconomicActivity.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.MainEconomicActivity, DataErrors.Validation> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val scheme = scheme.validate(notEmptyOrBlankRule("$path.scheme")).onFailure { return it }
+    val uri = uri?.validate(notEmptyOrBlankRule("$path.uri"))?.onFailure { return it }
+    val description = description.validate(notEmptyOrBlankRule("$path.description")).onFailure { return it }
+
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Details.MainEconomicActivity(
+        id = id,
+        scheme = scheme,
+        uri = uri,
+        description = description
+    ).asSuccess()
+}
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.LegalForm.convert(path: String) : Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.LegalForm, DataErrors> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val scheme = scheme.validate(notEmptyOrBlankRule("$path.scheme")).onFailure { return it }
+    val uri = uri?.validate(notEmptyOrBlankRule("$path.uri"))?.onFailure { return it }
+    val description = description.validate(notEmptyOrBlankRule("$path.description")).onFailure { return it }
+
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Details.LegalForm(
+        id = id,
+        scheme = scheme,
+        uri = uri,
+        description = description
+    ).asSuccess()
+}
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.ContactPoint.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.ContactPoint, DataErrors.Validation> {
+    val name = name.validate(notEmptyOrBlankRule("$path.name")).onFailure { return it }
+    val email = email.validate(notEmptyOrBlankRule("$path.email")).onFailure { return it }
+    val faxNumber = faxNumber?.validate(notEmptyOrBlankRule("$path.faxNumber"))?.onFailure { return it }
+    val telephone = telephone.validate(notEmptyOrBlankRule("$path.telephone")).onFailure { return it }
+    val url = url?.validate(notEmptyOrBlankRule("$path.url"))?.onFailure { return it }
+
+    return ValidateBidDataParams.Bids.Detail.Tenderer.ContactPoint(
+        name = name,
+        email = email,
+        faxNumber = faxNumber,
+        telephone = telephone,
+        url = url
+    ).asSuccess()
+}
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Address.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Address, DataErrors.Validation> {
+    val streetAddress = streetAddress.validate(notEmptyOrBlankRule("$path.streetAddress")).onFailure { return it }
+    val postalCode = postalCode?.validate(notEmptyOrBlankRule("$path.postalCode"))?.onFailure { return it }
+
+    return ValidateBidDataParams.Bids.Detail.Tenderer.Address(
+        streetAddress = streetAddress,
+        postalCode = postalCode,
+        addressDetails = ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails(
+            country = addressDetails.country.let { country ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Country(
+                    id = country.id,
+                    description = country.description,
+                    scheme = country.scheme
+                )
+            },
+            locality = addressDetails.locality.let { locality ->
+                val description = locality.description.validate(notEmptyOrBlankRule("$path.addressDetails.locality.description")).onFailure { return it }
+                val scheme = locality.scheme.validate(notEmptyOrBlankRule("$path.addressDetails.locality.scheme")).onFailure { return it }
+
+                ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Locality(
+                    id = locality.id,
+                    description = description,
+                    scheme = scheme
+                )
+            },
+            region = addressDetails.region.let { region ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Region(
+                    id = region.id,
+                    description = region.description,
+                    scheme = region.scheme
+                )
+            }
+        )
+    ).asSuccess()
+}
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.AdditionalIdentifier.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.AdditionalIdentifier, DataErrors.Validation> {
+    val id = id.validate(notEmptyOrBlankRule("$path.id")).onFailure { return it }
+    val scheme = scheme.validate(notEmptyOrBlankRule("$path.scheme")).onFailure { return it }
+    val uri = uri?.validate(notEmptyOrBlankRule("$path.uri"))?.onFailure { return it }
+    val legalName = legalName.validate(notEmptyOrBlankRule("$path.legalName")).onFailure { return it }
+
+    return ValidateBidDataParams.Bids.Detail.Tenderer.AdditionalIdentifier(
+        id = id,
+        scheme = scheme,
+        legalName = legalName,
+        uri = uri
+    ).asSuccess()
+}
 
 private val allowedBidDocumentType = DocumentType.allowedElements
     .filter {
@@ -579,6 +677,9 @@ private val allowedBidDocumentType = DocumentType.allowedElements
     }.toSet()
 
 private fun ValidateBidDataRequest.Bids.Detail.Document.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Document, DataErrors> {
+    val title = title.validate(notEmptyOrBlankRule("$path.title")).onFailure { return it }
+    val description = description?.validate(notEmptyOrBlankRule("$path.description"))?.onFailure { return it }
+
     val relatedLots = relatedLots.validate(notEmptyRule("$path.relatedLots"))
         .onFailure { return it }
         .orEmpty()
