@@ -125,9 +125,7 @@ private fun ValidateBidDataRequest.Bids.convert(path: String): Result<ValidateBi
         .flatMap { it.mapResult { detail -> detail.convert("$path.details") } }
         .onFailure { return it }
 
-    return ValidateBidDataParams.Bids(
-        details = details
-    ).asSuccess()
+    return ValidateBidDataParams.Bids(details = details).asSuccess()
 }
 
 private fun ValidateBidDataRequest.Bids.Detail.convert(path: String): Result<ValidateBidDataParams.Bids.Detail, DataErrors> {
@@ -145,15 +143,15 @@ private fun ValidateBidDataRequest.Bids.Detail.convert(path: String): Result<Val
         ?.onFailure { return it }
 
     val documents = documents.validate(notEmptyRule("$path.documents"))
-        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents") } }
+        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents[${document.id}]") } }
         .onFailure { return it }
 
     val tenderers = tenderers.validate(notEmptyRule("$path.tenderers"))
-        .flatMap { it.mapResult { tenderer -> tenderer.convert("$path.tenderers") } }
+        .flatMap { it.mapResult { tenderer -> tenderer.convert("$path.tenderers[${tenderer.id}]") } }
         .onFailure { return it }
 
     val requirementResponses = requirementResponses.validate(notEmptyRule("$path.requirementResponses"))
-        .flatMap { it.orEmpty().mapResult { requirementResponse -> requirementResponse.convert("$path.requirementResponses") } }
+        .flatMap { it.orEmpty().mapResult { requirementResponse -> requirementResponse.convert("$path.requirementResponses[${requirementResponse.id}]") } }
         .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail(
@@ -171,7 +169,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.convert(path: String): R
     val additionalIdentifiers = additionalIdentifiers.validate(notEmptyRule("$path.additionalIdentifiers"))
         .onFailure { return it }
         .orEmpty()
-        .map { additionalIdentifier -> additionalIdentifier.convert() }
+        .map { additionalIdentifier -> additionalIdentifier.convert()}
 
     val address = address.convert()
     val contactPoint = contactPoint.convert()
@@ -179,7 +177,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.convert(path: String): R
     val identifier = identifier.convert()
 
     val persones = persones.validate(notEmptyRule("$path.persones"))
-        .flatMap { it.orEmpty().mapResult { person -> person.convert("$path.persones") } }
+        .flatMap { it.orEmpty().mapResult { person -> person.convert("$path.persones[${person.id}]") } }
         .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer(
@@ -251,14 +249,13 @@ private val allowedPersonTitles = PersonTitle.allowedElements
     .toSet()
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone, DataErrors> {
-
     val title = parsePersonTitle(title, allowedPersonTitles, "$path.title")
         .onFailure { return it }
 
     val identifier = identifier.convert()
 
     val businessFunctions = businessFunctions.validate(notEmptyRule("$path.businessFunctions"))
-        .flatMap { it.mapResult { businessFunction -> businessFunction.convert("$path.businessFunctions") } }
+        .flatMap { it.mapResult { businessFunction -> businessFunction.convert("$path.businessFunctions[${businessFunction.id}]") } }
         .onFailure { return it }
 
     return ValidateBidDataParams.Bids.Detail.Tenderer.Persone(
@@ -280,7 +277,7 @@ private val allowedBusinessFunctionType = BusinessFunctionType.allowedElements
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Persone.BusinessFunction, DataErrors> {
     val documents = documents.validate(notEmptyRule("$path.documents"))
-        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents") } }
+        .flatMap { it.orEmpty().mapResult { document -> document.convert("$path.documents[${document.id}]") } }
         .onFailure { return it }
 
     val type = parseBusinessFunctionType(type, allowedBusinessFunctionType, "$path.type")
@@ -326,18 +323,20 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.BusinessFunction
     ).asSuccess()
 }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.Identifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Persone.Identifier(
-    id = id,
-    uri = uri,
-    scheme = scheme
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Persone.Identifier.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Persone.Identifier =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Persone.Identifier(
+        id = id,
+        uri = uri,
+        scheme = scheme
+    )
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Identifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Identifier(
-    id = id,
-    scheme = scheme,
-    uri = uri,
-    legalName = legalName
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Identifier.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Identifier =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Identifier(
+        id = id,
+        scheme = scheme,
+        uri = uri,
+        legalName = legalName
+    )
 
 private val allowedTypeOfSupplier = TypeOfSupplier.allowedElements
     .filter {
@@ -368,7 +367,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.convert(path: St
     }
 
     val bankAccounts = bankAccounts.validate(notEmptyRule("$path.bankAccounts"))
-        .flatMap { it.orEmpty().mapResult { bankAccount -> bankAccount.convert("$path.bankAccounts") } }
+        .flatMap { it.orEmpty().mapResult { bankAccount -> bankAccount.convert("$path.bankAccounts[${bankAccount.identifier.scheme}-${bankAccount.identifier.id}]") } }
         .onFailure { return it }
 
     val legalForm = legalForm?.convert()
@@ -379,7 +378,7 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.convert(path: St
         .map { mainEconomicActivity -> mainEconomicActivity.convert() }
 
     val permits = permits.validate(notEmptyRule("$path.permits"))
-        .flatMap { it.orEmpty().mapResult { permit -> permit.convert("$path.permits") } }
+        .flatMap { it.orEmpty().mapResult { permit -> permit.convert("$path.permits[${permit.id}]") } }
         .onFailure { return it }
 
     val scale = parseScale(scale, allowedScales, "$path.scale")
@@ -435,15 +434,17 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDet
     ).asSuccess()
 }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought(
-    id = id,
-    name = name
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedThought(
+        id = id,
+        name = name
+    )
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy(
-    id = id,
-    name = name
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Details.Permit.PermitDetails.IssuedBy(
+        id = id,
+        name = name
+    )
 
 private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.convert(path: String): Result<ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount, DataErrors> {
     val identifier = identifier.convert()
@@ -466,105 +467,114 @@ private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.conv
     ).asSuccess()
 }
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
-    id = id,
-    scheme = scheme
-)
-
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification(
-    id = id,
-    scheme = scheme
-)
-
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.Address.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address(
-    streetAddress = streetAddress,
-    postalCode = postalCode,
-    addressDetails = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails(
-        country = addressDetails.country.let { country ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
-                id = country.id,
-                description = country.description,
-                scheme = country.scheme
-            )
-        },
-        locality = addressDetails.locality.let { locality ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
-                id = locality.id,
-                description = locality.description,
-                scheme = locality.scheme
-            )
-        },
-        region = addressDetails.region.let { region ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
-                id = region.id,
-                description = region.description,
-                scheme = region.scheme
-            )
-        }
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AdditionalAccountIdentifier(
+        id = id,
+        scheme = scheme
     )
-)
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.Identifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Identifier(
-    id = id,
-    scheme = scheme
-)
-
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.MainEconomicActivity.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.MainEconomicActivity(
-    id = id,
-    scheme = scheme,
-    uri = uri,
-    description = description
-)
-
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.LegalForm.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Details.LegalForm(
-    id = id,
-    scheme = scheme,
-    uri = uri,
-    description = description
-)
-
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.ContactPoint.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.ContactPoint(
-    name = name,
-    email = email,
-    faxNumber = faxNumber,
-    telephone = telephone,
-    url = url
-)
-
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Address.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.Address(
-    streetAddress = streetAddress,
-    postalCode = postalCode,
-    addressDetails = ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails(
-        country = addressDetails.country.let { country ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Country(
-                id = country.id,
-                description = country.description,
-                scheme = country.scheme
-            )
-        },
-        locality = addressDetails.locality.let { locality ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Locality(
-                id = locality.id,
-                description = locality.description,
-                scheme = locality.scheme
-            )
-        },
-        region = addressDetails.region.let { region ->
-            ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Region(
-                id = region.id,
-                description = region.description,
-                scheme = region.scheme
-            )
-        }
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.AccountIdentification(
+        id = id,
+        scheme = scheme
     )
-)
 
-private fun ValidateBidDataRequest.Bids.Detail.Tenderer.AdditionalIdentifier.convert() = ValidateBidDataParams.Bids.Detail.Tenderer.AdditionalIdentifier(
-    id = id,
-    scheme = scheme,
-    legalName = legalName,
-    uri = uri
-)
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.Address.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address(
+        streetAddress = streetAddress,
+        postalCode = postalCode,
+        addressDetails = ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails(
+            country = addressDetails.country.let { country ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Country(
+                    id = country.id,
+                    description = country.description,
+                    scheme = country.scheme
+                )
+            },
+            locality = addressDetails.locality.let { locality ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Locality(
+                    id = locality.id,
+                    description = locality.description,
+                    scheme = locality.scheme
+                )
+            },
+            region = addressDetails.region.let { region ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Address.AddressDetails.Region(
+                    id = region.id,
+                    description = region.description,
+                    scheme = region.scheme
+                )
+            }
+        )
+    )
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.BankAccount.Identifier.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Identifier =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Details.BankAccount.Identifier(
+        id = id,
+        scheme = scheme
+    )
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.MainEconomicActivity.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Details.MainEconomicActivity =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Details.MainEconomicActivity(
+        id = id,
+        scheme = scheme,
+        uri = uri,
+        description = description
+    )
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Details.LegalForm.convert() : ValidateBidDataParams.Bids.Detail.Tenderer.Details.LegalForm =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Details.LegalForm(
+        id = id,
+        scheme = scheme,
+        uri = uri,
+        description = description
+    )
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.ContactPoint.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.ContactPoint =
+    ValidateBidDataParams.Bids.Detail.Tenderer.ContactPoint(
+        name = name,
+        email = email,
+        faxNumber = faxNumber,
+        telephone = telephone,
+        url = url
+    )
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.Address.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.Address =
+    ValidateBidDataParams.Bids.Detail.Tenderer.Address(
+        streetAddress = streetAddress,
+        postalCode = postalCode,
+        addressDetails = ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails(
+            country = addressDetails.country.let { country ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Country(
+                    id = country.id,
+                    description = country.description,
+                    scheme = country.scheme
+                )
+            },
+            locality = addressDetails.locality.let { locality ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Locality(
+                    id = locality.id,
+                    description = locality.description,
+                    scheme = locality.scheme
+                )
+            },
+            region = addressDetails.region.let { region ->
+                ValidateBidDataParams.Bids.Detail.Tenderer.Address.AddressDetails.Region(
+                    id = region.id,
+                    description = region.description,
+                    scheme = region.scheme
+                )
+            }
+        )
+    )
+
+private fun ValidateBidDataRequest.Bids.Detail.Tenderer.AdditionalIdentifier.convert(): ValidateBidDataParams.Bids.Detail.Tenderer.AdditionalIdentifier =
+    ValidateBidDataParams.Bids.Detail.Tenderer.AdditionalIdentifier(
+        id = id,
+        scheme = scheme,
+        legalName = legalName,
+        uri = uri
+    )
 
 private val allowedBidDocumentType = DocumentType.allowedElements
     .filter {
