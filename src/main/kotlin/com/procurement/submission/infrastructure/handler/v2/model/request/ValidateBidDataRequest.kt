@@ -16,7 +16,8 @@ data class ValidateBidDataRequest(
     @param:JsonProperty("bids") @field:JsonProperty("bids") val bids: Bids,
     @param:JsonProperty("tender") @field:JsonProperty("tender") val tender: Tender,
     @param:JsonProperty("cpid") @field:JsonProperty("cpid") val cpid: String,
-    @param:JsonProperty("pmd") @field:JsonProperty("pmd") val pmd: String
+    @param:JsonProperty("pmd") @field:JsonProperty("pmd") val pmd: String,
+    @param:JsonProperty("mdm") @field:JsonProperty("mdm") val mdm: Mdm
 ) {
     data class Bids(
         @param:JsonProperty("details") @field:JsonProperty("details") val details: List<Detail>
@@ -396,5 +397,14 @@ data class ValidateBidDataRequest(
                 @param:JsonProperty("id") @field:JsonProperty("id") val id: String
             )
         }
+    }
+
+    data class Mdm(
+        @param:JsonProperty("registrationSchemes") @field:JsonProperty("registrationSchemes") val registrationSchemes: List<RegistrationScheme>
+    ){
+        data class RegistrationScheme(
+            @param:JsonProperty("country") @field:JsonProperty("country") val country: String,
+            @param:JsonProperty("schemes") @field:JsonProperty("schemes") val schemes: List<String>
+        )
     }
 }
