@@ -178,7 +178,7 @@ data class CreateBidParams(
 
                             data class ValidityPeriod(
                                 val startDate: LocalDateTime,
-                                val endDate: LocalDateTime
+                                val endDate: LocalDateTime?
                             )
                         }
                     }

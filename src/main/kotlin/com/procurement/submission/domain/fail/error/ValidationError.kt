@@ -114,6 +114,24 @@ sealed class ValidationError(
             description = "Person '$personId' contains duplicate business function '$businessFunctionId'."
         )
 
+    class UnknownIdentifierSchemes(identifierSchemes: Collection<String>) :
+        ValidationError(
+            numberError = "13.7.24",
+            description = "Bids identifier scheme(s) '${identifierSchemes.joinToString()}' not found in mdm registration schemes."
+        )
+
+    class UnknownRegistrationSchemes(registrationSchemes: Collection<String>) :
+        ValidationError(
+            numberError = "13.7.25",
+            description = "Registration scheme(s) '${registrationSchemes.joinToString()}' not found in bids identifier schemes."
+        )
+
+    class SchemeMismatchByCountry(identifierScheme: String, country: String) :
+        ValidationError(
+            numberError = "13.7.26",
+            description = "Bids identifier scheme '$identifierScheme' for country '$country' does not match registration scheme."
+        )
+
     class DuplicatePersonDocuments(personId: String, documentId: String) :
         ValidationError(
             numberError = "13.7.6",

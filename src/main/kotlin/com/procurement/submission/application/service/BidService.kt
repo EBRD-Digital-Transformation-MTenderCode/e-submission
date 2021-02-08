@@ -42,6 +42,7 @@ import com.procurement.submission.application.model.data.bid.update.BidUpdateCon
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
 import com.procurement.submission.application.params.bid.CreateBidParams
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
+import com.procurement.submission.application.params.rules.notEmptyOrBlankRule
 import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.repository.bid.model.BidEntity
 import com.procurement.submission.application.repository.invitation.InvitationRepository
@@ -50,6 +51,7 @@ import com.procurement.submission.domain.extension.getDuplicated
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.extension.uniqueBy
 import com.procurement.submission.domain.fail.Fail
+import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Money
@@ -90,6 +92,7 @@ import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.lib.functional.asValidationError
+import com.procurement.submission.lib.functional.validate
 import com.procurement.submission.model.dto.ocds.AccountIdentification
 import com.procurement.submission.model.dto.ocds.AdditionalAccountIdentifier
 import com.procurement.submission.model.dto.ocds.Address
@@ -2303,11 +2306,261 @@ class BidService(
     }
 
     fun validateBidData(params: ValidateBidDataParams): Validated<Fail> {
+        validateTextAttributes(params).onFailure { return it.reason.asValidationError() }
         checkBidsValue(params).onFailure { return it.reason.asValidationError() }
         checkTenderers(params).onFailure { return it.reason.asValidationError() }
         checkDocuments(params).onFailure { return it.reason.asValidationError() }
         checkItems(params).onFailure { return it.reason.asValidationError() }
         checkBid(params.bids).onFailure { return it.reason.asValidationError() }
+
+        return Validated.ok()
+    }
+
+    private fun validateTextAttributes(params: ValidateBidDataParams): Validated<DataErrors.Validation> {
+        params.bids.details.forEachIndexed { idx, bid ->
+            val bidPath = "bids.details[$idx]"
+            bid.requirementResponses.forEachIndexed { idx, requirementResponse ->
+                requirementResponse.id
+                    .validate(notEmptyOrBlankRule("$bidPath.requirementResponses[$idx].id"))
+                    .onFailure { return it.reason.asValidationError() }
+            }
+
+            bid.tenderers.forEachIndexed { tendererIdx, tenderer ->
+                val tendererPath = "$bidPath.tenderers[$tendererIdx]"
+                tenderer.name.validate(notEmptyOrBlankRule("$tendererPath.name")).onFailure { return it.reason.asValidationError() }
+                tenderer.identifier.apply {
+                    val identifierPath = "$tendererPath.identifier"
+
+                    id.validate(notEmptyOrBlankRule("$identifierPath.id"))
+                        .onFailure { return it.reason.asValidationError() }
+
+                    scheme.validate(notEmptyOrBlankRule("$identifierPath.scheme"))
+                        .onFailure { return it.reason.asValidationError() }
+
+                    legalName.validate(notEmptyOrBlankRule("$identifierPath.legalName"))
+                        .onFailure { return it.reason.asValidationError() }
+
+                    uri?.validate(notEmptyOrBlankRule("$identifierPath.uri"))?.onFailure { return it.reason.asValidationError() }
+                }
+                tenderer.additionalIdentifiers.forEachIndexed { idx, identifier ->
+                    val additionalIdentifiersPath = "$tendererPath.additionalIdentifiers[$idx]"
+
+                    identifier.apply {
+                        id.validate(notEmptyOrBlankRule("$additionalIdentifiersPath.id"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        scheme.validate(notEmptyOrBlankRule("$additionalIdentifiersPath.scheme"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        legalName.validate(notEmptyOrBlankRule("$additionalIdentifiersPath.legalName"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        uri?.validate(notEmptyOrBlankRule("$additionalIdentifiersPath.uri"))
+                            ?.onFailure { return it.reason.asValidationError() }
+                    }
+                }
+                tenderer.address.apply {
+                    val addressPath = "$tendererPath.address"
+
+                    streetAddress.validate(notEmptyOrBlankRule("$addressPath.streetAddress"))
+                        .onFailure { return it.reason.asValidationError() }
+
+                    postalCode?.validate(notEmptyOrBlankRule("$addressPath.postalCode"))
+                        ?.onFailure { return it.reason.asValidationError() }
+
+                    addressDetails.locality.let { locality ->
+                        val addressLocalityPath = "$addressPath.addressDetails.locality"
+
+                        locality.id.validate(notEmptyOrBlankRule("$addressLocalityPath.id"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        locality.scheme.validate(notEmptyOrBlankRule("$addressLocalityPath.scheme"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        locality.description.validate(notEmptyOrBlankRule("$addressLocalityPath.description"))
+                            .onFailure { return it.reason.asValidationError() }
+                    }
+                }
+                tenderer.contactPoint.apply {
+                    val contactPointPath = "$tendererPath.contactPoint"
+
+                    name.validate(notEmptyOrBlankRule("$contactPointPath.name"))
+                        .onFailure { return it.reason.asValidationError() }
+
+                    email.validate(notEmptyOrBlankRule("$contactPointPath.email"))
+                        .onFailure { return it.reason.asValidationError() }
+
+                    faxNumber?.validate(notEmptyOrBlankRule("$contactPointPath.faxNumber"))
+                        ?.onFailure { return it.reason.asValidationError() }
+
+                    telephone.validate(notEmptyOrBlankRule("$contactPointPath.telephone"))
+                        .onFailure { return it.reason.asValidationError() }
+
+                    url?.validate(notEmptyOrBlankRule("$contactPointPath.url"))
+                        ?.onFailure { return it.reason.asValidationError() }
+                }
+                tenderer.persones.forEachIndexed { idx, persone ->
+                    val personPath = "$tendererPath.persones[$idx]"
+
+                    persone.name.validate(notEmptyOrBlankRule("$personPath.name"))
+                        .onFailure { return it.reason.asValidationError() }
+
+                    persone.identifier.apply {
+                        val identifierPath = "$personPath.identifier"
+
+                        id.validate(notEmptyOrBlankRule("$identifierPath.id"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        scheme.validate(notEmptyOrBlankRule("$identifierPath.scheme"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        uri?.validate(notEmptyOrBlankRule("$identifierPath.uri"))
+                            ?.onFailure { return it.reason.asValidationError() }
+                    }
+                    persone.businessFunctions.forEachIndexed { bfIdx, businessFunction ->
+                        val businessFunctionPath = "$personPath.businessFunctions[$bfIdx]"
+
+                        businessFunction.jobTitle.validate(notEmptyOrBlankRule("$businessFunctionPath.jobTitle"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        businessFunction.documents.forEachIndexed { docIdx, document ->
+                            val documentsPath = "$businessFunctionPath.documents[$docIdx]"
+
+                            document.description?.validate(notEmptyOrBlankRule("$documentsPath.description"))
+                                ?.onFailure { return it.reason.asValidationError() }
+                        }
+                    }
+                }
+                tenderer.details.apply {
+                    val detailsPath = "$tendererPath.details"
+                    mainEconomicActivities.forEachIndexed { idx, mainEconomicActivity ->
+                        val mainEconomicActivityPath = "$detailsPath.mainEconomicActivities[$idx]"
+                        mainEconomicActivity.apply {
+                            id.validate(notEmptyOrBlankRule("$mainEconomicActivityPath.id"))
+                                .onFailure { return it.reason.asValidationError() }
+
+                            scheme.validate(notEmptyOrBlankRule("$mainEconomicActivityPath.scheme"))
+                                .onFailure { return it.reason.asValidationError() }
+
+                            description.validate(notEmptyOrBlankRule("$mainEconomicActivityPath.description"))
+                                .onFailure { return it.reason.asValidationError() }
+
+                            uri?.validate(notEmptyOrBlankRule("$mainEconomicActivityPath.uri"))
+                                ?.onFailure { return it.reason.asValidationError() }
+                        }
+                    }
+                    permits.forEachIndexed { idx, permit ->
+                        val permitPath = "$detailsPath.permits[$idx]"
+
+                        permit.id.validate(notEmptyOrBlankRule("$permitPath.id"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        permit.scheme.validate(notEmptyOrBlankRule("$permitPath.scheme"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        permit.url?.validate(notEmptyOrBlankRule("$permitPath.url"))
+                            ?.onFailure { return it.reason.asValidationError() }
+
+                        permit.permitDetails.apply {
+                            val permitDetailsPath = "$permitPath.permitDetails"
+                            issuedBy.apply {
+                                val issuedByPath = "$permitDetailsPath.issuedBy"
+
+                                id.validate(notEmptyOrBlankRule("$issuedByPath.id"))
+                                    .onFailure { return it.reason.asValidationError() }
+
+                                name.validate(notEmptyOrBlankRule("$issuedByPath.name"))
+                                    .onFailure { return it.reason.asValidationError() }
+                            }
+                            issuedThought.apply {
+                                val issuedThoughtPath = "$permitDetailsPath.issuedThought"
+
+                                id.validate(notEmptyOrBlankRule("$issuedThoughtPath.id"))
+                                    .onFailure { return it.reason.asValidationError() }
+
+                                name.validate(notEmptyOrBlankRule("$issuedThoughtPath.name"))
+                                    .onFailure { return it.reason.asValidationError() }
+                            }
+                        }
+                    }
+                    bankAccounts.forEachIndexed { idx, bankAccount ->
+                        val bankAccountPath = "$detailsPath.bankAccounts[$idx]"
+
+                        bankAccount.description.validate(notEmptyOrBlankRule("$bankAccountPath.description"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        bankAccount.bankName.validate(notEmptyOrBlankRule("$bankAccountPath.bankName"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        bankAccount.address.apply {
+                            val addressPath = "$bankAccountPath.address"
+
+                            streetAddress.validate(notEmptyOrBlankRule("$addressPath.streetAddress"))
+                                .onFailure { return it.reason.asValidationError() }
+
+                            postalCode?.validate(notEmptyOrBlankRule("$addressPath.postalCode"))
+                                ?.onFailure { return it.reason.asValidationError() }
+
+                            addressDetails.locality.apply {
+                                val localityPath = "$bankAccountPath.addressDetails.locality"
+                                description.validate(notEmptyOrBlankRule("$localityPath.description")).onFailure { return it.reason.asValidationError() }
+                            }
+                        }
+                        bankAccount.identifier.apply {
+                            val identifierPath = "$bankAccountPath.identifier"
+
+                            id.validate(notEmptyOrBlankRule("$identifierPath.id"))
+                                .onFailure { return it.reason.asValidationError() }
+
+                            scheme.validate(notEmptyOrBlankRule("$identifierPath.scheme"))
+                                .onFailure { return it.reason.asValidationError() }
+                        }
+                        bankAccount.accountIdentification.apply {
+                            val accountIdentificationPath = "$bankAccountPath.accountIdentification"
+
+                            id.validate(notEmptyOrBlankRule("$accountIdentificationPath.id"))
+                                .onFailure { return it.reason.asValidationError() }
+
+                            scheme.validate(notEmptyOrBlankRule("$accountIdentificationPath.scheme"))
+                                .onFailure { return it.reason.asValidationError() }
+                        }
+                        bankAccount.additionalAccountIdentifiers.forEachIndexed { idx, additionalAccountIdentifier ->
+                            val additionalAccountIdentifierPath = "$bankAccountPath.additionalAccountIdentifiers[$idx]"
+
+                            additionalAccountIdentifier.id.validate(notEmptyOrBlankRule("$additionalAccountIdentifierPath.id"))
+                                .onFailure { return it.reason.asValidationError() }
+
+                            additionalAccountIdentifier.scheme.validate(notEmptyOrBlankRule("$additionalAccountIdentifierPath.scheme"))
+                                .onFailure { return it.reason.asValidationError() }
+                        }
+                    }
+                    legalForm?.apply {
+                        val legalFormPath = "$detailsPath.legalForm"
+
+                        id.validate(notEmptyOrBlankRule("$legalFormPath.id"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        scheme.validate(notEmptyOrBlankRule("$legalFormPath.scheme"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        description.validate(notEmptyOrBlankRule("$legalFormPath.description"))
+                            .onFailure { return it.reason.asValidationError() }
+
+                        uri?.validate(notEmptyOrBlankRule("$legalFormPath.uri"))
+                            ?.onFailure { return it.reason.asValidationError() }
+                    }
+                }
+            }
+            bid.documents.forEachIndexed { docIdx, document ->
+                val documentPath = "$bidPath.documents[$docIdx]"
+
+                document.description?.validate(notEmptyOrBlankRule("$documentPath.description"))
+                    ?.onFailure { return it.reason.asValidationError() }
+
+                document.title.validate(notEmptyOrBlankRule("$documentPath.title"))
+                    .onFailure { return it.reason.asValidationError() }
+            }
+        }
 
         return Validated.ok()
     }
@@ -2406,8 +2659,69 @@ class BidService(
         checkForDuplicatePersonDocuments(tenderers)
             .onFailure { return it.reason.asValidationError() }
 
+        checkScheme(params)
+            .onFailure { return it.reason.asValidationError() }
+
         return Validated.ok()
     }
+
+    private fun checkScheme(params: ValidateBidDataParams): Validated<ValidationError> {
+        checkForUnknownSchemes(params)
+            .onFailure { return it.reason.asValidationError() }
+
+        checkWhetherSchemesMatchByCountry(params)
+            .onFailure { return it.reason.asValidationError() }
+
+        return Validated.ok()
+    }
+
+    private fun checkWhetherSchemesMatchByCountry(params: ValidateBidDataParams): Validated<ValidationError> {
+        val identifierSchemesByCountry = params.bids.details.asSequence()
+            .flatMap { it.tenderers }
+            .associateBy(
+                valueTransform = { it.identifier.scheme },
+                keySelector = { it.address.addressDetails.country.id }
+            )
+
+        val registrationSchemesByCountry = params.mdm.registrationSchemes.associateBy(
+            keySelector = { it.country },
+            valueTransform = { it.schemes.toSet() }
+        )
+
+        identifierSchemesByCountry.forEach { schemeByCountry ->
+            val identifierScheme = schemeByCountry.value
+            val country = schemeByCountry.key
+            if (!schemesMatch(registrationSchemesByCountry, country, identifierScheme))
+                return ValidationError.SchemeMismatchByCountry(identifierScheme, country).asValidationError()
+        }
+
+        return Validated.ok()
+    }
+
+    private fun checkForUnknownSchemes(params: ValidateBidDataParams): Validated<ValidationError> {
+        val identifierSchemes = params.bids.details.asSequence()
+            .flatMap { it.tenderers }
+            .map { it.identifier.scheme }
+            .toSet()
+
+        val registrationSchemes = params.mdm.registrationSchemes.flatMap { it.schemes }
+
+        val unknownIdentifierSchemes = identifierSchemes.subtract(registrationSchemes)
+        if (unknownIdentifierSchemes.isNotEmpty())
+            return ValidationError.UnknownIdentifierSchemes(unknownIdentifierSchemes).asValidationError()
+
+        val unknownRegistrationSchemes = registrationSchemes.subtract(identifierSchemes)
+        if (unknownRegistrationSchemes.isNotEmpty())
+            return ValidationError.UnknownRegistrationSchemes(unknownRegistrationSchemes).asValidationError()
+
+        return Validated.ok()
+    }
+
+    private fun schemesMatch(
+        registrationSchemesByCountry: Map<String, Set<String>>,
+        country: String,
+        identifierScheme: String
+    ) = registrationSchemesByCountry[country]?.contains(identifierScheme) ?: false
 
     private fun checkForActiveInvitations(params: ValidateBidDataParams): Validated<Fail> {
         val activeInvitations = invitationRepository.findBy(params.cpid)
