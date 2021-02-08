@@ -2371,6 +2371,9 @@ class BidService(
                     addressDetails.locality.let { locality ->
                         val addressLocalityPath = "$addressPath.addressDetails.locality"
 
+                        locality.id.validate(notEmptyOrBlankRule("$addressLocalityPath.id"))
+                            .onFailure { return it.reason.asValidationError() }
+
                         locality.scheme.validate(notEmptyOrBlankRule("$addressLocalityPath.scheme"))
                             .onFailure { return it.reason.asValidationError() }
 
