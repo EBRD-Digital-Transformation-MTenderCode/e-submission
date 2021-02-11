@@ -2659,16 +2659,6 @@ class BidService(
         checkForDuplicatePersonDocuments(tenderers)
             .onFailure { return it.reason.asValidationError() }
 
-        checkScheme(params)
-            .onFailure { return it.reason.asValidationError() }
-
-        return Validated.ok()
-    }
-
-    private fun checkScheme(params: ValidateBidDataParams): Validated<ValidationError> {
-        checkForUnknownSchemes(params)
-            .onFailure { return it.reason.asValidationError() }
-
         checkWhetherSchemesMatchByCountry(params)
             .onFailure { return it.reason.asValidationError() }
 
@@ -2694,25 +2684,6 @@ class BidService(
             if (!schemesMatch(registrationSchemesByCountry, country, identifierScheme))
                 return ValidationError.SchemeMismatchByCountry(identifierScheme, country).asValidationError()
         }
-
-        return Validated.ok()
-    }
-
-    private fun checkForUnknownSchemes(params: ValidateBidDataParams): Validated<ValidationError> {
-        val identifierSchemes = params.bids.details.asSequence()
-            .flatMap { it.tenderers }
-            .map { it.identifier.scheme }
-            .toSet()
-
-        val registrationSchemes = params.mdm.registrationSchemes.flatMap { it.schemes }
-
-        val unknownIdentifierSchemes = identifierSchemes.subtract(registrationSchemes)
-        if (unknownIdentifierSchemes.isNotEmpty())
-            return ValidationError.UnknownIdentifierSchemes(unknownIdentifierSchemes).asValidationError()
-
-        val unknownRegistrationSchemes = registrationSchemes.subtract(identifierSchemes)
-        if (unknownRegistrationSchemes.isNotEmpty())
-            return ValidationError.UnknownRegistrationSchemes(unknownRegistrationSchemes).asValidationError()
 
         return Validated.ok()
     }
