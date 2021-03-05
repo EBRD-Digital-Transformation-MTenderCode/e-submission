@@ -11,6 +11,7 @@ enum class CommandTypeV2(@JsonValue override val key: String) : Action, EnumElem
     CHECK_PERIOD("checkPeriod"),
     CREATE_BID("createBid"),
     DO_INVITATIONS("doInvitations"),
+    FIND_DOCUMENTS_BY_BID_IDS("findDocumentsByBidIds"),
     GET_BIDS_FOR_PACS("getBidsForPacs"),
     PUBLISH_INVITATIONS("publishInvitations"),
     SET_TENDER_PERIOD("setTenderPeriod"),

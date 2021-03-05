@@ -1,0 +1,16 @@
+{
+  "bids": {
+    "details": [
+      {
+        "id": "string",
+        "documents": [
+          {
+            "id": "string",
+            "title": "string",
+            "documentType": "illustration"
+          }
+        ]
+      }
+    ]
+  }
+}
