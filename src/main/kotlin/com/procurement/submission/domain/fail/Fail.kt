@@ -52,7 +52,7 @@ sealed class Fail {
             class Parsing(val column: String, val value: String, override val exception: Exception) :
                 Database(
                     number = "1.4",
-                    description = "Could not parse data stored in database."
+                    description = "Could not parse data stored in database.",
                 ) {
 
                 override fun logging(logger: Logger) {
@@ -72,6 +72,13 @@ sealed class Fail {
                 override fun logging(logger: Logger) {
                     logger.error(message = message, exception = exception)
                 }
+            }
+
+            class Consistency(message: String) : Database(
+                number = "1.6",
+                description = "Database consistency incident. $message"
+            ) {
+                override val exception: Exception = RuntimeException(message)
             }
         }
 
