@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 
 enum class PersonTitle(@JsonValue override val key: String) : EnumElementProvider.Key {
-    MR("Mr"),
-    MS("Ms"),
-    MRS("Mrs");
+    MR("Mr."),
+    MS("Ms."),
+    MRS("Mrs.");
 
     override fun toString(): String = key
 
