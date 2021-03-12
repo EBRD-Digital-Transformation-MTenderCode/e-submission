@@ -8,6 +8,7 @@ import com.procurement.submission.infrastructure.api.Action
 enum class CommandTypeV2(@JsonValue override val key: String) : Action, EnumElementProvider.Key {
 
     CHECK_ABSENCE_ACTIVE_INVITATIONS("checkAbsenceActiveInvitations"),
+    CHECK_ACCESS_TO_BID("checkAccessToBid"),
     CHECK_PERIOD("checkPeriod"),
     CREATE_BID("createBid"),
     DO_INVITATIONS("doInvitations"),
