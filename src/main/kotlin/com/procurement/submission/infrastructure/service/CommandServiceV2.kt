@@ -10,6 +10,7 @@ import com.procurement.submission.infrastructure.api.v2.ApiResponseV2
 import com.procurement.submission.infrastructure.api.v2.ApiResponseV2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.api.v2.CommandTypeV2
 import com.procurement.submission.infrastructure.handler.v2.CheckAbsenceActiveInvitationsHandler
+import com.procurement.submission.infrastructure.handler.v2.CheckAccessToBidHandler
 import com.procurement.submission.infrastructure.handler.v2.CheckPeriodHandler
 import com.procurement.submission.infrastructure.handler.v2.CreateBidHandler
 import com.procurement.submission.infrastructure.handler.v2.DoInvitationsHandler
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service
 @Service
 class CommandServiceV2(
     private val logger: Logger,
+    private val checkAccessToBidHandler: CheckAccessToBidHandler,
     private val doInvitationsHandler: DoInvitationsHandler,
     private val getBidsForPacsHandler: GetBidsForPacsHandler,
     private val findDocumentsByBidIdsHandler: FindDocumentsByBidIdsHandler,
@@ -61,6 +63,7 @@ class CommandServiceV2(
 
         return when (action) {
             CommandTypeV2.CHECK_ABSENCE_ACTIVE_INVITATIONS -> checkAbsenceActiveInvitationsHandler.handle(node)
+            CommandTypeV2.CHECK_ACCESS_TO_BID -> checkAccessToBidHandler.handle(node)
             CommandTypeV2.CHECK_PERIOD -> checkPeriodHandler.handle(node)
             CommandTypeV2.CREATE_BID -> createBidHandler.handle(node)
             CommandTypeV2.DO_INVITATIONS -> doInvitationsHandler.handle(node)
