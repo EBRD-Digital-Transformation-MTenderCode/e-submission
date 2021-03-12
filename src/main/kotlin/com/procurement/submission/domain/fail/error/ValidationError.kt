@@ -238,7 +238,7 @@ sealed class ValidationError(
         class BidNotFound(bidId: BidId) :
             ValidationError(
                 numberError = "13.13.1",
-                description = "Bid $bidId not found."
+                description = "Bid '$bidId' not found."
             )
 
         class TokenDoesNotMatch() :
