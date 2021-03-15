@@ -10,6 +10,7 @@ import com.procurement.submission.infrastructure.api.v2.ApiResponseV2
 import com.procurement.submission.infrastructure.api.v2.ApiResponseV2Generator.generateResponseOnFailure
 import com.procurement.submission.infrastructure.api.v2.CommandTypeV2
 import com.procurement.submission.infrastructure.handler.v2.CheckAbsenceActiveInvitationsHandler
+import com.procurement.submission.infrastructure.handler.v2.CheckBidStateHandler
 import com.procurement.submission.infrastructure.handler.v2.CheckPeriodHandler
 import com.procurement.submission.infrastructure.handler.v2.CreateBidHandler
 import com.procurement.submission.infrastructure.handler.v2.DoInvitationsHandler
@@ -29,6 +30,7 @@ class CommandServiceV2(
     private val findDocumentsByBidIdsHandler: FindDocumentsByBidIdsHandler,
     private val checkAbsenceActiveInvitationsHandler: CheckAbsenceActiveInvitationsHandler,
     private val validateBidDataHandler: ValidateBidDataHandler,
+    private val checkBidStateHandler: CheckBidStateHandler,
     private val createBidHandler: CreateBidHandler,
     private val validateTenderPeriodHandler: ValidateTenderPeriodHandler,
     private val setTenderPeriodHandler: SetTenderPeriodHandler,
@@ -61,6 +63,7 @@ class CommandServiceV2(
 
         return when (action) {
             CommandTypeV2.CHECK_ABSENCE_ACTIVE_INVITATIONS -> checkAbsenceActiveInvitationsHandler.handle(node)
+            CommandTypeV2.CHECK_BID_STATE -> checkBidStateHandler.handle(node)
             CommandTypeV2.CHECK_PERIOD -> checkPeriodHandler.handle(node)
             CommandTypeV2.CREATE_BID -> createBidHandler.handle(node)
             CommandTypeV2.DO_INVITATIONS -> doInvitationsHandler.handle(node)
