@@ -40,6 +40,7 @@ import com.procurement.submission.application.model.data.bid.status.FinalBidsSta
 import com.procurement.submission.application.model.data.bid.status.FinalizedBidsStatusByLots
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
+import com.procurement.submission.application.params.CheckBidStateParams
 import com.procurement.submission.application.params.bid.CreateBidParams
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
 import com.procurement.submission.application.params.rules.notEmptyOrBlankRule
@@ -2989,6 +2990,29 @@ class BidService(
     fun Bid.isActive(): Boolean = status == Status.PENDING && statusDetails == StatusDetails.EMPTY
 
     fun Bid.withdrawBid() = copy(status = Status.WITHDRAWN)
+
+    fun checkBidState(params: CheckBidStateParams): Validated<Fail> {
+        val bidId = params.bids.details.first().id
+        val bidEntity = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid, id = bidId)
+            .onFailure { return it.reason.asValidationError() }
+            ?: return ValidationError.CheckBidState.BidNotFound(bidId).asValidationError()
+
+        val bid = transform.tryDeserialization(bidEntity.jsonData, Bid::class.java)
+            .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+            .onFailure { return it.reason.asValidationError() }
+
+        val validStates = rulesService.getValidStates(params.country, params.pmd, params.operationType)
+            .onFailure { return it.reason.asValidationError() }
+            .groupBy({ it.status }, { it.statusDetails })
+            .mapValues { it.value.toSet() }
+
+        return if (bid.status in validStates.keys && bid.statusDetails.canBeAnyOrOneOf(validStates[bid.status]!!)) {
+            Validated.ok()
+        } else Validated.error(ValidationError.CheckBidState.InvalidStateOfBid(bidId))
+    }
+
+    fun StatusDetails.canBeAnyOrOneOf(validStatusDetails: Set<StatusDetails?>) =
+        validStatusDetails.contains(null) || this in validStatusDetails
 }
 
 fun checkTenderersInvitations(
