@@ -244,7 +244,7 @@ sealed class ValidationError(
         class InvalidStateOfBid(bidId: BidId) :
             ValidationError(
                 numberError = "13.14.2",
-                description = "Bid '$bidId' state is invalid."
+                description = "Bid's '$bidId' state is invalid."
             )
     }
 
