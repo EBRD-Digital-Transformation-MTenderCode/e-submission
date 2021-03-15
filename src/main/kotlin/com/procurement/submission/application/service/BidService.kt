@@ -72,6 +72,7 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.domain.rule.BidStatesRule
 import com.procurement.submission.infrastructure.api.v1.CommandMessage
 import com.procurement.submission.infrastructure.api.v1.ResponseDto
 import com.procurement.submission.infrastructure.api.v1.cpid
@@ -3003,16 +3004,17 @@ class BidService(
 
         val validStates = rulesService.getValidStates(params.country, params.pmd, params.operationType)
             .onFailure { return it.reason.asValidationError() }
-            .groupBy({ it.status }, { it.statusDetails })
-            .mapValues { it.value.toSet() }
 
-        return if (bid.status in validStates.keys && bid.statusDetails.canBeAnyOrOneOf(validStates[bid.status]!!)) {
+        return if (bidStateIsValid(bid, validStates))
             Validated.ok()
-        } else Validated.error(ValidationError.CheckBidState.InvalidStateOfBid(bidId))
+        else Validated.error(ValidationError.CheckBidState.InvalidStateOfBid(bidId))
     }
 
-    fun StatusDetails.canBeAnyOrOneOf(validStatusDetails: Set<StatusDetails?>) =
-        validStatusDetails.contains(null) || this in validStatusDetails
+    private fun bidStateIsValid(bid: Bid, validStates: BidStatesRule): Boolean =
+        validStates.any { validState ->
+            bid.status == validState.status
+                && validState.statusDetails?.equals(bid.statusDetails) ?: true
+        }
 }
 
 fun checkTenderersInvitations(
