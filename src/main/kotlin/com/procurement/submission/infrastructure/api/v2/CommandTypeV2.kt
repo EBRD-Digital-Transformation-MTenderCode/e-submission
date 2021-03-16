@@ -9,6 +9,7 @@ enum class CommandTypeV2(@JsonValue override val key: String) : Action, EnumElem
 
     CHECK_ABSENCE_ACTIVE_INVITATIONS("checkAbsenceActiveInvitations"),
     CHECK_ACCESS_TO_BID("checkAccessToBid"),
+    CHECK_BID_STATE("checkBidState"),
     CHECK_PERIOD("checkPeriod"),
     CREATE_BID("createBid"),
     DO_INVITATIONS("doInvitations"),

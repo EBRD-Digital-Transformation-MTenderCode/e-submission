@@ -41,6 +41,7 @@ import com.procurement.submission.application.model.data.bid.status.FinalizedBid
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
 import com.procurement.submission.application.params.CheckAccessToBidParams
+import com.procurement.submission.application.params.CheckBidStateParams
 import com.procurement.submission.application.params.bid.CreateBidParams
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
 import com.procurement.submission.application.params.rules.notEmptyOrBlankRule
@@ -72,6 +73,7 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.domain.rule.BidStatesRule
 import com.procurement.submission.infrastructure.api.v1.CommandMessage
 import com.procurement.submission.infrastructure.api.v1.ResponseDto
 import com.procurement.submission.infrastructure.api.v1.cpid
@@ -3005,6 +3007,30 @@ class BidService(
 
         return Validated.ok()
     }
+
+    fun checkBidState(params: CheckBidStateParams): Validated<Fail> {
+        val bidId = params.bids.details.first().id
+        val bidEntity = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid, id = bidId)
+            .onFailure { return it.reason.asValidationError() }
+            ?: return ValidationError.CheckBidState.BidNotFound(bidId).asValidationError()
+
+        val bid = transform.tryDeserialization(bidEntity.jsonData, Bid::class.java)
+            .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+            .onFailure { return it.reason.asValidationError() }
+
+        val validStates = rulesService.getValidStates(params.country, params.pmd, params.operationType)
+            .onFailure { return it.reason.asValidationError() }
+
+        return if (bidStateIsValid(bid, validStates))
+            Validated.ok()
+        else Validated.error(ValidationError.CheckBidState.InvalidStateOfBid(bidId))
+    }
+
+    private fun bidStateIsValid(bid: Bid, validStates: BidStatesRule): Boolean =
+        validStates.any { validState ->
+            bid.status == validState.status
+                && validState.statusDetails?.equals(bid.statusDetails) ?: true
+        }
 }
 
 fun checkTenderersInvitations(

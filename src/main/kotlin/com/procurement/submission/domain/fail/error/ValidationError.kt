@@ -255,4 +255,19 @@ sealed class ValidationError(
 
     }
 
+    object CheckBidState {
+
+        class BidNotFound(bidId: BidId) :
+            ValidationError(
+                numberError = "13.14.1",
+                description = "Bid '$bidId' not found."
+            )
+
+        class InvalidStateOfBid(bidId: BidId) :
+            ValidationError(
+                numberError = "13.14.2",
+                description = "Bid's '$bidId' state is invalid."
+            )
+    }
+
 }
