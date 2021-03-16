@@ -3,6 +3,7 @@ import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.application.params.CheckAccessToBidParams
 import com.procurement.submission.application.params.CheckBidStateParams
+import com.procurement.submission.application.params.SetStateForBidsParams
 import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.repository.bid.model.BidEntity
 import com.procurement.submission.application.repository.invitation.InvitationRepository
@@ -20,7 +21,12 @@ import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.rule.BidStateForSettingRule
 import com.procurement.submission.domain.rule.BidStatesRule
+import com.procurement.submission.get
+import com.procurement.submission.infrastructure.handler.v2.model.response.SetStateForBidsResult
+import com.procurement.submission.lib.functional.MaybeFail
+import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.model.dto.ocds.Bid
@@ -224,6 +230,104 @@ internal class BidServiceTest {
             country = COUNTRY,
             pmd = PMD,
             bids = CheckBidStateParams.Bids(listOf(CheckBidStateParams.Bids.Detail(BID_ID)))
+        )
+
+        private fun getRecord() = BidEntity.Record(
+            cpid = CPID,
+            ocid = OCID,
+            bidId = BID_ID,
+            pendingDate = LocalDateTime.now(),
+            token = TOKEN,
+            owner = OWNER,
+            createdDate = LocalDateTime.now(),
+            status = STATUS,
+            jsonData = ""
+        )
+
+        private fun getBid() = Bid(
+            id = BID_ID.toString(),
+            status = STATUS,
+            statusDetails = STATUS_DETAILS,
+            value = mock(),
+            requirementResponses = null,
+            relatedLots = emptyList(),
+            items = null,
+            documents = null,
+            date = LocalDateTime.now(),
+            tenderers = emptyList()
+        )
+    }
+
+    @Nested
+    inner class SetStateForBids{
+        @Test
+        fun success() {
+            whenever(bidRepository.findBy(CPID, OCID, listOf(BID_ID))).thenReturn(listOf(getRecord()).asSuccess())
+            whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
+            val newState = BidStateForSettingRule(Status.EMPTY, StatusDetails.DISQUALIFIED)
+            whenever(rulesService.getStateForSetting(COUNTRY, PMD, OPERATION_TYPE)).thenReturn(newState.asSuccess())
+            whenever(bidRepository.save(any<Collection<BidEntity>>())).thenReturn(MaybeFail.none())
+
+            val actual = bidService.setStateForBids(getParams())
+            val expected = SetStateForBidsResult(SetStateForBidsResult.Bids(listOf(
+                SetStateForBidsResult.Bids.Detail(
+                id = BID_ID.toString(),
+                status = newState.status,
+                statusDetails = newState.statusDetails!!
+            ))))
+
+            assertEquals(expected,  actual.get())
+        }
+
+        @Test
+        fun statusDetailsIsNull_success() {
+            whenever(bidRepository.findBy(CPID, OCID, listOf(BID_ID))).thenReturn(listOf(getRecord()).asSuccess())
+            val bid = getBid()
+            whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(bid.asSuccess())
+            val newState = BidStateForSettingRule(Status.EMPTY, null)
+            whenever(rulesService.getStateForSetting(COUNTRY, PMD, OPERATION_TYPE)).thenReturn(newState.asSuccess())
+            whenever(bidRepository.save(any<Collection<BidEntity>>())).thenReturn(MaybeFail.none())
+            val actual = bidService.setStateForBids(getParams())
+            val expected = SetStateForBidsResult(SetStateForBidsResult.Bids(listOf(
+                SetStateForBidsResult.Bids.Detail(
+                    id = BID_ID.toString(),
+                    status = newState.status,
+                    statusDetails = bid.statusDetails
+                ))))
+
+            assertEquals(expected,  actual.get())
+        }
+
+        @Test
+        fun oneBidIsMissing_fail() {
+            val unknownBidId = BidId.randomUUID()
+            val params = SetStateForBidsParams(
+                cpid = CPID,
+                ocid = OCID,
+                operationType = OPERATION_TYPE,
+                country = COUNTRY,
+                pmd = PMD,
+                bids = SetStateForBidsParams.Bids(listOf(SetStateForBidsParams.Bids.Detail(BID_ID), SetStateForBidsParams.Bids.Detail(unknownBidId)))
+            )
+            whenever(bidRepository.findBy(CPID, OCID, listOf(BID_ID, unknownBidId))).thenReturn(listOf(getRecord()).asSuccess())
+
+            val actual = bidService.setStateForBids(params) as Result.Failure
+
+            val expectedErrorCode = "VR.COM-13.15.1"
+            val expectedMessage = "Bid(s) '$unknownBidId' not found."
+
+            assertEquals(expectedErrorCode,  actual.reason.code)
+            assertEquals(expectedMessage,  actual.reason.description)
+
+        }
+
+        private fun getParams() = SetStateForBidsParams(
+            cpid = CPID,
+            ocid = OCID,
+            operationType = OPERATION_TYPE,
+            country = COUNTRY,
+            pmd = PMD,
+            bids = SetStateForBidsParams.Bids(listOf(SetStateForBidsParams.Bids.Detail(BID_ID)))
         )
 
         private fun getRecord() = BidEntity.Record(
