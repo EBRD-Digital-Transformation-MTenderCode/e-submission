@@ -27,6 +27,7 @@ import com.procurement.submission.model.dto.ocds.Bid
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 import java.util.*
@@ -72,154 +73,182 @@ internal class BidServiceTest {
         )
     }
 
-    @Test
-    fun checkAccessToBid_success() {
-        val params = generateParams()
-        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(generateRecord().asSuccess())
-        val result = bidService.checkAccessToBid(params = params)
+    @Nested
+    inner class CheckAccessToBid {
 
-        assertTrue(result is Validated.Ok)
-    }
+        @Test
+        fun success() {
+            val params = generateParams()
+            whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(generateRecord().asSuccess())
+            val result = bidService.checkAccessToBid(params = params)
 
-    @Test
-    fun checkAccessToBid_bidNotFound_fail() {
-        val params = generateParams()
-        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(null.asSuccess())
-        val actual = bidService.checkAccessToBid(params = params) as Validated.Error
+            assertTrue(result is Validated.Ok)
+        }
 
-        val expectedErrorCode = "VR.COM-13.13.1"
-        val expectedErrorMessage = "Bid '$BID_ID' not found."
+        @Test
+        fun bidNotFound_fail() {
+            val params = generateParams()
+            whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(null.asSuccess())
+            val actual = bidService.checkAccessToBid(params = params) as Validated.Error
 
-        assertEquals(expectedErrorCode, actual.reason.code)
-        assertEquals(expectedErrorMessage, actual.reason.description)
-    }
+            val expectedErrorCode = "VR.COM-13.13.1"
+            val expectedErrorMessage = "Bid '$BID_ID' not found."
 
-    @Test
-    fun checkAccessToBid_tokenMismatch_fail() {
-        val params = generateParams()
-        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(
-            generateRecord(token = UUID.randomUUID()).asSuccess()
+            assertEquals(expectedErrorCode, actual.reason.code)
+            assertEquals(expectedErrorMessage, actual.reason.description)
+        }
+
+        @Test
+        fun tokenMismatch_fail() {
+            val params = generateParams()
+            whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(
+                generateRecord(token = UUID.randomUUID()).asSuccess()
+            )
+            val actual = bidService.checkAccessToBid(params = params) as Validated.Error
+
+            val expectedErrorCode = "VR.COM-13.13.2"
+            val expectedErrorMessage = "Received token does not match stored one."
+
+            assertEquals(expectedErrorCode, actual.reason.code)
+            assertEquals(expectedErrorMessage, actual.reason.description)
+        }
+
+        @Test
+        fun ownerMismatch_fail() {
+            val params = generateParams()
+            whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(
+                generateRecord(owner = UUID.randomUUID()).asSuccess()
+            )
+            val actual = bidService.checkAccessToBid(params = params) as Validated.Error
+
+            val expectedErrorCode = "VR.COM-13.13.3"
+            val expectedErrorMessage = "Received owner does not match stored one."
+
+            assertEquals(expectedErrorCode, actual.reason.code)
+            assertEquals(expectedErrorMessage, actual.reason.description)
+        }
+
+        private fun generateRecord(owner: Owner = OWNER, token: Token = TOKEN) = BidEntity.Record(
+            cpid = CPID,
+            ocid = OCID,
+            bidId = BID_ID,
+            owner = owner,
+            token = token,
+            status = Status.DISQUALIFIED,
+            createdDate = LocalDateTime.now(),
+            pendingDate = LocalDateTime.now(),
+            jsonData = ""
         )
-        val actual = bidService.checkAccessToBid(params = params) as Validated.Error
 
-        val expectedErrorCode = "VR.COM-13.13.2"
-        val expectedErrorMessage = "Received token does not match stored one."
-
-        assertEquals(expectedErrorCode, actual.reason.code)
-        assertEquals(expectedErrorMessage, actual.reason.description)
-    }
-
-    @Test
-    fun ownerMismatch_fail() {
-        val params = generateParams()
-        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(
-            generateRecord(owner = UUID.randomUUID()).asSuccess()
+        private fun generateParams() = CheckAccessToBidParams(
+            cpid = CPID,
+            ocid = OCID,
+            bids = CheckAccessToBidParams.Bids(details = listOf(CheckAccessToBidParams.Bids.Detail(BID_ID))),
+            token = TOKEN,
+            owner = OWNER
         )
-        val actual = bidService.checkAccessToBid(params = params) as Validated.Error
-
-        val expectedErrorCode = "VR.COM-13.13.3"
-        val expectedErrorMessage = "Received owner does not match stored one."
-
-        assertEquals(expectedErrorCode, actual.reason.code)
-        assertEquals(expectedErrorMessage, actual.reason.description)
     }
 
-    private fun generateRecord(owner: Owner = OWNER, token: Token = TOKEN) = BidEntity.Record(
-        cpid = CPID,
-        ocid = OCID,
-        bidId = BID_ID,
-        owner = owner,
-        token = token,
-        status = Status.DISQUALIFIED,
-        createdDate = LocalDateTime.now(),
-        pendingDate = LocalDateTime.now(),
-        jsonData = ""
-    )
+    @Nested
+    inner class CheckBidState {
 
-    private fun generateParams() = CheckAccessToBidParams(
-        cpid = CPID,
-        ocid = OCID,
-        bids = CheckAccessToBidParams.Bids(details = listOf(CheckAccessToBidParams.Bids.Detail(BID_ID))),
-        token = TOKEN,
-        owner = OWNER
-    @Test
-    fun checkBidState_statusAndDetailsMatches_success() {
-        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
-        whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-        val allowedStates = listOf(BidStatesRule.State(STATUS, STATUS_DETAILS))
-        whenever(rulesService.getValidStates(COUNTRY, PMD, OPERATION_TYPE)).thenReturn(BidStatesRule(allowedStates).asSuccess())
-        val actual = bidService.checkBidState(getParams())
+        @Test
+        fun statusAndDetailsMatches_success() {
+            whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
+            whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
+            val allowedStates = listOf(BidStatesRule.State(STATUS, STATUS_DETAILS))
+            whenever(
+                rulesService.getValidStates(
+                    COUNTRY,
+                    PMD,
+                    OPERATION_TYPE
+                )
+            ).thenReturn(BidStatesRule(allowedStates).asSuccess())
+            val actual = bidService.checkBidState(getParams())
 
-        assertTrue(actual is Validated.Ok)
+            assertTrue(actual is Validated.Ok)
+        }
+
+        @Test
+        fun statusMatchesDetailsNull_success() {
+            whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
+            whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
+            val allowedStates = listOf(BidStatesRule.State(STATUS, null))
+            whenever(
+                rulesService.getValidStates(
+                    COUNTRY,
+                    PMD,
+                    OPERATION_TYPE
+                )
+            ).thenReturn(BidStatesRule(allowedStates).asSuccess())
+            val actual = bidService.checkBidState(getParams())
+
+            assertTrue(actual is Validated.Ok)
+        }
+
+        @Test
+        fun statusAndDetailsMisMatches_fail() {
+            whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
+            whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
+            val allowedStates = listOf(BidStatesRule.State(STATUS, StatusDetails.INVITED))
+            whenever(
+                rulesService.getValidStates(
+                    COUNTRY,
+                    PMD,
+                    OPERATION_TYPE
+                )
+            ).thenReturn(BidStatesRule(allowedStates).asSuccess())
+            val actual = bidService.checkBidState(getParams()) as Validated.Error
+
+            val errorCode = "VR.COM-13.14.2"
+            val errorMessage = "Bid's '$BID_ID' state is invalid."
+            assertEquals(errorCode, actual.reason.code)
+            assertEquals(errorMessage, actual.reason.description)
+        }
+
+        @Test
+        fun bidNotFound_fail() {
+            whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(null.asSuccess())
+            val actual = bidService.checkBidState(getParams()) as Validated.Error
+
+            val errorCode = "VR.COM-13.14.1"
+            val errorMessage = "Bid '$BID_ID' not found."
+            assertEquals(errorCode, actual.reason.code)
+            assertEquals(errorMessage, actual.reason.description)
+        }
+
+        private fun getParams() = CheckBidStateParams(
+            cpid = CPID,
+            ocid = OCID,
+            operationType = OPERATION_TYPE,
+            country = COUNTRY,
+            pmd = PMD,
+            bids = CheckBidStateParams.Bids(listOf(CheckBidStateParams.Bids.Detail(BID_ID)))
+        )
+
+        private fun getRecord() = BidEntity.Record(
+            cpid = CPID,
+            ocid = OCID,
+            bidId = BID_ID,
+            pendingDate = LocalDateTime.now(),
+            token = TOKEN,
+            owner = OWNER,
+            createdDate = LocalDateTime.now(),
+            status = STATUS,
+            jsonData = ""
+        )
+
+        private fun getBid() = Bid(
+            id = BID_ID.toString(),
+            status = STATUS,
+            statusDetails = STATUS_DETAILS,
+            value = mock(),
+            requirementResponses = null,
+            relatedLots = emptyList(),
+            items = null,
+            documents = null,
+            date = LocalDateTime.now(),
+            tenderers = emptyList()
+        )
     }
-
-    @Test
-    fun checkBidState_statusMatchesDetailsNull_success() {
-        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
-        whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-        val allowedStates = listOf(BidStatesRule.State(STATUS, null))
-        whenever(rulesService.getValidStates(COUNTRY, PMD, OPERATION_TYPE)).thenReturn(BidStatesRule(allowedStates).asSuccess())
-        val actual = bidService.checkBidState(getParams())
-
-        assertTrue(actual is Validated.Ok)
-    }
-
-    @Test
-    fun checkBidState_statusAndDetailsMisMatches_fail() {
-        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
-        whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-        val allowedStates = listOf(BidStatesRule.State(STATUS, StatusDetails.INVITED))
-        whenever(rulesService.getValidStates(COUNTRY, PMD, OPERATION_TYPE)).thenReturn(BidStatesRule(allowedStates).asSuccess())
-        val actual = bidService.checkBidState(getParams()) as Validated.Error
-
-        val errorCode = "VR.COM-13.14.2"
-        val errorMessage = "Bid's '$BID_ID' state is invalid."
-        assertEquals(errorCode, actual.reason.code)
-        assertEquals(errorMessage, actual.reason.description)
-    }
-
-    @Test
-    fun checkBidState_bidNotFound_fail() {
-        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(null.asSuccess())
-        val actual = bidService.checkBidState(getParams()) as Validated.Error
-
-        val errorCode = "VR.COM-13.14.1"
-        val errorMessage = "Bid '$BID_ID' not found."
-        assertEquals(errorCode, actual.reason.code)
-        assertEquals(errorMessage, actual.reason.description)
-    }
-
-    private fun getParams() = CheckBidStateParams(
-        cpid = CPID,
-        ocid = OCID,
-        operationType = OPERATION_TYPE,
-        country = COUNTRY,
-        pmd = PMD,
-        bids = CheckBidStateParams.Bids(listOf(CheckBidStateParams.Bids.Detail(BID_ID)))
-    )
-
-    private fun getRecord() = BidEntity.Record(
-        cpid = CPID,
-        ocid = OCID,
-        bidId = BID_ID,
-        pendingDate = LocalDateTime.now(),
-        token = TOKEN,
-        owner = OWNER,
-        createdDate = LocalDateTime.now(),
-        status = STATUS,
-        jsonData = ""
-    )
-
-    private fun getBid() = Bid(
-        id = BID_ID.toString(),
-        status = STATUS,
-        statusDetails = STATUS_DETAILS,
-        value = mock(),
-        requirementResponses = null,
-        relatedLots = emptyList(),
-        items = null,
-        documents = null,
-        date = LocalDateTime.now(),
-        tenderers = emptyList()
-    )
 }
