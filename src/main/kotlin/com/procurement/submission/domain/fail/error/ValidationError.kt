@@ -233,6 +233,28 @@ sealed class ValidationError(
             )
     }
 
+    object CheckAccessToBid {
+
+        class BidNotFound(bidId: BidId) :
+            ValidationError(
+                numberError = "13.13.1",
+                description = "Bid '$bidId' not found."
+            )
+
+        class TokenDoesNotMatch() :
+            ValidationError(
+                numberError = "13.13.2",
+                description = "Received token does not match stored one."
+            )
+
+        class OwnerDoesNotMatch() :
+            ValidationError(
+                numberError = "13.13.3",
+                description = "Received owner does not match stored one."
+            )
+
+    }
+
     object CheckBidState {
 
         class BidNotFound(bidId: BidId) :

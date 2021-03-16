@@ -1,6 +1,7 @@
 import com.nhaarman.mockito_kotlin.any
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.whenever
+import com.procurement.submission.application.params.CheckAccessToBidParams
 import com.procurement.submission.application.params.CheckBidStateParams
 import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.repository.bid.model.BidEntity
@@ -12,6 +13,8 @@ import com.procurement.submission.application.service.RulesService
 import com.procurement.submission.application.service.Transform
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
+import com.procurement.submission.domain.model.Owner
+import com.procurement.submission.domain.model.Token
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
@@ -68,6 +71,77 @@ internal class BidServiceTest {
             transform
         )
     }
+
+    @Test
+    fun checkAccessToBid_success() {
+        val params = generateParams()
+        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(generateRecord().asSuccess())
+        val result = bidService.checkAccessToBid(params = params)
+
+        assertTrue(result is Validated.Ok)
+    }
+
+    @Test
+    fun checkAccessToBid_bidNotFound_fail() {
+        val params = generateParams()
+        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(null.asSuccess())
+        val actual = bidService.checkAccessToBid(params = params) as Validated.Error
+
+        val expectedErrorCode = "VR.COM-13.13.1"
+        val expectedErrorMessage = "Bid '$BID_ID' not found."
+
+        assertEquals(expectedErrorCode, actual.reason.code)
+        assertEquals(expectedErrorMessage, actual.reason.description)
+    }
+
+    @Test
+    fun checkAccessToBid_tokenMismatch_fail() {
+        val params = generateParams()
+        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(
+            generateRecord(token = UUID.randomUUID()).asSuccess()
+        )
+        val actual = bidService.checkAccessToBid(params = params) as Validated.Error
+
+        val expectedErrorCode = "VR.COM-13.13.2"
+        val expectedErrorMessage = "Received token does not match stored one."
+
+        assertEquals(expectedErrorCode, actual.reason.code)
+        assertEquals(expectedErrorMessage, actual.reason.description)
+    }
+
+    @Test
+    fun ownerMismatch_fail() {
+        val params = generateParams()
+        whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(
+            generateRecord(owner = UUID.randomUUID()).asSuccess()
+        )
+        val actual = bidService.checkAccessToBid(params = params) as Validated.Error
+
+        val expectedErrorCode = "VR.COM-13.13.3"
+        val expectedErrorMessage = "Received owner does not match stored one."
+
+        assertEquals(expectedErrorCode, actual.reason.code)
+        assertEquals(expectedErrorMessage, actual.reason.description)
+    }
+
+    private fun generateRecord(owner: Owner = OWNER, token: Token = TOKEN) = BidEntity.Record(
+        cpid = CPID,
+        ocid = OCID,
+        bidId = BID_ID,
+        owner = owner,
+        token = token,
+        status = Status.DISQUALIFIED,
+        createdDate = LocalDateTime.now(),
+        pendingDate = LocalDateTime.now(),
+        jsonData = ""
+    )
+
+    private fun generateParams() = CheckAccessToBidParams(
+        cpid = CPID,
+        ocid = OCID,
+        bids = CheckAccessToBidParams.Bids(details = listOf(CheckAccessToBidParams.Bids.Detail(BID_ID))),
+        token = TOKEN,
+        owner = OWNER
     @Test
     fun checkBidState_statusAndDetailsMatches_success() {
         whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
