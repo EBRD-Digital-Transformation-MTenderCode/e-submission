@@ -13,7 +13,7 @@ import com.procurement.submission.infrastructure.handler.v2.model.request.CheckB
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asSuccess
 
-val allowedPmds = ProcurementMethod.values()
+private val allowedPmds = ProcurementMethod.values()
     .filter {
         when (it) {
             ProcurementMethod.OT, ProcurementMethod.TEST_OT,
@@ -34,7 +34,7 @@ val allowedPmds = ProcurementMethod.values()
         }
     }.toSet()
 
-val allowedOperationType = OperationType.values()
+private val allowedOperationType = OperationType.values()
     .filter {
         when (it) {
             OperationType.WITHDRAW_BID -> true
