@@ -40,6 +40,7 @@ import com.procurement.submission.application.model.data.bid.status.FinalBidsSta
 import com.procurement.submission.application.model.data.bid.status.FinalizedBidsStatusByLots
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
+import com.procurement.submission.application.params.CheckAccessToBidParams
 import com.procurement.submission.application.params.bid.CreateBidParams
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
 import com.procurement.submission.application.params.rules.notEmptyOrBlankRule
@@ -2989,6 +2990,21 @@ class BidService(
     fun Bid.isActive(): Boolean = status == Status.PENDING && statusDetails == StatusDetails.EMPTY
 
     fun Bid.withdrawBid() = copy(status = Status.WITHDRAWN)
+
+    fun checkAccessToBid(params: CheckAccessToBidParams): Validated<Fail> {
+        val bidId = params.bids.details.first().id
+        val bidEntity = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid, id = bidId)
+            .onFailure { return it.reason.asValidationError() }
+            ?: return ValidationError.CheckAccessToBid.BidNotFound(bidId).asValidationError()
+
+        if (bidEntity.token != params.token)
+            return ValidationError.CheckAccessToBid.TokenDoesNotMatch().asValidationError()
+
+        if (bidEntity.owner != params.owner)
+            return ValidationError.CheckAccessToBid.OwnerDoesNotMatch().asValidationError()
+
+        return Validated.ok()
+    }
 }
 
 fun checkTenderersInvitations(

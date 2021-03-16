@@ -8,6 +8,7 @@ import com.procurement.submission.domain.fail.error.DataTimeError
 import com.procurement.submission.domain.model.Cpid
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
+import com.procurement.submission.domain.model.Token
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
@@ -26,6 +27,7 @@ import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.requirement.RequirementId
 import com.procurement.submission.domain.model.requirement.RequirementResponseId
 import com.procurement.submission.domain.model.tryOwner
+import com.procurement.submission.domain.model.tryToken
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
@@ -168,6 +170,19 @@ fun parseDate(value: String, attributeName: String = "date"): Result<LocalDateTi
                     DataErrors.Validation.InvalidDateTime(name = attributeName, actualValue = value)
             }
         }
+
+fun parseToken(value: String): Result<Token, DataErrors.Validation.DataFormatMismatch> =
+    value.tryToken()
+        .onFailure {
+            return Result.failure(
+                DataErrors.Validation.DataFormatMismatch(
+                    name = "token",
+                    actualValue = value,
+                    expectedFormat = "uuid"
+                )
+            )
+        }
+        .asSuccess()
 
 fun parseOwner(value: String): Result<Owner, DataErrors.Validation.DataFormatMismatch> =
     value.tryOwner()
