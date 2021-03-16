@@ -42,6 +42,7 @@ import com.procurement.submission.application.model.data.bid.update.BidUpdateCon
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
 import com.procurement.submission.application.params.CheckAccessToBidParams
 import com.procurement.submission.application.params.CheckBidStateParams
+import com.procurement.submission.application.params.SetStateForBidsParams
 import com.procurement.submission.application.params.bid.CreateBidParams
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
 import com.procurement.submission.application.params.rules.notEmptyOrBlankRule
@@ -50,6 +51,7 @@ import com.procurement.submission.application.repository.bid.model.BidEntity
 import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.getDuplicate
 import com.procurement.submission.domain.extension.getDuplicated
+import com.procurement.submission.domain.extension.mapResult
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.extension.uniqueBy
 import com.procurement.submission.domain.fail.Fail
@@ -73,6 +75,7 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.domain.rule.BidStateForSettingRule
 import com.procurement.submission.domain.rule.BidStatesRule
 import com.procurement.submission.infrastructure.api.v1.CommandMessage
 import com.procurement.submission.infrastructure.api.v1.ResponseDto
@@ -90,9 +93,11 @@ import com.procurement.submission.infrastructure.handler.v1.model.response.BidRs
 import com.procurement.submission.infrastructure.handler.v2.converter.convert
 import com.procurement.submission.infrastructure.handler.v2.converter.convertToCreateBidResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.CreateBidResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.SetStateForBidsResult
 import com.procurement.submission.lib.errorIfBlank
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated
+import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.lib.functional.asValidationError
 import com.procurement.submission.lib.functional.validate
@@ -3031,6 +3036,65 @@ class BidService(
             bid.status == validState.status
                 && validState.statusDetails?.equals(bid.statusDetails) ?: true
         }
+
+    fun setStateForBids(params: SetStateForBidsParams): Result<SetStateForBidsResult, Fail> {
+        val bidIds = params.bids.details.map { it.id }
+        val entities = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid, ids = bidIds)
+            .onFailure { return it }
+        val missingBidIds = bidIds.toSet() - entities.toSetBy { it.bidId }
+
+        if (missingBidIds.isNotEmpty())
+            return ValidationError.SetStateForBids.BidsNotFound(missingBidIds).asFailure()
+
+        val stateToSet = rulesService.getStateForSetting(params.country, params.pmd, params.operationType)
+            .onFailure { return it }
+
+        val updatedEntities = getUpdatedBidEntities(entities, stateToSet)
+            .onFailure { return it }
+
+        bidRepository.save(updatedEntities)
+            .doOnFail { return it.asFailure() }
+
+        return updatedEntities.map { entity ->
+            SetStateForBidsResult.Bids.Detail(
+                id = entity.bid.id,
+                status = entity.bid.status,
+                statusDetails = entity.bid.statusDetails
+            )
+        }
+            .let { SetStateForBidsResult(SetStateForBidsResult.Bids(it)) }
+            .asSuccess()
+    }
+
+    private fun getUpdatedBidEntities(
+        entities: List<BidEntity.Record>,
+        stateToSet: BidStateForSettingRule
+    ): Result<List<BidEntity.Updated>, Fail> {
+        val bids = entities.mapResult { entity -> transform.tryDeserialization(entity.jsonData, Bid::class.java) }
+            .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+            .onFailure { return it.reason.asFailure() }
+
+        val entitiesByBidId = entities.associateBy { it.bidId.toString() }
+
+        val updatedBidsById = bids.map { bid ->
+            bid.copy(
+                status = stateToSet.status,
+                statusDetails = stateToSet.statusDetails ?: bid.statusDetails
+            )
+        }.associateBy { it.id }
+
+       return updatedBidsById.map { (bidId, bid) ->
+            val correspondingEntity = entitiesByBidId.getValue(bidId)
+
+            BidEntity.Updated(
+                cpid = correspondingEntity.cpid,
+                ocid = correspondingEntity.ocid,
+                createdDate = correspondingEntity.createdDate,
+                pendingDate = correspondingEntity.pendingDate,
+                bid = bid
+            )
+        }.asSuccess()
+    }
 }
 
 fun checkTenderersInvitations(
