@@ -29,6 +29,8 @@ class BidRepositoryCassandra(private val session: Session, private val transform
 
     companion object {
 
+        private const val ID_VALUES = "id_values"
+
         private const val FIND_BY_CPID_CQL = """
                SELECT ${Database.Bids.CPID},
                       ${Database.Bids.OCID},
@@ -74,6 +76,22 @@ class BidRepositoryCassandra(private val session: Session, private val transform
                   AND ${Database.Bids.ID}=?
             """
 
+        private const val FIND_BY_CPID_OCID_IDS_CQL = """
+               SELECT ${Database.Bids.CPID},
+                      ${Database.Bids.OCID},
+                      ${Database.Bids.ID},
+                      ${Database.Bids.TOKEN},
+                      ${Database.Bids.OWNER},
+                      ${Database.Bids.STATUS},
+                      ${Database.Bids.CREATED_DATE},
+                      ${Database.Bids.PENDING_DATE},
+                      ${Database.Bids.JSON_DATA}
+                 FROM ${Database.KEYSPACE}.${Database.Bids.TABLE}
+                WHERE ${Database.Bids.CPID}=?
+                  AND ${Database.Bids.OCID}=?
+                  AND ${Database.Bids.ID} IN :$ID_VALUES;
+            """
+
         private const val SAVE_CQL = """
                INSERT INTO ${Database.KEYSPACE}.${Database.Bids.TABLE}(
                       ${Database.Bids.CPID},
@@ -106,6 +124,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
     private val preparedFindByCpidCQL = session.prepare(FIND_BY_CPID_CQL)
     private val preparedFindByCpidAndOcidCQL = session.prepare(FIND_BY_CPID_OCID_CQL)
     private val preparedFindByCpidAndOcidAndIdCQL = session.prepare(FIND_BY_CPID_OCID_ID_CQL)
+    private val preparedFindByCpidAndOcidAndIdsCQL = session.prepare(FIND_BY_CPID_OCID_IDS_CQL)
     private val preparedSaveCQL = session.prepare(SAVE_CQL)
     private val preparedUpdateQL = session.prepare(UPDATE_CQL)
 
@@ -146,6 +165,20 @@ class BidRepositoryCassandra(private val session: Session, private val transform
             .onFailure { return it }
             .one()
             ?.convert()
+            .asSuccess()
+    }
+
+    override fun findBy(cpid: Cpid, ocid: Ocid, ids: List<BidId>): Result<List<BidEntity.Record>, Fail.Incident.Database> {
+        val query = preparedFindByCpidAndOcidAndIdsCQL.bind()
+            .apply {
+                setString(Database.Bids.CPID, cpid.toString())
+                setString(Database.Bids.OCID, ocid.toString())
+                setList(Database.Bids.ID, ids.map { it.toString() })
+            }
+
+        return query.tryExecute(session)
+            .onFailure { return it }
+            .map { it.convert() }
             .asSuccess()
     }
 
@@ -198,7 +231,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
             .apply {
                 setString(Database.Bids.CPID, entity.cpid.toString())
                 setString(Database.Bids.OCID, entity.ocid.toString())
-                setString(Database.Bids.ID, entity.bid.id.toString())
+                setString(Database.Bids.ID, entity.bid.id)
                 setString(Database.Bids.TOKEN, entity.token.toString())
                 setString(Database.Bids.OWNER, entity.owner.toString())
                 setString(Database.Bids.STATUS, entity.bid.status.key)
@@ -216,7 +249,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
             .apply {
                 setString(Database.Bids.CPID, entity.cpid.toString())
                 setString(Database.Bids.OCID, entity.ocid.toString())
-                setString(Database.Bids.ID, entity.bid.id.toString())
+                setString(Database.Bids.ID, entity.bid.id)
                 setString(Database.Bids.STATUS, entity.bid.status.key)
                 setTimestamp(Database.Bids.CREATED_DATE, entity.createdDate.toCassandraTimestamp())
                 setTimestamp(Database.Bids.PENDING_DATE, entity.pendingDate?.toCassandraTimestamp())
