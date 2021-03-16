@@ -1,0 +1,11 @@
+{
+  "bids": {
+    "details": [
+      {
+        "id": "string",
+        "status": "withdrawn",
+        "statusDetails": "empty"
+      }
+    ]
+  }
+}
