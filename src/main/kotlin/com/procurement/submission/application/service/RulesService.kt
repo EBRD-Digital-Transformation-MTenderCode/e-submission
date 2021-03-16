@@ -9,6 +9,7 @@ import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
+import com.procurement.submission.domain.rule.BidStateForSettingRule
 import com.procurement.submission.domain.rule.BidStatesRule
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asFailure
@@ -126,6 +127,24 @@ class RulesService(
             ?: throw ErrorException(ErrorType.EXTENSION_AFTER_UNSUSPENDED_RULES_NOT_FOUND)
     }
 
+    fun getStateForSetting(
+        country: String,
+        pmd: ProcurementMethod,
+        operationType: OperationType
+    ): Result<BidStateForSettingRule, Fail> {
+        val states = ruleRepository.find(country, pmd, STATE_FOR_SETTING_PARAMETER, operationType)
+            .onFailure { fail -> return fail }
+            ?: return ValidationError.EntityNotFound.StateForSettingRule(
+                country = country,
+                pmd = pmd,
+                parameter = STATE_FOR_SETTING_PARAMETER,
+                operationType = operationType
+            ).asFailure()
+
+        return transform.tryDeserialization(states, BidStateForSettingRule::class.java)
+            .mapFailure { Fail.Incident.Database.Parsing(STATE_FOR_SETTING_PARAMETER, states, it.exception) }
+    }
+
     companion object {
         private const val PARAMETER_MIN_BIDS = "minBids"
         private const val PARAMETER_INTERVAL = "interval"
@@ -135,6 +154,7 @@ class RulesService(
         private const val RETURN_INVITATIONS = "returnInvitations"
         private const val EXTENSION_AFTER_UNSUSPENDED = "extensionAfterUnsuspended"
         private const val VALID_STATES_PARAMETER = "validStates"
+        private const val STATE_FOR_SETTING_PARAMETER = "stateForSetting"
 
         private const val VALUE_COLUMN = "value"
     }
