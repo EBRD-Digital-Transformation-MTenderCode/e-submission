@@ -57,6 +57,13 @@ sealed class ValidationError(
             operationType: OperationType?
         ) : EntityNotFound("Bid's state rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
 
+
+        class StateForSettingRule(
+            country: String,
+            pmd: ProcurementMethod,
+            parameter: String,
+            operationType: OperationType?
+        ): EntityNotFound("Bid's state rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
     }
 
     class TenderPeriodDurationError(expectedDuration: Duration) : ValidationError(
@@ -278,4 +285,12 @@ sealed class ValidationError(
             )
     }
 
+    object SetStateForBids {
+
+        class BidsNotFound(bidIds: Set<BidId>) :
+            ValidationError(
+                numberError = "13.15.1",
+                description = "Bid(s) '${bidIds.joinToString()}' not found."
+            )
+    }
 }

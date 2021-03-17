@@ -1,6 +1,6 @@
 package com.procurement.submission.infrastructure.handler.v2.converter
 
-import com.procurement.submission.application.params.CheckBidStateParams
+import com.procurement.submission.application.params.SetStateForBidsParams
 import com.procurement.submission.application.params.parseBidId
 import com.procurement.submission.application.params.parseCpid
 import com.procurement.submission.application.params.parseOcid
@@ -9,7 +9,7 @@ import com.procurement.submission.application.params.parsePmd
 import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
-import com.procurement.submission.infrastructure.handler.v2.model.request.CheckBidStateRequest
+import com.procurement.submission.infrastructure.handler.v2.model.request.SetStateForBidsRequest
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asSuccess
 
@@ -46,7 +46,7 @@ private val allowedOperationType = OperationType.values()
         }
     }.toSet()
 
-fun CheckBidStateRequest.convert(): Result<CheckBidStateParams, DataErrors> = CheckBidStateParams(
+fun SetStateForBidsRequest.convert(): Result<SetStateForBidsParams, DataErrors> =  SetStateForBidsParams(
     cpid = parseCpid(cpid).onFailure { return it },
     ocid = parseOcid(ocid).onFailure { return it },
     pmd = parsePmd(pmd, allowedPmds).onFailure { return it },
@@ -56,9 +56,9 @@ fun CheckBidStateRequest.convert(): Result<CheckBidStateParams, DataErrors> = Ch
 ).asSuccess()
 
 
-fun CheckBidStateRequest.Bids.convert(): Result<CheckBidStateParams.Bids, DataErrors> = CheckBidStateParams.Bids(
+fun SetStateForBidsRequest.Bids.convert(): Result<SetStateForBidsParams.Bids, DataErrors> = SetStateForBidsParams.Bids(
     details = details.map { detail ->
-        CheckBidStateParams.Bids.Detail(
+        SetStateForBidsParams.Bids.Detail(
             id = parseBidId(detail.id, "bids.details.id").onFailure { return it }
         )
     }
