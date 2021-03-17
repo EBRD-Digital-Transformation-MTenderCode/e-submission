@@ -109,10 +109,10 @@ class RulesService(
     ): Result<BidStatesRule, Fail> {
         val states = ruleRepository.find(country, pmd, VALID_STATES_PARAMETER, operationType)
             .onFailure { fail -> return fail }
-            ?: return ValidationError.EntityNotFound.ReturnInvitationsRule(
+            ?: return ValidationError.EntityNotFound.ValidStatesRule(
                 country = country,
                 pmd = pmd,
-                parameter = RETURN_INVITATIONS,
+                parameter = VALID_STATES_PARAMETER,
                 operationType = operationType
             ).asFailure()
 
