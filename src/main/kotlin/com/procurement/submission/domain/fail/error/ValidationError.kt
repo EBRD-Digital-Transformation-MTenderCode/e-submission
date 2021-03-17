@@ -49,6 +49,14 @@ sealed class ValidationError(
             parameter: String,
             operationType: OperationType?
         ) : EntityNotFound("Invitations rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
+
+        class ValidStatesRule(
+            country: String,
+            pmd: ProcurementMethod,
+            parameter: String,
+            operationType: OperationType?
+        ) : EntityNotFound("Bid's state rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
+
     }
 
     class TenderPeriodDurationError(expectedDuration: Duration) : ValidationError(
