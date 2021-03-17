@@ -334,6 +334,31 @@ class BidRepositoryIT {
         assertTrue(expected is Fail.Incident.Database.Interaction)
     }
 
+    @Test
+    fun findByCpidAndOcidAndIds_success() {
+        val expectedBid = stubBidEntity()
+        insertBid(expectedBid)
+
+        val actualBid = bidRepository.findBy(cpid = CPID, ocid = OCID, ids = listOf(BID_ID)).get().first()
+
+        assertNotNull(actualBid)
+        assertEquals(expectedBid.cpid, actualBid.cpid)
+        assertEquals(expectedBid.ocid, actualBid.ocid)
+        assertEquals(BID_ID, actualBid.bidId)
+        assertEquals(expectedBid.token, actualBid.token)
+        assertEquals(expectedBid.owner, actualBid.owner)
+        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(expectedBid.createdDate, actualBid.createdDate)
+        assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
+    }
+
+    @Test
+    fun findByCpidAndOcidAndIds_notFound_success() {
+        val actualBids = bidRepository.findBy(cpid = CPID, ocid = OCID, id = BID_ID).get()
+
+        assertNull(actualBids)
+    }
+
     private fun createKeyspace() {
         session.execute(
             "CREATE KEYSPACE ${Database.KEYSPACE} " +
@@ -371,7 +396,7 @@ class BidRepositoryIT {
             .value(Database.Bids.CPID, bidEntity.cpid.toString())
             .value(Database.Bids.OCID, bidEntity.ocid.toString())
             .value(Database.Bids.OWNER, bidEntity.owner.toString())
-            .value(Database.Bids.ID, bidEntity.bid.id.toString())
+            .value(Database.Bids.ID, bidEntity.bid.id)
             .value(Database.Bids.TOKEN, bidEntity.token.toString())
             .value(Database.Bids.STATUS, bidEntity.bid.status.toString())
             .value(Database.Bids.CREATED_DATE, bidEntity.createdDate.toCassandraTimestamp())

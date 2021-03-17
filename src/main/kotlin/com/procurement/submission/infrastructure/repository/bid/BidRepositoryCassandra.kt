@@ -173,7 +173,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
             .apply {
                 setString(Database.Bids.CPID, cpid.toString())
                 setString(Database.Bids.OCID, ocid.toString())
-                setList(Database.Bids.ID, ids.map { it.toString() })
+                setList(ID_VALUES, ids.map { it.toString() })
             }
 
         return query.tryExecute(session)
