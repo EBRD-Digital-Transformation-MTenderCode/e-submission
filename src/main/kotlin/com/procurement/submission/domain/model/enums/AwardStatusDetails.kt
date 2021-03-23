@@ -4,14 +4,15 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 
 enum class AwardStatusDetails(@JsonValue override val key: String) : EnumElementProvider.Key {
-    PENDING("pending"),
     ACTIVE("active"),
-    UNSUCCESSFUL("unsuccessful"),
+    AWAITING("awaiting"),
+    BASED_ON_HUMAN_DECISION("basedOnHumanDecision"),
     CONSIDERATION("consideration"),
     EMPTY("empty"),
-    AWAITING("awaiting"),
+    LOT_CANCELLED("lotCancelled"),
     NO_OFFERS_RECEIVED("noOffersReceived"),
-    LOT_CANCELLED("lotCancelled");
+    PENDING("pending"),
+    UNSUCCESSFUL("unsuccessful");
 
     override fun toString(): String = key
 
