@@ -44,6 +44,8 @@ import com.procurement.submission.application.params.CheckAccessToBidParams
 import com.procurement.submission.application.params.CheckBidStateParams
 import com.procurement.submission.application.params.SetStateForBidsParams
 import com.procurement.submission.application.params.bid.CreateBidParams
+import com.procurement.submission.application.params.bid.FinalizeBidsByAwardsErrors
+import com.procurement.submission.application.params.bid.FinalizeBidsByAwardsParams
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
 import com.procurement.submission.application.params.rules.notEmptyOrBlankRule
 import com.procurement.submission.application.repository.bid.BidRepository
@@ -62,7 +64,9 @@ import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
+import com.procurement.submission.domain.model.enums.AwardStatus
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
+import com.procurement.submission.domain.model.enums.AwardStatusDetails.*
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
@@ -93,7 +97,9 @@ import com.procurement.submission.infrastructure.handler.v1.model.response.BidRs
 import com.procurement.submission.infrastructure.handler.v2.converter.convert
 import com.procurement.submission.infrastructure.handler.v2.converter.convertToCreateBidResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.CreateBidResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.FinalizeBidsByAwardsResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.SetStateForBidsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.fromDomain
 import com.procurement.submission.lib.errorIfBlank
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated
@@ -869,17 +875,18 @@ class BidService(
      *      system sets bid.statusDetails == "disqualified";
      */
     private fun Bid.updateStatusDetails(statusDetails: AwardStatusDetails): Bid = when (statusDetails) {
-        AwardStatusDetails.ACTIVE -> this.copy(statusDetails = StatusDetails.VALID)
-        AwardStatusDetails.UNSUCCESSFUL -> this.copy(statusDetails = StatusDetails.DISQUALIFIED)
+        ACTIVE -> this.copy(statusDetails = StatusDetails.VALID)
+        UNSUCCESSFUL -> this.copy(statusDetails = StatusDetails.DISQUALIFIED)
 
-        AwardStatusDetails.EMPTY,
-        AwardStatusDetails.PENDING,
-        AwardStatusDetails.CONSIDERATION,
-        AwardStatusDetails.AWAITING,
-        AwardStatusDetails.NO_OFFERS_RECEIVED,
-        AwardStatusDetails.LOT_CANCELLED -> throw ErrorException(
+        BASED_ON_HUMAN_DECISION,
+        EMPTY,
+        PENDING,
+        CONSIDERATION,
+        AWAITING,
+        NO_OFFERS_RECEIVED,
+        LOT_CANCELLED -> throw ErrorException(
             error = ErrorType.INVALID_STATUS_DETAILS,
-            message = "Current status details: '$statusDetails'. Expected status details: [${AwardStatusDetails.ACTIVE}, ${AwardStatusDetails.UNSUCCESSFUL}]"
+            message = "Current status details: '$statusDetails'. Expected status details: [$ACTIVE, $UNSUCCESSFUL]"
         )
     }
 
@@ -2980,6 +2987,56 @@ class BidService(
 
         return createdBid.convertToCreateBidResult(createdBidEntity.token).asSuccess()
     }
+
+    fun finalizeBidsByAwards(params: FinalizeBidsByAwardsParams): Result<FinalizeBidsByAwardsResult, Fail> {
+        val receivedAwardsById = params.awards.associateBy { it.relatedBid }
+        val bidEntities = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid)
+            .onFailure { return it }
+            .asSequence()
+            .filter { it.bidId in receivedAwardsById }
+            .map { entity -> entity.bidId to entity }
+            .toMap()
+
+        if (!bidEntities.keys.containsAll(receivedAwardsById.keys))
+            return FinalizeBidsByAwardsErrors.BidsNotFound(receivedAwardsById.keys-bidEntities.keys).asFailure()
+
+        val targetBids = bidEntities.values
+            .map { entity ->
+                transform.tryDeserialization(entity.jsonData, Bid::class.java)
+                    .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+                    .onFailure { return it }
+            }
+
+        val finalizedBids = targetBids.map { bid ->
+            val receivedAward = receivedAwardsById.getValue(BidId.fromString(bid.id))
+            bid.copy(status = defineFinalizingStatus(receivedAward))
+        }
+
+        val finalizedBidsEntities = finalizedBids.map { bid ->
+            val entity = bidEntities.getValue(BidId.fromString(bid.id))
+            BidEntity.Updated(
+                cpid = entity.cpid,
+                ocid = entity.ocid,
+                createdDate = entity.createdDate,
+                pendingDate = entity.pendingDate,
+                bid = bid
+            )
+        }
+
+        bidRepository.save(finalizedBidsEntities).doOnFail { return it.asFailure() }
+
+        return finalizedBids
+            .map { FinalizeBidsByAwardsResult.Bids.Detail.fromDomain(it) }
+            .let { FinalizeBidsByAwardsResult(bids = FinalizeBidsByAwardsResult.Bids(it)) }
+            .asSuccess()
+    }
+
+    private fun defineFinalizingStatus(award: FinalizeBidsByAwardsParams.Award): Status =
+        when {
+            award.status == AwardStatus.ACTIVE && award.statusDetails == BASED_ON_HUMAN_DECISION -> Status.VALID
+            award.status == AwardStatus.UNSUCCESSFUL && award.statusDetails == BASED_ON_HUMAN_DECISION -> Status.DISQUALIFIED
+            else -> throw IllegalArgumentException()
+        }
 
     private fun containsActiveBidByReceivedTenderersAndLot(
         storedBid: Bid,
