@@ -49,6 +49,21 @@ sealed class ValidationError(
             parameter: String,
             operationType: OperationType?
         ) : EntityNotFound("Invitations rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
+
+        class ValidStatesRule(
+            country: String,
+            pmd: ProcurementMethod,
+            parameter: String,
+            operationType: OperationType?
+        ) : EntityNotFound("Bid's state rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
+
+
+        class StateForSettingRule(
+            country: String,
+            pmd: ProcurementMethod,
+            parameter: String,
+            operationType: OperationType?
+        ): EntityNotFound("Bid's state rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
     }
 
     class TenderPeriodDurationError(expectedDuration: Duration) : ValidationError(
@@ -233,4 +248,49 @@ sealed class ValidationError(
             )
     }
 
+    object CheckAccessToBid {
+
+        class BidNotFound(bidId: BidId) :
+            ValidationError(
+                numberError = "13.13.1",
+                description = "Bid '$bidId' not found."
+            )
+
+        class TokenDoesNotMatch() :
+            ValidationError(
+                numberError = "13.13.2",
+                description = "Received token does not match stored one."
+            )
+
+        class OwnerDoesNotMatch() :
+            ValidationError(
+                numberError = "13.13.3",
+                description = "Received owner does not match stored one."
+            )
+
+    }
+
+    object CheckBidState {
+
+        class BidNotFound(bidId: BidId) :
+            ValidationError(
+                numberError = "13.14.1",
+                description = "Bid '$bidId' not found."
+            )
+
+        class InvalidStateOfBid(bidId: BidId) :
+            ValidationError(
+                numberError = "13.14.2",
+                description = "Bid's '$bidId' state is invalid."
+            )
+    }
+
+    object SetStateForBids {
+
+        class BidsNotFound(bidIds: Set<BidId>) :
+            ValidationError(
+                numberError = "13.15.1",
+                description = "Bid(s) '${bidIds.joinToString()}' not found."
+            )
+    }
 }

@@ -9,6 +9,8 @@ import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
+import com.procurement.submission.domain.rule.BidStateForSettingRule
+import com.procurement.submission.domain.rule.BidStatesRule
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
@@ -16,7 +18,10 @@ import org.springframework.stereotype.Service
 import java.time.Duration
 
 @Service
-class RulesService(private val ruleRepository: RuleRepository) {
+class RulesService(
+    private val ruleRepository: RuleRepository,
+    private val transform: Transform
+) {
 
     fun getInterval(country: String, pmd: ProcurementMethod): Duration =
         ruleRepository.find(country, pmd, PARAMETER_INTERVAL)
@@ -97,11 +102,47 @@ class RulesService(private val ruleRepository: RuleRepository) {
             .asSuccess()
     }
 
+    fun getValidStates(
+        country: String,
+        pmd: ProcurementMethod,
+        operationType: OperationType
+    ): Result<BidStatesRule, Fail> {
+        val states = ruleRepository.find(country, pmd, VALID_STATES_PARAMETER, operationType)
+            .onFailure { fail -> return fail }
+            ?: return ValidationError.EntityNotFound.ValidStatesRule(
+                country = country,
+                pmd = pmd,
+                parameter = VALID_STATES_PARAMETER,
+                operationType = operationType
+            ).asFailure()
+
+        return transform.tryDeserialization(states, BidStatesRule::class.java)
+            .mapFailure { Fail.Incident.Database.Parsing(VALUE_COLUMN, states, it.exception) }
+    }
+
     fun getExtensionAfterUnsuspended(country: String, pmd: ProcurementMethod): Duration {
         return ruleRepository.find(country, pmd, EXTENSION_AFTER_UNSUSPENDED)
             .orThrow { it.exception }
             ?.let { Duration.ofSeconds(it.toLong()) }
             ?: throw ErrorException(ErrorType.EXTENSION_AFTER_UNSUSPENDED_RULES_NOT_FOUND)
+    }
+
+    fun getStateForSetting(
+        country: String,
+        pmd: ProcurementMethod,
+        operationType: OperationType
+    ): Result<BidStateForSettingRule, Fail> {
+        val states = ruleRepository.find(country, pmd, STATE_FOR_SETTING_PARAMETER, operationType)
+            .onFailure { fail -> return fail }
+            ?: return ValidationError.EntityNotFound.StateForSettingRule(
+                country = country,
+                pmd = pmd,
+                parameter = STATE_FOR_SETTING_PARAMETER,
+                operationType = operationType
+            ).asFailure()
+
+        return transform.tryDeserialization(states, BidStateForSettingRule::class.java)
+            .mapFailure { Fail.Incident.Database.Parsing(STATE_FOR_SETTING_PARAMETER, states, it.exception) }
     }
 
     companion object {
@@ -112,6 +153,8 @@ class RulesService(private val ruleRepository: RuleRepository) {
         private const val MINIMUM_PERIOD_DURATION_PARAMETER = "minTenderPeriodDuration"
         private const val RETURN_INVITATIONS = "returnInvitations"
         private const val EXTENSION_AFTER_UNSUSPENDED = "extensionAfterUnsuspended"
+        private const val VALID_STATES_PARAMETER = "validStates"
+        private const val STATE_FOR_SETTING_PARAMETER = "stateForSetting"
 
         private const val VALUE_COLUMN = "value"
     }

@@ -40,7 +40,12 @@ import com.procurement.submission.application.model.data.bid.status.FinalBidsSta
 import com.procurement.submission.application.model.data.bid.status.FinalizedBidsStatusByLots
 import com.procurement.submission.application.model.data.bid.update.BidUpdateContext
 import com.procurement.submission.application.model.data.bid.update.BidUpdateData
+import com.procurement.submission.application.params.CheckAccessToBidParams
+import com.procurement.submission.application.params.CheckBidStateParams
+import com.procurement.submission.application.params.SetStateForBidsParams
 import com.procurement.submission.application.params.bid.CreateBidParams
+import com.procurement.submission.application.params.bid.FinalizeBidsByAwardsErrors
+import com.procurement.submission.application.params.bid.FinalizeBidsByAwardsParams
 import com.procurement.submission.application.params.bid.ValidateBidDataParams
 import com.procurement.submission.application.params.rules.notEmptyOrBlankRule
 import com.procurement.submission.application.repository.bid.BidRepository
@@ -48,6 +53,7 @@ import com.procurement.submission.application.repository.bid.model.BidEntity
 import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.getDuplicate
 import com.procurement.submission.domain.extension.getDuplicated
+import com.procurement.submission.domain.extension.mapResult
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.extension.uniqueBy
 import com.procurement.submission.domain.fail.Fail
@@ -58,7 +64,9 @@ import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
+import com.procurement.submission.domain.model.enums.AwardStatus
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
+import com.procurement.submission.domain.model.enums.AwardStatusDetails.*
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
@@ -71,6 +79,8 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
+import com.procurement.submission.domain.rule.BidStateForSettingRule
+import com.procurement.submission.domain.rule.BidStatesRule
 import com.procurement.submission.infrastructure.api.v1.CommandMessage
 import com.procurement.submission.infrastructure.api.v1.ResponseDto
 import com.procurement.submission.infrastructure.api.v1.cpid
@@ -87,9 +97,13 @@ import com.procurement.submission.infrastructure.handler.v1.model.response.BidRs
 import com.procurement.submission.infrastructure.handler.v2.converter.convert
 import com.procurement.submission.infrastructure.handler.v2.converter.convertToCreateBidResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.CreateBidResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.FinalizeBidsByAwardsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.SetStateForBidsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.fromDomain
 import com.procurement.submission.lib.errorIfBlank
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated
+import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
 import com.procurement.submission.lib.functional.asValidationError
 import com.procurement.submission.lib.functional.validate
@@ -861,17 +875,18 @@ class BidService(
      *      system sets bid.statusDetails == "disqualified";
      */
     private fun Bid.updateStatusDetails(statusDetails: AwardStatusDetails): Bid = when (statusDetails) {
-        AwardStatusDetails.ACTIVE -> this.copy(statusDetails = StatusDetails.VALID)
-        AwardStatusDetails.UNSUCCESSFUL -> this.copy(statusDetails = StatusDetails.DISQUALIFIED)
+        ACTIVE -> this.copy(statusDetails = StatusDetails.VALID)
+        UNSUCCESSFUL -> this.copy(statusDetails = StatusDetails.DISQUALIFIED)
 
-        AwardStatusDetails.EMPTY,
-        AwardStatusDetails.PENDING,
-        AwardStatusDetails.CONSIDERATION,
-        AwardStatusDetails.AWAITING,
-        AwardStatusDetails.NO_OFFERS_RECEIVED,
-        AwardStatusDetails.LOT_CANCELLED -> throw ErrorException(
+        BASED_ON_HUMAN_DECISION,
+        EMPTY,
+        PENDING,
+        CONSIDERATION,
+        AWAITING,
+        NO_OFFERS_RECEIVED,
+        LOT_CANCELLED -> throw ErrorException(
             error = ErrorType.INVALID_STATUS_DETAILS,
-            message = "Current status details: '$statusDetails'. Expected status details: [${AwardStatusDetails.ACTIVE}, ${AwardStatusDetails.UNSUCCESSFUL}]"
+            message = "Current status details: '$statusDetails'. Expected status details: [$ACTIVE, $UNSUCCESSFUL]"
         )
     }
 
@@ -2973,6 +2988,56 @@ class BidService(
         return createdBid.convertToCreateBidResult(createdBidEntity.token).asSuccess()
     }
 
+    fun finalizeBidsByAwards(params: FinalizeBidsByAwardsParams): Result<FinalizeBidsByAwardsResult, Fail> {
+        val receivedAwardsById = params.awards.associateBy { it.relatedBid }
+        val bidEntities = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid)
+            .onFailure { return it }
+            .asSequence()
+            .filter { it.bidId in receivedAwardsById }
+            .map { entity -> entity.bidId to entity }
+            .toMap()
+
+        if (!bidEntities.keys.containsAll(receivedAwardsById.keys))
+            return FinalizeBidsByAwardsErrors.BidsNotFound(receivedAwardsById.keys-bidEntities.keys).asFailure()
+
+        val targetBids = bidEntities.values
+            .map { entity ->
+                transform.tryDeserialization(entity.jsonData, Bid::class.java)
+                    .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+                    .onFailure { return it }
+            }
+
+        val finalizedBids = targetBids.map { bid ->
+            val receivedAward = receivedAwardsById.getValue(BidId.fromString(bid.id))
+            bid.copy(status = defineFinalizingStatus(receivedAward))
+        }
+
+        val finalizedBidsEntities = finalizedBids.map { bid ->
+            val entity = bidEntities.getValue(BidId.fromString(bid.id))
+            BidEntity.Updated(
+                cpid = entity.cpid,
+                ocid = entity.ocid,
+                createdDate = entity.createdDate,
+                pendingDate = entity.pendingDate,
+                bid = bid
+            )
+        }
+
+        bidRepository.save(finalizedBidsEntities).doOnFail { return it.asFailure() }
+
+        return finalizedBids
+            .map { FinalizeBidsByAwardsResult.Bids.Detail.fromDomain(it) }
+            .let { FinalizeBidsByAwardsResult(bids = FinalizeBidsByAwardsResult.Bids(it)) }
+            .asSuccess()
+    }
+
+    private fun defineFinalizingStatus(award: FinalizeBidsByAwardsParams.Award): Status =
+        when {
+            award.status == AwardStatus.ACTIVE && award.statusDetails == BASED_ON_HUMAN_DECISION -> Status.VALID
+            award.status == AwardStatus.UNSUCCESSFUL && award.statusDetails == BASED_ON_HUMAN_DECISION -> Status.DISQUALIFIED
+            else -> throw IllegalArgumentException()
+        }
+
     private fun containsActiveBidByReceivedTenderersAndLot(
         storedBid: Bid,
         receivedTenderers: Set<String>,
@@ -2989,6 +3054,104 @@ class BidService(
     fun Bid.isActive(): Boolean = status == Status.PENDING && statusDetails == StatusDetails.EMPTY
 
     fun Bid.withdrawBid() = copy(status = Status.WITHDRAWN)
+
+    fun checkAccessToBid(params: CheckAccessToBidParams): Validated<Fail> {
+        val bidId = params.bids.details.first().id
+        val bidEntity = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid, id = bidId)
+            .onFailure { return it.reason.asValidationError() }
+            ?: return ValidationError.CheckAccessToBid.BidNotFound(bidId).asValidationError()
+
+        if (bidEntity.token != params.token)
+            return ValidationError.CheckAccessToBid.TokenDoesNotMatch().asValidationError()
+
+        if (bidEntity.owner != params.owner)
+            return ValidationError.CheckAccessToBid.OwnerDoesNotMatch().asValidationError()
+
+        return Validated.ok()
+    }
+
+    fun checkBidState(params: CheckBidStateParams): Validated<Fail> {
+        val bidId = params.bids.details.first().id
+        val bidEntity = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid, id = bidId)
+            .onFailure { return it.reason.asValidationError() }
+            ?: return ValidationError.CheckBidState.BidNotFound(bidId).asValidationError()
+
+        val bid = transform.tryDeserialization(bidEntity.jsonData, Bid::class.java)
+            .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+            .onFailure { return it.reason.asValidationError() }
+
+        val validStates = rulesService.getValidStates(params.country, params.pmd, params.operationType)
+            .onFailure { return it.reason.asValidationError() }
+
+        return if (bidStateIsValid(bid, validStates))
+            Validated.ok()
+        else Validated.error(ValidationError.CheckBidState.InvalidStateOfBid(bidId))
+    }
+
+    private fun bidStateIsValid(bid: Bid, validStates: BidStatesRule): Boolean =
+        validStates.any { validState ->
+            bid.status == validState.status
+                && validState.statusDetails?.equals(bid.statusDetails) ?: true
+        }
+
+    fun setStateForBids(params: SetStateForBidsParams): Result<SetStateForBidsResult, Fail> {
+        val bidIds = params.bids.details.map { it.id }
+        val entities = bidRepository.findBy(cpid = params.cpid, ocid = params.ocid, ids = bidIds)
+            .onFailure { return it }
+        val missingBidIds = bidIds.toSet() - entities.toSetBy { it.bidId }
+
+        if (missingBidIds.isNotEmpty())
+            return ValidationError.SetStateForBids.BidsNotFound(missingBidIds).asFailure()
+
+        val stateToSet = rulesService.getStateForSetting(params.country, params.pmd, params.operationType)
+            .onFailure { return it }
+
+        val updatedEntities = getUpdatedBidEntities(entities, stateToSet)
+            .onFailure { return it }
+
+        bidRepository.save(updatedEntities)
+            .doOnFail { return it.asFailure() }
+
+        return updatedEntities.map { entity ->
+            SetStateForBidsResult.Bids.Detail(
+                id = entity.bid.id,
+                status = entity.bid.status,
+                statusDetails = entity.bid.statusDetails
+            )
+        }
+            .let { SetStateForBidsResult(SetStateForBidsResult.Bids(it)) }
+            .asSuccess()
+    }
+
+    private fun getUpdatedBidEntities(
+        entities: List<BidEntity.Record>,
+        stateToSet: BidStateForSettingRule
+    ): Result<List<BidEntity.Updated>, Fail> {
+        val bids = entities.mapResult { entity -> transform.tryDeserialization(entity.jsonData, Bid::class.java) }
+            .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+            .onFailure { return it.reason.asFailure() }
+
+        val entitiesByBidId = entities.associateBy { it.bidId.toString() }
+
+        val updatedBidsById = bids.map { bid ->
+            bid.copy(
+                status = stateToSet.status,
+                statusDetails = stateToSet.statusDetails ?: bid.statusDetails
+            )
+        }.associateBy { it.id }
+
+       return updatedBidsById.map { (bidId, bid) ->
+            val correspondingEntity = entitiesByBidId.getValue(bidId)
+
+            BidEntity.Updated(
+                cpid = correspondingEntity.cpid,
+                ocid = correspondingEntity.ocid,
+                createdDate = correspondingEntity.createdDate,
+                pendingDate = correspondingEntity.pendingDate,
+                bid = bid
+            )
+        }.asSuccess()
+    }
 }
 
 fun checkTenderersInvitations(

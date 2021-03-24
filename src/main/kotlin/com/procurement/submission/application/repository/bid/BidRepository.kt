@@ -12,6 +12,7 @@ interface BidRepository {
     fun findBy(cpid: Cpid): Result<List<BidEntity.Record>, Fail.Incident.Database>
     fun findBy(cpid: Cpid, ocid: Ocid): Result<List<BidEntity.Record>, Fail.Incident.Database>
     fun findBy(cpid: Cpid, ocid: Ocid, id: BidId): Result<BidEntity.Record?, Fail.Incident.Database>
+    fun findBy(cpid: Cpid, ocid: Ocid, ids: List<BidId>): Result<List<BidEntity.Record>, Fail.Incident.Database>
     fun save(bidEntity: BidEntity): MaybeFail<Fail.Incident.Database>
     fun save(bidEntities: Collection<BidEntity>): MaybeFail<Fail.Incident.Database>
 }
