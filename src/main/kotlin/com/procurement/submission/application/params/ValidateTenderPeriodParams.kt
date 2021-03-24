@@ -45,7 +45,8 @@ class ValidateTenderPeriodParams private constructor(
                     OperationType.START_SECOND_STAGE -> true
                     OperationType.QUALIFICATION_PROTOCOL,
                     OperationType.SUBMIT_BID_IN_PCR,
-                    OperationType.COMPLETE_QUALIFICATION -> false
+                    OperationType.COMPLETE_QUALIFICATION,
+                    OperationType.WITHDRAW_BID -> false
                 }
             }.toSet()
 

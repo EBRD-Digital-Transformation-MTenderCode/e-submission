@@ -4,6 +4,8 @@ import com.procurement.submission.application.params.bid.query.find.FindDocument
 import com.procurement.submission.application.params.bid.query.find.FindDocumentsByBidIdsParams
 import com.procurement.submission.application.params.bid.query.get.GetBidsForPacsErrors
 import com.procurement.submission.application.params.bid.query.get.GetBidsForPacsParams
+import com.procurement.submission.application.params.bid.query.get.GetOrganizationsByReferencesFromPacsErrors
+import com.procurement.submission.application.params.bid.query.get.GetOrganizationsByReferencesFromPacsParams
 import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.service.BidQueryService
 import com.procurement.submission.application.service.Transform
@@ -11,8 +13,11 @@ import com.procurement.submission.domain.extension.mapResult
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.enums.PartyRole
+import com.procurement.submission.infrastructure.handler.v2.converter.fromDomain
 import com.procurement.submission.infrastructure.handler.v2.model.response.FindDocumentsByBidIdsResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.GetBidsForPacsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.GetOrganizationsByReferencesFromPacsResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.fromDomain
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asFailure
@@ -48,6 +53,34 @@ class BidQueryServiceImpl(
                 .map { GetBidsForPacsResult.ResponseConverter.fromDomain(it) }
                 .let { GetBidsForPacsResult(bids = GetBidsForPacsResult.Bids(details = it)) }
                 .asSuccess()
+    }
+
+    override fun getOrganizationsByReferencesFromPacs(params: GetOrganizationsByReferencesFromPacsParams): Result<GetOrganizationsByReferencesFromPacsResult, Fail> {
+        val targetBids = bidRepository
+            .findBy(params.cpid, params.ocid).onFailure { return it }
+            .map { entity ->
+                transform.tryDeserialization(entity.jsonData, Bid::class.java)
+                    .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+                    .onFailure { return it }
+            }
+
+        if (targetBids.isEmpty())
+            return GetOrganizationsByReferencesFromPacsErrors.BidsNotFound(params.cpid, params.ocid).asFailure()
+
+        val receivedOrganizationsIds = params.parties.toSetBy { it.id }
+        val allOrganizationsById = targetBids
+            .flatMap { it.tenderers }
+            .associateBy { it.id!! }
+
+        // FR.COM-13.16.1
+        val targetOrganizations = receivedOrganizationsIds
+            .map { id -> allOrganizationsById[id] ?: return GetOrganizationsByReferencesFromPacsErrors.OrganizationNotFound(id).asFailure() }
+
+        // FR.COM-13.16.3
+        return targetOrganizations
+            .map { GetOrganizationsByReferencesFromPacsResult.Party.fromDomain(it, PartyRole.SUPPLIER) } // FR.COM-13.16.2
+            .let { GetOrganizationsByReferencesFromPacsResult(parties = it) }
+            .asSuccess()
     }
 
     override fun findDocumentByBidIds(params: FindDocumentsByBidIdsParams): Result<FindDocumentsByBidIdsResult?, Fail> {

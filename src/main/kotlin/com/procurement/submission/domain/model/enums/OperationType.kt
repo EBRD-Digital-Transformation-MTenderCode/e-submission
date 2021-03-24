@@ -9,7 +9,8 @@ enum class OperationType(@JsonValue override val key: String) : EnumElementProvi
     CREATE_PCR("createPcr"),
     QUALIFICATION_PROTOCOL("qualificationProtocol"),
     START_SECOND_STAGE("startSecondStage"),
-    SUBMIT_BID_IN_PCR("submitBidInPcr");
+    SUBMIT_BID_IN_PCR("submitBidInPcr"),
+    WITHDRAW_BID("withdrawBid");
 
     override fun toString(): String = key
 

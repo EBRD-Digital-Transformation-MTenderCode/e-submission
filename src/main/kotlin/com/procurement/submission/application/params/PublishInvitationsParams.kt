@@ -20,7 +20,8 @@ class PublishInvitationsParams private constructor(
                     OperationType.COMPLETE_QUALIFICATION -> true
 
                     OperationType.QUALIFICATION_PROTOCOL,
-                    OperationType.SUBMIT_BID_IN_PCR -> false
+                    OperationType.SUBMIT_BID_IN_PCR,
+                    OperationType.WITHDRAW_BID -> false
                 }
             }.toSet()
 
