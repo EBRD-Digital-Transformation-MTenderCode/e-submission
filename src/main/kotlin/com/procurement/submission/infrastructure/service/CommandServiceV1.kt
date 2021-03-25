@@ -293,8 +293,7 @@ class CommandServiceV1(
                     bids = result.bids.map { bid ->
                         FinalBidsStatusByLotsResponse.Bid(
                             id = bid.id,
-                            status = bid.status,
-                            statusDetails = bid.statusDetails
+                            status = bid.status
                         )
                     }
                 )

@@ -35,7 +35,10 @@ data class OpenBidsForPublishingResponse(
         @field:JsonProperty("date") @param:JsonProperty("date") val date: LocalDateTime,
 
         @field:JsonProperty("status") @param:JsonProperty("status") val status: Status,
-        @field:JsonProperty("statusDetails") @param:JsonProperty("statusDetails") val statusDetails: StatusDetails,
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @field:JsonProperty("statusDetails") @param:JsonProperty("statusDetails") val statusDetails: StatusDetails?,
+
         @field:JsonProperty("tenderers") @param:JsonProperty("tenderers") val tenderers: List<Tenderer>,
 
         @JsonDeserialize(using = MoneyDeserializer::class)

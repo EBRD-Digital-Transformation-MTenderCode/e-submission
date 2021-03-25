@@ -3,8 +3,7 @@
     "details": [
       {
         "id": "string",
-        "status": "withdrawn",
-        "statusDetails": "empty"
+        "status": "withdrawn"
       }
     ]
   }
