@@ -180,7 +180,10 @@ internal class BidServiceTest {
         fun statusMatchesDetailsNull_success() {
             whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-            val allowedStates = listOf(ValidBidStatesRule.State.from(STATUS, null))
+            val allowedStates = listOf(ValidBidStatesRule.State(
+                ValidBidStatesRule.State.ValidStatus(STATUS),
+                null
+            ))
             whenever(
                 rulesService.getValidStates(
                     COUNTRY,
