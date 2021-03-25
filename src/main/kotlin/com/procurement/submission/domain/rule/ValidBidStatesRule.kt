@@ -25,9 +25,9 @@ class ValidBidStatesRule(states: List<State>) : List<ValidBidStatesRule.State> b
     }
 
     override operator fun contains(element: State): Boolean =
-        this.any {
-            it.status.value == element.status.value &&
-            it.statusDetails
+        this.any { state ->
+            state.status.value == element.status.value &&
+                state.statusDetails
                 ?.let { it.value == element.statusDetails?.value }
                 ?: true
         }
