@@ -695,12 +695,12 @@ class BidService(
         if (entity.token != token) throw ErrorException(INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
+
         //VR-4.8.4
-        if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID)
-            && (bid.status != Status.VALID && bid.statusDetails != StatusDetails.EMPTY)
-        ) {
+        if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID) && bid.status != Status.VALID) {
             throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
         }
+
         //VR-4.8.5
         documentsDto.forEach { document ->
             if (document.relatedLots != null) {
