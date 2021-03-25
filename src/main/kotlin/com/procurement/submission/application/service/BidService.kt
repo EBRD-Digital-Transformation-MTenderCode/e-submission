@@ -80,7 +80,8 @@ import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.domain.rule.BidStateForSettingRule
-import com.procurement.submission.domain.rule.BidStatesRule
+import com.procurement.submission.domain.rule.ValidBidStatesRule
+import com.procurement.submission.domain.rule.from
 import com.procurement.submission.infrastructure.api.v1.CommandMessage
 import com.procurement.submission.infrastructure.api.v1.ResponseDto
 import com.procurement.submission.infrastructure.api.v1.cpid
@@ -3088,11 +3089,10 @@ class BidService(
         else Validated.error(ValidationError.CheckBidState.InvalidStateOfBid(bidId))
     }
 
-    private fun bidStateIsValid(bid: Bid, validStates: BidStatesRule): Boolean =
-        validStates.any { validState ->
-            bid.status == validState.status
-                && validState.statusDetails?.equals(bid.statusDetails) ?: true
-        }
+    private fun bidStateIsValid(bid: Bid, validStates: ValidBidStatesRule): Boolean {
+        val currentBidState = ValidBidStatesRule.State.from(bid.status, bid.statusDetails)
+        return currentBidState in validStates
+    }
 
     fun setStateForBids(params: SetStateForBidsParams): Result<SetStateForBidsResult, Fail> {
         val bidIds = params.bids.details.map { it.id }

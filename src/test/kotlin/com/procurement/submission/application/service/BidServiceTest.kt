@@ -22,7 +22,8 @@ import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.rule.BidStateForSettingRule
-import com.procurement.submission.domain.rule.BidStatesRule
+import com.procurement.submission.domain.rule.ValidBidStatesRule
+import com.procurement.submission.domain.rule.from
 import com.procurement.submission.get
 import com.procurement.submission.infrastructure.handler.v2.model.response.SetStateForBidsResult
 import com.procurement.submission.lib.functional.MaybeFail
@@ -162,14 +163,14 @@ internal class BidServiceTest {
         fun statusAndDetailsMatches_success() {
             whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-            val allowedStates = listOf(BidStatesRule.State(STATUS, STATUS_DETAILS))
+            val allowedStates = listOf(ValidBidStatesRule.State.from(STATUS, STATUS_DETAILS))
             whenever(
                 rulesService.getValidStates(
                     COUNTRY,
                     PMD,
                     OPERATION_TYPE
                 )
-            ).thenReturn(BidStatesRule(allowedStates).asSuccess())
+            ).thenReturn(ValidBidStatesRule(allowedStates).asSuccess())
             val actual = bidService.checkBidState(getParams())
 
             assertTrue(actual is Validated.Ok)
@@ -179,14 +180,14 @@ internal class BidServiceTest {
         fun statusMatchesDetailsNull_success() {
             whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-            val allowedStates = listOf(BidStatesRule.State(STATUS, null))
+            val allowedStates = listOf(ValidBidStatesRule.State.from(STATUS, null))
             whenever(
                 rulesService.getValidStates(
                     COUNTRY,
                     PMD,
                     OPERATION_TYPE
                 )
-            ).thenReturn(BidStatesRule(allowedStates).asSuccess())
+            ).thenReturn(ValidBidStatesRule(allowedStates).asSuccess())
             val actual = bidService.checkBidState(getParams())
 
             assertTrue(actual is Validated.Ok)
@@ -196,14 +197,14 @@ internal class BidServiceTest {
         fun statusAndDetailsMisMatches_fail() {
             whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-            val allowedStates = listOf(BidStatesRule.State(STATUS, StatusDetails.INVITED))
+            val allowedStates = listOf(ValidBidStatesRule.State.from(STATUS, StatusDetails.INVITED))
             whenever(
                 rulesService.getValidStates(
                     COUNTRY,
                     PMD,
                     OPERATION_TYPE
                 )
-            ).thenReturn(BidStatesRule(allowedStates).asSuccess())
+            ).thenReturn(ValidBidStatesRule(allowedStates).asSuccess())
             val actual = bidService.checkBidState(getParams()) as Validated.Error
 
             val errorCode = "VR.COM-13.14.2"
