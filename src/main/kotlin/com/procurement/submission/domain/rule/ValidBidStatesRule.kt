@@ -5,14 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 
-class ValidBidStatesRule(states: List<State>) : List<ValidBidStatesRule.State> by states {
+class ValidBidStatesRule(private val states: List<State>) {
 
     data class State(
         @field:JsonProperty("status") @param:JsonProperty("status") val status: ValidStatus,
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
         @field:JsonProperty("statusDetails") @param:JsonProperty("statusDetails") val statusDetails: ValidStatusDetails?
-    ) { companion object {}
+    ) {
 
         data class ValidStatus(
             @field:JsonProperty("value") @param:JsonProperty("value") val value: Status,
@@ -24,18 +24,12 @@ class ValidBidStatesRule(states: List<State>) : List<ValidBidStatesRule.State> b
         )
     }
 
-    override operator fun contains(element: State): Boolean =
-        this.any { state ->
-            state.status.value == element.status.value &&
-                state.statusDetails
-                ?.let { it.value == element.statusDetails?.value }
-                ?: true
+    fun contains(status: Status, statusDetails: StatusDetails?): Boolean =
+        states.any { state ->
+            if (state.statusDetails != null)
+                state.status.value == status && state.statusDetails.value == statusDetails
+            else
+                state.status.value == status
         }
 
 }
-
-fun ValidBidStatesRule.State.Companion.from(status: Status, statusDetails: StatusDetails?): ValidBidStatesRule.State =
-    ValidBidStatesRule.State(
-        status = ValidBidStatesRule.State.ValidStatus(status),
-        statusDetails = ValidBidStatesRule.State.ValidStatusDetails(statusDetails)
-    )

@@ -7,8 +7,6 @@ import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.infrastructure.bind.configuration
 import com.procurement.submission.infrastructure.configuration.ObjectMapperConfig
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -30,105 +28,102 @@ internal class ValidBidStatesRuleTest {
         fun `matches by FULL state with FULL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    ValidBidStatesRule.State.from(Status.VALID, StatusDetails.ARCHIVED),
-                    ValidBidStatesRule.State.from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(Status.VALID, StatusDetails.ARCHIVED),
+                    from(Status.PENDING, StatusDetails.WITHDRAWN),
                 )
             )
-            val currectState = ValidBidStatesRule.State.from(Status.VALID, StatusDetails.ARCHIVED)
 
-            assertTrue(currectState in validStates)
+            assertTrue(validStates.contains(Status.VALID, StatusDetails.ARCHIVED))
         }
 
         @Test
         fun `doesn't matches by FULL state with FULL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    ValidBidStatesRule.State.from(Status.VALID, StatusDetails.ARCHIVED),
-                    ValidBidStatesRule.State.from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(Status.VALID, StatusDetails.ARCHIVED),
+                    from(Status.PENDING, StatusDetails.WITHDRAWN),
                 )
             )
-            val currectState = ValidBidStatesRule.State.from(Status.VALID, StatusDetails.INVITED)
 
-            assertFalse(currectState in validStates)
+            assertFalse(validStates.contains(Status.VALID, StatusDetails.INVITED))
         }
 
         @Test
         fun `matches by PARTIAL state with FULL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    ValidBidStatesRule.State.from(Status.VALID, null),
-                    ValidBidStatesRule.State.from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(Status.VALID, null),
+                    from(Status.PENDING, StatusDetails.WITHDRAWN),
                 )
             )
-            val currectState = ValidBidStatesRule.State.from(Status.VALID, null)
 
-            assertTrue(currectState in validStates)
+            assertTrue(validStates.contains(Status.VALID, null))
         }
 
         @Test
         fun `doesn't matches by PARTIAL state with FULL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    ValidBidStatesRule.State.from(Status.VALID, null),
-                    ValidBidStatesRule.State.from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(Status.VALID, null),
+                    from(Status.PENDING, StatusDetails.WITHDRAWN),
                 )
             )
-            val currectState = ValidBidStatesRule.State.from(Status.VALID, StatusDetails.WITHDRAWN)
 
-            assertFalse(currectState in validStates)
+            assertFalse(validStates.contains(Status.VALID, StatusDetails.WITHDRAWN))
         }
 
         @Test
         fun `matches by FULL state with PARTIAL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    ValidBidStatesRule.State.from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(Status.PENDING, StatusDetails.WITHDRAWN),
                     ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(Status.VALID), null),
                 )
             )
-            val currectState = ValidBidStatesRule.State.from(Status.VALID, StatusDetails.ARCHIVED)
 
-            assertTrue(currectState in validStates)
+            assertTrue(validStates.contains(Status.VALID, StatusDetails.ARCHIVED))
         }
 
         @Test
         fun `doesn't matches by FULL state with PARTIAL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    ValidBidStatesRule.State.from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(Status.PENDING, StatusDetails.WITHDRAWN),
                     ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(Status.VALID), null),
                 )
             )
-            val currectState = ValidBidStatesRule.State.from(Status.INVITED, StatusDetails.ARCHIVED)
 
-            assertFalse(currectState in validStates)
+            assertFalse(validStates.contains(Status.INVITED, StatusDetails.ARCHIVED))
         }
 
         @Test
         fun `matches by PERTIAL state with PARTIAL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    ValidBidStatesRule.State.from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(Status.PENDING, StatusDetails.WITHDRAWN),
                     ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(Status.VALID), null),
                 )
             )
-            val currectState = ValidBidStatesRule.State.from(Status.VALID, null)
 
-            assertTrue(currectState in validStates)
+            assertTrue(validStates.contains(Status.VALID, null))
         }
 
         @Test
         fun `doesn't matches by PERTIAL state with PARTIAL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    ValidBidStatesRule.State.from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(Status.PENDING, StatusDetails.WITHDRAWN),
                     ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(Status.VALID), null),
                 )
             )
-            val currectState = ValidBidStatesRule.State.from(Status.DISQUALIFIED, null)
-
-            assertFalse(currectState in validStates)
+            assertFalse(validStates.contains(Status.DISQUALIFIED, null))
         }
+
+        private fun from(status: Status, statusDetails: StatusDetails?): ValidBidStatesRule.State =
+            ValidBidStatesRule.State(
+                ValidBidStatesRule.State.ValidStatus(status),
+                ValidBidStatesRule.State.ValidStatusDetails(statusDetails)
+            )
 
     }
 
@@ -138,39 +133,34 @@ internal class ValidBidStatesRuleTest {
         @Test
         fun `has FULL state when it explicit specified`() {
             val jsonWithStates = """ [ { "status": {  "value": "invited" }, "statusDetails": { "value": "pending" } } ] """
-            val validState = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java).first()
+            val rule = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java)
 
-            assertNotNull(validState.statusDetails)
-            assertNotNull(validState.statusDetails?.value)
+            assertTrue(rule.contains(Status.INVITED, StatusDetails.PENDING))
         }
 
         @Test
         fun `has FULL state when statusDetails specified as null`() {
             val jsonWithStates = """ [ { "status": {  "value": "invited" }, "statusDetails": { "value": null } } ] """
-            val validState = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java).first()
+            val rule = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java)
 
-            assertNotNull(validState.statusDetails)
-            assertNull(validState.statusDetails?.value)
+            assertTrue(rule.contains(Status.INVITED, null))
         }
 
         @Test
         fun `has FULL state when statusDetails specified without value`() {
             val jsonWithStates = """ [ { "status": {  "value": "invited" }, "statusDetails": {  } } ] """
-            val validState = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java).first()
+            val rule = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java)
 
-            assertNotNull(validState.statusDetails)
-            assertNull(validState.statusDetails?.value)
+            assertTrue(rule.contains(Status.INVITED, null))
         }
 
         @Test
         fun `has PARTIAL state when statusDetails not specified`() {
             val jsonWithStates = """ [ { "status": {  "value": "invited" } } ] """
-            val validState = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java).first()
+            val rule = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java)
 
-            assertNull(validState.statusDetails)
-            assertNull(validState.statusDetails?.value)
+            assertTrue(rule.contains(Status.INVITED, StatusDetails.WITHDRAWN))
         }
-
 
     }
 

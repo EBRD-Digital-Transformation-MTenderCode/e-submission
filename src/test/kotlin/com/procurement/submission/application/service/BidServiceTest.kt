@@ -23,7 +23,6 @@ import com.procurement.submission.domain.model.enums.Status
 import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.rule.BidStateForSettingRule
 import com.procurement.submission.domain.rule.ValidBidStatesRule
-import com.procurement.submission.domain.rule.from
 import com.procurement.submission.get
 import com.procurement.submission.infrastructure.handler.v2.model.response.SetStateForBidsResult
 import com.procurement.submission.lib.functional.MaybeFail
@@ -163,7 +162,7 @@ internal class BidServiceTest {
         fun statusAndDetailsMatches_success() {
             whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-            val allowedStates = listOf(ValidBidStatesRule.State.from(STATUS, STATUS_DETAILS))
+            val allowedStates = listOf(from(STATUS, STATUS_DETAILS))
             whenever(
                 rulesService.getValidStates(
                     COUNTRY,
@@ -200,7 +199,7 @@ internal class BidServiceTest {
         fun statusAndDetailsMisMatches_fail() {
             whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-            val allowedStates = listOf(ValidBidStatesRule.State.from(STATUS, StatusDetails.INVITED))
+            val allowedStates = listOf(from(STATUS, StatusDetails.INVITED))
             whenever(
                 rulesService.getValidStates(
                     COUNTRY,
@@ -260,6 +259,12 @@ internal class BidServiceTest {
             date = LocalDateTime.now(),
             tenderers = emptyList()
         )
+
+        private fun from(status: Status, statusDetails: StatusDetails?): ValidBidStatesRule.State =
+            ValidBidStatesRule.State(
+                ValidBidStatesRule.State.ValidStatus(status),
+                ValidBidStatesRule.State.ValidStatusDetails(statusDetails)
+            )
     }
 
     @Nested
