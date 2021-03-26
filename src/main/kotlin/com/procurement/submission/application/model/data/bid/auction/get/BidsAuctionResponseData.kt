@@ -28,7 +28,7 @@ data class BidsAuctionResponseData(
             val date: LocalDateTime,
             val pendingDate: LocalDateTime,
             val status: Status,
-            val statusDetails: StatusDetails,
+            val statusDetails: StatusDetails?,
             val tenderers: List<Tenderer>,
             val value: Money,
             val documents: List<Document>?,

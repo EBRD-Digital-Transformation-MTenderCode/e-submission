@@ -11,7 +11,6 @@ import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.Scale
 import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.item.ItemId
 import com.procurement.submission.domain.model.lot.LotId
@@ -29,7 +28,6 @@ data class CreateBidResult(
         data class Detail(
             @param:JsonProperty("id") @field:JsonProperty("id") val id: BidId,
             @param:JsonProperty("status") @field:JsonProperty("status") val status: Status,
-            @param:JsonProperty("statusDetails") @field:JsonProperty("statusDetails") val statusDetails: StatusDetails,
             @param:JsonProperty("date") @field:JsonProperty("date") val date: LocalDateTime,
 
             @JsonInclude(JsonInclude.Include.NON_NULL)

@@ -282,7 +282,6 @@ internal class BidServiceTest {
                 SetStateForBidsResult.Bids.Detail(
                 id = BID_ID.toString(),
                 status = newState.status,
-                statusDetails = newState.statusDetails!!
             ))))
 
             assertEquals(expected,  actual.get())
@@ -300,8 +299,7 @@ internal class BidServiceTest {
             val expected = SetStateForBidsResult(SetStateForBidsResult.Bids(listOf(
                 SetStateForBidsResult.Bids.Detail(
                     id = BID_ID.toString(),
-                    status = newState.status,
-                    statusDetails = bid.statusDetails
+                    status = newState.status
                 ))))
 
             assertEquals(expected,  actual.get())

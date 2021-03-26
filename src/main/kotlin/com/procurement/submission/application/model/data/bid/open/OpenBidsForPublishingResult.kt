@@ -22,7 +22,7 @@ data class OpenBidsForPublishingResult(
         val id: UUID,
         val date: LocalDateTime,
         val status: Status,
-        val statusDetails: StatusDetails,
+        val statusDetails: StatusDetails?,
         val tenderers: List<Tenderer>,
         val value: Money,
         val documents: List<Document>,
