@@ -10,6 +10,6 @@ sealed class FindDocumentsByBidIdsErrors(
 
     class BidsNotFound(bidsIds: Collection<BidId>) : FindDocumentsByBidIdsErrors(
         numberError = "13.12.1",
-        description = "Cannot find bids by ids specified in request. Ids: ${bidsIds}"
+        description = "Cannot find bids by ids specified in request. Ids: $bidsIds"
     )
 }

@@ -9,6 +9,6 @@ sealed class GetBidsForPacsErrors(
 
     class BidsNotFound(bidsIds: List<String>) : GetBidsForPacsErrors(
         numberError = "13.10.1",
-        description = "Cannot find bids by ids specified in request. Ids: ${bidsIds}"
+        description = "Cannot find bids by ids specified in request. Ids: $bidsIds"
     )
 }
