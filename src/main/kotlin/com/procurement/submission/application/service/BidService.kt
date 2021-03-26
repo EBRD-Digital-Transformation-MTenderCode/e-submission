@@ -664,7 +664,7 @@ class BidService(
     private fun updateDocuments(
         documentsDb: List<Document>?,
         documentsDto: List<BidUpdateData.Bid.Document>
-    ): List<Document>? {
+    ): List<Document> {
         return if (documentsDb != null && documentsDb.isNotEmpty()) {
             if (documentsDto.isNotEmpty()) {
                 val documentsDtoId = documentsDto.toSetBy { it.id }
@@ -915,7 +915,7 @@ class BidService(
     private fun updateTenderers(bidRequest: BidUpdateData.Bid, bidEntity: Bid): List<Organization> {
         if (bidRequest.tenderers.isEmpty()) return bidEntity.tenderers
 
-        val tenderersRequestIds = bidRequest.tenderers.map { it.id.toString() }
+        val tenderersRequestIds = bidRequest.tenderers.map { it.id }
         val tenderersEntityIds = bidEntity.tenderers.map { it.id }
 
         // FReq-1.2.1.40
@@ -928,7 +928,7 @@ class BidService(
 
         return bidEntity.tenderers.map { tenderer ->
             val personesEntities = tenderer.persones
-            val tendererRequest = bidRequest.tenderers.find { it.id.toString() == tenderer.id }
+            val tendererRequest = bidRequest.tenderers.find { it.id == tenderer.id }
 
             val additionalIdentifiersDb = tenderer.additionalIdentifiers
 
@@ -1058,7 +1058,7 @@ class BidService(
         additionalIdentifiersDb: List<Identifier>?,
         additionalIdentifiersRequest: List<BidUpdateData.Bid.Tenderer.AdditionalIdentifier>
     ): List<Identifier> {
-        val additionalIdentifiersEntities = additionalIdentifiersDb ?: emptyList<Identifier>()
+        val additionalIdentifiersEntities = additionalIdentifiersDb ?: emptyList()
 
         val newAdditionalIdentifiers =
             additionalIdentifiersRequest.filter { it.id !in additionalIdentifiersEntities.map { it.id } }

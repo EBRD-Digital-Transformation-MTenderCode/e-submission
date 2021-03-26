@@ -10,6 +10,6 @@ sealed class FinalizeBidsByAwardsErrors(
 
     class BidsNotFound(ids: Collection<BidId>) : FinalizeBidsByAwardsErrors(
         numberError = "4.15.1",
-        description = "Cannot find bids by ids specified in request. Ids: ${ids}"
+        description = "Cannot find bids by ids specified in request. Ids: $ids"
     )
 }
