@@ -20,22 +20,23 @@ data class Bid @JsonCreator constructor(
 
     var status: Status,
 
-    var statusDetails: StatusDetails,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    var statusDetails: StatusDetails?,
 
     val tenderers: List<Organization>,
 
     @JsonDeserialize(using = MoneyDeserializer::class)
-        @JsonSerialize(using = MoneySerializer::class)
-        var value: Money?,
+    @JsonSerialize(using = MoneySerializer::class)
+    var value: Money?,
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        var documents: List<Document>?,
+    var documents: List<Document>?,
 
     val relatedLots: List<String>,
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        val requirementResponses: List<RequirementResponse>?,
+    val requirementResponses: List<RequirementResponse>?,
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        var items: List<Item>? = null
+    var items: List<Item>? = null
 )

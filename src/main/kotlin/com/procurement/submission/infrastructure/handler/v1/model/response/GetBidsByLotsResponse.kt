@@ -35,7 +35,10 @@ data class GetBidsByLotsResponse(
         @param:JsonProperty("date") @field:JsonProperty("date") val date: LocalDateTime,
 
         @param:JsonProperty("status") @field:JsonProperty("status") val status: Status,
-        @param:JsonProperty("statusDetails") @field:JsonProperty("statusDetails") val statusDetails: StatusDetails,
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @param:JsonProperty("statusDetails") @field:JsonProperty("statusDetails") val statusDetails: StatusDetails?,
+
         @param:JsonProperty("tenderers") @field:JsonProperty("tenderers") val tenderers: List<Tenderer>,
 
         @JsonDeserialize(using = MoneyDeserializer::class)

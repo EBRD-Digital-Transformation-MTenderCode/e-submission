@@ -642,7 +642,6 @@ class BidService(
             .asSequence()
             .filter { entity -> entity.status == Status.PENDING }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
-            .filter { it.statusDetails == StatusDetails.EMPTY }
             .toList()
 
         val bidsForPublishing = when (data.awardCriteriaDetails) {
@@ -696,12 +695,12 @@ class BidService(
         if (entity.token != token) throw ErrorException(INVALID_TOKEN)
         if (entity.owner != owner) throw ErrorException(INVALID_OWNER)
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
+
         //VR-4.8.4
-        if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID)
-            && (bid.status != Status.VALID && bid.statusDetails != StatusDetails.EMPTY)
-        ) {
+        if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID) && bid.status != Status.VALID) {
             throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
         }
+
         //VR-4.8.5
         documentsDto.forEach { document ->
             if (document.relatedLots != null) {
@@ -755,17 +754,17 @@ class BidService(
         fun isDisqualified(status: Status, details: StatusDetails) =
             status == Status.PENDING && details == StatusDetails.DISQUALIFIED
 
-        fun predicateOfBidStatus(bid: Bid): Boolean = isValid(status = bid.status, details = bid.statusDetails)
-            || isDisqualified(status = bid.status, details = bid.statusDetails)
+        fun predicateOfBidStatus(bid: Bid): Boolean = isValid(status = bid.status, details = bid.statusDetails!!)
+            || isDisqualified(status = bid.status, details = bid.statusDetails!!)
 
         fun Bid.updatingStatuses(): Bid = when {
-            isValid(this.status, this.statusDetails) -> this.copy(
+            isValid(this.status, this.statusDetails!!) -> this.copy(
                 status = Status.VALID,
-                statusDetails = StatusDetails.EMPTY
+                statusDetails = null
             )
-            isDisqualified(this.status, this.statusDetails) -> this.copy(
+            isDisqualified(this.status, this.statusDetails!!) -> this.copy(
                 status = Status.DISQUALIFIED,
-                statusDetails = StatusDetails.EMPTY
+                statusDetails = null
             )
             else -> throw IllegalStateException("No processing for award with status: '${this.status}' and details: '${this.statusDetails}'.")
         }
@@ -802,8 +801,7 @@ class BidService(
                 .map { bid ->
                     FinalizedBidsStatusByLots.Bid(
                         id = UUID.fromString(bid.id),
-                        status = bid.status,
-                        statusDetails = bid.statusDetails
+                        status = bid.status
                     )
                 }
         )
@@ -856,7 +854,7 @@ class BidService(
                 .map { bid ->
                     ApplyEvaluatedAwardsResult.Bid(
                         id = BidId.fromString(bid.id),
-                        statusDetails = bid.statusDetails
+                        statusDetails = bid.statusDetails!!
                     )
                 }
         )
@@ -1999,17 +1997,15 @@ class BidService(
     fun getBidsByLots(context: GetBidsByLotsContext, data: GetBidsByLotsData): GetBidsByLotsResult {
         val lotsIds = data.lots
             .toSetBy { it.id.toString() }
+
         val bids = bidRepository.findBy(context.cpid, context.ocid)
             .orThrow { it.exception }
             .asSequence()
             .filter { entity -> entity.status == Status.PENDING }
             .map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }
-            .filter { bid ->
-                bid.status == Status.PENDING
-                    && bid.statusDetails == StatusDetails.EMPTY
-                    && lotsIds.containsAny(bid.relatedLots)
-            }
+            .filter { bid -> bid.status == Status.PENDING && lotsIds.containsAny(bid.relatedLots) }
             .toList()
+
         return GetBidsByLotsResult(
             bids = bids.map { bid ->
                 GetBidsByLotsResult.Bid(
@@ -3051,9 +3047,9 @@ class BidService(
             && storedLot == receivedLot
     }
 
-    fun Bid.isActive(): Boolean = status == Status.PENDING && statusDetails == StatusDetails.EMPTY
+    fun Bid.isActive(): Boolean = status == Status.PENDING
 
-    fun Bid.withdrawBid() = copy(status = Status.WITHDRAWN)
+    fun Bid.withdrawBid() = copy(status = Status.WITHDRAWN, statusDetails = null)
 
     fun checkAccessToBid(params: CheckAccessToBidParams): Validated<Fail> {
         val bidId = params.bids.details.first().id
@@ -3115,8 +3111,7 @@ class BidService(
         return updatedEntities.map { entity ->
             SetStateForBidsResult.Bids.Detail(
                 id = entity.bid.id,
-                status = entity.bid.status,
-                statusDetails = entity.bid.statusDetails
+                status = entity.bid.status
             )
         }
             .let { SetStateForBidsResult(SetStateForBidsResult.Bids(it)) }
