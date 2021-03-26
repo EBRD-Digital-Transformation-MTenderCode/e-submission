@@ -2,8 +2,8 @@ package com.procurement.submission.domain.rule
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.infrastructure.bind.configuration
 import com.procurement.submission.infrastructure.configuration.ObjectMapperConfig
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -28,98 +28,98 @@ internal class ValidBidStatesRuleTest {
         fun `matches by FULL state with FULL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    from(Status.VALID, StatusDetails.ARCHIVED),
-                    from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(BidStatus.VALID, BidStatusDetails.ARCHIVED),
+                    from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
                 )
             )
 
-            assertTrue(validStates.contains(Status.VALID, StatusDetails.ARCHIVED))
+            assertTrue(validStates.contains(BidStatus.VALID, BidStatusDetails.ARCHIVED))
         }
 
         @Test
         fun `doesn't matches by FULL state with FULL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    from(Status.VALID, StatusDetails.ARCHIVED),
-                    from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(BidStatus.VALID, BidStatusDetails.ARCHIVED),
+                    from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
                 )
             )
 
-            assertFalse(validStates.contains(Status.VALID, StatusDetails.INVITED))
+            assertFalse(validStates.contains(BidStatus.VALID, BidStatusDetails.INVITED))
         }
 
         @Test
         fun `matches by PARTIAL state with FULL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    from(Status.VALID, null),
-                    from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(BidStatus.VALID, null),
+                    from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
                 )
             )
 
-            assertTrue(validStates.contains(Status.VALID, null))
+            assertTrue(validStates.contains(BidStatus.VALID, null))
         }
 
         @Test
         fun `doesn't matches by PARTIAL state with FULL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    from(Status.VALID, null),
-                    from(Status.PENDING, StatusDetails.WITHDRAWN),
+                    from(BidStatus.VALID, null),
+                    from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
                 )
             )
 
-            assertFalse(validStates.contains(Status.VALID, StatusDetails.WITHDRAWN))
+            assertFalse(validStates.contains(BidStatus.VALID, BidStatusDetails.WITHDRAWN))
         }
 
         @Test
         fun `matches by FULL state with PARTIAL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    from(Status.PENDING, StatusDetails.WITHDRAWN),
-                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(Status.VALID), null),
+                    from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
+                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(BidStatus.VALID), null),
                 )
             )
 
-            assertTrue(validStates.contains(Status.VALID, StatusDetails.ARCHIVED))
+            assertTrue(validStates.contains(BidStatus.VALID, BidStatusDetails.ARCHIVED))
         }
 
         @Test
         fun `doesn't matches by FULL state with PARTIAL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    from(Status.PENDING, StatusDetails.WITHDRAWN),
-                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(Status.VALID), null),
+                    from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
+                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(BidStatus.VALID), null),
                 )
             )
 
-            assertFalse(validStates.contains(Status.INVITED, StatusDetails.ARCHIVED))
+            assertFalse(validStates.contains(BidStatus.INVITED, BidStatusDetails.ARCHIVED))
         }
 
         @Test
         fun `matches by PERTIAL state with PARTIAL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    from(Status.PENDING, StatusDetails.WITHDRAWN),
-                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(Status.VALID), null),
+                    from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
+                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(BidStatus.VALID), null),
                 )
             )
 
-            assertTrue(validStates.contains(Status.VALID, null))
+            assertTrue(validStates.contains(BidStatus.VALID, null))
         }
 
         @Test
         fun `doesn't matches by PERTIAL state with PARTIAL valid states`() {
             val validStates = ValidBidStatesRule(
                 listOf(
-                    from(Status.PENDING, StatusDetails.WITHDRAWN),
-                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(Status.VALID), null),
+                    from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
+                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(BidStatus.VALID), null),
                 )
             )
-            assertFalse(validStates.contains(Status.DISQUALIFIED, null))
+            assertFalse(validStates.contains(BidStatus.DISQUALIFIED, null))
         }
 
-        private fun from(status: Status, statusDetails: StatusDetails?): ValidBidStatesRule.State =
+        private fun from(status: BidStatus, statusDetails: BidStatusDetails?): ValidBidStatesRule.State =
             ValidBidStatesRule.State(
                 ValidBidStatesRule.State.ValidStatus(status),
                 ValidBidStatesRule.State.ValidStatusDetails(statusDetails)
@@ -135,7 +135,7 @@ internal class ValidBidStatesRuleTest {
             val jsonWithStates = """ [ { "status": {  "value": "invited" }, "statusDetails": { "value": "pending" } } ] """
             val rule = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java)
 
-            assertTrue(rule.contains(Status.INVITED, StatusDetails.PENDING))
+            assertTrue(rule.contains(BidStatus.INVITED, BidStatusDetails.PENDING))
         }
 
         @Test
@@ -143,7 +143,7 @@ internal class ValidBidStatesRuleTest {
             val jsonWithStates = """ [ { "status": {  "value": "invited" }, "statusDetails": { "value": null } } ] """
             val rule = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java)
 
-            assertTrue(rule.contains(Status.INVITED, null))
+            assertTrue(rule.contains(BidStatus.INVITED, null))
         }
 
         @Test
@@ -151,7 +151,7 @@ internal class ValidBidStatesRuleTest {
             val jsonWithStates = """ [ { "status": {  "value": "invited" }, "statusDetails": {  } } ] """
             val rule = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java)
 
-            assertTrue(rule.contains(Status.INVITED, null))
+            assertTrue(rule.contains(BidStatus.INVITED, null))
         }
 
         @Test
@@ -159,7 +159,7 @@ internal class ValidBidStatesRuleTest {
             val jsonWithStates = """ [ { "status": {  "value": "invited" } } ] """
             val rule = mapper.readValue(jsonWithStates, ValidBidStatesRule::class.java)
 
-            assertTrue(rule.contains(Status.INVITED, StatusDetails.WITHDRAWN))
+            assertTrue(rule.contains(BidStatus.INVITED, BidStatusDetails.WITHDRAWN))
         }
 
     }

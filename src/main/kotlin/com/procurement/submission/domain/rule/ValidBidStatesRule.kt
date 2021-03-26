@@ -2,8 +2,8 @@ package com.procurement.submission.domain.rule
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 
 class ValidBidStatesRule(private val states: List<State>) {
 
@@ -15,16 +15,16 @@ class ValidBidStatesRule(private val states: List<State>) {
     ) {
 
         data class ValidStatus(
-            @field:JsonProperty("value") @param:JsonProperty("value") val value: Status,
+            @field:JsonProperty("value") @param:JsonProperty("value") val value: BidStatus,
         )
 
         data class ValidStatusDetails(
             @JsonInclude(JsonInclude.Include.NON_NULL)
-            @field:JsonProperty("value") @param:JsonProperty("value") val value: StatusDetails?
+            @field:JsonProperty("value") @param:JsonProperty("value") val value: BidStatusDetails?
         )
     }
 
-    fun contains(status: Status, statusDetails: StatusDetails?): Boolean =
+    fun contains(status: BidStatus, statusDetails: BidStatusDetails?): Boolean =
         states.any { state ->
             if (state.statusDetails != null)
                 state.status.value == status && state.statusDetails.value == statusDetails

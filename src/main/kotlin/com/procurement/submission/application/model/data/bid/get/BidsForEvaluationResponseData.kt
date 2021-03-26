@@ -2,12 +2,12 @@ package com.procurement.submission.application.model.data.bid.get
 
 import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.domain.model.Money
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.Scale
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import java.time.LocalDateTime
 import java.util.*
@@ -18,8 +18,8 @@ data class BidsForEvaluationResponseData(
     data class Bid(
         val id: UUID,
         val date: LocalDateTime,
-        val status: Status,
-        val statusDetails: StatusDetails?,
+        val status: BidStatus,
+        val statusDetails: BidStatusDetails?,
         val tenderers: List<Tenderer>,
         val value: Money,
         val documents: List<Document>?,

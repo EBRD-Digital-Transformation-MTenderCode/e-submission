@@ -17,10 +17,10 @@ import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.Token
 import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.rule.BidStateForSettingRule
 import com.procurement.submission.domain.rule.ValidBidStatesRule
 import com.procurement.submission.get
@@ -48,8 +48,8 @@ internal class BidServiceTest {
         private val OWNER = UUID.randomUUID()
         private val OPERATION_TYPE = OperationType.WITHDRAW_BID
         private val PMD = ProcurementMethod.TEST_SV
-        private val STATUS = Status.INVITED
-        private val STATUS_DETAILS = StatusDetails.ARCHIVED
+        private val STATUS = BidStatus.INVITED
+        private val STATUS_DETAILS = BidStatusDetails.ARCHIVED
         private val COUNTRY = "country"
     }
 
@@ -140,7 +140,7 @@ internal class BidServiceTest {
             bidId = BID_ID,
             owner = owner,
             token = token,
-            status = Status.DISQUALIFIED,
+            status = BidStatus.DISQUALIFIED,
             createdDate = LocalDateTime.now(),
             pendingDate = LocalDateTime.now(),
             jsonData = ""
@@ -199,7 +199,7 @@ internal class BidServiceTest {
         fun statusAndDetailsMisMatches_fail() {
             whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-            val allowedStates = listOf(from(STATUS, StatusDetails.INVITED))
+            val allowedStates = listOf(from(STATUS, BidStatusDetails.INVITED))
             whenever(
                 rulesService.getValidStates(
                     COUNTRY,
@@ -260,7 +260,7 @@ internal class BidServiceTest {
             tenderers = emptyList()
         )
 
-        private fun from(status: Status, statusDetails: StatusDetails?): ValidBidStatesRule.State =
+        private fun from(status: BidStatus, statusDetails: BidStatusDetails?): ValidBidStatesRule.State =
             ValidBidStatesRule.State(
                 ValidBidStatesRule.State.ValidStatus(status),
                 ValidBidStatesRule.State.ValidStatusDetails(statusDetails)
@@ -273,7 +273,7 @@ internal class BidServiceTest {
         fun success() {
             whenever(bidRepository.findBy(CPID, OCID, listOf(BID_ID))).thenReturn(listOf(getRecord()).asSuccess())
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
-            val newState = BidStateForSettingRule(Status.EMPTY, StatusDetails.DISQUALIFIED)
+            val newState = BidStateForSettingRule(BidStatus.EMPTY, BidStatusDetails.DISQUALIFIED)
             whenever(rulesService.getStateForSetting(COUNTRY, PMD, OPERATION_TYPE)).thenReturn(newState.asSuccess())
             whenever(bidRepository.save(any<Collection<BidEntity>>())).thenReturn(MaybeFail.none())
 
@@ -292,7 +292,7 @@ internal class BidServiceTest {
             whenever(bidRepository.findBy(CPID, OCID, listOf(BID_ID))).thenReturn(listOf(getRecord()).asSuccess())
             val bid = getBid()
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(bid.asSuccess())
-            val newState = BidStateForSettingRule(Status.EMPTY, null)
+            val newState = BidStateForSettingRule(BidStatus.EMPTY, null)
             whenever(rulesService.getStateForSetting(COUNTRY, PMD, OPERATION_TYPE)).thenReturn(newState.asSuccess())
             whenever(bidRepository.save(any<Collection<BidEntity>>())).thenReturn(MaybeFail.none())
             val actual = bidService.setStateForBids(getParams())
