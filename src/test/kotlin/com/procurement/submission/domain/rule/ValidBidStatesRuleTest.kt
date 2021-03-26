@@ -1,16 +1,15 @@
 package com.procurement.submission.domain.rule
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.procurement.submission.domain.model.enums.BidStatus
 import com.procurement.submission.domain.model.enums.BidStatusDetails
-import com.procurement.submission.infrastructure.bind.configuration
 import com.procurement.submission.infrastructure.configuration.ObjectMapperConfig
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
@@ -19,7 +18,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @ContextConfiguration(classes = [ObjectMapperConfig::class])
 internal class ValidBidStatesRuleTest {
 
-    private val mapper: ObjectMapper = jacksonObjectMapper().apply { configuration() }
+    @Autowired
+    private lateinit var mapper: ObjectMapper
 
     @Nested
     inner class Contains {
@@ -77,7 +77,7 @@ internal class ValidBidStatesRuleTest {
             val validStates = ValidBidStatesRule(
                 listOf(
                     from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
-                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(BidStatus.VALID), null),
+                    ValidBidStatesRule.State(ValidBidStatesRule.State.Status(BidStatus.VALID), null),
                 )
             )
 
@@ -89,7 +89,7 @@ internal class ValidBidStatesRuleTest {
             val validStates = ValidBidStatesRule(
                 listOf(
                     from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
-                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(BidStatus.VALID), null),
+                    ValidBidStatesRule.State(ValidBidStatesRule.State.Status(BidStatus.VALID), null),
                 )
             )
 
@@ -101,7 +101,7 @@ internal class ValidBidStatesRuleTest {
             val validStates = ValidBidStatesRule(
                 listOf(
                     from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
-                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(BidStatus.VALID), null),
+                    ValidBidStatesRule.State(ValidBidStatesRule.State.Status(BidStatus.VALID), null),
                 )
             )
 
@@ -113,7 +113,7 @@ internal class ValidBidStatesRuleTest {
             val validStates = ValidBidStatesRule(
                 listOf(
                     from(BidStatus.PENDING, BidStatusDetails.WITHDRAWN),
-                    ValidBidStatesRule.State(ValidBidStatesRule.State.ValidStatus(BidStatus.VALID), null),
+                    ValidBidStatesRule.State(ValidBidStatesRule.State.Status(BidStatus.VALID), null),
                 )
             )
             assertFalse(validStates.contains(BidStatus.DISQUALIFIED, null))
@@ -121,8 +121,8 @@ internal class ValidBidStatesRuleTest {
 
         private fun from(status: BidStatus, statusDetails: BidStatusDetails?): ValidBidStatesRule.State =
             ValidBidStatesRule.State(
-                ValidBidStatesRule.State.ValidStatus(status),
-                ValidBidStatesRule.State.ValidStatusDetails(statusDetails)
+                ValidBidStatesRule.State.Status(status),
+                ValidBidStatesRule.State.StatusDetails(statusDetails)
             )
 
     }

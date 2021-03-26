@@ -180,7 +180,7 @@ internal class BidServiceTest {
             whenever(bidRepository.findBy(CPID, OCID, BID_ID)).thenReturn(getRecord().asSuccess())
             whenever(transform.tryDeserialization(any(), any<Class<*>>())).thenReturn(getBid().asSuccess())
             val allowedStates = listOf(ValidBidStatesRule.State(
-                ValidBidStatesRule.State.ValidStatus(STATUS),
+                ValidBidStatesRule.State.Status(STATUS),
                 null
             ))
             whenever(
@@ -262,8 +262,8 @@ internal class BidServiceTest {
 
         private fun from(status: BidStatus, statusDetails: BidStatusDetails?): ValidBidStatesRule.State =
             ValidBidStatesRule.State(
-                ValidBidStatesRule.State.ValidStatus(status),
-                ValidBidStatesRule.State.ValidStatusDetails(statusDetails)
+                ValidBidStatesRule.State.Status(status),
+                ValidBidStatesRule.State.StatusDetails(statusDetails)
             )
     }
 

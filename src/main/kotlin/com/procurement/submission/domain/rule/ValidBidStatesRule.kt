@@ -8,17 +8,17 @@ import com.procurement.submission.domain.model.enums.BidStatusDetails
 class ValidBidStatesRule(private val states: List<State>) {
 
     data class State(
-        @field:JsonProperty("status") @param:JsonProperty("status") val status: ValidStatus,
+        @field:JsonProperty("status") @param:JsonProperty("status") val status: Status,
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        @field:JsonProperty("statusDetails") @param:JsonProperty("statusDetails") val statusDetails: ValidStatusDetails?
+        @field:JsonProperty("statusDetails") @param:JsonProperty("statusDetails") val statusDetails: StatusDetails?
     ) {
 
-        data class ValidStatus(
+        data class Status(
             @field:JsonProperty("value") @param:JsonProperty("value") val value: BidStatus,
         )
 
-        data class ValidStatusDetails(
+        data class StatusDetails(
             @JsonInclude(JsonInclude.Include.NON_NULL)
             @field:JsonProperty("value") @param:JsonProperty("value") val value: BidStatusDetails?
         )
