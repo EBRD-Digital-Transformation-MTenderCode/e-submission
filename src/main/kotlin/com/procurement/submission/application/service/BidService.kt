@@ -67,6 +67,8 @@ import com.procurement.submission.domain.model.enums.AwardCriteriaDetails
 import com.procurement.submission.domain.model.enums.AwardStatus
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import com.procurement.submission.domain.model.enums.AwardStatusDetails.*
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
@@ -74,13 +76,11 @@ import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.model.enums.ProcurementMethodModalities
 import com.procurement.submission.domain.model.enums.Scale
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.isNotUniqueIds
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.domain.rule.BidStateForSettingRule
-import com.procurement.submission.domain.rule.BidStatesRule
+import com.procurement.submission.domain.rule.ValidBidStatesRule
 import com.procurement.submission.infrastructure.api.v1.CommandMessage
 import com.procurement.submission.infrastructure.api.v1.ResponseDto
 import com.procurement.submission.infrastructure.api.v1.cpid
@@ -180,8 +180,8 @@ class BidService(
         val bid = Bid(
             id = generationService.generateBidId().toString(),
             date = context.startDate,
-            status = Status.PENDING,
-            statusDetails = StatusDetails.EMPTY,
+            status = BidStatus.PENDING,
+            statusDetails = BidStatusDetails.EMPTY,
             value = bidRequest.value,
             documents = bidRequest.documents.toBidEntityDocuments(),
             relatedLots = bidRequest.relatedLots,
@@ -238,7 +238,7 @@ class BidService(
 
         val updatedBid = bid.copy(
             date = context.startDate,
-            status = Status.PENDING,
+            status = BidStatus.PENDING,
             documents = updateDocuments(bid.documents, bidRequest.documents),
             value = bidRequest.value,
             tenderers = updatedTenderers,
@@ -577,7 +577,7 @@ class BidService(
         val bidsEntitiesByIds = bidRepository.findBy(context.cpid, context.ocid)
             .orThrow { it.exception }
             .asSequence()
-            .filter { entity -> entity.status == Status.PENDING }
+            .filter { entity -> entity.status == BidStatus.PENDING }
             .associateBy { it.bidId }
 
         val bidsDb = bidsEntitiesByIds.asSequence()
@@ -631,7 +631,7 @@ class BidService(
             .filter { (id, _) -> id !in subtractBids }
             .map { it.value }
 
-    private fun Bid.archive() = this.copy(statusDetails = StatusDetails.ARCHIVED)
+    private fun Bid.archive() = this.copy(statusDetails = BidStatusDetails.ARCHIVED)
 
     fun openBidsForPublishing(
         context: OpenBidsForPublishingContext,
@@ -640,7 +640,7 @@ class BidService(
         val activeBids: List<Bid> = bidRepository.findBy(context.cpid, context.ocid)
             .orThrow { it.exception }
             .asSequence()
-            .filter { entity -> entity.status == Status.PENDING }
+            .filter { entity -> entity.status == BidStatus.PENDING }
             .map { bidRecord -> toObject(Bid::class.java, bidRecord.jsonData) }
             .toList()
 
@@ -697,9 +697,10 @@ class BidService(
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
 
         //VR-4.8.4
-        if ((bid.status != Status.PENDING && bid.statusDetails != StatusDetails.VALID) && bid.status != Status.VALID) {
+        if ((bid.status == BidStatus.PENDING && bid.statusDetails == BidStatusDetails.VALID) || bid.status == BidStatus.VALID)
+            Unit
+        else
             throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-        }
 
         //VR-4.8.5
         documentsDto.forEach { document ->
@@ -748,22 +749,22 @@ class BidService(
         context: FinalBidsStatusByLotsContext,
         data: FinalBidsStatusByLotsData
     ): FinalizedBidsStatusByLots {
-        fun isValid(status: Status, details: StatusDetails) =
-            status == Status.PENDING && details == StatusDetails.VALID
+        fun isValid(status: BidStatus, details: BidStatusDetails) =
+            status == BidStatus.PENDING && details == BidStatusDetails.VALID
 
-        fun isDisqualified(status: Status, details: StatusDetails) =
-            status == Status.PENDING && details == StatusDetails.DISQUALIFIED
+        fun isDisqualified(status: BidStatus, details: BidStatusDetails) =
+            status == BidStatus.PENDING && details == BidStatusDetails.DISQUALIFIED
 
         fun predicateOfBidStatus(bid: Bid): Boolean = isValid(status = bid.status, details = bid.statusDetails!!)
             || isDisqualified(status = bid.status, details = bid.statusDetails!!)
 
         fun Bid.updatingStatuses(): Bid = when {
             isValid(this.status, this.statusDetails!!) -> this.copy(
-                status = Status.VALID,
+                status = BidStatus.VALID,
                 statusDetails = null
             )
             isDisqualified(this.status, this.statusDetails!!) -> this.copy(
-                status = Status.DISQUALIFIED,
+                status = BidStatus.DISQUALIFIED,
                 statusDetails = null
             )
             else -> throw IllegalStateException("No processing for award with status: '${this.status}' and details: '${this.statusDetails}'.")
@@ -873,8 +874,8 @@ class BidService(
      *      system sets bid.statusDetails == "disqualified";
      */
     private fun Bid.updateStatusDetails(statusDetails: AwardStatusDetails): Bid = when (statusDetails) {
-        ACTIVE -> this.copy(statusDetails = StatusDetails.VALID)
-        UNSUCCESSFUL -> this.copy(statusDetails = StatusDetails.DISQUALIFIED)
+        ACTIVE -> this.copy(statusDetails = BidStatusDetails.VALID)
+        UNSUCCESSFUL -> this.copy(statusDetails = BidStatusDetails.DISQUALIFIED)
 
         BASED_ON_HUMAN_DECISION,
         EMPTY,
@@ -934,9 +935,9 @@ class BidService(
     }
 
     private fun checkStatusesBidUpdate(bid: Bid) {
-        if (bid.status != Status.PENDING && bid.status != Status.INVITED)
+        if (bid.status != BidStatus.PENDING && bid.status != BidStatus.INVITED)
             throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-        if (bid.statusDetails != StatusDetails.EMPTY)
+        if (bid.statusDetails != BidStatusDetails.EMPTY)
             throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
     }
 
@@ -1671,7 +1672,7 @@ class BidService(
             val receivedRelatedLots = bidDto.relatedLots.toSet()
             val idsReceivedTenderers = bidDto.tenderers.toSetBy { it.id }
             bidEntities.asSequence()
-                .filter { entity -> entity.status != Status.WITHDRAWN }
+                .filter { entity -> entity.status != BidStatus.WITHDRAWN }
                 .map { entity -> toObject(Bid::class.java, entity.jsonData) }
                 .forEach { bid ->
                     val idsTenderers: Set<String> = bid.tenderers.toSetBy { it.id!! }
@@ -2001,9 +2002,9 @@ class BidService(
         val bids = bidRepository.findBy(context.cpid, context.ocid)
             .orThrow { it.exception }
             .asSequence()
-            .filter { entity -> entity.status == Status.PENDING }
+            .filter { entity -> entity.status == BidStatus.PENDING }
             .map { bidEntity -> toObject(Bid::class.java, bidEntity.jsonData) }
-            .filter { bid -> bid.status == Status.PENDING && lotsIds.containsAny(bid.relatedLots) }
+            .filter { bid -> bid.status == BidStatus.PENDING && lotsIds.containsAny(bid.relatedLots) }
             .toList()
 
         return GetBidsByLotsResult(
@@ -3027,10 +3028,10 @@ class BidService(
             .asSuccess()
     }
 
-    private fun defineFinalizingStatus(award: FinalizeBidsByAwardsParams.Award): Status =
+    private fun defineFinalizingStatus(award: FinalizeBidsByAwardsParams.Award): BidStatus =
         when {
-            award.status == AwardStatus.ACTIVE && award.statusDetails == BASED_ON_HUMAN_DECISION -> Status.VALID
-            award.status == AwardStatus.UNSUCCESSFUL && award.statusDetails == BASED_ON_HUMAN_DECISION -> Status.DISQUALIFIED
+            award.status == AwardStatus.ACTIVE && award.statusDetails == BASED_ON_HUMAN_DECISION -> BidStatus.VALID
+            award.status == AwardStatus.UNSUCCESSFUL && award.statusDetails == BASED_ON_HUMAN_DECISION -> BidStatus.DISQUALIFIED
             else -> throw IllegalArgumentException()
         }
 
@@ -3047,9 +3048,9 @@ class BidService(
             && storedLot == receivedLot
     }
 
-    fun Bid.isActive(): Boolean = status == Status.PENDING
+    fun Bid.isActive(): Boolean = status == BidStatus.PENDING
 
-    fun Bid.withdrawBid() = copy(status = Status.WITHDRAWN, statusDetails = null)
+    fun Bid.withdrawBid() = copy(status = BidStatus.WITHDRAWN, statusDetails = null)
 
     fun checkAccessToBid(params: CheckAccessToBidParams): Validated<Fail> {
         val bidId = params.bids.details.first().id
@@ -3084,11 +3085,8 @@ class BidService(
         else Validated.error(ValidationError.CheckBidState.InvalidStateOfBid(bidId))
     }
 
-    private fun bidStateIsValid(bid: Bid, validStates: BidStatesRule): Boolean =
-        validStates.any { validState ->
-            bid.status == validState.status
-                && validState.statusDetails?.equals(bid.statusDetails) ?: true
-        }
+    private fun bidStateIsValid(bid: Bid, validStates: ValidBidStatesRule): Boolean =
+        validStates.contains(bid.status, bid.statusDetails)
 
     fun setStateForBids(params: SetStateForBidsParams): Result<SetStateForBidsResult, Fail> {
         val bidIds = params.bids.details.map { it.id }

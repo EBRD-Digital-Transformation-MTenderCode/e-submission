@@ -3,7 +3,7 @@ package com.procurement.submission.domain.model.enums
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 
-enum class StatusDetails(@JsonValue override val key: String) : EnumElementProvider.Key {
+enum class BidStatusDetails(@JsonValue override val key: String) : EnumElementProvider.Key {
     INVITED("invited"),
     PENDING("pending"),
     VALID("valid"),
@@ -14,10 +14,10 @@ enum class StatusDetails(@JsonValue override val key: String) : EnumElementProvi
 
     override fun toString(): String = key
 
-    companion object : EnumElementProvider<StatusDetails>(info = info()) {
+    companion object : EnumElementProvider<BidStatusDetails>(info = info()) {
 
         @JvmStatic
         @JsonCreator
-        fun creator(name: String) = StatusDetails.orThrow(name)
+        fun creator(name: String) = BidStatusDetails.orThrow(name)
     }
 }

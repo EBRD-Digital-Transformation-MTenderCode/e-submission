@@ -11,8 +11,8 @@ import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteria
 import com.procurement.submission.domain.model.enums.AwardStatusDetails
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.infrastructure.api.v1.CommandMessage
 import com.procurement.submission.infrastructure.api.v1.ResponseDto
 import com.procurement.submission.infrastructure.api.v1.cpid
@@ -82,7 +82,7 @@ class StatusService(
         val relatedLots = bidsByRelatedLot.keys
 
         // FReq-1.4.1.10
-        val ignoredInRequestBids = bidsDb.filter { it.status == Status.PENDING && !it.relatedLots.containsAny(relatedLots) }
+        val ignoredInRequestBids = bidsDb.filter { it.status == BidStatus.PENDING && !it.relatedLots.containsAny(relatedLots) }
 
         // FReq-1.4.1.2
         val notEnoughForOpeningBids = mutableSetOf<Bid>()
@@ -91,7 +91,7 @@ class StatusService(
             .asSequence()
             .flatMap { lot ->
                 val bids = bidsByRelatedLot[lot.id.toString()]
-                    ?.filter { bid -> bid.status == Status.PENDING }
+                    ?.filter { bid -> bid.status == BidStatus.PENDING }
                     ?: emptyList()
                 if (bids.size >= minNumberOfBids) {
                     bids.asSequence()
@@ -106,7 +106,7 @@ class StatusService(
             .convert()
 
         (ignoredInRequestBids + notEnoughForOpeningBids).asSequence()
-            .map { ignoredBid -> ignoredBid.copy(statusDetails = StatusDetails.ARCHIVED) }
+            .map { ignoredBid -> ignoredBid.copy(statusDetails = BidStatusDetails.ARCHIVED) }
             .map { archivedBid -> updateBidRecord(archivedBid, bidsRecordsByIds) }
             .let { updatedRecord -> bidRepository.save(updatedRecord.toList()) }
 
@@ -127,9 +127,9 @@ class StatusService(
 
         val bid = toObject(Bid::class.java, entity.jsonData)
         when (awardStatusDetails) {
-            AwardStatusDetails.EMPTY -> bid.statusDetails = StatusDetails.EMPTY
-            AwardStatusDetails.ACTIVE -> bid.statusDetails = StatusDetails.VALID
-            AwardStatusDetails.UNSUCCESSFUL -> bid.statusDetails = StatusDetails.DISQUALIFIED
+            AwardStatusDetails.EMPTY -> bid.statusDetails = BidStatusDetails.EMPTY
+            AwardStatusDetails.ACTIVE -> bid.statusDetails = BidStatusDetails.VALID
+            AwardStatusDetails.UNSUCCESSFUL -> bid.statusDetails = BidStatusDetails.DISQUALIFIED
 
             AwardStatusDetails.PENDING,
             AwardStatusDetails.CONSIDERATION,
@@ -170,7 +170,7 @@ class StatusService(
         checkStatusesBidUpdate(bid)
         bid.apply {
             date = dateTime
-            status = Status.WITHDRAWN
+            status = BidStatus.WITHDRAWN
         }
 
         val updatedBidEntity = BidEntity.Updated(
@@ -221,9 +221,9 @@ class StatusService(
     }
 
     private fun checkStatusesBidUpdate(bid: Bid) {
-        if (bid.status != Status.PENDING && bid.status != Status.INVITED)
+        if (bid.status != BidStatus.PENDING && bid.status != BidStatus.INVITED)
             throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
-        if (bid.statusDetails != StatusDetails.EMPTY)
+        if (bid.statusDetails != BidStatusDetails.EMPTY)
             throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
     }
 

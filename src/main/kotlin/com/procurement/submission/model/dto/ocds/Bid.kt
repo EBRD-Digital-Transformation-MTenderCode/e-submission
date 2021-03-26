@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.procurement.submission.domain.model.Money
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
 import com.procurement.submission.infrastructure.bind.money.MoneySerializer
 import java.time.LocalDateTime
@@ -18,10 +18,10 @@ data class Bid @JsonCreator constructor(
 
     var date: LocalDateTime,
 
-    var status: Status,
+    var status: BidStatus,
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    var statusDetails: StatusDetails?,
+    var statusDetails: BidStatusDetails?,
 
     val tenderers: List<Organization>,
 
