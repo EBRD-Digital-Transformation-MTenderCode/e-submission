@@ -4,7 +4,6 @@ import com.procurement.submission.application.exception.ErrorException
 import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.application.model.data.award.apply.ApplyEvaluatedAwardsContext
 import com.procurement.submission.application.model.data.bid.auction.get.GetBidsAuctionContext
-import com.procurement.submission.application.model.data.bid.create.BidCreateContext
 import com.procurement.submission.application.model.data.bid.document.open.OpenBidDocsContext
 import com.procurement.submission.application.model.data.bid.get.GetBidsForEvaluationContext
 import com.procurement.submission.application.model.data.bid.get.bylots.GetBidsByLotsContext
@@ -37,7 +36,6 @@ import com.procurement.submission.infrastructure.handler.v1.converter.convert
 import com.procurement.submission.infrastructure.handler.v1.converter.toData
 import com.procurement.submission.infrastructure.handler.v1.converter.toResponse
 import com.procurement.submission.infrastructure.handler.v1.model.request.ApplyEvaluatedAwardsRequest
-import com.procurement.submission.infrastructure.handler.v1.model.request.BidCreateRequest
 import com.procurement.submission.infrastructure.handler.v1.model.request.BidUpdateRequest
 import com.procurement.submission.infrastructure.handler.v1.model.request.FinalBidsStatusByLotsRequest
 import com.procurement.submission.infrastructure.handler.v1.model.request.GetBidsAuctionRequest
@@ -75,36 +73,6 @@ class CommandServiceV1(
             return toObject(ResponseDto::class.java, history)
         }
         val response = when (cm.command) {
-            CommandTypeV1.CREATE_BID -> {
-                when (cm.pmd) {
-                    ProcurementMethod.CF, ProcurementMethod.TEST_CF,
-                    ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
-                    ProcurementMethod.MV, ProcurementMethod.TEST_MV,
-                    ProcurementMethod.OF, ProcurementMethod.TEST_OF,
-                    ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-                    ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-                    ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
-                        val request = toObject(BidCreateRequest::class.java, cm.data)
-                        val requestData = request.toData()
-                        val context = BidCreateContext(
-                            cpid = cm.cpid,
-                            ocid = cm.ocid,
-                            owner = cm.owner,
-                            startDate = cm.startDate,
-                            pmd = cm.pmd
-                        )
-                        bidService.createBid(requestData = requestData, context = context)
-                    }
-
-                    ProcurementMethod.CD, ProcurementMethod.TEST_CD,
-                    ProcurementMethod.DA, ProcurementMethod.TEST_DA,
-                    ProcurementMethod.DC, ProcurementMethod.TEST_DC,
-                    ProcurementMethod.FA, ProcurementMethod.TEST_FA,
-                    ProcurementMethod.IP, ProcurementMethod.TEST_IP,
-                    ProcurementMethod.NP, ProcurementMethod.TEST_NP,
-                    ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
-                }
-            }
             CommandTypeV1.UPDATE_BID -> {
                 when (cm.pmd) {
                     ProcurementMethod.CF, ProcurementMethod.TEST_CF,
