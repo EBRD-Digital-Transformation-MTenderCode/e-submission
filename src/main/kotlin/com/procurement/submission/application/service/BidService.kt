@@ -697,9 +697,10 @@ class BidService(
         val bid: Bid = toObject(Bid::class.java, entity.jsonData)
 
         //VR-4.8.4
-        if ((bid.status != BidStatus.PENDING && bid.statusDetails != BidStatusDetails.VALID) && bid.status != BidStatus.VALID) {
+        if ((bid.status == BidStatus.PENDING && bid.statusDetails == BidStatusDetails.VALID) || bid.status == BidStatus.VALID)
+            Unit
+        else
             throw ErrorException(INVALID_STATUSES_FOR_UPDATE)
-        }
 
         //VR-4.8.5
         documentsDto.forEach { document ->
