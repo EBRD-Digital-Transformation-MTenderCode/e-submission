@@ -10,7 +10,6 @@ import com.procurement.submission.application.repository.bid.model.BidEntity
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.AwardCriteria
-import com.procurement.submission.domain.model.enums.AwardStatusDetails
 import com.procurement.submission.domain.model.enums.BidStatus
 import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.infrastructure.api.v1.CommandMessage
@@ -27,7 +26,6 @@ import com.procurement.submission.infrastructure.handler.v1.model.request.Consid
 import com.procurement.submission.infrastructure.handler.v1.model.request.GetDocsOfConsideredBidRq
 import com.procurement.submission.infrastructure.handler.v1.model.request.GetDocsOfConsideredBidRs
 import com.procurement.submission.infrastructure.handler.v1.model.request.RelatedBidRq
-import com.procurement.submission.infrastructure.handler.v1.model.request.UpdateBidsByAwardStatusRq
 import com.procurement.submission.infrastructure.handler.v1.model.response.BidRs
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.utils.containsAny
@@ -111,45 +109,6 @@ class StatusService(
             .let { updatedRecord -> bidRepository.save(updatedRecord.toList()) }
 
         return bidsForResponse
-    }
-
-    fun updateBidsByAwardStatus(cm: CommandMessage): ResponseDto {
-        val cpid = cm.cpid
-        val ocid = cm.ocid
-        val dto = toObject(UpdateBidsByAwardStatusRq::class.java, cm.data)
-
-        val bidId = dto.bidId
-        val awardStatusDetails = AwardStatusDetails.creator(dto.awardStatusDetails)
-
-        val entity = bidRepository.findBy(cpid, ocid, BidId.fromString(bidId))
-            .orThrow { it.exception }
-            ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
-
-        val bid = toObject(Bid::class.java, entity.jsonData)
-        when (awardStatusDetails) {
-            AwardStatusDetails.EMPTY -> bid.statusDetails = BidStatusDetails.EMPTY
-            AwardStatusDetails.ACTIVE -> bid.statusDetails = BidStatusDetails.VALID
-            AwardStatusDetails.UNSUCCESSFUL -> bid.statusDetails = BidStatusDetails.DISQUALIFIED
-
-            AwardStatusDetails.PENDING,
-            AwardStatusDetails.CONSIDERATION,
-            AwardStatusDetails.AWAITING,
-            AwardStatusDetails.NO_OFFERS_RECEIVED,
-            AwardStatusDetails.LOT_CANCELLED -> throw ErrorException(
-                error = ErrorType.INVALID_STATUS_DETAILS,
-                message = "Current status details: '$awardStatusDetails'. Expected status details: [${AwardStatusDetails.ACTIVE}, ${AwardStatusDetails.UNSUCCESSFUL}]"
-            )
-        }
-
-        val updatedBidEntity = BidEntity.Updated(
-            cpid = cpid,
-            ocid = ocid,
-            createdDate = entity.createdDate,
-            pendingDate = entity.pendingDate,
-            bid = bid,
-        )
-        bidRepository.save(updatedBidEntity)
-        return ResponseDto(data = BidRs(null, null, bid))
     }
 
     fun bidWithdrawn(cm: CommandMessage): ResponseDto {
