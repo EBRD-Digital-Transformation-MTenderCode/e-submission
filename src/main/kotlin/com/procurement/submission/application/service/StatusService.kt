@@ -24,7 +24,6 @@ import com.procurement.submission.infrastructure.handler.v1.model.request.Consid
 import com.procurement.submission.infrastructure.handler.v1.model.request.GetDocsOfConsideredBidRq
 import com.procurement.submission.infrastructure.handler.v1.model.request.GetDocsOfConsideredBidRs
 import com.procurement.submission.infrastructure.handler.v1.model.request.RelatedBidRq
-import com.procurement.submission.infrastructure.handler.v1.model.response.BidRs
 import com.procurement.submission.model.dto.ocds.Bid
 import com.procurement.submission.utils.containsAny
 import com.procurement.submission.utils.toObject
@@ -33,7 +32,6 @@ import org.springframework.stereotype.Service
 @Service
 class StatusService(
     private val rulesService: RulesService,
-    private val periodService: PeriodService,
     private val bidRepository: BidRepository
 ) {
 
@@ -142,13 +140,6 @@ class StatusService(
         if (!tokens.contains(token)) throw ErrorException(ErrorType.INVALID_TOKEN)
         if (bidEntities[0].owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
         return ResponseDto(data = "ok")
-    }
-
-    private fun checkStatusesBidUpdate(bid: Bid) {
-        if (bid.status != BidStatus.PENDING && bid.status != BidStatus.INVITED)
-            throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
-        if (bid.statusDetails != BidStatusDetails.EMPTY)
-            throw ErrorException(ErrorType.INVALID_STATUSES_FOR_UPDATE)
     }
 
     private fun updateBidRecord(
