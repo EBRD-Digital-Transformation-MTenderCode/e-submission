@@ -183,7 +183,6 @@ class CommandServiceV1(
                     ProcurementMethod.OP, ProcurementMethod.TEST_OP -> throw ErrorException(ErrorType.INVALID_PMD)
                 }
             }
-            CommandTypeV1.UPDATE_BID_BY_AWARD_STATUS -> statusService.updateBidsByAwardStatus(cm)
             CommandTypeV1.UPDATE_BID_DOCS -> bidService.updateBidDocs(cm)
             CommandTypeV1.BID_WITHDRAWN -> statusService.bidWithdrawn(cm)
             CommandTypeV1.GET_DOCS_OF_CONSIDERED_BID -> statusService.getDocsOfConsideredBid(cm)
