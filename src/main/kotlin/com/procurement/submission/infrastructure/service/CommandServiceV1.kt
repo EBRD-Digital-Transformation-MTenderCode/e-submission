@@ -184,7 +184,6 @@ class CommandServiceV1(
                 }
             }
             CommandTypeV1.UPDATE_BID_DOCS -> bidService.updateBidDocs(cm)
-            CommandTypeV1.BID_WITHDRAWN -> statusService.bidWithdrawn(cm)
             CommandTypeV1.GET_DOCS_OF_CONSIDERED_BID -> statusService.getDocsOfConsideredBid(cm)
             CommandTypeV1.APPLY_EVALUATED_AWARDS -> {
                 val context = ApplyEvaluatedAwardsContext(
