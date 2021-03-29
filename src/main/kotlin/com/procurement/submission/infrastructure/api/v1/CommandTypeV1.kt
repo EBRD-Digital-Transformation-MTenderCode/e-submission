@@ -5,7 +5,6 @@ import com.procurement.submission.infrastructure.api.Action
 
 enum class CommandTypeV1(override val key: String) : Action {
     APPLY_EVALUATED_AWARDS("applyAwardingRes"),
-    BID_WITHDRAWN("bidWithdrawn"),
     CHECK_PERIOD("checkPeriod"),
     CHECK_PERIOD_END_DATE("checkPeriodEndDate"),
     CHECK_TOKEN_OWNER("checkTokenOwner"),

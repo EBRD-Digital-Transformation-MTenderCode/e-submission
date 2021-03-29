@@ -16,10 +16,8 @@ import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.infrastructure.api.v1.CommandMessage
 import com.procurement.submission.infrastructure.api.v1.ResponseDto
 import com.procurement.submission.infrastructure.api.v1.cpid
-import com.procurement.submission.infrastructure.api.v1.ctxId
 import com.procurement.submission.infrastructure.api.v1.ocid
 import com.procurement.submission.infrastructure.api.v1.owner
-import com.procurement.submission.infrastructure.api.v1.startDate
 import com.procurement.submission.infrastructure.api.v1.token
 import com.procurement.submission.infrastructure.handler.v1.converter.BidData
 import com.procurement.submission.infrastructure.handler.v1.converter.convert
@@ -148,39 +146,6 @@ class StatusService(
             pendingDate = entity.pendingDate,
             bid = bid,
         )
-        bidRepository.save(updatedBidEntity)
-        return ResponseDto(data = BidRs(null, null, bid))
-    }
-
-    fun bidWithdrawn(cm: CommandMessage): ResponseDto {
-        val cpid = cm.cpid
-        val ocid = cm.ocid
-        val owner = cm.owner
-        val token = cm.token
-        val bidId = cm.ctxId
-        val dateTime = cm.startDate
-
-        periodService.checkCurrentDateInPeriod(cpid, ocid, dateTime)
-        val entity = bidRepository.findBy(cpid, ocid, BidId.fromString(bidId))
-            .orThrow { it.exception }
-            ?: throw ErrorException(ErrorType.BID_NOT_FOUND)
-        if (entity.token != token) throw ErrorException(ErrorType.INVALID_TOKEN)
-        if (entity.owner != owner) throw ErrorException(ErrorType.INVALID_OWNER)
-        val bid: Bid = toObject(Bid::class.java, entity.jsonData)
-        checkStatusesBidUpdate(bid)
-        bid.apply {
-            date = dateTime
-            status = BidStatus.WITHDRAWN
-        }
-
-        val updatedBidEntity = BidEntity.Updated(
-            cpid = entity.cpid,
-            ocid = entity.ocid,
-            createdDate = entity.createdDate,
-            pendingDate = dateTime,
-            bid = bid
-        )
-
         bidRepository.save(updatedBidEntity)
         return ResponseDto(data = BidRs(null, null, bid))
     }
