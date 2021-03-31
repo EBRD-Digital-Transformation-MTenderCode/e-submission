@@ -19,6 +19,7 @@ class PublishInvitationsParams private constructor(
                     OperationType.START_SECOND_STAGE,
                     OperationType.COMPLETE_QUALIFICATION -> true
 
+                    OperationType.CREATE_RFQ,
                     OperationType.QUALIFICATION_PROTOCOL,
                     OperationType.SUBMIT_BID_IN_PCR,
                     OperationType.WITHDRAW_BID -> false

@@ -1054,7 +1054,8 @@ class BidService(
         when(this) {
             ProcurementMethod.MV, ProcurementMethod.TEST_MV,
             ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> true
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+            ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ -> true
 
             ProcurementMethod.CD, ProcurementMethod.TEST_CD,
             ProcurementMethod.CF, ProcurementMethod.TEST_CF,
@@ -1085,7 +1086,8 @@ class BidService(
             ProcurementMethod.OF, ProcurementMethod.TEST_OF,
             ProcurementMethod.OP, ProcurementMethod.TEST_OP,
             ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+            ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ -> false
         }
 
     private fun ProcurementMethod.isFrameworkAgreement() =
@@ -1104,7 +1106,8 @@ class BidService(
             ProcurementMethod.OP, ProcurementMethod.TEST_OP,
             ProcurementMethod.OT, ProcurementMethod.TEST_OT,
             ProcurementMethod.RT, ProcurementMethod.TEST_RT,
-            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV,
+            ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ -> false
         }
 
     private fun checkTenderers(params: ValidateBidDataParams): Validated<Fail> {
