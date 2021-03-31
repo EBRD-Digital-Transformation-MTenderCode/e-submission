@@ -7,6 +7,7 @@ enum class OperationType(@JsonValue override val key: String) : EnumElementProvi
 
     COMPLETE_QUALIFICATION("completeQualification"),
     CREATE_PCR("createPcr"),
+    CREATE_RFQ("createRfq"),
     QUALIFICATION_PROTOCOL("qualificationProtocol"),
     START_SECOND_STAGE("startSecondStage"),
     SUBMIT_BID_IN_PCR("submitBidInPcr"),
