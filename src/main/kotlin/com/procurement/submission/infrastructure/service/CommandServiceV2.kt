@@ -14,6 +14,7 @@ import com.procurement.submission.infrastructure.handler.v2.CheckAccessToBidHand
 import com.procurement.submission.infrastructure.handler.v2.CheckBidStateHandler
 import com.procurement.submission.infrastructure.handler.v2.CheckPeriodHandler
 import com.procurement.submission.infrastructure.handler.v2.CreateBidHandler
+import com.procurement.submission.infrastructure.handler.v2.CreateInvitationsHandler
 import com.procurement.submission.infrastructure.handler.v2.DoInvitationsHandler
 import com.procurement.submission.infrastructure.handler.v2.FinalizeBidsByAwardsHandler
 import com.procurement.submission.infrastructure.handler.v2.FindDocumentsByBidIdsHandler
@@ -38,6 +39,7 @@ class CommandServiceV2(
     private val validateBidDataHandler: ValidateBidDataHandler,
     private val checkBidStateHandler: CheckBidStateHandler,
     private val createBidHandler: CreateBidHandler,
+    private val createInvitationsHandler: CreateInvitationsHandler,
     private val finalizeBidsByAwardsHandler: FinalizeBidsByAwardsHandler,
     private val validateTenderPeriodHandler: ValidateTenderPeriodHandler,
     private val setStateForBidsHandler: SetStateForBidsHandler,
@@ -75,6 +77,7 @@ class CommandServiceV2(
             CommandTypeV2.CHECK_BID_STATE -> checkBidStateHandler.handle(node)
             CommandTypeV2.CHECK_PERIOD -> checkPeriodHandler.handle(node)
             CommandTypeV2.CREATE_BID -> createBidHandler.handle(node)
+            CommandTypeV2.CREATE_INVITATIONS -> createInvitationsHandler.handle(node)
             CommandTypeV2.DO_INVITATIONS -> doInvitationsHandler.handle(node)
             CommandTypeV2.GET_BIDS_FOR_PACS -> getBidsForPacsHandler.handle(node)
             CommandTypeV2.GET_ORGANIZATIONS_BY_REFERENCES_FROM_PACS -> getOrganizationsByReferencesFromPacsHandler.handle(node)
