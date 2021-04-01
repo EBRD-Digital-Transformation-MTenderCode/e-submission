@@ -29,7 +29,7 @@ fun Invitation.convert(): PublishInvitationsResult.Invitation =
         id = id,
         status = status,
         date = date,
-        relatedQualification = relatedQualification,
+        relatedQualification = relatedQualification!!,
         tenderers = tenderers.map { tenderer ->
             PublishInvitationsResult.Invitation.Tenderers(
                 id = tenderer.id,

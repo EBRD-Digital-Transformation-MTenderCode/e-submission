@@ -14,7 +14,6 @@ import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.invitation.Invitation
-import com.procurement.submission.domain.model.qualification.QualificationId
 import com.procurement.submission.domain.model.submission.SubmissionId
 import com.procurement.submission.infrastructure.handler.v2.model.response.CreateInvitationsResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.DoInvitationsResult
@@ -66,7 +65,7 @@ class InvitationServiceImpl(
                     id = invitation.id,
                     date = invitation.date,
                     status = invitation.status,
-                    relatedQualification = invitation.relatedQualification,
+                    relatedQualification = invitation.relatedQualification!!,
                     tenderers = invitation.tenderers.map { tenderer ->
                         DoInvitationsResult.Invitation.Tenderer(
                             id = tenderer.id,
@@ -235,7 +234,7 @@ class InvitationServiceImpl(
                     name = tenderer.name
                 )
             },
-            relatedQualification = QualificationId.generate()
+            relatedQualification = null
         )
     }
 

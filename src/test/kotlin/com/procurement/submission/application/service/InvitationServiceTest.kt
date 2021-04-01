@@ -220,7 +220,7 @@ class InvitationServiceTest {
             id = invitation.id,
             date = params.date,
             status = InvitationStatus.CANCELLED,
-            relatedQualification = invitation.relatedQualification,
+            relatedQualification = invitation.relatedQualification!!,
             tenderers = invitation.tenderers.map { tenderer ->
                 DoInvitationsResult.Invitation.Tenderer(
                     id = tenderer.id,
@@ -320,7 +320,7 @@ class InvitationServiceTest {
                     id = invitation.id,
                     status = InvitationStatus.ACTIVE,
                     date = invitation.date,
-                    relatedQualification = invitation.relatedQualification,
+                    relatedQualification = invitation.relatedQualification!!,
                     tenderers = invitation.tenderers.map { tenderer ->
                         PublishInvitationsResult.Invitation.Tenderers(
                             id = tenderer.id,
@@ -345,7 +345,7 @@ class InvitationServiceTest {
                     id = invitation.id,
                     status = InvitationStatus.ACTIVE,
                     date = invitation.date,
-                    relatedQualification = invitation.relatedQualification,
+                    relatedQualification = invitation.relatedQualification!!,
                     tenderers = invitation.tenderers.map { tenderer ->
                         PublishInvitationsResult.Invitation.Tenderers(
                             id = tenderer.id,
