@@ -10,7 +10,7 @@ import com.procurement.submission.application.repository.invitation.InvitationRe
 import com.procurement.submission.domain.extension.toSetBy
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.fail.error.ValidationError
-import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.enums.BidStatus
 import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.invitation.Invitation
@@ -192,24 +192,19 @@ class InvitationServiceImpl(
     }
 
     override fun createInvitations(params: CreateInvitationsParams): Result<CreateInvitationsResult, Fail> {
-        val receivedBidIds = params.tender.lots.toSetBy { BidId.fromString(it.id.toString()) }
+        val receivedLotsIds = params.tender.lots.toSetBy { it.id.toString() }
 
-        val bidEntities = bidRepository.findBy(cpid = params.additionalCpid, ocid = params.additionalOcid)
+        val targetBids = bidRepository.findBy(cpid = params.additionalCpid, ocid = params.additionalOcid)
             .onFailure { return it }
-            .asSequence()
-            .filter { it.bidId in receivedBidIds }
-            .map { entity -> entity.bidId to entity }
-            .toMap()
-
-        if (!bidEntities.keys.containsAll(receivedBidIds))
-            return CreateInvitationsErrors.BidsNotFound(receivedBidIds-bidEntities.keys).asFailure()
-
-        val targetBids = bidEntities.values
             .map { entity ->
                 transform.tryDeserialization(entity.jsonData, Bid::class.java)
                     .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
                     .onFailure { return it }
             }
+            .filter { it.hasRelationWithLots(receivedLotsIds) && it.isValid() }
+
+        if (targetBids.isEmpty())
+            return CreateInvitationsErrors.BidsNotFound().asFailure()
 
         val createdInvitations = targetBids.map { bid -> generateInvitation(bid, params.date) }
 
@@ -222,6 +217,11 @@ class InvitationServiceImpl(
             .let { CreateInvitationsResult(invitations = it) }
             .asSuccess()
     }
+
+    private fun Bid.hasRelationWithLots(receivedLotsIds: Set<String>) =
+        relatedLots.any { relatedLot -> relatedLot in receivedLotsIds}
+
+    private fun Bid.isValid() = status == BidStatus.VALID
 
     private fun generateInvitation(bid: Bid, date: LocalDateTime): Invitation {
         return Invitation(
