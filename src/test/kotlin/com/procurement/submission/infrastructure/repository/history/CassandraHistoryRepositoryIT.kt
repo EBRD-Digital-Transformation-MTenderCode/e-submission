@@ -35,7 +35,7 @@ class CassandraHistoryRepositoryIT {
 
     companion object {
         private val COMMAND_ID: CommandId = CommandId(UUID.randomUUID().toString())
-        private val COMMAND_NAME: Action = CommandTypeV1.BID_WITHDRAWN
+        private val COMMAND_NAME: Action = CommandTypeV1.CHECK_PERIOD
         private val COMMAND_DATE = LocalDateTime.now().format().parseLocalDateTime()
         private const val JSON_DATA: String = """{"tender": {"title" : "Tender-Title"}}"""
 

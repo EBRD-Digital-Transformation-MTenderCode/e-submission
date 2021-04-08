@@ -5,7 +5,7 @@ import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.Token
 import com.procurement.submission.domain.model.bid.BidId
-import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.BidStatus
 import com.procurement.submission.model.dto.ocds.Bid
 import java.time.LocalDateTime
 
@@ -39,7 +39,7 @@ sealed class BidEntity {
         val bidId: BidId,
         val token: Token,
         val owner: Owner,
-        val status: Status,
+        val status: BidStatus,
         val createdDate: LocalDateTime,
         val pendingDate: LocalDateTime?,
         val jsonData: String

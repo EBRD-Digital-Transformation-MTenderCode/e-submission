@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.procurement.submission.domain.model.Money
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.infrastructure.bind.money.MoneyDeserializer
 import com.procurement.submission.infrastructure.bind.money.MoneySerializer
 import java.time.LocalDateTime
@@ -18,24 +18,25 @@ data class Bid @JsonCreator constructor(
 
     var date: LocalDateTime,
 
-    var status: Status,
+    var status: BidStatus,
 
-    var statusDetails: StatusDetails,
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    var statusDetails: BidStatusDetails?,
 
     val tenderers: List<Organization>,
 
     @JsonDeserialize(using = MoneyDeserializer::class)
-        @JsonSerialize(using = MoneySerializer::class)
-        var value: Money?,
+    @JsonSerialize(using = MoneySerializer::class)
+    var value: Money?,
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        var documents: List<Document>?,
+    var documents: List<Document>?,
 
     val relatedLots: List<String>,
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        val requirementResponses: List<RequirementResponse>?,
+    val requirementResponses: List<RequirementResponse>?,
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        var items: List<Item>? = null
+    var items: List<Item>? = null
 )

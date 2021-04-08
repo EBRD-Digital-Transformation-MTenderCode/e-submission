@@ -70,6 +70,7 @@ private val allowedPmd = ProcurementMethod.values()
             ProcurementMethod.RT, ProcurementMethod.TEST_RT,
             ProcurementMethod.SV, ProcurementMethod.TEST_SV -> true
 
+            ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
             ProcurementMethod.CD, ProcurementMethod.TEST_CD,
             ProcurementMethod.DA, ProcurementMethod.TEST_DA,
             ProcurementMethod.DC, ProcurementMethod.TEST_DC,

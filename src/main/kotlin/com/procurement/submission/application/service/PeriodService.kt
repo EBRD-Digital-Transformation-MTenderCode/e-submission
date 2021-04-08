@@ -37,7 +37,6 @@ import com.procurement.submission.lib.functional.asValidationError
 import com.procurement.submission.model.dto.ocds.Period
 import com.procurement.submission.utils.toObject
 import org.springframework.stereotype.Service
-import java.time.Duration
 import java.time.Duration.between
 import java.time.LocalDateTime
 
@@ -83,7 +82,7 @@ class PeriodService(
         val ocid = cm.ocid
         val dto = toObject(SaveNewPeriodRq::class.java, cm.data)
         val oldPeriod = getPeriodEntity(cpid, ocid)
-        val tenderInterval = Duration.between(oldPeriod.startDate, oldPeriod.endDate)
+        val tenderInterval = between(oldPeriod.startDate, oldPeriod.endDate)
         val startDate = dto.enquiryPeriod.endDate
         val endDate = startDate.plus(tenderInterval)
         val newPeriod = PeriodEntity(
@@ -230,7 +229,7 @@ class PeriodService(
             .getTenderPeriodMinimumDuration(params.country, params.pmd, params.operationType)
             .onFailure { return it.reason.asValidationError() }
 
-        val periodDuration = Duration.between(params.date, params.tender.tenderPeriod.endDate)
+        val periodDuration = between(params.date, params.tender.tenderPeriod.endDate)
 
         if (periodDuration < minimumDuration)
             return ValidationError.TenderPeriodDurationError(expectedDuration = minimumDuration)

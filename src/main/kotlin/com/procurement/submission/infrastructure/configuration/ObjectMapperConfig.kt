@@ -1,14 +1,14 @@
 package com.procurement.submission.infrastructure.configuration
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.procurement.submission.infrastructure.bind.configuration
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class ObjectMapperConfig(@Autowired objectMapper: ObjectMapper) {
+class ObjectMapperConfig {
 
-    init {
-        objectMapper.apply { configuration() }
-    }
+    @Bean
+    fun objectMapper(): ObjectMapper = jacksonObjectMapper().apply { configuration() }
 }

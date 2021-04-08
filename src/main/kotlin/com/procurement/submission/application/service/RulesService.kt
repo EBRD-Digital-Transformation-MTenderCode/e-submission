@@ -10,7 +10,7 @@ import com.procurement.submission.domain.fail.error.ValidationError
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
 import com.procurement.submission.domain.rule.BidStateForSettingRule
-import com.procurement.submission.domain.rule.BidStatesRule
+import com.procurement.submission.domain.rule.ValidBidStatesRule
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
@@ -106,7 +106,7 @@ class RulesService(
         country: String,
         pmd: ProcurementMethod,
         operationType: OperationType
-    ): Result<BidStatesRule, Fail> {
+    ): Result<ValidBidStatesRule, Fail> {
         val states = ruleRepository.find(country, pmd, VALID_STATES_PARAMETER, operationType)
             .onFailure { fail -> return fail }
             ?: return ValidationError.EntityNotFound.ValidStatesRule(
@@ -116,7 +116,7 @@ class RulesService(
                 operationType = operationType
             ).asFailure()
 
-        return transform.tryDeserialization(states, BidStatesRule::class.java)
+        return transform.tryDeserialization(states, ValidBidStatesRule::class.java)
             .mapFailure { Fail.Incident.Database.Parsing(VALUE_COLUMN, states, it.exception) }
     }
 

@@ -21,13 +21,12 @@ import com.procurement.submission.domain.extension.mapResult
 import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.Token
+import com.procurement.submission.domain.model.enums.BidStatus
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.PersonTitle
 import com.procurement.submission.domain.model.enums.Scale
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.infrastructure.handler.v2.model.request.CreateBidRequest
 import com.procurement.submission.infrastructure.handler.v2.model.response.CreateBidResult
@@ -634,8 +633,8 @@ private fun CreateBidRequest.Bids.Detail.Item.Unit.Value.convert(path: String): 
 
 fun CreateBidParams.Bids.Detail.convert(date: LocalDateTime) = Bid(
     id = id.toString(),
-    status = Status.PENDING,
-    statusDetails = StatusDetails.EMPTY,
+    status = BidStatus.PENDING,
+    statusDetails = null,
     date = date,
     value = value
         ?.let { value ->
@@ -953,7 +952,6 @@ fun Bid.convertToCreateBidResult(token: Token) = CreateBidResult(
             CreateBidResult.Bids.Detail(
                 id = UUID.fromString(id),
                 status = status,
-                statusDetails = statusDetails,
                 date = date,
                 value = value
                 ?.let { value ->

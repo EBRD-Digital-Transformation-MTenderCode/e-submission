@@ -23,9 +23,9 @@ import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.Token
 import com.procurement.submission.domain.model.bid.BidId
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.domain.model.enums.DocumentType
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.item.ItemId
 import com.procurement.submission.failure
 import com.procurement.submission.get
@@ -70,8 +70,8 @@ class BidRepositoryIT {
         private fun stubBid() =
             Bid(
                 id = BID_ID.toString(),
-                status = Status.PENDING,
-                statusDetails = StatusDetails.WITHDRAWN,
+                status = BidStatus.PENDING,
+                statusDetails = BidStatusDetails.WITHDRAWN,
                 date = DATE,
                 value = Money(
                     amount = BigDecimal.ONE.setScale(Amount.AVAILABLE_SCALE),
@@ -182,7 +182,7 @@ class BidRepositoryIT {
         assertEquals(BID_ID, actualBid.bidId)
         assertEquals(expectedBid.token, actualBid.token)
         assertEquals(expectedBid.owner, actualBid.owner)
-        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(BidStatus.PENDING, actualBid.status)
         assertEquals(expectedBid.createdDate, actualBid.createdDate)
         assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }
@@ -209,7 +209,7 @@ class BidRepositoryIT {
         assertEquals(BID_ID, actualBid.bidId)
         assertEquals(expectedBid.token, actualBid.token)
         assertEquals(expectedBid.owner, actualBid.owner)
-        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(BidStatus.PENDING, actualBid.status)
         assertEquals(expectedBid.createdDate, actualBid.createdDate)
         assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }
@@ -245,7 +245,7 @@ class BidRepositoryIT {
         assertEquals(BID_ID, actualBid.bidId)
         assertEquals(expectedBid.token, actualBid.token)
         assertEquals(expectedBid.owner, actualBid.owner)
-        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(BidStatus.PENDING, actualBid.status)
         assertEquals(expectedBid.createdDate, actualBid.createdDate)
         assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }
@@ -282,7 +282,7 @@ class BidRepositoryIT {
         assertEquals(BID_ID, actualBid.bidId)
         assertEquals(expectedBid.token, actualBid.token)
         assertEquals(expectedBid.owner, actualBid.owner)
-        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(BidStatus.PENDING, actualBid.status)
         assertEquals(expectedBid.createdDate, actualBid.createdDate)
         assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }
@@ -315,7 +315,7 @@ class BidRepositoryIT {
         assertEquals(BID_ID, actualBid.bidId)
         assertEquals(expectedBid.token, actualBid.token)
         assertEquals(expectedBid.owner, actualBid.owner)
-        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(BidStatus.PENDING, actualBid.status)
         assertEquals(expectedBid.createdDate, actualBid.createdDate)
         assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }
@@ -347,7 +347,7 @@ class BidRepositoryIT {
         assertEquals(BID_ID, actualBid.bidId)
         assertEquals(expectedBid.token, actualBid.token)
         assertEquals(expectedBid.owner, actualBid.owner)
-        assertEquals(Status.PENDING, actualBid.status)
+        assertEquals(BidStatus.PENDING, actualBid.status)
         assertEquals(expectedBid.createdDate, actualBid.createdDate)
         assertEquals(expectedBid.pendingDate, actualBid.pendingDate)
     }

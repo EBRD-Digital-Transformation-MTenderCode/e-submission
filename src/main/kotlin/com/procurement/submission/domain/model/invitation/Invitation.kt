@@ -9,7 +9,7 @@ data class Invitation(
     val date: LocalDateTime,
     val status: InvitationStatus,
     val tenderers: List<Tenderer>,
-    val relatedQualification: QualificationId
+    val relatedQualification: QualificationId?
 ) {
     data class Tenderer(
         val id: String,

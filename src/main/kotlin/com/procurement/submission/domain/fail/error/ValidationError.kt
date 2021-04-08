@@ -256,13 +256,13 @@ sealed class ValidationError(
                 description = "Bid '$bidId' not found."
             )
 
-        class TokenDoesNotMatch() :
+        class TokenDoesNotMatch :
             ValidationError(
                 numberError = "13.13.2",
                 description = "Received token does not match stored one."
             )
 
-        class OwnerDoesNotMatch() :
+        class OwnerDoesNotMatch :
             ValidationError(
                 numberError = "13.13.3",
                 description = "Received owner does not match stored one."
