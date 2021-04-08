@@ -24,6 +24,7 @@ private val allowedPmds = ProcurementMethod.values()
             ProcurementMethod.CF, ProcurementMethod.TEST_CF,
             ProcurementMethod.OF, ProcurementMethod.TEST_OF -> true
 
+            ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
             ProcurementMethod.CD, ProcurementMethod.TEST_CD,
             ProcurementMethod.DA, ProcurementMethod.TEST_DA,
             ProcurementMethod.DC, ProcurementMethod.TEST_DC,
@@ -38,8 +39,10 @@ private val allowedOperationType = OperationType.values()
     .filter {
         when (it) {
             OperationType.WITHDRAW_BID -> true
+
             OperationType.COMPLETE_QUALIFICATION,
             OperationType.CREATE_PCR,
+            OperationType.CREATE_RFQ,
             OperationType.QUALIFICATION_PROTOCOL,
             OperationType.START_SECOND_STAGE,
             OperationType.SUBMIT_BID_IN_PCR -> false

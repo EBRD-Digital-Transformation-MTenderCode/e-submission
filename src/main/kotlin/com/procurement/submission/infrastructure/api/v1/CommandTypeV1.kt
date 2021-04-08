@@ -5,11 +5,9 @@ import com.procurement.submission.infrastructure.api.Action
 
 enum class CommandTypeV1(override val key: String) : Action {
     APPLY_EVALUATED_AWARDS("applyAwardingRes"),
-    BID_WITHDRAWN("bidWithdrawn"),
     CHECK_PERIOD("checkPeriod"),
     CHECK_PERIOD_END_DATE("checkPeriodEndDate"),
     CHECK_TOKEN_OWNER("checkTokenOwner"),
-    CREATE_BID("createBid"),
     EXTEND_TENDER_PERIOD("extendTenderPeriod"),
     FINAL_BIDS_STATUS_BY_LOTS("finalBidsStatusByLots"),
     GET_BIDS_AUCTION("getBidsAuction"),
@@ -21,8 +19,6 @@ enum class CommandTypeV1(override val key: String) : Action {
     OPEN_BID_DOCS("openBidDocs"),
     SAVE_NEW_PERIOD("saveNewPeriod"),
     SAVE_PERIOD("savePeriod"),
-    UPDATE_BID("updateBid"),
-    UPDATE_BID_BY_AWARD_STATUS("updateBidBAwardStatus"),
     UPDATE_BID_DOCS("updateBidDocs"),
     VALIDATE_PERIOD("validatePeriod"),
     ;

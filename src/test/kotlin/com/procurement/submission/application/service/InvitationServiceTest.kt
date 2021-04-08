@@ -7,6 +7,7 @@ import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
+import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.format
 import com.procurement.submission.domain.model.Cpid
@@ -48,7 +49,9 @@ class InvitationServiceTest {
     val invitationRepository: InvitationRepository = mock()
     val generationService: GenerationService = mock()
     val rulesService: RulesService = mock()
-    val invitationService = InvitationServiceImpl(invitationRepository, generationService, rulesService)
+    val transform: Transform = mock()
+    val bidRepository: BidRepository = mock()
+    val invitationService = InvitationServiceImpl(invitationRepository, bidRepository, generationService, rulesService, transform)
 
     @Nested
     inner class DoInvitations {
@@ -217,7 +220,7 @@ class InvitationServiceTest {
             id = invitation.id,
             date = params.date,
             status = InvitationStatus.CANCELLED,
-            relatedQualification = invitation.relatedQualification,
+            relatedQualification = invitation.relatedQualification!!,
             tenderers = invitation.tenderers.map { tenderer ->
                 DoInvitationsResult.Invitation.Tenderer(
                     id = tenderer.id,
@@ -317,7 +320,7 @@ class InvitationServiceTest {
                     id = invitation.id,
                     status = InvitationStatus.ACTIVE,
                     date = invitation.date,
-                    relatedQualification = invitation.relatedQualification,
+                    relatedQualification = invitation.relatedQualification!!,
                     tenderers = invitation.tenderers.map { tenderer ->
                         PublishInvitationsResult.Invitation.Tenderers(
                             id = tenderer.id,
@@ -342,7 +345,7 @@ class InvitationServiceTest {
                     id = invitation.id,
                     status = InvitationStatus.ACTIVE,
                     date = invitation.date,
-                    relatedQualification = invitation.relatedQualification,
+                    relatedQualification = invitation.relatedQualification!!,
                     tenderers = invitation.tenderers.map { tenderer ->
                         PublishInvitationsResult.Invitation.Tenderers(
                             id = tenderer.id,

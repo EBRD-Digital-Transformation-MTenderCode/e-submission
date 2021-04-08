@@ -17,13 +17,10 @@ data class GetTenderPeriodEndResponse(
     companion object {
         fun fromResult(result: GetTenderPeriodEndResult): GetTenderPeriodEndResponse =
             GetTenderPeriodEndResponse(
-                tender = result.tender
-                    .let { tender ->
-                        Tender(
-                            tenderPeriod = tender.tenderPeriod
-                                .let { period -> Tender.Period(endDate = period.endDate) }
-                        )
-                    }
+                tender = Tender(
+                    tenderPeriod = result.tender.tenderPeriod
+                        .let { period -> Tender.Period(endDate = period.endDate) }
+                )
             )
     }
 

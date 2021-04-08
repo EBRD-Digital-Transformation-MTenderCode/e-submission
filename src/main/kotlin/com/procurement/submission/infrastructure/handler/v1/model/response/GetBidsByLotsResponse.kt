@@ -8,12 +8,12 @@ import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.domain.model.Money
 import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.document.DocumentId
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.Scale
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.domain.model.lot.LotId
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueDeserializer
@@ -34,8 +34,11 @@ data class GetBidsByLotsResponse(
         @JsonSerialize(using = JsonDateSerializer::class)
         @param:JsonProperty("date") @field:JsonProperty("date") val date: LocalDateTime,
 
-        @param:JsonProperty("status") @field:JsonProperty("status") val status: Status,
-        @param:JsonProperty("statusDetails") @field:JsonProperty("statusDetails") val statusDetails: StatusDetails,
+        @param:JsonProperty("status") @field:JsonProperty("status") val status: BidStatus,
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @param:JsonProperty("statusDetails") @field:JsonProperty("statusDetails") val statusDetails: BidStatusDetails?,
+
         @param:JsonProperty("tenderers") @field:JsonProperty("tenderers") val tenderers: List<Tenderer>,
 
         @JsonDeserialize(using = MoneyDeserializer::class)

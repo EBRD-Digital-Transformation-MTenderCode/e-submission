@@ -13,7 +13,7 @@ import com.procurement.submission.domain.model.Ocid
 import com.procurement.submission.domain.model.Owner
 import com.procurement.submission.domain.model.Token
 import com.procurement.submission.domain.model.bid.BidId
-import com.procurement.submission.domain.model.enums.Status
+import com.procurement.submission.domain.model.enums.BidStatus
 import com.procurement.submission.infrastructure.extension.cassandra.toCassandraTimestamp
 import com.procurement.submission.infrastructure.extension.cassandra.toLocalDateTime
 import com.procurement.submission.infrastructure.extension.cassandra.tryExecute
@@ -188,7 +188,7 @@ class BidRepositoryCassandra(private val session: Session, private val transform
         bidId = BidId.fromString(getString(Database.Bids.ID)),
         token = Token.fromString(getString(Database.Bids.TOKEN)),
         owner = Owner.fromString(getString(Database.Bids.OWNER)),
-        status = Status.creator(getString(Database.Bids.STATUS)),
+        status = BidStatus.creator(getString(Database.Bids.STATUS)),
         createdDate = getTimestamp(Database.Bids.CREATED_DATE).toLocalDateTime(),
         pendingDate = getTimestamp(Database.Bids.PENDING_DATE)?.toLocalDateTime(),
         jsonData = getString(Database.Bids.JSON_DATA)

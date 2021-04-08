@@ -6,12 +6,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.procurement.submission.application.model.data.RequirementRsValue
 import com.procurement.submission.domain.model.Money
+import com.procurement.submission.domain.model.enums.BidStatus
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.DocumentType
 import com.procurement.submission.domain.model.enums.Scale
-import com.procurement.submission.domain.model.enums.Status
-import com.procurement.submission.domain.model.enums.StatusDetails
 import com.procurement.submission.domain.model.enums.TypeOfSupplier
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueDeserializer
 import com.procurement.submission.infrastructure.bind.criteria.RequirementValueSerializer
@@ -33,8 +33,11 @@ data class GetBidsForEvaluationResponse(
         @JsonSerialize(using = JsonDateSerializer::class)
         @field:JsonProperty("date") @param:JsonProperty("date") val date: LocalDateTime,
 
-        @field:JsonProperty("status") @param:JsonProperty("status") val status: Status,
-        @field:JsonProperty("statusDetails") @param:JsonProperty("statusDetails") val statusDetails: StatusDetails,
+        @field:JsonProperty("status") @param:JsonProperty("status") val status: BidStatus,
+
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        @field:JsonProperty("statusDetails") @param:JsonProperty("statusDetails") val statusDetails: BidStatusDetails?,
+
         @field:JsonProperty("tenderers") @param:JsonProperty("tenderers") val tenderers: List<Tenderer>,
 
         @JsonDeserialize(using = MoneyDeserializer::class)

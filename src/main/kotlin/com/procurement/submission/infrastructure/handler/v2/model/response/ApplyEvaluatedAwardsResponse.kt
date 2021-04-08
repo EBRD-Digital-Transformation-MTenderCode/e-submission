@@ -2,7 +2,7 @@ package com.procurement.submission.infrastructure.handler.v2.model.response
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.procurement.submission.domain.model.enums.StatusDetails
+import com.procurement.submission.domain.model.enums.BidStatusDetails
 import java.util.*
 
 data class ApplyEvaluatedAwardsResponse(
@@ -11,6 +11,6 @@ data class ApplyEvaluatedAwardsResponse(
 ) {
     data class Bid(
         @field:JsonProperty("id") @param:JsonProperty("id") val id: UUID,
-        @field:JsonProperty("statusDetails") @param:JsonProperty("statusDetails") val statusDetails: StatusDetails
+        @field:JsonProperty("statusDetails") @param:JsonProperty("statusDetails") val statusDetails: BidStatusDetails
     )
 }
