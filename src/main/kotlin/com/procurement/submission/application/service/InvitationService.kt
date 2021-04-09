@@ -1,6 +1,7 @@
 package com.procurement.submission.application.service
 
 import com.procurement.submission.application.params.CheckAbsenceActiveInvitationsParams
+import com.procurement.submission.application.params.CheckExistenceOfInvitationParams
 import com.procurement.submission.application.params.CreateInvitationsParams
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
@@ -20,4 +21,6 @@ interface InvitationService {
     fun publishInvitations(params: PublishInvitationsParams): Result<PublishInvitationsResult, Fail>
 
     fun createInvitations(params: CreateInvitationsParams): Result<CreateInvitationsResult, Fail>
+
+    fun checkExistenceOfInvitation(params: CheckExistenceOfInvitationParams): Validated<Fail>
 }

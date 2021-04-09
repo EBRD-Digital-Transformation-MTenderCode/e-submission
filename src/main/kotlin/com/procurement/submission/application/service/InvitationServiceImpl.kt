@@ -1,6 +1,7 @@
 package com.procurement.submission.application.service
 
 import com.procurement.submission.application.params.CheckAbsenceActiveInvitationsParams
+import com.procurement.submission.application.params.CheckExistenceOfInvitationParams
 import com.procurement.submission.application.params.CreateInvitationsParams
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
@@ -219,7 +220,7 @@ class InvitationServiceImpl(
     }
 
     private fun Bid.hasRelationWithLots(receivedLotsIds: Set<String>) =
-        relatedLots.any { relatedLot -> relatedLot in receivedLotsIds}
+        relatedLots.any { relatedLot -> relatedLot in receivedLotsIds }
 
     private fun Bid.isValid() = status == BidStatus.VALID
 
@@ -228,7 +229,7 @@ class InvitationServiceImpl(
             id = generationService.generateInvitationId(), // FR.COM-13.18.2
             status = InvitationStatus.PENDING,             // FR.COM-13.18.3
             date = date,                                   // FR.COM-13.18.4
-            tenderers =  bid.tenderers.map { tenderer -> // FR.COM-13.18.5
+            tenderers = bid.tenderers.map { tenderer -> // FR.COM-13.18.5
                 Invitation.Tenderer(
                     id = tenderer.id!!,
                     name = tenderer.name
@@ -256,4 +257,17 @@ class InvitationServiceImpl(
 
         return pendingInvitations.asSuccess()
     }
+
+    override fun checkExistenceOfInvitation(params: CheckExistenceOfInvitationParams): Validated<Fail> {
+        val bidTenderers = params.bids.details.first().tenderers.toSetBy { it.id }
+
+        invitationRepository.findBy(cpid = params.cpid)
+            .onFailure { error -> return error.reason.asValidationError() }
+            .firstOrNull { invitation -> invitation.belongsTo(bidTenderers) }
+            ?: return ValidationError.CheckExistenceOfInvitation.InvitationNotFound(bidTenderers).asValidationError()
+
+        return Validated.ok()
+    }
+
+    private fun Invitation.belongsTo(bidTenderers: Set<String>) = tenderers.toSetBy { it.id } == bidTenderers
 }
