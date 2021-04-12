@@ -12,6 +12,7 @@ import com.procurement.submission.infrastructure.api.v2.CommandTypeV2
 import com.procurement.submission.infrastructure.handler.v2.CheckAbsenceActiveInvitationsHandler
 import com.procurement.submission.infrastructure.handler.v2.CheckAccessToBidHandler
 import com.procurement.submission.infrastructure.handler.v2.CheckBidStateHandler
+import com.procurement.submission.infrastructure.handler.v2.CheckExistenceOfInvitationHandler
 import com.procurement.submission.infrastructure.handler.v2.CheckPeriodHandler
 import com.procurement.submission.infrastructure.handler.v2.CreateBidHandler
 import com.procurement.submission.infrastructure.handler.v2.CreateInvitationsHandler
@@ -38,6 +39,7 @@ class CommandServiceV2(
     private val checkAbsenceActiveInvitationsHandler: CheckAbsenceActiveInvitationsHandler,
     private val validateBidDataHandler: ValidateBidDataHandler,
     private val checkBidStateHandler: CheckBidStateHandler,
+    private val checkExistenceOfInvitationHandler: CheckExistenceOfInvitationHandler,
     private val createBidHandler: CreateBidHandler,
     private val createInvitationsHandler: CreateInvitationsHandler,
     private val finalizeBidsByAwardsHandler: FinalizeBidsByAwardsHandler,
@@ -75,6 +77,7 @@ class CommandServiceV2(
             CommandTypeV2.CHECK_ABSENCE_ACTIVE_INVITATIONS -> checkAbsenceActiveInvitationsHandler.handle(node)
             CommandTypeV2.CHECK_ACCESS_TO_BID -> checkAccessToBidHandler.handle(node)
             CommandTypeV2.CHECK_BID_STATE -> checkBidStateHandler.handle(node)
+            CommandTypeV2.CHECK_EXISTENCE_OF_INVITATION -> checkExistenceOfInvitationHandler.handle(node)
             CommandTypeV2.CHECK_PERIOD -> checkPeriodHandler.handle(node)
             CommandTypeV2.CREATE_BID -> createBidHandler.handle(node)
             CommandTypeV2.CREATE_INVITATIONS -> createInvitationsHandler.handle(node)

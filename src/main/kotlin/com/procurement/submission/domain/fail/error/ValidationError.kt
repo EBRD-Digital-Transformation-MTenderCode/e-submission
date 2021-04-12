@@ -57,13 +57,12 @@ sealed class ValidationError(
             operationType: OperationType?
         ) : EntityNotFound("Bid's state rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
 
-
         class StateForSettingRule(
             country: String,
             pmd: ProcurementMethod,
             parameter: String,
             operationType: OperationType?
-        ): EntityNotFound("Bid's state rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
+        ) : EntityNotFound("Bid's state rule '$parameter' not found by country '$country', pmd '${pmd.name}', operationType '$operationType'.")
     }
 
     class TenderPeriodDurationError(expectedDuration: Duration) : ValidationError(
@@ -217,7 +216,7 @@ sealed class ValidationError(
                 description = "Missing 'relatedTenderer' attribute in requirement response $responseId."
             )
 
-        class TooManyRequirementResponse(tendererId: String?,  requirementId: String) :
+        class TooManyRequirementResponse(tendererId: String?, requirementId: String) :
             ValidationError(
                 numberError = "13.7.19",
                 description = "Tenderer ${tendererId.orEmpty()} gave more than one responses on requirement $requirementId."
@@ -267,7 +266,6 @@ sealed class ValidationError(
                 numberError = "13.13.3",
                 description = "Received owner does not match stored one."
             )
-
     }
 
     object CheckBidState {
@@ -291,6 +289,15 @@ sealed class ValidationError(
             ValidationError(
                 numberError = "13.15.1",
                 description = "Bid(s) '${bidIds.joinToString()}' not found."
+            )
+    }
+
+    object CheckExistenceOfInvitation {
+
+        class InvitationNotFound(tenderersIds: Set<String>) :
+            ValidationError(
+                numberError = "13.19.1",
+                description = "No invitations with tenderer(s) '${tenderersIds.joinToString()}' found."
             )
     }
 }
