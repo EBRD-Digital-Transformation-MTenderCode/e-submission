@@ -227,7 +227,7 @@ class InvitationServiceImpl(
     private fun generateInvitation(bid: Bid, date: LocalDateTime): Invitation {
         return Invitation(
             id = generationService.generateInvitationId(), // FR.COM-13.18.2
-            status = InvitationStatus.PENDING,             // FR.COM-13.18.3
+            status = InvitationStatus.ACTIVE,              // FR.COM-13.18.3
             date = date,                                   // FR.COM-13.18.4
             tenderers = bid.tenderers.map { tenderer -> // FR.COM-13.18.5
                 Invitation.Tenderer(
