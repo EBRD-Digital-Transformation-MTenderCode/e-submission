@@ -16,15 +16,15 @@ import com.procurement.submission.lib.functional.asSuccess
 private val allowedPmds = ProcurementMethod.values()
     .filter {
         when (it) {
-            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-            ProcurementMethod.SV, ProcurementMethod.TEST_SV,
-            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
-            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
-            ProcurementMethod.RT, ProcurementMethod.TEST_RT,
             ProcurementMethod.CF, ProcurementMethod.TEST_CF,
-            ProcurementMethod.OF, ProcurementMethod.TEST_OF -> true
-
+            ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.MV, ProcurementMethod.TEST_MV,
+            ProcurementMethod.OF, ProcurementMethod.TEST_OF,
+            ProcurementMethod.OT, ProcurementMethod.TEST_OT,
             ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
+            ProcurementMethod.RT, ProcurementMethod.TEST_RT,
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> true
+
             ProcurementMethod.CD, ProcurementMethod.TEST_CD,
             ProcurementMethod.DA, ProcurementMethod.TEST_DA,
             ProcurementMethod.DC, ProcurementMethod.TEST_DC,
