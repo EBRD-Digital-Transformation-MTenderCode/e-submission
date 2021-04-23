@@ -1054,8 +1054,7 @@ class BidService(
         when(this) {
             ProcurementMethod.MV, ProcurementMethod.TEST_MV,
             ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-            ProcurementMethod.SV, ProcurementMethod.TEST_SV,
-            ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ -> true
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> true
 
             ProcurementMethod.CD, ProcurementMethod.TEST_CD,
             ProcurementMethod.CF, ProcurementMethod.TEST_CF,
@@ -1067,12 +1066,14 @@ class BidService(
             ProcurementMethod.NP, ProcurementMethod.TEST_NP,
             ProcurementMethod.OF, ProcurementMethod.TEST_OF,
             ProcurementMethod.OP, ProcurementMethod.TEST_OP,
+            ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
             ProcurementMethod.RT, ProcurementMethod.TEST_RT -> false
         }
 
     private fun ProcurementMethod.isSelective() =
         when(this) {
             ProcurementMethod.GPA, ProcurementMethod.TEST_GPA,
+            ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
             ProcurementMethod.RT, ProcurementMethod.TEST_RT -> true
 
             ProcurementMethod.CD, ProcurementMethod.TEST_CD,
@@ -1086,8 +1087,7 @@ class BidService(
             ProcurementMethod.OF, ProcurementMethod.TEST_OF,
             ProcurementMethod.OP, ProcurementMethod.TEST_OP,
             ProcurementMethod.OT, ProcurementMethod.TEST_OT,
-            ProcurementMethod.SV, ProcurementMethod.TEST_SV,
-            ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ -> false
+            ProcurementMethod.SV, ProcurementMethod.TEST_SV -> false
         }
 
     private fun ProcurementMethod.isFrameworkAgreement() =

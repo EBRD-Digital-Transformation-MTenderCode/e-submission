@@ -75,6 +75,7 @@ class CommandServiceV1(
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
                     ProcurementMethod.OF, ProcurementMethod.TEST_OF,
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
                     ProcurementMethod.RT, ProcurementMethod.TEST_RT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
                         val request = toObject(GetBidsForEvaluationRequest::class.java, cm.data)
@@ -93,7 +94,6 @@ class CommandServiceV1(
                         return ResponseDto(data = response)
                     }
 
-                    ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
                     ProcurementMethod.CD, ProcurementMethod.TEST_CD,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
                     ProcurementMethod.DC, ProcurementMethod.TEST_DC,
@@ -123,6 +123,7 @@ class CommandServiceV1(
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
                     ProcurementMethod.OF, ProcurementMethod.TEST_OF,
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
                     ProcurementMethod.RT, ProcurementMethod.TEST_RT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
                         val context = OpenBidsForPublishingContext(
@@ -138,7 +139,6 @@ class CommandServiceV1(
                         return ResponseDto(data = response)
                     }
 
-                    ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
                     ProcurementMethod.CD, ProcurementMethod.TEST_CD,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
                     ProcurementMethod.DC, ProcurementMethod.TEST_DC,
@@ -161,6 +161,7 @@ class CommandServiceV1(
                     ProcurementMethod.MV, ProcurementMethod.TEST_MV,
                     ProcurementMethod.OF, ProcurementMethod.TEST_OF,
                     ProcurementMethod.OT, ProcurementMethod.TEST_OT,
+                    ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
                     ProcurementMethod.RT, ProcurementMethod.TEST_RT,
                     ProcurementMethod.SV, ProcurementMethod.TEST_SV -> {
                         val request = toObject(GetBidsAuctionRequest::class.java, cm.data)
@@ -175,8 +176,6 @@ class CommandServiceV1(
                         val response = serviceResponse.convert()
                         return ResponseDto(data = response)
                     }
-
-                    ProcurementMethod.RFQ, ProcurementMethod.TEST_RFQ,
                     ProcurementMethod.CD, ProcurementMethod.TEST_CD,
                     ProcurementMethod.DA, ProcurementMethod.TEST_DA,
                     ProcurementMethod.DC, ProcurementMethod.TEST_DC,
