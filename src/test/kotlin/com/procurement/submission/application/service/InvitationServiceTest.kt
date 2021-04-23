@@ -5,12 +5,14 @@ import com.nhaarman.mockito_kotlin.eq
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
+import com.procurement.submission.application.params.CheckExistenceOfInvitationParams
 import com.procurement.submission.application.params.DoInvitationsParams
 import com.procurement.submission.application.params.PublishInvitationsParams
 import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.repository.invitation.InvitationRepository
 import com.procurement.submission.domain.extension.format
 import com.procurement.submission.domain.model.Cpid
+import com.procurement.submission.domain.model.bid.BidId
 import com.procurement.submission.domain.model.enums.InvitationStatus
 import com.procurement.submission.domain.model.enums.OperationType
 import com.procurement.submission.domain.model.enums.ProcurementMethod
@@ -24,6 +26,7 @@ import com.procurement.submission.get
 import com.procurement.submission.infrastructure.handler.v2.model.response.DoInvitationsResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.PublishInvitationsResult
 import com.procurement.submission.lib.functional.Result.Companion.success
+import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asSuccess
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -39,6 +42,9 @@ class InvitationServiceTest {
     companion object {
         private val CPID = Cpid.tryCreateOrNull("ocds-t1s2t3-MD-1565251033096")!!
         private val OPERATION_TYPE = OperationType.CREATE_PCR
+        private val BID_ID = BidId.randomUUID()
+        private val TENDERER_ID_1 = UUID.randomUUID().toString()
+        private val TENDERER_ID_2 = UUID.randomUUID().toString()
 
         private const val FORMAT_PATTERN = "uuuu-MM-dd'T'HH:mm:ss'Z'"
         private val FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern(FORMAT_PATTERN)
@@ -51,7 +57,13 @@ class InvitationServiceTest {
     val rulesService: RulesService = mock()
     val transform: Transform = mock()
     val bidRepository: BidRepository = mock()
-    val invitationService = InvitationServiceImpl(invitationRepository, bidRepository, generationService, rulesService, transform)
+    val invitationService = InvitationServiceImpl(
+        invitationRepository,
+        bidRepository,
+        generationService,
+        rulesService,
+        transform
+    )
 
     @Nested
     inner class DoInvitations {
@@ -370,6 +382,78 @@ class InvitationServiceTest {
                 tenderers = listOf(
                     Invitation.Tenderer(
                         id = UUID.randomUUID().toString(),
+                        name = "tenderer.name"
+                    )
+                )
+            )
+    }
+
+    @Nested
+    inner class CheckExistenceOfInvitation {
+
+        @Test
+        fun success() {
+            val params = getParams()
+            val invitations = listOf(getInvitation())
+            whenever(invitationRepository.findBy(cpid = params.cpid))
+                .thenReturn(success(invitations))
+            val actual = invitationService.checkExistenceOfInvitation(params)
+            assertTrue(actual is Validated.Ok)
+        }
+
+        @Test
+        fun invitationWithMatchingTenderersNotFound_error() {
+            val params = getParams()
+            val firstInvitation = getInvitation().copy(tenderers = emptyList())
+            val secondInvitation = getInvitation().copy(
+                tenderers = listOf(
+                    Invitation.Tenderer(
+                        id = TENDERER_ID_1,
+                        name = "tenderer.name"
+                    )
+                )
+            )
+
+            val invitations = listOf(firstInvitation, secondInvitation)
+            whenever(invitationRepository.findBy(cpid = params.cpid))
+                .thenReturn(success(invitations))
+            val actual = invitationService.checkExistenceOfInvitation(params) as Validated.Error
+            val expectedError = "VR.COM-13.19.1"
+            val expectedDescription = "No invitations with tenderer(s) '$TENDERER_ID_1, $TENDERER_ID_2' found."
+
+            assertEquals(expectedError, actual.reason.code)
+            assertEquals(expectedDescription, actual.reason.description)
+        }
+
+        private fun getParams() =
+            CheckExistenceOfInvitationParams(
+                cpid = CPID,
+                bids = CheckExistenceOfInvitationParams.Bids(
+                    details = listOf(
+                        CheckExistenceOfInvitationParams.Bids.Detail(
+                            id = BID_ID,
+                            tenderers = listOf(
+                                CheckExistenceOfInvitationParams.Bids.Detail.Tenderer(TENDERER_ID_1),
+                                CheckExistenceOfInvitationParams.Bids.Detail.Tenderer(TENDERER_ID_2)
+                            )
+                            )
+                    )
+                )
+            )
+
+        fun getInvitation() =
+            Invitation(
+                id = InvitationId.generate(),
+                status = InvitationStatus.ACTIVE,
+                relatedQualification = QualificationId.generate(),
+                date = LocalDateTime.now(),
+                tenderers = listOf(
+                    Invitation.Tenderer(
+                        id = TENDERER_ID_1,
+                        name = "tenderer.name"
+                    ),
+                    Invitation.Tenderer(
+                        id = TENDERER_ID_2,
                         name = "tenderer.name"
                     )
                 )
