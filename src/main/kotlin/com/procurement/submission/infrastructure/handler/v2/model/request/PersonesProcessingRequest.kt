@@ -22,6 +22,7 @@ data class PersonesProcessingRequest(
             data class Identifier(
                 @param:JsonProperty("scheme") @field:JsonProperty("scheme") val scheme: String,
                 @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
+
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @param:JsonProperty("uri") @field:JsonProperty("uri") val uri: String?
             )
@@ -30,6 +31,7 @@ data class PersonesProcessingRequest(
                 @param:JsonProperty("type") @field:JsonProperty("type") val type: String,
                 @param:JsonProperty("jobTitle") @field:JsonProperty("jobTitle") val jobTitle: String,
                 @param:JsonProperty("period") @field:JsonProperty("period") val period: Period,
+
                 @JsonInclude(JsonInclude.Include.NON_EMPTY)
                 @param:JsonProperty("documents") @field:JsonProperty("documents") val documents: List<Document>?
             ) {
@@ -40,6 +42,7 @@ data class PersonesProcessingRequest(
                     @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
                     @param:JsonProperty("documentType") @field:JsonProperty("documentType") val documentType: String,
                     @param:JsonProperty("title") @field:JsonProperty("title") val title: String,
+
                     @JsonInclude(JsonInclude.Include.NON_EMPTY)
                     @param:JsonProperty("description") @field:JsonProperty("description") val description: String?
                 )

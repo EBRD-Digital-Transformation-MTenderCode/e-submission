@@ -45,8 +45,8 @@ private fun PersonesProcessingRequest.Party.convert(): Result<PersonesProcessing
 }
 
 private fun PersonesProcessingRequest.Party.Person.convert(): Result<PersonesProcessingParams.Party.Persone, Fail> {
-    val allowedTitles = PersonTitle.allowedElements.toSet()
-    val titleCurrent = parsePersonTitle(title, allowedTitles, "person.parties.title")
+    val parsedTitle = PersonTitle.allowedElements.toSet()
+    val titleCurrent = parsePersonTitle(title, parsedTitle, "person.parties.title")
         .onFailure { return it }
     val identifier = identifier.let { identifier ->
         PersonesProcessingParams.Party.Persone.Identifier(
@@ -97,7 +97,7 @@ private fun PersonesProcessingRequest.Party.Person.BusinessFunction.convert(): R
         type = businessFunctionType,
         jobTitle = jobTitle,
         period = period,
-        documents = documents
+        documents = documents ?: emptyList()
     ).asSuccess()
 }
 
