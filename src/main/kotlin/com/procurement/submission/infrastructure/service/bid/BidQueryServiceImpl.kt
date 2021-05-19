@@ -1,11 +1,13 @@
 package com.procurement.submission.infrastructure.service.bid
 
+import com.procurement.submission.application.params.GetSuppliersOwnersParams
 import com.procurement.submission.application.params.bid.query.find.FindDocumentsByBidIdsErrors
 import com.procurement.submission.application.params.bid.query.find.FindDocumentsByBidIdsParams
 import com.procurement.submission.application.params.bid.query.get.GetBidsForPacsErrors
 import com.procurement.submission.application.params.bid.query.get.GetBidsForPacsParams
 import com.procurement.submission.application.params.bid.query.get.GetOrganizationsByReferencesFromPacsErrors
 import com.procurement.submission.application.params.bid.query.get.GetOrganizationsByReferencesFromPacsParams
+import com.procurement.submission.application.params.errors.GetSuppliersOwnersErrors
 import com.procurement.submission.application.repository.bid.BidRepository
 import com.procurement.submission.application.service.BidQueryService
 import com.procurement.submission.application.service.Transform
@@ -18,6 +20,7 @@ import com.procurement.submission.infrastructure.handler.v2.converter.fromDomain
 import com.procurement.submission.infrastructure.handler.v2.model.response.FindDocumentsByBidIdsResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.GetBidsForPacsResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.GetOrganizationsByReferencesFromPacsResult
+import com.procurement.submission.infrastructure.handler.v2.model.response.GetSuppliersOwnersResponse
 import com.procurement.submission.infrastructure.handler.v2.model.response.fromDomain
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asFailure
@@ -74,11 +77,19 @@ class BidQueryServiceImpl(
 
         // FR.COM-13.16.1
         val targetOrganizations = receivedOrganizationsIds
-            .map { id -> allOrganizationsById[id] ?: return GetOrganizationsByReferencesFromPacsErrors.OrganizationNotFound(id).asFailure() }
+            .map { id ->
+                allOrganizationsById[id] ?: return GetOrganizationsByReferencesFromPacsErrors.OrganizationNotFound(id)
+                    .asFailure()
+            }
 
         // FR.COM-13.16.3
         return targetOrganizations
-            .map { GetOrganizationsByReferencesFromPacsResult.Party.fromDomain(it, PartyRole.SUPPLIER) } // FR.COM-13.16.2
+            .map {
+                GetOrganizationsByReferencesFromPacsResult.Party.fromDomain(
+                    it,
+                    PartyRole.SUPPLIER
+                )
+            } // FR.COM-13.16.2
             .let { GetOrganizationsByReferencesFromPacsResult(parties = it) }
             .asSuccess()
     }
@@ -113,4 +124,40 @@ class BidQueryServiceImpl(
                 .asSuccess()
     }
 
+    override fun getSuppliersOwners(params: GetSuppliersOwnersParams): Result<GetSuppliersOwnersResponse, Fail> {
+        val bidEntities = bidRepository.findBy(params.cpid, params.ocid)
+            .onFailure { return it }
+
+        if (bidEntities.isEmpty())
+            return GetSuppliersOwnersErrors.BidsNotFound(params.cpid, params.ocid).asFailure()
+
+        val bids = bidEntities
+            .map { entity ->
+                transform.tryDeserialization(entity.jsonData, Bid::class.java)
+                    .mapFailure { Fail.Incident.Database.DatabaseParsing(exception = it.exception) }
+                    .onFailure { return it }
+            }
+
+        val tenderersAll = bids.flatMap { bid -> bid.tenderers }.associateBy { it.id }
+
+        val receivedSuppliersIds = params.contracts.first().suppliers
+            .map { it.id }
+
+        val targetOrganizations = receivedSuppliersIds
+            .map { id ->
+                tenderersAll[id] ?: return GetOrganizationsByReferencesFromPacsErrors.OrganizationNotFound(id)
+                    .asFailure()
+            }
+        return GetSuppliersOwnersResponse(
+            tenderers = GetSuppliersOwnersResponse.Tenderer(
+                owner = "?",
+                organizations = targetOrganizations.map { targetOrganization ->
+                    GetSuppliersOwnersResponse.Tenderer.Organization(
+                        id = targetOrganization.id!!,
+                        name = targetOrganization.name
+                    )
+                }
+            ).let { listOf(it) }
+        ).asSuccess()
+    }
 }
