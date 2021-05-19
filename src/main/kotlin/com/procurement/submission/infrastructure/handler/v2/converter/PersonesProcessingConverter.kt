@@ -1,5 +1,7 @@
 package com.procurement.submission.infrastructure.handler.v2.converter
 
+import com.procurement.submission.application.exception.ErrorException
+import com.procurement.submission.application.exception.ErrorType
 import com.procurement.submission.application.params.PersonesProcessingParams
 import com.procurement.submission.application.params.parseBFDocumentType
 import com.procurement.submission.application.params.parseBusinessFunctionType
@@ -7,21 +9,21 @@ import com.procurement.submission.application.params.parseCpid
 import com.procurement.submission.application.params.parseDate
 import com.procurement.submission.application.params.parseOcid
 import com.procurement.submission.application.params.parsePersonTitle
-import com.procurement.submission.application.params.rules.notEmptyRule
 import com.procurement.submission.domain.extension.mapResult
 import com.procurement.submission.domain.fail.Fail
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.PersonTitle
 import com.procurement.submission.infrastructure.handler.v2.model.request.PersonesProcessingRequest
+import com.procurement.submission.lib.errorIfBlank
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.asSuccess
-import com.procurement.submission.lib.functional.validate
 import com.procurement.submission.model.dto.ocds.PersonId
 
 fun PersonesProcessingRequest.convert(): Result<PersonesProcessingParams, Fail> {
-    val parties = parties.validate(notEmptyRule("parties"))
-        .onFailure { return it }
+    parties.forEach { party -> party.validateTextAttributes() }
+
+    val parties = parties
         .mapResult { it.convert() }
         .onFailure { return it }
 
@@ -33,8 +35,7 @@ fun PersonesProcessingRequest.convert(): Result<PersonesProcessingParams, Fail> 
 }
 
 private fun PersonesProcessingRequest.Party.convert(): Result<PersonesProcessingParams.Party, Fail> {
-    val persones = persones.validate(notEmptyRule("parties.persones"))
-        .onFailure { return it }
+    val persones = persones
         .mapResult { it.convert() }
         .onFailure { return it }
 
@@ -55,8 +56,7 @@ private fun PersonesProcessingRequest.Party.Person.convert(): Result<PersonesPro
             uri = identifier.uri
         )
     }
-    val businessFunction = businessFunctions.validate(notEmptyRule("parties.persones.businessFunction"))
-        .onFailure { return it }
+    val businessFunction = businessFunctions
         .mapResult { it.convert() }
         .onFailure { return it }
 
@@ -79,8 +79,7 @@ private fun PersonesProcessingRequest.Party.Person.BusinessFunction.convert(): R
         }
         .toSet()
 
-    val documents = documents.validate(notEmptyRule("parties.persones.businessFunction.documents"))
-        .onFailure { return it }
+    val documents = documents
         ?.mapResult { it.convert() }
         ?.onFailure { return it }
 
@@ -110,7 +109,11 @@ private val allowedBFDocumentType = BusinessFunctionDocumentType.allowedElements
     .toSet()
 
 private fun PersonesProcessingRequest.Party.Person.BusinessFunction.Document.convert(): Result<PersonesProcessingParams.Party.Persone.BusinessFunction.Document, Fail> {
-    val documentType = parseBFDocumentType(documentType, allowedBFDocumentType, "parties.persones.businessFunctions.documents.documentType")
+    val documentType = parseBFDocumentType(
+        documentType,
+        allowedBFDocumentType,
+        "parties.persones.businessFunctions.documents.documentType"
+    )
         .onFailure { return it }
 
     return PersonesProcessingParams.Party.Persone.BusinessFunction.Document(
@@ -119,4 +122,24 @@ private fun PersonesProcessingRequest.Party.Person.BusinessFunction.Document.con
         description = description,
         documentType = documentType
     ).asSuccess()
+}
+
+fun PersonesProcessingRequest.Party.validateTextAttributes() {
+    id.checkForBlank("parties.id")
+    persones.forEach { persone ->
+        persone.name.checkForBlank("parties.persones.name")
+        persone.businessFunctions.forEach { businessFunction ->
+            businessFunction.id.checkForBlank("parties.persones.businessFunctions.id")
+            businessFunction.jobTitle.checkForBlank("parties.persones.businessFunctions.jobTitle")
+        }
+        persone.identifier.id.checkForBlank("parties.persones.identifier.id")
+        persone.identifier.scheme.checkForBlank("parties.persones.identifier.scheme")
+    }
+}
+
+fun String.checkForBlank(name: String) = this.errorIfBlank {
+    ErrorException(
+        error = ErrorType.INCORRECT_VALUE_ATTRIBUTE,
+        message = "The attribute '$name' is empty or blank."
+    )
 }

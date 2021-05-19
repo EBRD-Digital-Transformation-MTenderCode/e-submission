@@ -101,7 +101,7 @@ class PersonsProcessingServiceImpl(
                                         )
                                     },
                                 documents = businessFunction.documents
-                                    ?.map { document ->
+                                    .map { document ->
                                         BusinessFunction.Document(
                                             id = document.id,
                                             documentType = document.documentType,
@@ -137,105 +137,7 @@ class PersonsProcessingServiceImpl(
         bidRepository.save(updatedEntity)
 
         return updatedTenderers
-            .map { tenderer ->
-                PersonesProcessingResult.Party(
-                    id = tenderer.id!!,
-                    name = tenderer.name,
-                    identifier = tenderer.identifier.let { identifier ->
-                        PersonesProcessingResult.Party.Identifier(
-                            id = identifier.id,
-                            legalName = identifier.legalName,
-                            scheme = identifier.scheme,
-                            uri = identifier.uri
-                        )
-                    },
-                    additionalIdentifiers = tenderer.additionalIdentifiers?.map { additionalIdentifiers ->
-                        PersonesProcessingResult.Party.AdditionalIdentifier(
-                            id = additionalIdentifiers.id,
-                            legalName = additionalIdentifiers.legalName,
-                            scheme = additionalIdentifiers.scheme,
-                            uri = additionalIdentifiers.uri
-                        )
-                    },
-                    address = tenderer.address.let { address ->
-                        PersonesProcessingResult.Party.Adress(
-                            streetAddress = address.streetAddress,
-                            postalCode = address.postalCode,
-                            addressDetails = address.addressDetails.let { addressDetails ->
-                                PersonesProcessingResult.Party.Adress.AdressDetails(
-                                    country = addressDetails.country.let { country ->
-                                        PersonesProcessingResult.Party.Adress.AdressDetails.Country(
-                                            id = country.id,
-                                            description = country.description,
-                                            scheme = country.scheme,
-                                            uri = country.uri
-                                        )
-                                    },
-                                    region = addressDetails.region.let { region ->
-                                        PersonesProcessingResult.Party.Adress.AdressDetails.Region(
-                                            id = region.id,
-                                            description = region.description,
-                                            scheme = region.scheme,
-                                            uri = region.uri
-                                        )
-                                    },
-                                    locality = addressDetails.locality.let { locality ->
-                                        PersonesProcessingResult.Party.Adress.AdressDetails.Locality(
-                                            id = locality.id,
-                                            description = locality.description,
-                                            scheme = locality.scheme,
-                                            uri = locality.uri
-                                        )
-                                    }
-                                )
-                            }
-                        )
-                    },
-                    contactPoint = tenderer.contactPoint.let { contactPoint ->
-                        PersonesProcessingResult.Party.ContactPoint(
-                            name = contactPoint.name,
-                            email = contactPoint.email!!,
-                            telephone = contactPoint.telephone,
-                            faxNumber = contactPoint.faxNumber,
-                            url = contactPoint.url
-                        )
-                    },
-                    persones = tenderer.persones!!.map { persone ->
-                        PersonesProcessingResult.Party.Persone(
-                            id = persone.id,
-                            title = persone.title,
-                            name = persone.name,
-                            identifier = persone.identifier.let { identifier ->
-                                PersonesProcessingResult.Party.Persone.Identifier(
-                                    scheme = identifier.scheme,
-                                    id = identifier.id,
-                                    uri = identifier.uri
-                                )
-                            },
-                            businessFunctions = persone.businessFunctions.map { businessFunction ->
-                                PersonesProcessingResult.Party.Persone.BuisnessFunction(
-                                    id = businessFunction.id,
-                                    type = businessFunction.type.key,
-                                    jobTitle = businessFunction.jobTitle,
-                                    period = businessFunction.period.let { period ->
-                                        PersonesProcessingResult.Party.Persone.BuisnessFunction.Period(
-                                            startDate = period.startDate
-                                        )
-                                    },
-                                    documents = businessFunction.documents?.map { document ->
-                                        PersonesProcessingResult.Party.Persone.BuisnessFunction.Document(
-                                            id = document.id,
-                                            documentType = document.documentType.key,
-                                            title = document.title,
-                                            description = document.description
-                                        )
-                                    }
-                                )
-                            }
-                        )
-                    }
-                )
-            }
+            .map { PersonesProcessingResult.ResponseConverter.fromDomain(it) }
             .let { PersonesProcessingResult(it) }
             .asSuccess()
     }
@@ -275,7 +177,7 @@ class PersonsProcessingServiceImpl(
                             startDate = period.startDate
                         )
                     },
-                    documents = businessFunction.documents?.map { document ->
+                    documents = businessFunction.documents.map { document ->
                         BusinessFunction.Document(
                             id = document.id,
                             description = document.description,
@@ -292,8 +194,7 @@ class PersonsProcessingServiceImpl(
         businessFunction: BusinessFunction,
         receivedFunction: PersonesProcessingParams.Party.Persone.BusinessFunction
     ): List<BusinessFunction.Document> {
-        val receivedDocuments = receivedFunction.documents?.associateBy { it.id }
-            ?: return emptyList()
+        val receivedDocuments = receivedFunction.documents.associateBy { it.id }
 
         val updatedDocuments = businessFunction.documents!!.map { document ->
             if (document.id in receivedDocuments) {

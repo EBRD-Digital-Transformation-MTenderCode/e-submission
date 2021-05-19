@@ -32,7 +32,7 @@ class PersonesProcessingHandler(
 ) {
     override val action: CommandTypeV2 = CommandTypeV2.PERSONES_PROCESSING
 
-    override fun execute(node: JsonNode): Result<PersonesProcessingResult?, Fail> {
+    override fun execute(node: JsonNode): Result<PersonesProcessingResult, Fail> {
         val params = node.tryGetParams(PersonesProcessingRequest::class.java, transform = transform)
             .flatMap { it.convert() }
             .onFailure { return it }
