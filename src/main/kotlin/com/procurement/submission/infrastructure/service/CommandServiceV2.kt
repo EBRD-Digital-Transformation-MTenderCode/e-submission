@@ -21,6 +21,7 @@ import com.procurement.submission.infrastructure.handler.v2.FinalizeBidsByAwards
 import com.procurement.submission.infrastructure.handler.v2.FindDocumentsByBidIdsHandler
 import com.procurement.submission.infrastructure.handler.v2.GetBidsForPacsHandler
 import com.procurement.submission.infrastructure.handler.v2.GetOrganizationsByReferencesFromPacsHandler
+import com.procurement.submission.infrastructure.handler.v2.PersonesProcessingHandler
 import com.procurement.submission.infrastructure.handler.v2.PublishInvitationsHandler
 import com.procurement.submission.infrastructure.handler.v2.SetStateForBidsHandler
 import com.procurement.submission.infrastructure.handler.v2.SetTenderPeriodHandler
@@ -47,7 +48,8 @@ class CommandServiceV2(
     private val setStateForBidsHandler: SetStateForBidsHandler,
     private val setTenderPeriodHandler: SetTenderPeriodHandler,
     private val publishInvitationsHandler: PublishInvitationsHandler,
-    private val checkPeriodHandler: CheckPeriodHandler
+    private val checkPeriodHandler: CheckPeriodHandler,
+    private val personesProcessingHandler: PersonesProcessingHandler
 ) {
 
     fun execute(node: JsonNode): ApiResponseV2 {
@@ -91,6 +93,7 @@ class CommandServiceV2(
             CommandTypeV2.SET_TENDER_PERIOD -> setTenderPeriodHandler.handle(node)
             CommandTypeV2.VALIDATE_BID_DATA -> validateBidDataHandler.handle(node)
             CommandTypeV2.VALIDATE_TENDER_PERIOD -> validateTenderPeriodHandler.handle(node)
+            CommandTypeV2.PERSONES_PROCESSING -> personesProcessingHandler.handle(node)
         }
     }
 }
