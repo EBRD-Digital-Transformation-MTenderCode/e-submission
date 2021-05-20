@@ -15,8 +15,8 @@ sealed class GetSuppliersOwnersErrors(
         description = "Bids by cpid '$cpid' and ocid '$ocid' is not found."
     )
 
-    class OrganizationNotFound(organizationId: String) : GetSuppliersOwnersErrors(
+    class BidNotFound() : GetSuppliersOwnersErrors(
         numberError = "13.21.2",
-        description = "Organization by id '$organizationId' not found."
+        description = "Bid not found"
     )
 }
