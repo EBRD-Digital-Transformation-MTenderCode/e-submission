@@ -20,6 +20,7 @@ enum class CommandTypeV2(@JsonValue override val key: String) : Action, EnumElem
     GET_BIDS_FOR_PACS("getBidsForPacs"),
     GET_ORGANIZATIONS_BY_REFERENCES_FROM_PACS("getOrganizationsByReferencesFromPacs"),
     PERSONES_PROCESSING("personesProcessing"),
+    GET_SUPPLIERS_OWNERS("getSuppliersOwners"),
     PUBLISH_INVITATIONS("publishInvitations"),
     SET_STATE_FOR_BIDS("setStateForBids"),
     SET_TENDER_PERIOD("setTenderPeriod"),
