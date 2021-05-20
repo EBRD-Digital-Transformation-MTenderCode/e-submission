@@ -136,7 +136,7 @@ class PersonsProcessingServiceImpl(
 
         bidRepository.save(updatedEntity)
 
-        return updatedTenderers
+        return updatedBid.tenderers
             .map { PersonesProcessingResult.ResponseConverter.fromDomain(it) }
             .let { PersonesProcessingResult(it) }
             .asSuccess()
@@ -196,23 +196,27 @@ class PersonsProcessingServiceImpl(
     ): List<BusinessFunction.Document> {
         val receivedDocuments = receivedFunction.documents.associateBy { it.id }
 
-        val updatedDocuments = businessFunction.documents!!.map { document ->
-            if (document.id in receivedDocuments) {
-                val receivedDocument = receivedDocuments.getValue(document.id)
-                document.copy(
-                    documentType = receivedDocument.documentType,
-                    description = receivedDocument.description,
-                    title = receivedDocument.title
-                )
-            } else document
-        }
+        val documents = businessFunction.documents.orEmpty()
 
-        val documentsIds = businessFunction.documents.toSetBy { it.id }
+        val updatedDocuments = documents
+            .map { document ->
+                if (document.id in receivedDocuments) {
+                    val receivedDocument = receivedDocuments.getValue(document.id)
+                    document.copy(
+                        documentType = receivedDocument.documentType,
+                        description = receivedDocument.description,
+                        title = receivedDocument.title
+                    )
+                } else document
+            }
+
+        val documentsIds: Set<String> = documents.toSetBy { it.id }
 
         val createdDocuments = receivedFunction.documents
             .filter { document ->
                 document.id !in documentsIds
-            }.map { document ->
+            }
+            .map { document ->
                 BusinessFunction.Document(
                     id = document.id,
                     documentType = document.documentType,
