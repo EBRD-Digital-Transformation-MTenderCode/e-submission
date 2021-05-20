@@ -13,7 +13,9 @@ import com.procurement.submission.infrastructure.handler.v2.model.request.GetSup
 import com.procurement.submission.infrastructure.handler.v2.model.response.GetSuppliersOwnersResponse
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.flatMap
+import org.springframework.stereotype.Component
 
+@Component
 class GetSuppliersOwnersHandler(
     logger: Logger,
     transform: Transform,
