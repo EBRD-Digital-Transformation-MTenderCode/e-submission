@@ -14,15 +14,12 @@ import com.procurement.submission.domain.fail.error.DataErrors
 import com.procurement.submission.domain.model.enums.BusinessFunctionDocumentType
 import com.procurement.submission.domain.model.enums.BusinessFunctionType
 import com.procurement.submission.domain.model.enums.PersonTitle
-import com.procurement.submission.infrastructure.exception.EmptyStringException
+import com.procurement.submission.infrastructure.handler.v2.converter.extension.checkForBlank
 import com.procurement.submission.infrastructure.handler.v2.model.request.PersonesProcessingRequest
-import com.procurement.submission.lib.errorIfBlank
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asFailure
 import com.procurement.submission.lib.functional.asSuccess
-import com.procurement.submission.lib.functional.asValidationError
-import com.procurement.submission.model.dto.ocds.PersonId
 
 fun PersonesProcessingRequest.convert(): Result<PersonesProcessingParams, Fail> {
     validateTextAttributes(parties = parties)
@@ -134,21 +131,29 @@ private fun PersonesProcessingRequest.Party.Person.BusinessFunction.Document.con
 }
 
 fun validateTextAttributes(parties: List<PersonesProcessingRequest.Party>): Validated<DataErrors.Validation.EmptyString> {
-    try {
         parties.forEachIndexed { partyIndex, party ->
             party.apply {
                 id.checkForBlank("parties[$partyIndex].id")
+                    .onFailure { return it }
+
                 persones.forEachIndexed { personeIndex, persone ->
                     persone.apply {
                         name.checkForBlank("parties[$partyIndex].persones[$personeIndex].name")
+                            .onFailure { return it }
+
                         identifier.apply {
                             id.checkForBlank("parties[$partyIndex].persones[$personeIndex].identifier.id")
+                                .onFailure { return it }
                             scheme.checkForBlank("parties[$partyIndex].persones[$personeIndex].identifier.scheme")
+                                .onFailure { return it }
                         }
+
                         businessFunctions.forEachIndexed { businessFunctionIndex, businessFunction ->
                             businessFunction.apply {
                                 id.checkForBlank("parties[$partyIndex].persones[$personeIndex].businessFunctions[$businessFunctionIndex].id")
+                                    .onFailure { return it }
                                 jobTitle.checkForBlank("parties[$partyIndex].persones[$personeIndex].businessFunctions[$businessFunctionIndex].jobTitle")
+                                    .onFailure { return it }
                             }
                         }
                     }
@@ -156,9 +161,4 @@ fun validateTextAttributes(parties: List<PersonesProcessingRequest.Party>): Vali
             }
         }
         return Validated.ok()
-    } catch (expected: EmptyStringException) {
-        return DataErrors.Validation.EmptyString(expected.path).asValidationError()
-    }
 }
-
-private fun String?.checkForBlank(path: String) = this.errorIfBlank { EmptyStringException(path) }
