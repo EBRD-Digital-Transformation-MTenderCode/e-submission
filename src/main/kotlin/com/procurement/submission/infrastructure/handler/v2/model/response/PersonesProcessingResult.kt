@@ -26,14 +26,19 @@ data class PersonesProcessingResult(
 
         @JsonInclude(JsonInclude.Include.NON_EMPTY)
         @param:JsonProperty("additionalIdentifiers") @field:JsonProperty("additionalIdentifiers") val additionalIdentifiers: List<AdditionalIdentifier>?,
+
         @param:JsonProperty("address") @field:JsonProperty("address") val address: Address,
         @param:JsonProperty("contactPoint") @field:JsonProperty("contactPoint") val contactPoint: ContactPoint,
+
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         @param:JsonProperty("persones") @field:JsonProperty("persones") val persones: List<Persone>,
     ) {
         data class Identifier(
             @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
             @param:JsonProperty("legalName") @field:JsonProperty("legalName") val legalName: String,
             @param:JsonProperty("scheme") @field:JsonProperty("scheme") val scheme: String,
+
+            @JsonInclude(JsonInclude.Include.NON_NULL)
             @param:JsonProperty("uri") @field:JsonProperty("uri") val uri: String?
         )
 
@@ -42,7 +47,7 @@ data class PersonesProcessingResult(
             @param:JsonProperty("legalName") @field:JsonProperty("legalName") val legalName: String,
             @param:JsonProperty("scheme") @field:JsonProperty("scheme") val scheme: String,
 
-            @JsonInclude(JsonInclude.Include.NON_EMPTY)
+            @JsonInclude(JsonInclude.Include.NON_NULL)
             @param:JsonProperty("uri") @field:JsonProperty("uri") val uri: String?
         )
 
@@ -51,6 +56,7 @@ data class PersonesProcessingResult(
 
             @JsonInclude(JsonInclude.Include.NON_NULL)
             @param:JsonProperty("postalCode") @field:JsonProperty("postalCode") val postalCode: String?,
+
             @param:JsonProperty("addressDetails") @field:JsonProperty("addressDetails") val addressDetails: AddressDetails
         ) {
             data class AddressDetails(
@@ -76,6 +82,7 @@ data class PersonesProcessingResult(
                     @param:JsonProperty("id") @field:JsonProperty("id") val id: String,
                     @param:JsonProperty("description") @field:JsonProperty("description") val description: String,
                     @param:JsonProperty("scheme") @field:JsonProperty("scheme") val scheme: String,
+
                     @JsonInclude(JsonInclude.Include.NON_NULL)
                     @param:JsonProperty("uri") @field:JsonProperty("uri") val uri: String?
                 )
@@ -99,7 +106,9 @@ data class PersonesProcessingResult(
             @param:JsonProperty("title") @field:JsonProperty("title") val title: String,
             @param:JsonProperty("name") @field:JsonProperty("name") val name: String,
             @param:JsonProperty("identifier") @field:JsonProperty("identifier") val identifier: Identifier,
-            @param:JsonProperty("businessFunctions") @field:JsonProperty("businessFunctions") val businessFunctions: List<BusinessFunction>
+
+            @JsonInclude(JsonInclude.Include.NON_EMPTY)
+            @param:JsonProperty("businessFunctions") @field:JsonProperty("businessFunctions") val businessFunctions: List<BusinessFunction>?
         ) {
             data class Identifier(
                 @param:JsonProperty("scheme") @field:JsonProperty("scheme") val scheme: String,
