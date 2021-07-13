@@ -79,6 +79,7 @@ import com.procurement.submission.infrastructure.handler.v2.model.response.Creat
 import com.procurement.submission.infrastructure.handler.v2.model.response.FinalizeBidsByAwardsResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.SetStateForBidsResult
 import com.procurement.submission.infrastructure.handler.v2.model.response.fromDomain
+import com.procurement.submission.lib.errorIfBlank
 import com.procurement.submission.lib.functional.Result
 import com.procurement.submission.lib.functional.Validated
 import com.procurement.submission.lib.functional.asFailure
@@ -217,6 +218,8 @@ class BidService(
         val bidId = cm.ctxId
         val dateTime = cm.startDate
         val dto = toObject(BidUpdateDocsRq::class.java, cm.data)
+        dto.validateTextAttributes()
+
         val documentsDto = dto.bid.documents
         //VR-4.8.1
         val period = periodService.getPeriodEntity(cpid, ocid)
@@ -259,6 +262,20 @@ class BidService(
         )
         bidRepository.save(updatedBidEntity)
         return ResponseDto(data = BidRs(null, null, bid))
+    }
+
+    private fun BidUpdateDocsRq.validateTextAttributes() {
+        bid.documents.forEachIndexed { index, document ->
+            document.title.checkForBlank("bid.documents[$index].title")
+            document.description.checkForBlank("bid.documents[$index].description")
+        }
+    }
+
+    private fun String?.checkForBlank(name: String) = this.errorIfBlank {
+        ErrorException(
+            error = ErrorType.INCORRECT_VALUE_ATTRIBUTE,
+            message = "The attribute '$name' is empty or blank."
+        )
     }
 
     /**
