@@ -29,7 +29,7 @@
         <spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
 
         <!--Libs-->
-        <springfox-swagger2.version>2.6.1</springfox-swagger2.version>
+        <springfox-swagger2.version>2.10.0</springfox-swagger2.version>
         <netty-transport-native-epoll.version>4.1.17.Final</netty-transport-native-epoll.version>
 
         <!--Logging-->
